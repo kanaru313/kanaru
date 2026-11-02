@@ -85,7 +85,12 @@ Finder get _playAll => find.widgetWithText(FilledButton, 'Play');
 
 /// The page's more menu (next to Play and Shuffle), opened.
 Future<void> _openMenu(WidgetTester tester) async {
-  await tester.tap(find.byTooltip('More'));
+  await tester.tap(
+    find.descendant(
+      of: find.byType(MostPlayedMenuButton),
+      matching: find.byTooltip('More options'),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -461,7 +466,13 @@ void main() {
       );
 
       expect(find.text('1234 listens'), findsOneWidget);
-      expect(find.byTooltip('More options'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(MostPlayedRowTile),
+          matching: find.byTooltip('More options'),
+        ),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     });
 
@@ -494,7 +505,13 @@ void main() {
     ) async {
       await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
 
-      expect(find.byTooltip('More options'), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(MostPlayedRowTile),
+          matching: find.byTooltip('More options'),
+        ),
+        findsNothing,
+      );
       await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
       await tester.pumpAndSettle();
 

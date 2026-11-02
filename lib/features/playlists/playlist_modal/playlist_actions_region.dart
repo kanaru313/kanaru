@@ -2,13 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/playlist_rows.dart';
-import '../../../shared/widgets/context_modal_region.dart';
-import '../../../shared/widgets/menu_keyboard_region.dart'
-    show MenuKeyboardRegion;
+import '../../../shared/widgets/context_menu_region.dart';
 import 'open_playlist_modal.dart';
 
 /// Opens the playlist modal on a right click or a long press of [child], or
-/// from the keyboard (Menu key, Shift+F10, see [MenuKeyboardRegion]).
+/// from the keyboard (Menu key, Shift+F10, see [ContextMenuRegion]).
 class PlaylistActionsRegion extends ConsumerWidget {
   const PlaylistActionsRegion({
     super.key,
@@ -29,16 +27,17 @@ class PlaylistActionsRegion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ContextModalRegion(
-      onOpen: ({required bool viaKeyboard}) => openPlaylistModal(
-        context,
-        ref,
-        playlist: playlist,
-        coverKeys: coverKeys,
-        showGoTo: showGoTo,
-        viaKeyboard: viaKeyboard,
-        beforeRead: beforeRead,
-      ),
+    return ContextMenuRegion(
+      onOpen: ({required bool viaKeyboard, required Offset at}) =>
+          openPlaylistModal(
+            context,
+            ref,
+            playlist: playlist,
+            coverKeys: coverKeys,
+            showGoTo: showGoTo,
+            viaKeyboard: viaKeyboard,
+            beforeRead: beforeRead,
+          ),
       child: child,
     );
   }

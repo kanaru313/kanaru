@@ -2,10 +2,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/context_modal_region.dart';
-import '../../shared/widgets/menu_keyboard_region.dart';
+import '../../shared/widgets/context_menu_region.dart';
 import '../../shared/widgets/playlist_cover.dart';
-import '../../shared/widgets/queue_actions_menu.dart' show menuPositionAt;
+import '../../shared/widgets/queue_actions_menu.dart' show showContextMenu;
 
 /// Height of one [CollageListRow].
 const collageListRowExtent = 80.0;
@@ -54,19 +53,32 @@ class CollageListRow<T> extends StatelessWidget {
   /// Widget at the end of the row, such as a more button.
   final Widget? trailing;
 
-  /// Opens the row's context modal; see [ContextModalRegion].
+  /// Opens the row's context modal; see [ContextMenuRegion].
   final void Function({required bool viaKeyboard})? onOpenModal;
 
-  Future<void> _openMenu(BuildContext context, Offset position) async {
+  Future<void> _openMenu(
+    BuildContext context,
+    Offset position, {
+    required bool viaKeyboard,
+  }) async {
     final builder = menuItems;
     final selected = onMenuSelected;
     if (builder == null || selected == null) return;
-    final value = await showMenu<T>(
-      context: context,
-      position: menuPositionAt(context, position),
+    final value = await showContextMenu<T>(
+      context,
+      at: position,
       items: builder(context),
+      viaKeyboard: viaKeyboard,
     );
     if (value != null && context.mounted) selected(value);
+  }
+
+  /// [onOpenModal] as a [ContextMenuOpen]: a modal has no anchor point.
+  ContextMenuOpen? _modalOpener() {
+    final open = onOpenModal;
+    if (open == null) return null;
+    return ({required viaKeyboard, required at}) =>
+        open(viaKeyboard: viaKeyboard);
   }
 
   @override
@@ -133,17 +145,13 @@ class CollageListRow<T> extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      child: hasMenu
-          ? MenuKeyboardRegion(
-              onOpen: (position) => _openMenu(context, position),
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onSecondaryTapUp: (d) => _openMenu(context, d.globalPosition),
-                onLongPressStart: (d) => _openMenu(context, d.globalPosition),
-                child: card,
-              ),
-            )
-          : ContextModalRegion(onOpen: onOpenModal, child: card),
+      child: ContextMenuRegion(
+        onOpen: hasMenu
+            ? ({required viaKeyboard, required at}) =>
+                  _openMenu(context, at, viaKeyboard: viaKeyboard)
+            : _modalOpener(),
+        child: card,
+      ),
     );
   }
 }

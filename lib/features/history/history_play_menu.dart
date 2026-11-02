@@ -26,18 +26,21 @@ QueueAction? historyQueueActionOf(HistoryPlayChoice choice) => switch (choice) {
 /// Remove from history unless [canDelete] is false (a most-played row stands
 /// for many plays, which are removed from the journal). Song history opens
 /// the page of the song unless [canShowTrackHistory] is false (on that page
-/// itself). Returns null when it was dismissed.
+/// itself). Opened [viaKeyboard], its first enabled row takes focus (see
+/// [showContextMenu]). Returns null when it was dismissed.
 Future<HistoryPlayChoice?> showHistoryPlayMenu(
   BuildContext context,
   Offset position, {
   required bool canQueue,
   bool canDelete = true,
   bool canShowTrackHistory = true,
+  bool viaKeyboard = false,
 }) {
   final l10n = context.l10n;
-  return showMenu<HistoryPlayChoice>(
-    context: context,
-    position: menuPositionAt(context, position),
+  return showContextMenu<HistoryPlayChoice>(
+    context,
+    at: position,
+    viaKeyboard: viaKeyboard,
     items: [
       menuRow(
         HistoryPlayChoice.playNext,

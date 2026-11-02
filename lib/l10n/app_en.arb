@@ -463,7 +463,6 @@
   "songsShuffleAll": "Shuffle all",
   "queuePlayNext": "Play next",
   "queueAddToQueue": "Add to queue",
-  "queueActionsTooltip": "Queue actions",
   "queuePlayingNext": "Playing next: {name}",
   "@queuePlayingNext": {
     "placeholders": {
@@ -1352,10 +1351,6 @@
   "historyLoadFailed": "Couldn't read the history. See the log for details.",
   "@historyLoadFailed": {
     "description": "Message of the History page when reading it failed"
-  },
-  "historyMore": "More",
-  "@historyMore": {
-    "description": "Tooltip of the more button on a History row"
   },
   "historyOlderYear": "Show {year}",
   "@historyOlderYear": {

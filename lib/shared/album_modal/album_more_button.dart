@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../widgets/context_modal_more_button.dart';
+import '../widgets/context_menu_more_button.dart';
 import '../widgets/library_grid/album_tile_data.dart';
 import '../widgets/queue_actions_menu.dart';
 import 'open_album_modal.dart';
@@ -26,14 +26,15 @@ class AlbumMoreButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void open({required bool viaKeyboard}) => openAlbumModal(
-      context,
-      ref,
-      album: album,
-      onQueueAction: onQueueAction,
-      showAlbum: showAlbum,
-      viaKeyboard: viaKeyboard,
-    );
-    return ContextModalMoreButton(onOpen: open, color: color);
+    void open({required bool viaKeyboard, required Offset at}) =>
+        openAlbumModal(
+          context,
+          ref,
+          album: album,
+          onQueueAction: onQueueAction,
+          showAlbum: showAlbum,
+          viaKeyboard: viaKeyboard,
+        );
+    return ContextMenuMoreButton(onOpen: open, color: color);
   }
 }

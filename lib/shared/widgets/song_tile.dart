@@ -5,8 +5,9 @@ import '../../core/database/library_database.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../core/player/playing_track_path.dart';
+import '../song_modal/open_song_modal.dart';
 import '../song_modal/song_modal_extras.dart';
-import '../song_modal/song_more_button.dart';
+import 'context_menu_more_button.dart';
 import 'favorite_button.dart';
 import 'library_row.dart';
 import 'queue_actions_menu.dart';
@@ -115,11 +116,16 @@ class SongTile extends ConsumerWidget {
         trailing: trailingAccessory,
         more: onQueue == null
             ? null
-            : SongMoreButton(
-                song: song,
-                onQueueAction: onQueue,
-                showAlbum: showAlbum,
-                modalExtras: modalExtras,
+            : ContextMenuMoreButton(
+                onOpen: ({required viaKeyboard, required at}) => openSongModal(
+                  context,
+                  ref,
+                  song: song,
+                  onQueueAction: onQueue,
+                  showAlbum: showAlbum,
+                  viaKeyboard: viaKeyboard,
+                  extras: modalExtras?.call() ?? const SongModalExtras(),
+                ),
                 color: playing
                     ? Theme.of(context).colorScheme.onPrimaryContainer
                     : null,

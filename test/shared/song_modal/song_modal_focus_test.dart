@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
-import 'package:kanaru/shared/song_modal/song_more_button.dart';
+import 'package:kanaru/core/player/playing_track_path.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/context_menu_more_button.dart';
+import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:kanaru/shared/widgets/track_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -34,6 +37,7 @@ Future<void> _pump(WidgetTester tester) async {
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [playingTrackPathProvider.overrideWithValue(null)],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -48,7 +52,7 @@ Future<void> _pump(WidgetTester tester) async {
                   child: SizedBox(width: 300, height: 80, child: Text('row')),
                 ),
               ),
-              SongMoreButton(song: _song, onQueueAction: (_) {}),
+              SongTile(song: _song, onTap: () {}, onQueueAction: (_) {}),
             ],
           ),
         ),
@@ -107,7 +111,15 @@ void main() {
     tester,
   ) async {
     await _pump(tester);
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    // The song row's ⋮ button.
+    Focus.of(
+      tester.element(
+        find.descendant(
+          of: find.byType(ContextMenuMoreButton),
+          matching: find.byIcon(AppIcons.more),
+        ),
+      ),
+    ).requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await settleSongModal(tester);

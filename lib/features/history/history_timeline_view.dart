@@ -49,8 +49,14 @@ class HistoryTimelineView extends StatelessWidget {
   /// A play was tapped: the play and the start of its day.
   final void Function(HistoryPlayRow row, int dayStart) onTap;
 
-  /// A play's menu was asked for at the given global position.
-  final void Function(HistoryPlayRow row, Offset position) onMenu;
+  /// A play's menu was asked for at the given global position, from the
+  /// keyboard when [viaKeyboard].
+  final void Function(
+    HistoryPlayRow row,
+    Offset position, {
+    required bool viaKeyboard,
+  })
+  onMenu;
 
   /// Queue action picked in the song modal of a row.
   final void Function(HistoryPlayRow row, QueueAction action) onQueueAction;
@@ -103,7 +109,8 @@ class HistoryTimelineView extends StatelessWidget {
       key: ValueKey(play.id),
       row: play,
       onTap: () => onTap(play, dayStart),
-      onMenu: (position) => onMenu(play, position),
+      onMenu: ({required viaKeyboard, required at}) =>
+          onMenu(play, at, viaKeyboard: viaKeyboard),
       onQueueAction: (action) => onQueueAction(play, action),
       modalExtras: () => playExtras(play),
     );

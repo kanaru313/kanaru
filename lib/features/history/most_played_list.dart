@@ -72,12 +72,17 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
   );
 
   /// The small menu of a row with no song in the library.
-  Future<void> _openMenu(HistoryTopRow row, Offset position) async {
+  Future<void> _openMenu(
+    HistoryTopRow row,
+    Offset position, {
+    required bool viaKeyboard,
+  }) async {
     final choice = await showHistoryPlayMenu(
       context,
       position,
       canQueue: row.track != null,
       canDelete: false,
+      viaKeyboard: viaKeyboard,
     );
     if (choice == null || !mounted) return;
     if (choice == HistoryPlayChoice.trackHistory) {
@@ -115,7 +120,8 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
           rank: widget.ranks[i],
           row: rows[i],
           onTap: () => _play(i),
-          onMenu: (position) => unawaited(_openMenu(rows[i], position)),
+          onMenu: ({required viaKeyboard, required at}) =>
+              unawaited(_openMenu(rows[i], at, viaKeyboard: viaKeyboard)),
           onQueueAction: (action) => _queue(rows[i], action),
           modalExtras: () => _extras(rows[i]),
         );

@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../artist_summaries.dart';
-import '../widgets/context_modal_more_button.dart';
+import '../widgets/context_menu_more_button.dart';
 import '../widgets/queue_actions_menu.dart';
 import 'open_artist_modal.dart';
 
@@ -26,14 +26,15 @@ class ArtistMoreButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void open({required bool viaKeyboard}) => openArtistModal(
-      context,
-      ref,
-      artist: artist,
-      onQueueAction: onQueueAction,
-      showArtist: showArtist,
-      viaKeyboard: viaKeyboard,
-    );
-    return ContextModalMoreButton(onOpen: open, color: color);
+    void open({required bool viaKeyboard, required Offset at}) =>
+        openArtistModal(
+          context,
+          ref,
+          artist: artist,
+          onQueueAction: onQueueAction,
+          showArtist: showArtist,
+          viaKeyboard: viaKeyboard,
+        );
+    return ContextMenuMoreButton(onOpen: open, color: color);
   }
 }

@@ -637,9 +637,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueAddToQueue => 'Add to queue';
 
   @override
-  String get queueActionsTooltip => 'Queue actions';
-
-  @override
   String queuePlayingNext(String name) {
     return 'Playing next: $name';
   }
@@ -1941,9 +1938,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get historyLoadFailed =>
       'Couldn\'t read the history. See the log for details.';
-
-  @override
-  String get historyMore => 'More';
 
   @override
   String historyOlderYear(int year) {

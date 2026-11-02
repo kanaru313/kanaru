@@ -42,7 +42,14 @@ Future<Set<int>> _ids(WidgetTester tester, LibraryHarness h) async {
 }
 
 Future<void> _menuOfRow(WidgetTester tester, int index, String item) async {
-  await tester.tap(find.byTooltip('More').at(index));
+  await tester.tap(
+    find
+        .descendant(
+          of: find.byType(HistoryTrackPlayTile),
+          matching: find.byTooltip('More options'),
+        )
+        .at(index),
+  );
   await tester.pumpAndSettle();
   await tester.tap(find.text(item));
   await tester.pumpAndSettle();
@@ -141,7 +148,12 @@ void main() {
       goTo(tester, h, historyTrackLocation('/m/A.flac'));
       await settleHistory(tester);
 
-      await tester.tap(find.byTooltip('More'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(HistoryTrackPlayTile),
+          matching: find.byTooltip('More options'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Song history'), findsNothing);

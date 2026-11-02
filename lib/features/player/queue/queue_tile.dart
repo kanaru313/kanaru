@@ -11,10 +11,11 @@ import '../../../core/player/playing_track_art.dart' show localPathOf;
 import '../../../core/player/track.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/context_menu_more_button.dart';
+import '../../../shared/widgets/context_menu_region.dart';
 import '../../../shared/widgets/favorite_button.dart';
 import '../../../shared/widgets/library_row.dart';
 import '../../../shared/widgets/song_row_view.dart';
-import 'queue_more_button.dart';
 import 'queue_play_next_marker.dart';
 import 'queue_tile_menu.dart';
 
@@ -94,9 +95,14 @@ class QueueTile extends ConsumerWidget {
       maxScaleFactor: queueTileMaxTextScale,
       child: Opacity(
         opacity: played ? 0.6 : 1,
-        child: QueueTileMenuRegion(
-          track: track,
-          position: position,
+        child: ContextMenuRegion(
+          onOpen: ({required viaKeyboard, required at}) => openQueueRowMenu(
+            context,
+            ref,
+            position: position,
+            at: at,
+            viaKeyboard: viaKeyboard,
+          ),
           child: Semantics(
             customSemanticsActions: {
               if (editable)
@@ -126,7 +132,17 @@ class QueueTile extends ConsumerWidget {
                 color: current ? colors.onPrimaryContainer : null,
                 canAdd: canAdd,
               ),
-              more: QueueMoreButton(position: position, current: current),
+              more: ContextMenuMoreButton(
+                onOpen: ({required viaKeyboard, required at}) =>
+                    openQueueRowMenu(
+                      context,
+                      ref,
+                      position: position,
+                      at: at,
+                      viaKeyboard: viaKeyboard,
+                    ),
+                color: current ? colors.onPrimaryContainer : null,
+              ),
             ),
           ),
         ),

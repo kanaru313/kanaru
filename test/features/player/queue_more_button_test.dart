@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/features/player/queue/queue_tile_menu_actions.dart';
 import 'package:kanaru/shared/song_modal/song_modal_header.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -109,6 +110,41 @@ void main() {
     expect(modal, findsNothing);
     expect(find.text('Remove from queue'), findsOneWidget);
     expect(find.byType(PopupMenuItem<Object>), findsWidgets);
+  });
+
+  testWidgets('Enter on the more button of a song outside the library '
+      'focuses the first row of its popup', (tester) async {
+    await open(tester, const [Track(uri: '/nowhere/x.mp3', title: 'x')]);
+    await focusMore(tester, 'x');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    // The popup opens after its rows are read from the database.
+    await settleDb(tester);
+    await tester.pumpAndSettle();
+
+    expect(modal, findsNothing);
+    final focused = FocusManager.instance.primaryFocus?.context
+        ?.findAncestorWidgetOfExactType<PopupMenuItem<Object>>();
+    expect(focused?.value, QueueRowChoice.playNext);
+  });
+
+  testWidgets('the popup of the more button opens below the button', (
+    tester,
+  ) async {
+    await open(tester, const [Track(uri: '/nowhere/x.mp3', title: 'x')]);
+    final button = tester.getRect(moreOf('x'));
+    await tester.tap(moreOf('x'));
+    await settleDb(tester);
+    await settleSongModal(tester);
+
+    final menu = tester.getRect(
+      find
+          .ancestor(
+            of: find.byType(PopupMenuItem<Object>).first,
+            matching: find.byType(Material),
+          )
+          .first,
+    );
+    expect(menu.top, greaterThanOrEqualTo(button.bottom));
   });
 
   testWidgets(

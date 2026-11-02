@@ -7,6 +7,7 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/page_scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -189,7 +190,17 @@ void main() {
       find.descendant(of: row(), matching: find.byTooltip('More options')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Queue actions'), findsNothing);
+    // The tooltip is on the row's ⋮ itself.
+    expect(
+      find.descendant(
+        of: find.descendant(
+          of: row(),
+          matching: find.byTooltip('More options'),
+        ),
+        matching: find.byIcon(AppIcons.more),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a saved queue row modal says Remove from queue', (tester) async {

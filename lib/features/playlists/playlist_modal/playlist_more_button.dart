@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/playlist_rows.dart';
-import '../../../shared/widgets/context_modal_more_button.dart';
+import '../../../shared/widgets/context_menu_more_button.dart';
 import 'open_playlist_modal.dart';
 
 /// The ⋮ button of a playlist row or page: opens the playlist modal. Always
@@ -27,15 +27,16 @@ class PlaylistMoreButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void open({required bool viaKeyboard}) => openPlaylistModal(
-      context,
-      ref,
-      playlist: playlist,
-      coverKeys: coverKeys,
-      showGoTo: showGoTo,
-      viaKeyboard: viaKeyboard,
-      beforeRead: beforeRead,
-    );
-    return ContextModalMoreButton(onOpen: open, color: color);
+    void open({required bool viaKeyboard, required Offset at}) =>
+        openPlaylistModal(
+          context,
+          ref,
+          playlist: playlist,
+          coverKeys: coverKeys,
+          showGoTo: showGoTo,
+          viaKeyboard: viaKeyboard,
+          beforeRead: beforeRead,
+        );
+    return ContextMenuMoreButton(onOpen: open, color: color);
   }
 }

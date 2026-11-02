@@ -110,7 +110,8 @@ class _HistoryFilterResultsState extends ConsumerState<HistoryFilterResults>
             key: ValueKey(row.id),
             row: row,
             onTap: () => _play(rows, row),
-            onMenu: (position) => unawaited(openPlayMenu(row, position)),
+            onMenu: ({required viaKeyboard, required at}) =>
+                unawaited(openPlayMenu(row, at, viaKeyboard: viaKeyboard)),
             onQueueAction: (action) => playQueueAction(row, action),
             modalExtras: () => playExtras(row),
           );

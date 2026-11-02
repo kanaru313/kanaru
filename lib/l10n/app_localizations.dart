@@ -932,12 +932,6 @@ abstract class AppLocalizations {
   /// **'Add to queue'**
   String get queueAddToQueue;
 
-  /// No description provided for @queueActionsTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Queue actions'**
-  String get queueActionsTooltip;
-
   /// No description provided for @queuePlayingNext.
   ///
   /// In en, this message translates to:
@@ -2899,12 +2893,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t read the history. See the log for details.'**
   String get historyLoadFailed;
-
-  /// Tooltip of the more button on a History row
-  ///
-  /// In en, this message translates to:
-  /// **'More'**
-  String get historyMore;
 
   /// Last row of the History list: switches to an older year
   ///
