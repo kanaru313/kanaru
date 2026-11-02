@@ -1,11 +1,15 @@
 import 'package:flutter/gestures.dart'
     show PointerDeviceKind, kLongPressTimeout, kSecondaryButton;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/widgets/favorite_button.dart';
+import 'package:kanaru/shared/widgets/menu_keyboard_region.dart';
+import 'package:kanaru/shared/widgets/missing_song_row.dart';
 import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -234,6 +238,85 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+  });
+
+  group('missing rows', () {
+    Finder missingRow(int index) => find.byType(MissingSongRow).at(index);
+
+    /// Whether keyboard focus is on [row] itself (not on a button inside).
+    bool focusedOn(Finder row) {
+      final focused = FocusManager.instance.primaryFocus?.context;
+      if (focused == null) return false;
+      final detector = find.descendant(
+        of: row,
+        matching: find.byType(FocusableActionDetector),
+      );
+      return find
+          .descendant(
+            of: detector.first,
+            matching: find.byElementPredicate((e) => e == focused),
+            matchRoot: true,
+          )
+          .evaluate()
+          .isNotEmpty;
+    }
+
+    Future<void> tabTo(WidgetTester tester, Finder row) async {
+      for (var i = 0; i < 20 && !focusedOn(row); i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+      }
+    }
+
+    testWidgets('Tab reaches the row, then its remove button removes it', (
+      tester,
+    ) async {
+      await view.pump(tester, [available(1), missing(2)]);
+
+      await tabTo(tester, missingRow(0));
+      expect(focusedOn(missingRow(0)), isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+
+      expect(view.removed, [2]);
+    });
+
+    testWidgets('of a read-only list takes focus and has no menu', (
+      tester,
+    ) async {
+      await view.pump(
+        tester,
+        [missing(1)],
+        readOnly: true,
+        onEntryQueueAction: (_, _) {},
+      );
+
+      await tabTo(tester, missingRow(0));
+      expect(focusedOn(missingRow(0)), isTrue);
+      expect(find.byType(MenuKeyboardRegion), findsNothing);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      await tester.tap(find.text('lost1.mp3'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Play next'), findsNothing);
+      expect(find.byTooltip('Remove from playlist'), findsNothing);
+    });
+
+    testWidgets('on Favorites has a heart that cannot add', (tester) async {
+      await view.pump(tester, [missing(1)], readOnly: true, favorites: true);
+
+      final heart = tester.widget<FavoriteButton>(
+        find.descendant(
+          of: missingRow(0),
+          matching: find.byType(FavoriteButton),
+        ),
+      );
+      expect(heart.canAdd, isFalse);
+      expect(heart.path, '/gone/lost1.mp3');
+    });
   });
 
   group('header', () {

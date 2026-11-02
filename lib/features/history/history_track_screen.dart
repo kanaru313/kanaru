@@ -120,7 +120,7 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     return PageScaffold(
       title: track?.title ?? path.split('/').last,
       subtitle: track == null
-          ? l10n.historyTrackMissing
+          ? l10n.playlistNotInLibrary
           : details.isEmpty
           ? null
           : details,

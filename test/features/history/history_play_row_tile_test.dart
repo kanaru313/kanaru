@@ -8,7 +8,10 @@ import 'package:kanaru/core/database/playlist_providers.dart';
 import 'package:kanaru/core/player/playing_track_path.dart';
 import 'package:kanaru/features/history/history_play_row_tile.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/song_modal/song_modal_extras.dart';
+import 'package:kanaru/shared/widgets/song_card.dart';
+import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -33,8 +36,8 @@ void main() {
     ),
   );
 
-  /// Pumps one tile and returns the colour of its "#3" badge text.
-  Future<Color?> badgeColor(
+  /// Pumps one tile of a play of [path].
+  Future<void> pumpTile(
     WidgetTester tester, {
     required bool latest,
     required String playingPath,
@@ -65,6 +68,15 @@ void main() {
       ),
     );
     await tester.pump();
+  }
+
+  /// Pumps one tile and returns the colour of its "#3" badge text.
+  Future<Color?> badgeColor(
+    WidgetTester tester, {
+    required bool latest,
+    required String playingPath,
+  }) async {
+    await pumpTile(tester, latest: latest, playingPath: playingPath);
     return tester.widget<Text>(find.text('#3')).style?.color;
   }
 
@@ -93,5 +105,24 @@ void main() {
       playingPath: '/music/other.flac',
     );
     expect(color, schemeOf(tester).onSurfaceVariant);
+  });
+
+  testWidgets('an older play of the playing track has no playing fill', (
+    tester,
+  ) async {
+    await pumpTile(tester, latest: false, playingPath: path);
+
+    final tile = find.byType(SongTile);
+    final card = tester.widget<Material>(
+      find.descendant(of: tile, matching: find.byType(Material)).first,
+    );
+    expect(card.color, songCardColor(schemeOf(tester)));
+    expect(
+      find.descendant(
+        of: tile,
+        matching: find.byIcon(AppIcons.equalizerRounded),
+      ),
+      findsNothing,
+    );
   });
 }

@@ -13,11 +13,20 @@ const _playingCoverScrimAlpha = 0.45;
 /// itself becomes the equalizer (no music note under it). The tree has the
 /// same shape either way, so a flip keeps the elements.
 class SongTileCover extends StatelessWidget {
-  const SongTileCover({super.key, required this.path, required this.playing});
+  const SongTileCover({
+    super.key,
+    required this.path,
+    required this.playing,
+    this.placeholderIcon = AppIcons.musicNoteOutlined,
+  });
 
   /// Cover file, or null for the placeholder.
   final String? path;
   final bool playing;
+
+  /// Icon of the placeholder while not [playing], e.g. a crossed-out note for
+  /// a song whose file is not in the library.
+  final IconData placeholderIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +42,7 @@ class SongTileCover extends StatelessWidget {
                     AppIcons.equalizerRounded,
                     color: colors.onPrimaryContainer,
                   )
-                : const Icon(AppIcons.musicNoteOutlined),
+                : Icon(placeholderIcon),
           ),
         ),
         if (playing && path != null) const _PlayingCoverMark(),

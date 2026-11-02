@@ -5,8 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_providers.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'playlist_page_body.dart';
@@ -80,14 +78,9 @@ class _NoFavorites extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return PageScaffold(
-      title: l10n.navFavorites,
-      body: EmptyState(
-        icon: AppIcons.favoriteOutline,
-        title: l10n.navFavorites,
-        message: l10n.favoritesEmptyMessage,
-      ),
+      title: context.l10n.navFavorites,
+      body: const PlaylistEmptyState(favorites: true),
     );
   }
 }

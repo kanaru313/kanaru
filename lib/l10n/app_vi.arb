@@ -606,10 +606,6 @@
       }
     }
   },
-  "historyTrackMissing": "Không có trong thư viện",
-  "@historyTrackMissing": {
-    "description": "Note on a History row whose file is no longer in the library"
-  },
   "historyDeletePlay": "Xoá khỏi lịch sử",
   "@historyDeletePlay": {
     "description": "Menu item that removes one play from the History"

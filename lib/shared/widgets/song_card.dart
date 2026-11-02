@@ -8,6 +8,13 @@ const songCardGap = 8.0;
 /// Space between the list edge and a song card's side.
 const songCardInset = 16.0;
 
+/// Space around a song card inside its list slot: [songCardInset] at the
+/// sides, half of [songCardGap] above and below.
+const songCardPadding = EdgeInsets.symmetric(
+  horizontal: songCardInset,
+  vertical: songCardGap / 2,
+);
+
 /// Corner radius of a song card.
 const songCardRadius = 12.0;
 
@@ -29,11 +36,10 @@ Color songCardColor(ColorScheme colors, {bool playing = false}) => playing
 double songCardExtent(ThemeData theme, TextScaler scaler) =>
     libraryRowExtent(theme, scaler) + songCardGap;
 
-/// Draws [child] as a card: [songCardInset] from the sides, half of
-/// [songCardGap] above and below, a [songCardColor] fill and rounded corners.
-/// The `Material` is always there, so the element tree stays the same when
-/// [playing] flips, and ink of the child paints over the fill. It does not
-/// clip: ink follows the shape through `customBorder`.
+/// Draws [child] as a card: [songCardPadding] around it, a [songCardColor]
+/// fill and rounded corners. The `Material` is always there, so the element
+/// tree stays the same when [playing] flips, and ink of the child paints over
+/// the fill. It does not clip: ink follows the shape through `customBorder`.
 class SongCardFrame extends StatelessWidget {
   const SongCardFrame({super.key, required this.child, this.playing = false});
 
@@ -42,10 +48,7 @@ class SongCardFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: songCardInset,
-      vertical: songCardGap / 2,
-    ),
+    padding: songCardPadding,
     child: Material(
       color: songCardColor(Theme.of(context).colorScheme, playing: playing),
       shape: songCardShape,
