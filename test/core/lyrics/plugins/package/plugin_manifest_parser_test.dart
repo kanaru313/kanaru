@@ -126,6 +126,28 @@ void main() {
     });
   });
 
+  group('languages', () {
+    test('are normalized keys', () {
+      final m = parse(withMeta((m) => m['languages'] = ['vi', 'zh-Hant']));
+      expect(m.languages, ['vie', 'zho']);
+    });
+
+    test('missing means global', () {
+      expect(parse(validManifest()).languages, isEmpty);
+    });
+
+    for (final bad in [
+      5,
+      <String, dynamic>{},
+      'vi',
+      [1, null],
+    ]) {
+      test('a bad value $bad keeps the package, global', () {
+        expect(parse(withMeta((m) => m['languages'] = bad)).languages, isEmpty);
+      });
+    }
+  });
+
   group('name, version, author, description', () {
     test('name is trimmed and stripped of control characters', () {
       final m = parse(withMeta((m) => m['name'] = '  A\u0007B\n '));

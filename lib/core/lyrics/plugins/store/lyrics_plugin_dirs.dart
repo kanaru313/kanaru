@@ -60,6 +60,7 @@ class LyricsPluginDirs {
             hosts: manifest.hosts,
             author: manifest.author,
             description: manifest.description,
+            languages: manifest.languages,
             searchScript: manifest.searchScript,
             lyricsScript: manifest.lyricsScript,
             translateScript: manifest.translateScript,

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_catalog.dart';
+import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_address_rules.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/repo_http.dart';
@@ -433,6 +434,55 @@ void main() {
       );
       expect(catalog.entries.single.icon, isNull);
       expect(catalog.dropped, 0);
+    });
+  });
+
+  group('languages', () {
+    test('are parsed to normalized keys', () {
+      final catalog = parse(
+        _catalog([
+          _entry({
+            'languages': ['zh', 'vi'],
+          }),
+        ]),
+      );
+      expect(catalog.entries.single.languages, ['zho', 'vie']);
+    });
+
+    test('a bad value keeps the entry and makes it global', () {
+      final catalog = parse(
+        _catalog([
+          _entry({'languages': 'vi'}),
+          _entry({
+            'slug': 'b',
+            'languages': [3, null],
+          }),
+          _entry({'slug': 'c'}),
+        ]),
+      );
+      expect(catalog.dropped, 0);
+      expect(catalog.entries, hasLength(3));
+      expect(catalog.entries.every((e) => e.languages.isEmpty), isTrue);
+    });
+
+    test('survive the stored catalog round trip', () {
+      final catalog = parse(
+        _catalog([
+          _entry({
+            'languages': ['vi', 'zh'],
+          }),
+          _entry({'slug': 'global'}),
+        ]),
+      );
+      final text = encodeStoredCatalog(catalog, RepoAddressKind.public);
+      final back = decodeStoredCatalog(
+        'https://repo.example.com/plugins.json',
+        text,
+      )!.catalog;
+      expect(back.entries.first.languages, ['vie', 'zho']);
+      expect(back.entries.last.languages, isEmpty);
+      final data = (jsonDecode(text) as Map)['data'] as List;
+      expect((data.last as Map).containsKey('languages'), isFalse);
     });
   });
 }

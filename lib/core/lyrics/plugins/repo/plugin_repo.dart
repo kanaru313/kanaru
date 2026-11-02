@@ -129,6 +129,7 @@ String encodeStoredCatalog(PluginCatalog catalog, RepoAddressKind kind) =>
             if (e.icon != null) 'icon': e.icon.toString(),
             if (e.description.isNotEmpty) 'description': e.description,
             if (e.author.isNotEmpty) 'author': e.author,
+            if (e.languages.isNotEmpty) 'languages': e.languages,
           },
       ],
     });

@@ -56,6 +56,7 @@ String pluginManifestJson({
   required List<String> hosts,
   required String author,
   required String description,
+  List<String> languages = const [],
   String? searchScript,
   String? lyricsScript,
   String? translateScript,
@@ -70,6 +71,7 @@ String pluginManifestJson({
     'hosts': hosts,
     'author': author,
     'description': description,
+    if (languages.isNotEmpty) 'languages': languages,
   },
   'script': {
     'search': ?searchScript,

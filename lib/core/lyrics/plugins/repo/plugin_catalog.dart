@@ -18,6 +18,7 @@ class PluginCatalogEntry {
     this.icon,
     this.description = '',
     this.author = '',
+    this.languages = const [],
   });
 
   /// `^[a-z0-9_-]{1,64}$`, unique within the catalog.
@@ -42,6 +43,9 @@ class PluginCatalogEntry {
   final Uri? icon;
   final String description;
   final String author;
+
+  /// Normalized language keys; empty means global (any language).
+  final List<String> languages;
 }
 
 /// A parsed catalog: its display [name] and [author], the usable [entries]

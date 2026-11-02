@@ -345,6 +345,7 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher does that at connect time, see "Cookies and private addresses"), else `badHost` with the host |
 | `metadata.author` | optional, at most 80 characters |
 | `metadata.description` | optional, at most 500 characters (newlines kept) |
+| `metadata.languages` | optional list of language codes the plugin serves, used only by the store's Language filter. ISO 639-1 is recommended (`"vi"`, `"zh"`); 639-2 and region or script tags are accepted (`"vie"`, `"zh-Hant"`) and are normalized to ISO 639-2/T. `"*"` anywhere means global. Missing, empty, not a list, over 50 items or with no usable code is global (never hidden by the language filter). Items that are not strings, are empty, are `und`, `zxx` or `mul`, or are not a 2 to 3 letter code are skipped; repeats are removed; at most 20 are kept. It never makes the package invalid and is not compared with the catalog at install. The app writes the normalized codes (`vie`) back to the installed `plugin.json` |
 | `script.search`, `script.lyrics` | lyrics plugin: both required; file names matching the name pattern above; a name not in `src/` is `missingScript` |
 | `script.translate` | translate plugin: required (and the only script entry); same rules |
 | `translate` | translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
@@ -451,13 +452,14 @@ A repository is one URL the user types; it serves a catalog (JSON) that lists pl
     "slug": "netease", "name": "NetEase Cloud Music", "version": 3, "apiVersion": 1,
     "type": "lyrics", "hosts": ["music.163.com"],
     "path": "dist/netease/plugin.zip", "icon": "dist/netease/icon.png",
-    "description": "...", "author": "..."
+    "description": "...", "author": "...", "languages": ["zh"]
   }]
 }
 ```
 
 - At most 1 MiB and 500 entries (more entries: `invalidCatalog`; over the size: `tooLarge`). `metadata.name` is required (1 to 80 characters).
 - An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics` or `translate` (the package must declare the same type, else `catalogMismatch`). `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
+- `languages` is optional and follows the `metadata.languages` rules; a bad value never drops the entry, it means global. The store prefers the catalog value and falls back to the installed `plugin.json`. An entry that declares global (`"*"`) or no languages counts as not declared, so an installed plugin's own `plugin.json` value is used until the plugin is updated.
 - An entry that breaks a rule is dropped and counted. A non-empty `data` with no usable entry is `invalidCatalog`; an empty `data` is a valid empty catalog.
 - `path` and `icon` may be relative; they are resolved against the address the catalog was served from (after redirects) and checked against the address rules below. A bad `path` drops the entry, a bad `icon` only the icon. A fetched icon must pass the package icon rules (PNG, at most 256 x 256, at most 64 KiB) or it is dropped.
 - The catalog is only a preview: the plugin's own `plugin.json` is the truth, and must agree with the entry's `version` and `hosts`.
