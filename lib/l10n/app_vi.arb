@@ -19,8 +19,6 @@
   "playlistDefaultName": "Playlist mới",
   "playlistCreateTitle": "Tạo playlist",
   "playlistCreateConfirm": "Tạo",
-  "playlistRename": "Đổi tên",
-  "playlistRenameTitle": "Đổi tên playlist",
   "playlistNameLabel": "Tên",
   "playlistDelete": "Xoá playlist",
   "playlistDeleteTitle": "Xoá “{name}”?",

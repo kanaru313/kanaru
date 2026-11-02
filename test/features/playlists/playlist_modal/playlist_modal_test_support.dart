@@ -123,6 +123,18 @@ Future<void> openPlaylistModalOf(WidgetTester tester) async {
   await settleModal(tester);
 }
 
+/// Opens the playlist modal from the ⋮ button of a playlist page.
+Future<void> openPageModal(WidgetTester tester) async {
+  await tester.tap(find.byType(PlaylistMoreButton));
+  await settleModal(tester);
+}
+
+/// Opens the page's modal and taps the row with action [id].
+Future<void> pickFromPageModal(WidgetTester tester, String id) async {
+  await openPageModal(tester);
+  await tapModalAction(tester, id);
+}
+
 /// Taps the row with action [id] and waits for what it starts.
 Future<void> tapModalAction(WidgetTester tester, String id) async {
   await tester.tap(modalAction(id));

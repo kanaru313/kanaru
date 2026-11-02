@@ -15,6 +15,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import 'playlist_test_data.dart';
 
 void main() {
@@ -98,9 +99,8 @@ void main() {
     }
 
     Future<void> export(WidgetTester tester, String item) async {
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(item));
+      await pickFromPageModal(tester, 'advanced');
+      await tester.tap(modalAction(item));
       await settleIoUi(tester);
     }
 
@@ -110,7 +110,7 @@ void main() {
       await openMix(tester);
       picked = '$root/lists';
 
-      await export(tester, 'Export M3U (relative paths)…');
+      await export(tester, 'export-relative');
 
       expect(suggested, ['Mix.m3u8']);
       expect(
@@ -136,7 +136,7 @@ void main() {
       await settleDb(tester);
       picked = '$root/lists';
 
-      await export(tester, 'Export M3U (relative paths)…');
+      await export(tester, 'export-relative');
 
       expect(find.text('Saved 1 song to lists.m3u8'), findsOneWidget);
       expect(
@@ -157,7 +157,7 @@ void main() {
         }
       });
 
-      await export(tester, 'Export M3U (full paths)…');
+      await export(tester, 'export-absolute');
       final result = await tester.runAsync(
         () => importM3uFile('$root/out/Mix.m3u'),
       );
@@ -172,9 +172,8 @@ void main() {
       picked = '$root/gone';
       whileDialogOpen = () => h.db.deletePlaylist(id);
 
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Export M3U (full paths)…'));
+      await pickFromPageModal(tester, 'advanced');
+      await tester.tap(modalAction('export-absolute'));
       await settleIoUi(tester, snackbarOnly: true);
 
       expect(
@@ -187,7 +186,7 @@ void main() {
     testWidgets('a cancelled save dialog writes nothing', (tester) async {
       await openMix(tester);
 
-      await export(tester, 'Export M3U (full paths)…');
+      await export(tester, 'export-absolute');
 
       expect(find.byType(SnackBar), findsNothing);
     });
@@ -200,19 +199,19 @@ void main() {
       await tester.runAsync(() => File(target).writeAsString('old'));
       picked = target;
 
-      await export(tester, 'Export M3U (full paths)…');
+      await export(tester, 'export-absolute');
       expect(find.text('Replace old.m3u8?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(await read(tester, target), 'old');
 
-      await export(tester, 'Export M3U (full paths)…');
+      await export(tester, 'export-absolute');
       await tester.tap(find.text('Replace'));
       await settleIoUi(tester, snackbarOnly: true);
       expect(await read(tester, target), startsWith('#EXTM3U\n'));
     });
 
-    testWidgets('Favorites offers only the two exports', (tester) async {
+    testWidgets('Favorites offers both exports', (tester) async {
       await insertTracks(tester, h, [TestTrack('a', path: '$root/a.flac')]);
       await openApp(tester, h, const [], location: '/favorites');
       await tester.runAsync(
@@ -220,13 +219,10 @@ void main() {
       );
       await settleDb(tester);
 
-      await tester.tap(find.byTooltip('Playlist actions'));
-      await tester.pumpAndSettle();
+      await pickFromPageModal(tester, 'advanced');
 
-      expect(find.text('Export M3U (full paths)…'), findsOneWidget);
-      expect(find.text('Export M3U (relative paths)…'), findsOneWidget);
-      expect(find.text('Rename'), findsNothing);
-      expect(find.text('Delete playlist'), findsNothing);
+      expect(modalAction('export-absolute'), findsOneWidget);
+      expect(modalAction('export-relative'), findsOneWidget);
     });
 
     testWidgets('only entries in the library play', (tester) async {

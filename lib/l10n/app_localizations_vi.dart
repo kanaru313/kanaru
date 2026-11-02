@@ -67,12 +67,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistCreateConfirm => 'Tạo';
 
   @override
-  String get playlistRename => 'Đổi tên';
-
-  @override
-  String get playlistRenameTitle => 'Đổi tên playlist';
-
-  @override
   String get playlistNameLabel => 'Tên';
 
   @override

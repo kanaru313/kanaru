@@ -39,9 +39,8 @@ class PlaylistEntriesView extends StatefulWidget {
     this.onSettled,
     this.onQueueAction,
     this.onEntryQueueAction,
-    this.onRename,
-    this.onDelete,
     this.onExport,
+    this.savedQueue = false,
     this.loadMatches,
     this.onPlayRows,
   }) : assert(
@@ -96,12 +95,12 @@ class PlaylistEntriesView extends StatefulWidget {
   final void Function(PlaylistEntryRow entry, QueueAction action)?
   onEntryQueueAction;
 
-  /// Null leaves the item out of the header menu (the Favorites playlist).
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
-
-  /// Export items of the header menu; null leaves them out.
+  /// Export items of the saved-queue menu; null leaves them out.
   final ValueChanged<M3uPathStyle>? onExport;
+
+  /// A saved queue: its header keeps the popup menu; any other playlist
+  /// opens the playlist modal from the header.
+  final bool savedQueue;
 
   /// Reads the entries whose song matches the filter terms. Null: the page
   /// has no filter box.
@@ -376,9 +375,9 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
             ? null
             : (action) => unawaited(_queueAll(action)),
         onEntryQueueAction: widget.onEntryQueueAction,
-        onRename: widget.onRename,
-        onDelete: widget.onDelete,
         onExport: widget.onExport,
+        savedQueue: widget.savedQueue,
+        beforeRead: _writes.afterWrites,
       ),
     );
   }

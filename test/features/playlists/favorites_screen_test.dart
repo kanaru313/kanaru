@@ -12,6 +12,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart' show goTo;
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import 'playlist_test_data.dart';
 
 void main() {
@@ -35,11 +36,6 @@ void main() {
     of: find.byType(PlaylistDetails),
     matching: find.text(text),
   );
-
-  Future<void> openHeaderMenu(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Playlist actions'));
-    await tester.pumpAndSettle();
-  }
 
   testWidgets('before the first like it says how to fill it', (tester) async {
     await openApp(tester, h, ['a'], location: '/favorites');
@@ -82,11 +78,10 @@ void main() {
     expect(rowTitle('Favorites'), findsOneWidget);
     expect(playlistSongCount('2 songs'), findsOneWidget);
     expect(find.byTooltip('Remove from favorites'), findsNWidgets(2));
-    if (find.byTooltip('Playlist actions').evaluate().isNotEmpty) {
-      await openHeaderMenu(tester);
-      expect(find.text('Rename'), findsNothing);
-      expect(find.text('Delete playlist'), findsNothing);
-    }
+    await openPageModal(tester);
+    expect(modalAction('play-all'), findsOneWidget);
+    expect(modalAction('edit'), findsNothing);
+    expect(modalAction('delete'), findsNothing);
   });
 
   testWidgets('removing a row unlikes the song', (tester) async {
@@ -129,15 +124,15 @@ void main() {
     expect(find.byTooltip('Remove from favorites'), findsOneWidget);
   });
 
-  testWidgets('an ordinary playlist keeps rename and delete', (tester) async {
+  testWidgets('an ordinary playlist offers edit and delete', (tester) async {
     await openApp(tester, h, ['a']);
     final id = await seedPlaylist(tester, h, 'Mix', ['a']);
     goTo(tester, h, playlistLocation(id));
     await settleDb(tester);
 
-    await openHeaderMenu(tester);
+    await openPageModal(tester);
 
-    expect(find.text('Rename'), findsOneWidget);
-    expect(find.text('Delete playlist'), findsOneWidget);
+    expect(modalAction('edit'), findsOneWidget);
+    expect(modalAction('delete'), findsOneWidget);
   });
 }

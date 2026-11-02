@@ -25,15 +25,6 @@ extension PlaylistWrites on LibraryDatabase {
     });
   }
 
-  /// Renames playlist [id]; does nothing when it is gone or is the Favorites
-  /// playlist, which is never renamed. An empty name throws [ArgumentError].
-  Future<void> renamePlaylist(int id, String name) async {
-    final trimmed = validPlaylistName(name);
-    await (update(playlists)..where((p) => userNamedPlaylist(p, id))).write(
-      PlaylistsCompanion(name: Value(trimmed)),
-    );
-  }
-
   /// Deletes playlist [id]; its entries go with it (cascade). Never deletes
   /// the Favorites playlist (a no-op, like a playlist that is gone).
   Future<void> deletePlaylist(int id) =>

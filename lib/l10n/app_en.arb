@@ -22,8 +22,6 @@
   "playlistDefaultName": "New playlist",
   "playlistCreateTitle": "New playlist",
   "playlistCreateConfirm": "Create",
-  "playlistRename": "Rename",
-  "playlistRenameTitle": "Rename playlist",
   "playlistNameLabel": "Name",
   "playlistDelete": "Delete playlist",
   "playlistDeleteTitle": "Delete “{name}”?",

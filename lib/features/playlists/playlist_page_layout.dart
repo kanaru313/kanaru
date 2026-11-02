@@ -38,9 +38,9 @@ class PlaylistPageLayout extends StatelessWidget {
     this.onShuffle,
     this.onQueueAction,
     this.onEntryQueueAction,
-    this.onRename,
-    this.onDelete,
     this.onExport,
+    this.savedQueue = false,
+    this.beforeRead,
   });
 
   final PlaylistPageHead head;
@@ -73,9 +73,11 @@ class PlaylistPageLayout extends StatelessWidget {
   final void Function(QueueAction action)? onQueueAction;
   final void Function(PlaylistEntryRow entry, QueueAction action)?
   onEntryQueueAction;
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
   final ValueChanged<M3uPathStyle>? onExport;
+
+  /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
+  final bool savedQueue;
+  final Future<void> Function()? beforeRead;
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +97,9 @@ class PlaylistPageLayout extends StatelessWidget {
                 onPlay: onPlay,
                 onShuffle: onShuffle,
                 onQueueAction: onQueueAction,
-                onRename: onRename,
-                onDelete: onDelete,
                 onExport: onExport,
+                savedQueue: savedQueue,
+                beforeRead: beforeRead,
               ),
               Expanded(child: content),
             ],
@@ -124,9 +126,9 @@ class PlaylistPageLayout extends StatelessWidget {
                 onPlay: onPlay,
                 onShuffle: onShuffle,
                 onQueueAction: onQueueAction,
-                onRename: onRename,
-                onDelete: onDelete,
                 onExport: onExport,
+                savedQueue: savedQueue,
+                beforeRead: beforeRead,
               ),
             ),
           if (canFilter)

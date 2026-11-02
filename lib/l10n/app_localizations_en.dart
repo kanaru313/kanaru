@@ -67,12 +67,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistCreateConfirm => 'Create';
 
   @override
-  String get playlistRename => 'Rename';
-
-  @override
-  String get playlistRenameTitle => 'Rename playlist';
-
-  @override
   String get playlistNameLabel => 'Name';
 
   @override

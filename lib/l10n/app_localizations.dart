@@ -212,18 +212,6 @@ abstract class AppLocalizations {
   /// **'Create'**
   String get playlistCreateConfirm;
 
-  /// No description provided for @playlistRename.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get playlistRename;
-
-  /// No description provided for @playlistRenameTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename playlist'**
-  String get playlistRenameTitle;
-
   /// No description provided for @playlistNameLabel.
   ///
   /// In en, this message translates to:

@@ -7,56 +7,19 @@ import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart' show location;
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import 'playlist_test_data.dart';
 
 const _saveFailed = "Couldn't save the playlist. See the log for details.";
 
-Future<void> openMenu(WidgetTester tester, String item) async {
-  await tester.tap(find.byTooltip('Playlist actions'));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text(item));
-  await tester.pumpAndSettle();
-}
-
-Finder get nameField => find.descendant(
-  of: find.byType(AlertDialog),
-  matching: find.byType(TextField),
-);
+/// Picks the page modal's Delete row.
+Future<void> openDelete(WidgetTester tester) =>
+    pickFromPageModal(tester, 'delete');
 
 void main() {
   late LibraryHarness h;
 
   setUp(() => h = LibraryHarness(refreshInterval: Duration.zero));
-
-  group('rename', () {
-    testWidgets('from the menu', (tester) async {
-      final id = await openMix(tester, h);
-
-      await openMenu(tester, 'Rename');
-      expect(tester.widget<TextField>(nameField).controller!.text, 'Mix');
-      await tester.enterText(nameField, 'Road trip');
-      await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
-      await settleDb(tester);
-
-      expect(find.text('Road trip'), findsOneWidget, reason: 'page header');
-      final summary = await tester.runAsync(() => h.db.playlistSummary(id));
-      expect(summary!.name, 'Road trip');
-    });
-
-    testWidgets('a failed save says so and keeps the name', (tester) async {
-      final id = await openMix(tester, h);
-      await breakWrites(tester, h, 'playlists', 'UPDATE');
-
-      await openMenu(tester, 'Rename');
-      await tester.enterText(nameField, 'Road trip');
-      await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
-      await settleDb(tester);
-
-      expect(find.text(_saveFailed), findsOneWidget);
-      final summary = await tester.runAsync(() => h.db.playlistSummary(id));
-      expect(summary!.name, 'Mix');
-    });
-  });
 
   group('delete', () {
     testWidgets('leaves the page first and never shows "not found"', (
@@ -72,7 +35,7 @@ void main() {
         }
       });
 
-      await openMenu(tester, 'Delete playlist');
+      await openDelete(tester);
       expect(find.text('Delete “Mix”?'), findsOneWidget);
       expect(find.textContaining('It has 4 songs.'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
@@ -113,7 +76,7 @@ void main() {
     ) async {
       final id = await openMix(tester, h);
 
-      await openMenu(tester, 'Delete playlist');
+      await openDelete(tester);
       await tester.tap(find.text('Cancel'));
       await settleDb(tester);
 
@@ -125,7 +88,7 @@ void main() {
       final id = await openMix(tester, h);
       await breakWrites(tester, h, 'playlists', 'DELETE');
 
-      await openMenu(tester, 'Delete playlist');
+      await openDelete(tester);
       await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
       await settleDb(tester);
 

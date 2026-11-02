@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/stats/gated_query_interceptor.dart';
 import '../library/browse_test_data.dart' show goTo;
 import '../library/library_test_harness.dart';
+import 'playlist_modal/playlist_modal_test_support.dart';
 import 'playlist_test_data.dart';
 
 /// Titles `S000` .. `S249`: a playlist of three pages.
@@ -197,9 +198,8 @@ void main() {
 
     await dragFirstRowDown(tester);
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Playlist actions'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Add to queue'));
+    await openPageModal(tester);
+    await tester.tap(find.byKey(const ValueKey('playlist-modal-add-to-queue')));
     await settleDb(tester);
 
     final queue = h.container.read(playerServiceProvider).queue;

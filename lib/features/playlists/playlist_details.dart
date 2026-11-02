@@ -7,12 +7,12 @@ import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_actions_menu.dart';
 import 'playlist_display_name.dart';
+import 'playlist_modal/playlist_more_button.dart';
 
 /// Name (bold, two lines at most), song count, then Play / Shuffle and one
-/// "more" menu with rename, export, the queue actions and delete
-/// ([PlaylistActionsMenu]). Shared by the narrow header and the side pane of
-/// a playlist page. The menu holds only the actions given; with none it is
-/// left out.
+/// "more" button: the playlist modal, or on a saved queue the export and
+/// queue menu ([PlaylistActionsMenu]). Shared by the narrow header and the
+/// side pane of a playlist page.
 class PlaylistDetails extends StatelessWidget {
   const PlaylistDetails({
     super.key,
@@ -23,9 +23,9 @@ class PlaylistDetails extends StatelessWidget {
     this.onPlay,
     this.onShuffle,
     this.onQueueAction,
-    this.onRename,
-    this.onDelete,
     this.onExport,
+    this.savedQueue = false,
+    this.beforeRead,
   });
 
   final PlaylistPageHead head;
@@ -47,24 +47,37 @@ class PlaylistDetails extends StatelessWidget {
   /// Null hides the queue menu (nothing to enqueue).
   final ValueChanged<QueueAction>? onQueueAction;
 
-  /// Null leaves the item out of the menu (the Favorites playlist).
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
-
   /// Saves the playlist as an M3U file with paths of the given style; null
   /// leaves the two export items out.
   final ValueChanged<M3uPathStyle>? onExport;
+
+  /// A saved queue: the menu is [PlaylistActionsMenu] (export and queue
+  /// rows); any other playlist gets the ⋮ button of the playlist modal.
+  final bool savedQueue;
+
+  /// Completes when no write of the entries is in flight; the modal awaits it
+  /// before reading or writing the entries.
+  final Future<void> Function()? beforeRead;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final menu = PlaylistActionsMenu(
-      onQueueAction: onQueueAction,
-      onRename: onRename,
-      onDelete: onDelete,
-      onExport: onExport,
-    );
+    final Widget? menu;
+    if (savedQueue) {
+      final actions = PlaylistActionsMenu(
+        onQueueAction: onQueueAction,
+        onExport: onExport,
+      );
+      menu = actions.hasItems ? actions : null;
+    } else {
+      menu = PlaylistMoreButton(
+        playlist: head.playlist,
+        coverKeys: head.coverKeys,
+        showGoTo: false,
+        beforeRead: beforeRead,
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +108,7 @@ class PlaylistDetails extends StatelessWidget {
                 onPlay: onPlay,
                 onShuffle: onShuffle,
                 onQueueAction: null,
-                menu: menu.hasItems ? menu : null,
+                menu: menu,
               ),
             ],
           ),

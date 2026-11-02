@@ -11,9 +11,7 @@ import '../../core/database/playlist_writes.dart';
 import '../../core/player/track.dart' as player;
 import '../../l10n/l10n.dart';
 import '../../shared/play_tracks.dart';
-import '../../shared/widgets/add_to_playlist/playlist_name_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import 'playlist_delete_dialog.dart';
 import 'playlist_routes.dart';
 
 final _log = Logger('playlists');
@@ -82,54 +80,6 @@ Future<bool> removePlaylistEntryOrReport(
     _reportFailure(messenger, l10n, 'Removing a playlist entry', error, stack);
     return false;
   }
-}
-
-/// Asks for a new name for [playlist] and saves it.
-Future<void> renamePlaylistInteractively(
-  WidgetRef ref,
-  BuildContext context,
-  PlaylistSummary playlist,
-) async {
-  final db = ref.read(libraryDatabaseProvider);
-  if (db == null) return;
-  final messenger = ScaffoldMessenger.of(context);
-  final l10n = context.l10n;
-  final name = await showPlaylistNameDialog(
-    context,
-    title: l10n.playlistRenameTitle,
-    confirmLabel: l10n.playlistRename,
-    initialName: playlist.name,
-  );
-  if (name == null || name == playlist.name) return;
-  try {
-    await db.renamePlaylist(playlist.id, name);
-  } catch (error, stack) {
-    _reportFailure(messenger, l10n, 'Renaming a playlist', error, stack);
-  }
-}
-
-/// Asks to confirm, then leaves the page and deletes [playlist].
-///
-/// Everything the widget tree gives is captured before the dialog, because
-/// the page may be gone after it.
-Future<void> deletePlaylistInteractively(
-  WidgetRef ref,
-  BuildContext context,
-  PlaylistSummary playlist,
-) async {
-  final db = ref.read(libraryDatabaseProvider);
-  if (db == null) return;
-  final messenger = ScaffoldMessenger.of(context);
-  final router = GoRouter.of(context);
-  final l10n = context.l10n;
-  if (!await confirmDeletePlaylist(context, playlist)) return;
-  await deletePlaylistWith(
-    db: db,
-    router: router,
-    messenger: messenger,
-    l10n: l10n,
-    playlist: playlist,
-  );
 }
 
 /// The part of the delete after the user confirmed: leaves the page, then

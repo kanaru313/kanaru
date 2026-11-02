@@ -95,7 +95,7 @@ void main() {
           Future<void>.delayed(const Duration(milliseconds: 50));
       await settle();
 
-      await db.renamePlaylist(id, 'B');
+      await db.updatePlaylistDetails(id, name: 'B', description: '');
       await settle();
       expect(names, ['A', 'B']);
 
