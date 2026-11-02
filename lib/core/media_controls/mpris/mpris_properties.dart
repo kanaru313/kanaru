@@ -125,6 +125,7 @@ DBusValue mprisMetadata(
     'xesam:artist': ?(track.artist == null
         ? null
         : DBusArray.string([track.artist!])),
+    'xesam:album': ?(track.album == null ? null : DBusString(track.album!)),
     'mpris:artUrl': ?(art == null ? null : DBusString(art)),
   });
 }

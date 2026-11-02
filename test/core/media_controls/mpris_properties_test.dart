@@ -262,6 +262,7 @@ void main() {
           uri: '/music/some song.mp3',
           title: 'Song',
           artist: 'Band',
+          album: 'Record',
           artUri: '/music/cover.jpg',
           duration: Duration(seconds: 30),
         ),
@@ -274,6 +275,8 @@ void main() {
       expect(m['xesam:title'], const DBusString('Song'));
       expect(m['xesam:artist'], DBusArray.string(['Band']));
       expect(m['xesam:artist']!.signature, DBusSignature('as'));
+      expect(m['xesam:album'], const DBusString('Record'));
+      expect(m['xesam:album']!.signature, DBusSignature('s'));
       expect(m['mpris:length'], const DBusInt64(30000000));
       expect(m['xesam:url'], const DBusString('file:///music/some%20song.mp3'));
       expect(m['mpris:artUrl'], const DBusString('file:///music/cover.jpg'));
