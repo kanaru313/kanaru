@@ -3,8 +3,10 @@ import 'package:material_ui/material_ui.dart';
 
 import 'page_transition.dart';
 
-/// Seed color used when the platform does not provide a dynamic one.
-const kanaruSeedColor = Color(0xFF6750A4);
+/// Seed color used when the platform does not provide a dynamic one. It is the
+/// logo wedge color; as a tonal-spot seed only its hue counts, and the dark
+/// primary equals it.
+const kanaruSeedColor = Color(0xFFFFB4A2);
 
 /// Builds the Material 3 theme. With a [coverSeed] (colors from the playing
 /// cover) the scheme comes from it; otherwise from a dynamic [ColorScheme]

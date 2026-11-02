@@ -6,6 +6,7 @@ import '../../core/logging/app_logging.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/open_external.dart';
+import '../../shared/widgets/kanaru_logo.dart';
 import 'settings_section.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
@@ -24,6 +25,7 @@ class AboutSettingsSection extends ConsumerWidget {
       title: null,
       children: [
         ListTile(
+          leading: const KanaruLogo(size: 40),
           title: Text(l10n.appTitle),
           subtitle: Text('${l10n.settingsVersion} $kanaruVersion'),
         ),
