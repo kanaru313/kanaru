@@ -77,6 +77,23 @@ void main() {
     expect(queueTitles(), ['c', 'a']);
   });
 
+  testWidgets('a right click opens the popup menu, not the playlist modal', (
+    tester,
+  ) async {
+    await openApp(tester, h, ['a', 'b', 'c']);
+    await seedQueue(tester, ['a', 'b', 'c']);
+    goTo(tester, h, '/queue-history');
+    await settleDb(tester);
+
+    await tester.tap(row(), buttons: kSecondaryButton);
+    await tester.pumpAndSettle();
+    expect(find.text('Shuffle'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('context-modal-action-play-all')),
+      findsNothing,
+    );
+  });
+
   testWidgets('the menu shuffles, queues, saves and deletes', (tester) async {
     await openApp(tester, h, ['a', 'b', 'c']);
     final id = await seedQueue(tester, ['a', 'b', 'c']);
