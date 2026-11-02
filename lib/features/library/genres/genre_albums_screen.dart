@@ -4,9 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/library_route_keys.dart';
 import '../albums/album_collection_screen.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../library_detail_body.dart';
 import 'genre_display_name.dart';
-import 'genre_not_found.dart';
 import 'genre_page_data.dart';
 
 /// The full list of the albums of a genre, read from the same provider entry
@@ -26,7 +27,12 @@ class GenreAlbumsScreen extends ConsumerWidget {
       what: 'the genre',
       // The genre page below logs the same failure.
       logErrors: false,
-      notFound: const GenreNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: l10n.genresTitle,
+        icon: AppIcons.genreOutlined,
+        title: l10n.genresNotFound,
+        message: l10n.genresNotFoundMessage,
+      ),
       builder: (data) => AlbumCollectionScreen(
         key: ValueKey(routeKey),
         title: l10n.genresAlbums,

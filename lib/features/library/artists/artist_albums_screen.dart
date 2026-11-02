@@ -4,8 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/library_route_keys.dart';
 import '../albums/album_collection_screen.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../library_detail_body.dart';
-import 'artist_not_found.dart';
 import 'artist_page_data.dart';
 import '../../../shared/artist_page/artist_page_sections.dart';
 
@@ -35,7 +36,12 @@ class ArtistAlbumsScreen extends ConsumerWidget {
       what: 'the artist',
       // The artist page below logs the same failure.
       logErrors: false,
-      notFound: const ArtistNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: l10n.navArtists,
+        icon: AppIcons.artistOutline,
+        title: l10n.artistsNotFound,
+        message: l10n.artistsNotFoundMessage,
+      ),
       builder: (sections) => AlbumCollectionScreen(
         key: ValueKey(routeKey),
         title: own ? l10n.artistsAlbums : l10n.artistsAppearsOn,

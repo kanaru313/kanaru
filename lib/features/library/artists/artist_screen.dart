@@ -18,12 +18,13 @@ import '../../../shared/widgets/in_page_no_match.dart';
 import '../../../shared/widgets/section_heading.dart';
 import '../albums/album_row.dart';
 import '../browse_songs_sliver.dart';
+import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/not_found_page.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
 import 'artist_header.dart';
-import 'artist_not_found.dart';
 import 'artist_page_data.dart';
 import '../../../shared/artist_page/artist_page_sections.dart';
 
@@ -43,7 +44,12 @@ class ArtistScreen extends ConsumerWidget {
     return LibraryDetailBody<ArtistPageSections>(
       page: artistKey == null ? null : artistPageProvider(artistKey),
       what: 'the artist',
-      notFound: const ArtistNotFound(),
+      notFound: NotFoundPage(
+        pageTitle: context.l10n.navArtists,
+        icon: AppIcons.artistOutline,
+        title: context.l10n.artistsNotFound,
+        message: context.l10n.artistsNotFoundMessage,
+      ),
       builder: (sections) =>
           _ArtistPage(artistKey: artistKey!, sections: sections),
     );
