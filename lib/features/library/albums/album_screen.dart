@@ -4,13 +4,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/indexer/cover_paths.dart';
 import '../../../core/player/track.dart' as player;
+import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/song_tile.dart';
 import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
@@ -24,7 +25,6 @@ import 'album_artist_link.dart';
 import 'album_filtered_tracks.dart';
 import 'album_header.dart';
 import 'album_side_pane.dart';
-import 'album_track_tile.dart';
 import 'album_page_data.dart';
 
 /// One album: header, then its tracks by disc; a wide window puts the
@@ -84,10 +84,12 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
     final tracks = data.tracks;
     final groups = data.groups;
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
+    final numbers = ref.watch(
+      settingsProvider.select((s) => s.display.trackNumbersInAlbum),
+    );
     // Built when a track is tapped, not on every rebuild of a long page.
     List<player.Track> queueOf(List<BrowseTrack> list) => [
-      for (final t in list)
-        trackFromBrowse(t, artPath: coverPath(coverDirectory, t.coverKey)),
+      for (final t in list) trackFromRow(t, coverDirectory),
     ];
     final starts = data.groupStarts;
     final artistKey = data.linkedArtistKey;
@@ -136,6 +138,7 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
                   if (filtering)
                     SliverAlbumFilteredTracks(
                       tracks: shown,
+                      numbers: numbers,
                       query: _filter.query,
                       onTap: (i) => playTracks(ref, queueOf(shown), i),
                       onQueueAction: enqueueOne,
@@ -156,13 +159,18 @@ class _AlbumPageState extends ConsumerState<_AlbumPage>
                         ),
                       SliverList.builder(
                         itemCount: group.tracks.length,
-                        itemBuilder: (context, i) => AlbumTrackTile(
-                          track: group.tracks[i],
-                          onTap: () =>
-                              playTracks(ref, queueOf(tracks), starts[g] + i),
-                          onQueueAction: (action) =>
-                              enqueueOne(group.tracks[i], action),
-                        ),
+                        itemBuilder: (context, i) {
+                          final track = group.tracks[i];
+                          return SongTile(
+                            song: track,
+                            number: albumTrackNumber(track, numbers: numbers),
+                            showAlbum: false,
+                            onTap: () =>
+                                playTracks(ref, queueOf(tracks), starts[g] + i),
+                            onQueueAction: (action) =>
+                                enqueueOne(track, action),
+                          );
+                        },
                       ),
                     ],
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),

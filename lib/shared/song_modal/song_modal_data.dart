@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart' show ValueChanged, VoidCallback;
 
 import '../../core/database/library_browse_track_links.dart';
-import '../../core/database/library_rows.dart';
+import '../../core/database/song_row.dart';
 import '../widgets/context_modal/context_modal_nav.dart';
 
 /// What the actions page needs to know about the song and the world around
@@ -14,9 +14,11 @@ class SongModalData {
     required this.hasLibrary,
     required this.canFindLyrics,
     this.showAlbum = true,
+    this.pageArtistKey,
+    this.showFolder = true,
   });
 
-  final TrackListItem song;
+  final SongRow song;
 
   /// Null while the links load, or when the track is gone: the artist and
   /// album rows are then greyed out.
@@ -31,6 +33,14 @@ class SongModalData {
 
   /// False on the page of the song's own album.
   final bool showAlbum;
+
+  /// The artist of the page the row is on: Go to artist and Go to album
+  /// artist list the others only. Null elsewhere.
+  final String? pageArtistKey;
+
+  /// False on the song's folder page: no Go to folder, a Show in file
+  /// manager row instead.
+  final bool showFolder;
 
   /// False for a song that is not a file on this machine (a future remote
   /// source): it has no folder to go to.

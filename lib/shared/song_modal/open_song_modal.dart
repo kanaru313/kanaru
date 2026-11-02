@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/library_rows.dart';
+import '../../core/database/song_row.dart';
 import '../../l10n/l10n.dart';
 import '../track_menu_actions.dart';
 import '../widgets/context_modal/context_modal_route.dart';
@@ -26,7 +26,7 @@ import 'song_modal_session.dart';
 void openSongModal(
   BuildContext context,
   WidgetRef ref, {
-  required TrackListItem song,
+  required SongRow song,
   required ValueChanged<QueueAction> onQueueAction,
   bool showAlbum = true,
   bool viaKeyboard = false,
@@ -40,6 +40,8 @@ void openSongModal(
     showAlbum: showAlbum,
     extraActions: extras.actions,
     headerNote: extras.headerNote,
+    pageArtistKey: extras.pageArtistKey,
+    showFolder: extras.showFolder,
   );
   unawaited(
     showContextModal<void>(

@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import '../core/database/library_browse_queries.dart';
 import '../core/database/library_database.dart' show AlbumKey, LibraryDatabase;
 import '../core/database/library_startup.dart';
-import '../core/indexer/cover_paths.dart';
 import '../core/player/player_service.dart';
 import '../core/player/playing_track_art.dart' show localPathOf;
 import '../core/player/track.dart';
@@ -25,8 +24,7 @@ Future<List<Track>> Function(LibraryDatabase db, String? covers) _albumTracks(
   AlbumKey key,
 ) =>
     (db, covers) async => [
-      for (final t in await db.albumTracks(key))
-        trackFromBrowse(t, artPath: coverPath(covers, t.coverKey)),
+      for (final t in await db.albumTracks(key)) trackFromRow(t, covers),
     ];
 
 /// [enqueueTracks] for an album, whose tracks are read from the database

@@ -23,6 +23,7 @@ class SliverAlbumRow extends StatelessWidget {
     required this.albums,
     required this.onTap,
     this.onQueueAction,
+    this.pageArtistKey,
   });
 
   final List<AlbumSummary> albums;
@@ -30,6 +31,10 @@ class SliverAlbumRow extends StatelessWidget {
 
   /// An action picked from the menu of [album]; no menus without it.
   final void Function(AlbumSummary album, QueueAction action)? onQueueAction;
+
+  /// The artist whose page shows the row: the album modal's Go to artist
+  /// leaves that artist out. Null elsewhere.
+  final String? pageArtistKey;
 
   @override
   Widget build(BuildContext context) => SliverToBoxAdapter(
@@ -45,6 +50,7 @@ class SliverAlbumRow extends StatelessWidget {
         onQueueAction: onQueueAction == null
             ? null
             : (action) => onQueueAction!(albums[i], action),
+        pageArtistKey: pageArtistKey,
       ),
     ),
   );

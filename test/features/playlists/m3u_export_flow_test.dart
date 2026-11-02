@@ -7,7 +7,7 @@ import 'package:kanaru/features/playlists/m3u_export_flow.dart';
 import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
 import 'package:kanaru/features/playlists/m3u_import_report_dialog.dart';
 import 'package:kanaru/features/playlists/playlist_routes.dart';
-import 'package:kanaru/features/playlists/playlist_page_actions.dart';
+import 'package:kanaru/shared/play_tracks.dart';
 import 'package:kanaru/core/database/playlist_page_queries.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -239,7 +239,7 @@ void main() {
         () => h.db.playlistPlayableTracks(id!),
       );
 
-      final tracks = [for (final p in playable!) playlistTrack(p.track, null)];
+      final tracks = [for (final p in playable!) trackFromRow(p.track, null)];
 
       expect([for (final t in tracks) t.uri], ['$root/a.flac']);
     });

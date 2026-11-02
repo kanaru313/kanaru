@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
+import '../../../shared/song_modal/song_modal_extras.dart';
 import '../../../shared/widgets/song_tile.dart';
 import '../library_view_modes.dart';
 import 'folder_actions.dart';
@@ -56,7 +57,7 @@ class _FolderContentViewState extends ConsumerState<FolderContentView> {
         _tracksCoverDirectory != coverDirectory) {
       _tracksOf = songs;
       _tracksCoverDirectory = coverDirectory;
-      _tracks = [for (final s in songs) trackFromListItem(s, coverDirectory)];
+      _tracks = [for (final s in songs) trackFromRow(s, coverDirectory)];
     }
     return _tracks;
   }
@@ -124,6 +125,8 @@ class _FolderContentViewState extends ConsumerState<FolderContentView> {
               onQueueAction: (action) => enqueueLoaded(ref, context, action, [
                 tracks[i],
               ], tracks[i].title),
+              // The page is the song's folder: no Go to folder.
+              modalExtras: () => const SongModalExtras(showFolder: false),
             ),
           ),
         ],

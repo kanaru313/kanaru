@@ -14,7 +14,6 @@ import '../../shared/play_tracks.dart';
 import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_page_actions.dart' show playlistTrack;
 
 final _log = Logger('queue_history');
 
@@ -88,7 +87,7 @@ Future<void> runQueueSnapshotAction(
         // The row may be gone (deleted, pruned, another page): `ref` with it.
         if (!context.mounted) return;
         final tracks = [
-          for (final p in playable) playlistTrack(p.track, covers),
+          for (final p in playable) trackFromRow(p.track, covers),
         ];
         if (tracks.isEmpty) {
           say(AppSnackBarKind.info, l10n.queueHistoryNothingToPlay);

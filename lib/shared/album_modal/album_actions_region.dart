@@ -17,6 +17,7 @@ class AlbumActionsRegion extends ConsumerWidget {
     required this.onQueueAction,
     required this.child,
     this.showAlbum = true,
+    this.pageArtistKey,
   });
 
   final AlbumTileData album;
@@ -25,6 +26,9 @@ class AlbumActionsRegion extends ConsumerWidget {
 
   /// False on the page of the album itself.
   final bool showAlbum;
+
+  /// The artist whose page lists the album (see `openAlbumModal`).
+  final String? pageArtistKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +42,7 @@ class AlbumActionsRegion extends ConsumerWidget {
               album: album,
               onQueueAction: onQueue,
               showAlbum: showAlbum,
+              pageArtistKey: pageArtistKey,
               viaKeyboard: viaKeyboard,
             ),
       child: child,

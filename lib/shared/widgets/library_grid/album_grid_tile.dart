@@ -17,6 +17,7 @@ class AlbumGridTile extends StatelessWidget {
     required this.data,
     required this.onTap,
     this.onQueueAction,
+    this.pageArtistKey,
   });
 
   final AlbumTileData data;
@@ -24,6 +25,10 @@ class AlbumGridTile extends StatelessWidget {
 
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
+
+  /// The artist whose page shows the tile: the album modal's Go to artist
+  /// leaves that artist out. Null elsewhere.
+  final String? pageArtistKey;
 
   /// Height of a tile whose artwork is [width] wide: the artwork, the gap, two
   /// text lines at the current text scale and the card's extra bottom padding,
@@ -106,6 +111,7 @@ class AlbumGridTile extends StatelessWidget {
     return AlbumActionsRegion(
       album: data,
       onQueueAction: onQueueAction,
+      pageArtistKey: pageArtistKey,
       child: tile,
     );
   }

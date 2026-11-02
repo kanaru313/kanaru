@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../database/library_rows.dart';
 import '../../database/library_startup.dart';
 import '../../database/online_lyrics_queries.dart';
+import '../../database/song_row.dart';
 import '../../player/local_path_of.dart';
 import '../../player/player_service.dart';
 import '../../player/track.dart';
@@ -52,16 +52,15 @@ class LyricsTarget {
   );
 
   /// From a library row, e.g. for a menu action.
-  factory LyricsTarget.fromListItem(TrackListItem item) =>
-      LyricsTarget.fromFields(
-        uri: item.path,
-        title: item.title,
-        artist: item.artist,
-        album: item.album,
-        duration: item.durationMs == null
-            ? null
-            : Duration(milliseconds: item.durationMs!),
-      );
+  factory LyricsTarget.fromSongRow(SongRow row) => LyricsTarget.fromFields(
+    uri: row.path,
+    title: row.title,
+    artist: row.artist,
+    album: row.album,
+    duration: row.durationMs == null
+        ? null
+        : Duration(milliseconds: row.durationMs!),
+  );
 
   /// From the tag fields of the library song at [path], as
   /// `watchTrackLyricsFields` reports them.

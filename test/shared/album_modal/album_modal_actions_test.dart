@@ -24,17 +24,28 @@ AlbumModalHandlers get _handlers => AlbumModalHandlers(
 List<List<ContextModalAction>> _sections({
   AlbumLinks? links,
   bool showAlbum = true,
+  String? pageArtistKey,
 }) => albumModalSections(
   _l10n,
-  AlbumModalData(album: testAlbum, links: links, showAlbum: showAlbum),
+  AlbumModalData(
+    album: testAlbum,
+    links: links,
+    showAlbum: showAlbum,
+    pageArtistKey: pageArtistKey,
+  ),
   _handlers,
 );
 
 Map<String, ContextModalAction> _byId(
   AlbumLinks? links, {
   bool showAlbum = true,
+  String? pageArtistKey,
 }) => {
-  for (final s in _sections(links: links, showAlbum: showAlbum))
+  for (final s in _sections(
+    links: links,
+    showAlbum: showAlbum,
+    pageArtistKey: pageArtistKey,
+  ))
     for (final a in s) a.id: a,
 };
 
@@ -108,6 +119,57 @@ void main() {
         expect(a.chips, isNull);
       });
     }
+  });
+
+  group("artists on an artist's page", () {
+    test('the page artist alone: no Go to artist row', () {
+      final byId = _byId(linksOf(), pageArtistKey: 'ann');
+      expect(byId.keys, isNot(contains('artist')));
+      expect(byId.keys, isNot(contains('artists')));
+      expect(byId.keys, contains('folder'));
+    });
+
+    test('with one other artist: a plain row naming the other', () {
+      final a = _byId(
+        linksOf(artists: artistsOf(['Ann', 'Bob'])),
+        pageArtistKey: 'ann',
+      )['artist']!;
+      expect(a.subtitle, 'Bob');
+      expect(a.chips, isNull);
+    });
+
+    test('the count and the page threshold use the other artists', () {
+      final a = _byId(
+        linksOf(artists: artistsOf(['Ann', 'B', 'C', 'D'])),
+        pageArtistKey: 'ann',
+      )['artists']!;
+      expect(a.subtitle, '3 artists');
+      expect(a.opensPage, isFalse);
+      expect([for (final c in a.chips!.items) c.label], ['B', 'C', 'D']);
+    });
+
+    test('loading: still the greyed row', () {
+      final a = _byId(null, pageArtistKey: 'ann')['artist']!;
+      expect(a.enabled, isFalse);
+    });
+
+    test('no artist: still the greyed No artist row', () {
+      final a = _byId(linksOf(artists: []), pageArtistKey: 'ann')['artist']!;
+      expect(a.subtitle, 'No artist');
+    });
+
+    test('linkedArtists leaves the page artist out', () {
+      final data = AlbumModalData(
+        album: testAlbum,
+        links: linksOf(artists: artistsOf(['Ann', 'Bob'])),
+        pageArtistKey: 'ann',
+      );
+      expect(data.linkedArtists, artistsOf(['Bob']));
+      expect(
+        AlbumModalData(album: testAlbum, links: null).linkedArtists,
+        isNull,
+      );
+    });
   });
 
   group('folders', () {

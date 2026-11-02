@@ -60,7 +60,7 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
 
   /// The queue entry for [song], with its cover.
   Track _track(TrackListItem song) =>
-      trackFromListItem(song, ref.read(coverCacheDirectoryProvider));
+      trackFromRow(song, ref.read(coverCacheDirectoryProvider));
 
   @override
   Widget build(BuildContext context) {

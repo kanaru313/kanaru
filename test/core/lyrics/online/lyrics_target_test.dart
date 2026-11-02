@@ -199,8 +199,8 @@ void main() {
         album: 'Alb',
         durationMs: 200000,
       );
-      expect(target!.cacheKey, LyricsTarget.fromListItem(item).cacheKey);
-      expect(target, LyricsTarget.fromListItem(item));
+      expect(target!.cacheKey, LyricsTarget.fromSongRow(item).cacheKey);
+      expect(target, LyricsTarget.fromSongRow(item));
     });
 
     test('a track outside the library uses its own fields', () async {

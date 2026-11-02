@@ -32,7 +32,7 @@ class HomeTrackListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final covers = ref.watch(coverCacheDirectoryProvider);
-    Track trackOf(TrackListItem t) => trackFromListItem(t, covers);
+    Track trackOf(TrackListItem t) => trackFromRow(t, covers);
     final list = HomePagedView<TrackListItem>(
       state: ref.watch(pages),
       onLoadMore: () => ref.read(pages.notifier).loadMore(),
