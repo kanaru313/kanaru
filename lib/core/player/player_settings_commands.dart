@@ -59,7 +59,7 @@ mixin _PlayerSettingsCommands on _PlayerCore {
   /// the base becomes off: looping forever would make the count meaningless.
   /// Does nothing without a queue or after it ran out.
   Future<void> setRepeatTimes(int times) async {
-    if (state.queue.isEmpty || _ended) return;
+    if (state.queue.isEmpty || _intent == _PlayIntent.ended) return;
     final count = times.clamp(0, maxRepeatTimes);
     if (count == state.repeatTimes) return;
     _userActed();

@@ -178,7 +178,7 @@ class PlayerService extends _PlayerCore
       if (state.queue.endsShuffledPass) _startShuffledPass();
       _followEngine(
         'continue after the engine stopped',
-        () => _play(next, play: _wantsPlaying && !sleep),
+        () => _play(next, play: _intent == _PlayIntent.playing && !sleep),
       );
     } else {
       // Position and duration stay so the user can seek back into the track.

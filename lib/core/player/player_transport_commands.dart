@@ -12,9 +12,9 @@ mixin _PlayerTransportCommands on _PlayerCore {
   Future<void> playPause() async {
     if (state.queue.isEmpty) return;
     _userActed();
-    if (_ended) return jump(0);
+    if (_intent == _PlayIntent.ended) return jump(0);
     final play = !state.playing;
-    _wantsPlaying = play;
+    _intendToggle(play);
     state = state.copyWith(
       playing: play,
       stopped: play ? false : state.stopped,
@@ -36,11 +36,11 @@ mixin _PlayerTransportCommands on _PlayerCore {
   Future<void> pause() async {
     if (state.playing) {
       _userActed();
-      _wantsPlaying = false;
+      _intendPause();
       state = state.copyWith(playing: false);
       return _fades.pause(0);
     }
-    _wantsPlaying = false;
+    _intendPause();
     if (_fadesNow?.pausePending ?? false) _settleFade();
   }
 
@@ -51,7 +51,7 @@ mixin _PlayerTransportCommands on _PlayerCore {
     if (state.queue.isEmpty) return;
     _userActed();
     _settleFade();
-    _wantsPlaying = false;
+    _intendPause();
     state = state.copyWith(
       playing: false,
       stopped: true,
@@ -66,13 +66,13 @@ mixin _PlayerTransportCommands on _PlayerCore {
   /// loaded, such as after removing the last track.
   Future<void> seek(Duration position) async {
     if (state.queue.isEmpty) return;
-    if (_ended && state.duration <= Duration.zero) return;
+    if (_intent == _PlayIntent.ended && state.duration <= Duration.zero) return;
     _userActed();
     _settleFade();
     var target = position < Duration.zero ? Duration.zero : position;
     // Seeking back into a finished track resumes it rather than the queue.
     if (state.duration > Duration.zero) {
-      _ended = false;
+      _intendResumeFinished();
       if (target > state.duration) target = state.duration;
     }
     state = state.copyWith(position: target, stopped: false);

@@ -1,5 +1,17 @@
 part of 'player_service.dart';
 
+/// What playback is meant to do; only the core changes it, through named
+/// transitions. [playing] and [paused] are what was last asked for, kept apart
+/// from `state.playing`, which the engine may turn off on its own. A track
+/// that fails to load or ends with more to come, removing the playing track,
+/// or the engine moving onto a removed track loads the next one in that state
+/// (paused after a stop after the current track), so a track loaded paused, or
+/// paused while still loading, never starts on its own. [ended] means the
+/// queue ran out and nothing is wanted playing: play starts the queue over,
+/// while seeking back into the finished track or adding tracks (the first
+/// added one loads paused) leaves it paused.
+enum _PlayIntent { playing, paused, ended }
+
 /// The state every part of the player shares, and the primitives more than
 /// one part calls. The command mixins sit on this class instead of
 /// re-declaring what they borrow, and [PlayerService] adds the build and the
@@ -31,19 +43,13 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
   /// edits, which keep the playing track; ReplayGain follows it.
   int _turn = 0;
 
-  /// Playback stopped after the last track; play starts the queue over.
-  bool _ended = false;
-
   /// Broken tracks in a row, so a queue of broken files is not retried
   /// forever. Cleared by a track that loads and by anything the user plays.
   int _failuresInRow = 0;
 
-  /// What was last asked for: playing, or paused. A track that fails moves
-  /// on in that state, so a track loaded paused (or paused while it was
-  /// still loading) never starts playing on its own. Kept apart from
-  /// `state.playing`, which the engine may turn off on its own before it
-  /// reports that it stopped.
-  bool _wantsPlaying = false;
+  /// What playback is meant to do; written only by the `_intend*` methods and
+  /// `_resetForBuild`.
+  _PlayIntent _intent = _PlayIntent.paused;
 
   /// Playback pauses once the current track ends (see `_PlayerSleepStop`).
   bool _stopAfterCurrent = false;
@@ -67,6 +73,31 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
   PlayPauseFader? _fader;
   StreamController<Duration>? _faderBuild;
 
+  /// A track is loading, [play] telling whether it should start playing.
+  void _intendLoad(bool play) =>
+      _intent = play ? _PlayIntent.playing : _PlayIntent.paused;
+
+  /// The user toggled play or pause. Never called once the queue ran out:
+  /// `playPause` restarts the queue then.
+  void _intendToggle(bool play) {
+    assert(_intent != _PlayIntent.ended);
+    _intent = play ? _PlayIntent.playing : _PlayIntent.paused;
+  }
+
+  /// Playback pauses or rests; an ended queue stays ended.
+  void _intendPause() {
+    if (_intent == _PlayIntent.playing) _intent = _PlayIntent.paused;
+  }
+
+  /// Playback stopped, [ended] when the queue ran out.
+  void _intendStop({required bool ended}) =>
+      _intent = ended ? _PlayIntent.ended : _PlayIntent.paused;
+
+  /// A seek back into the finished track resumes it, paused.
+  void _intendResumeFinished() {
+    if (_intent == _PlayIntent.ended) _intent = _PlayIntent.paused;
+  }
+
   /// Riverpod keeps this object when the provider rebuilds: what the old
   /// build asked for must not leak into the new one, or the restored track
   /// would start playing on its own. Called first in `build`.
@@ -80,8 +111,7 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
   /// - the fader: tied to its build through `_seeked` (see `_fadesNow`), and
   ///   the old build's disposal stops it.
   void _resetForBuild() {
-    _wantsPlaying = false;
-    _ended = false;
+    _intent = _PlayIntent.paused;
     _failuresInRow = 0;
     _handedNext.clear();
     _upNext.clear();
@@ -125,10 +155,9 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
   }) async {
     final queue = state.queue.copyWith(index: index);
     if (index < 0 || index >= queue.order.length) return;
-    _ended = false;
     _upNext.remove(queue.order[index]);
     _turn++;
-    _wantsPlaying = play;
+    _intendLoad(play);
     _openedSinceBuild = true;
     _handedNext.clear();
     _dropRepeatTimes();
@@ -195,8 +224,7 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
     bool resetPosition = true,
     PlayQueue? queue,
   }) {
-    _ended = ended;
-    _wantsPlaying = false;
+    _intendStop(ended: ended);
     _handedNext.clear();
     _dropRepeatTimes();
     state = state.copyWith(

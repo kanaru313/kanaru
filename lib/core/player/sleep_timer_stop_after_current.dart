@@ -41,7 +41,7 @@ mixin _PlayerSleepStop on _PlayerCore {
   void setStopAfterCurrent(bool stop) {
     if (stop == _stopAfterCurrent || !ref.mounted) return;
     _stopAfterCurrent = stop;
-    if (state.queue.isEmpty || _ended) return;
+    if (state.queue.isEmpty || _intent == _PlayIntent.ended) return;
     _followEngine(
       stop ? 'withdraw the next track' : 'queue the next track',
       _queueNext,
@@ -57,7 +57,7 @@ mixin _PlayerSleepStop on _PlayerCore {
     _stopAfterCurrent = false;
     scheduleMicrotask(() {
       if (!ref.mounted || _stopAfterCurrent) return;
-      if (state.queue.isEmpty || _ended) return;
+      if (state.queue.isEmpty || _intent == _PlayIntent.ended) return;
       _followEngine('queue the next track', _queueNext);
     });
   }
@@ -119,7 +119,7 @@ mixin _PlayerSleepStop on _PlayerCore {
   /// first.
   void _restAtStart() {
     _settleFade();
-    _wantsPlaying = false;
+    _intendPause();
     state = state.copyWith(playing: false, position: Duration.zero);
     _followEngine('pause after the current track', () async {
       await _backend.pause();

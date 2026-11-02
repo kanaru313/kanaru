@@ -57,7 +57,7 @@ mixin _PlayerQueueCommands on _PlayerCore {
     _userQueueChanges++;
     _failuresInRow = 0;
     state = state.copyWith(queue: state.queue.insert(at, tracks));
-    if (_ended) return _play(at, play: false);
+    if (_intent == _PlayIntent.ended) return _play(at, play: false);
     await _queueNext();
   }
 
@@ -105,7 +105,7 @@ mixin _PlayerQueueCommands on _PlayerCore {
       return _backend.stop();
     }
     state = state.copyWith(queue: rest);
-    await _play(rest.index, play: _wantsPlaying);
+    await _play(rest.index, play: _intent == _PlayIntent.playing);
   }
 
   /// Removes every track but the playing one, without interrupting it.
@@ -221,7 +221,7 @@ mixin _PlayerQueueCommands on _PlayerCore {
     if (next != null) {
       // Past the last track of a shuffled pass: a new pass, not a replay.
       if (state.queue.endsShuffledPass) _startShuffledPass();
-      return _play(next, play: _wantsPlaying);
+      return _play(next, play: _intent == _PlayIntent.playing);
     }
     _markStopped(ended: true);
     return _backend.stop();

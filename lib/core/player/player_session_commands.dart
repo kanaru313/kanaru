@@ -71,14 +71,18 @@ mixin _PlayerSessionCommands on _PlayerCore {
       // A stop made before this ran stays: the track is loaded paused at the
       // start, the engine state `stop()` leaves. A queue that already ran out
       // loads nothing; play restarts it.
-      if (_ended) return;
+      if (_intent == _PlayIntent.ended) return;
       unawaited(_play(state.queue.index, play: false));
       // `_play` marks the player as not stopped before its first await.
       state = state.copyWith(stopped: true);
       return;
     }
     unawaited(
-      _play(state.queue.index, play: _wantsPlaying, start: state.position),
+      _play(
+        state.queue.index,
+        play: _intent == _PlayIntent.playing,
+        start: state.position,
+      ),
     );
   }
 
