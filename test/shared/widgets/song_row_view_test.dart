@@ -137,6 +137,41 @@ void main() {
     expect(wide - tester.getTopLeft(find.byType(SongTileCover)).dx, 16);
   });
 
+  testWidgets('trailing sits at the row end, right of the title and the '
+      'duration, inside the card', (tester) async {
+    await _pump(
+      tester,
+      const SizedBox(
+        width: 600,
+        child: SongRowView(
+          title: 'Title',
+          duration: Duration(minutes: 1, seconds: 1),
+          trailing: SizedBox(key: Key('trailing'), width: 24, height: 24),
+        ),
+      ),
+    );
+    final trailing = tester.getRect(find.byKey(const Key('trailing')));
+    final card = tester.getRect(
+      find
+          .descendant(
+            of: find.byType(SongRowView),
+            matching: find.byType(Material),
+          )
+          .first,
+    );
+
+    expect(
+      trailing.left,
+      greaterThanOrEqualTo(tester.getRect(find.text('Title')).right),
+    );
+    expect(
+      trailing.left,
+      greaterThanOrEqualTo(tester.getRect(find.text('1:01')).right),
+    );
+    // At the end: only the content padding inside the card is left after it.
+    expect(trailing.right, card.right - (32 - songCardInset));
+  });
+
   for (final (name, title, scale, locale) in [
     ('1.0', 'Title', 1.0, const Locale('en')),
     ('1.25', 'Title', 1.25, const Locale('en')),

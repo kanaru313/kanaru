@@ -31,43 +31,41 @@ class SongTile extends ConsumerWidget {
   const SongTile({
     super.key,
     required this.song,
-    required this.onTap,
+    this.onTap,
     this.onQueueAction,
+    this.modalExtras,
     this.number,
-    this.showAlbum = true,
     this.leadingAccessory,
-    this.trailingAccessory,
     this.detail,
     this.badge,
     this.playing,
-    this.modalExtras,
   }) : assert(
          number == null || leadingAccessory == null,
          'number and leadingAccessory both fill the slot before the cover',
        );
 
   final SongRow song;
-  final VoidCallback onTap;
+
+  /// Tap on the row. Null: the row is not tappable, and not focusable
+  /// through its ink either, so the Menu key needs another focus stop (the ⋮
+  /// button still is one when [onQueueAction] is set).
+  final VoidCallback? onTap;
 
   /// Picked from the song modal (right click, long press or the ⋮ button);
   /// no modal and no ⋮ without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
+  /// What the screen adds to the song modal (actions, header note, left-out
+  /// links), built when it opens. The single way a screen shapes the modal.
+  final SongModalExtrasBuilder? modalExtras;
+
   /// Shown right-aligned in a column before the cover (a track number on an
   /// album page; empty keeps the column); no column when null.
   final String? number;
 
-  /// False leaves Go to album out of the song modal (rows on the album's own
-  /// page).
-  final bool showAlbum;
-
   /// Drawn before the cover, e.g. a drag handle; replaces [number], so not
   /// both. Nothing is added when null.
   final Widget? leadingAccessory;
-
-  /// Drawn after the duration and heart column, e.g. a row action such as
-  /// remove. Nothing is added when null.
-  final Widget? trailingAccessory;
 
   /// Shown as the third line instead of "album • year"; null keeps it.
   final String? detail;
@@ -84,9 +82,6 @@ class SongTile extends ConsumerWidget {
   /// track itself for other parts of the row.
   final bool? playing;
 
-  /// Screen actions and note for the song modal, built when it opens.
-  final SongModalExtrasBuilder? modalExtras;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool playing =
@@ -96,7 +91,6 @@ class SongTile extends ConsumerWidget {
     final onQueue = onQueueAction;
     return TrackActionsRegion(
       song: song,
-      showAlbum: showAlbum,
       onQueueAction: onQueue,
       modalExtras: modalExtras,
       child: SongRowView(
@@ -115,7 +109,6 @@ class SongTile extends ConsumerWidget {
         onTap: onTap,
         number: number,
         leading: leadingAccessory,
-        trailing: trailingAccessory,
         more: onQueue == null
             ? null
             : ContextMenuMoreButton(
@@ -124,7 +117,6 @@ class SongTile extends ConsumerWidget {
                   ref,
                   song: song,
                   onQueueAction: onQueue,
-                  showAlbum: showAlbum,
                   viaKeyboard: viaKeyboard,
                   extras: modalExtras?.call() ?? const SongModalExtras(),
                 ),

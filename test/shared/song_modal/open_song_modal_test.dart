@@ -18,6 +18,7 @@ const _song = TrackListItem(id: 1, path: '/m/1.flac', title: 'one');
 Future<void> _pump(
   WidgetTester tester, {
   List<ContextModalAction> extra = const [],
+  bool showAlbum = true,
   ValueChanged<QueueAction>? onQueue,
 }) => tester.pumpWidget(
   ProviderScope(
@@ -32,7 +33,7 @@ Future<void> _pump(
               ref,
               song: _song,
               onQueueAction: onQueue ?? (_) {},
-              extras: SongModalExtras(actions: extra),
+              extras: SongModalExtras(actions: extra, showAlbum: showAlbum),
             ),
             child: const Text('open'),
           ),
@@ -54,6 +55,24 @@ void main() {
 
     expect(find.text('Go to artist'), findsOneWidget);
     expect(find.bySemanticsLabel('Song options'), findsWidgets);
+  });
+
+  testWidgets('extras with showAlbum false leave Go to album out', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await tester.tap(find.text('open'));
+    await settleSongModal(tester);
+    expect(find.text('Go to album'), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settleSongModal(tester);
+    await _pump(tester, showAlbum: false);
+    await tester.tap(find.text('open'));
+    await settleSongModal(tester);
+
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(find.text('Go to album'), findsNothing);
   });
 
   testWidgets('extra actions come first and close the modal when told to', (

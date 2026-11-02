@@ -79,7 +79,7 @@ class PlaylistEntryTile extends StatelessWidget {
       song: track,
       // Only the first copy of the playing song is marked.
       playing: entry.repeat ? false : null,
-      onTap: onTap ?? () {},
+      onTap: onTap,
       onQueueAction: onQueueAction,
       leadingAccessory: reorderable ? PlaylistEntryHandle(index: index) : null,
       // Built when the modal opens, so the texts come from the row's context

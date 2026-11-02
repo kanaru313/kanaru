@@ -19,16 +19,15 @@ import 'song_modal_session.dart';
 ///
 /// Queue actions go to [onQueueAction], run with the `QueueHost` built from
 /// what the runner captured here so they work after the row is gone; the rest
-/// is carried out by a `TrackMenuRunner` after the modal has closed. [showAlbum] false
-/// leaves out Go to album, on the page of the song's own album.
-/// [extras] are the actions and header note of the screen the song is listed
-/// on; the actions come first. [viaKeyboard] focuses the first row.
+/// is carried out by a `TrackMenuRunner` after the modal has closed.
+/// [extras] are what the screen the song is listed on adds: its actions
+/// (shown first), header note and which links to leave out. [viaKeyboard]
+/// focuses the first row.
 void openSongModal(
   BuildContext context,
   WidgetRef ref, {
   required SongRow song,
   required ValueChanged<QueueAction> onQueueAction,
-  bool showAlbum = true,
   bool viaKeyboard = false,
   SongModalExtras extras = const SongModalExtras(),
 }) {
@@ -37,7 +36,7 @@ void openSongModal(
     runner: TrackMenuRunner(ref, context),
     onQueueAction: onQueueAction,
     lyricsTarget: menuLyricsTarget(ref, song),
-    showAlbum: showAlbum,
+    showAlbum: extras.showAlbum,
     extraActions: extras.actions,
     headerNote: extras.headerNote,
     pageArtistKey: extras.pageArtistKey,

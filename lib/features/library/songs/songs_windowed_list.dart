@@ -133,7 +133,7 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
       controller: widget.controller,
       padding: libraryListBottomPadding,
       // Measured from a row, so larger text sizes do not clip rows.
-      prototypeItem: SongTile(song: prototypeSong, onTap: () {}),
+      prototypeItem: SongTile(song: prototypeSong),
       itemCount: widget.songs.ids.length,
       itemBuilder: (context, i) {
         final song = _cache.rowAt(i);

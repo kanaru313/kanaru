@@ -17,7 +17,6 @@ class TrackActionsRegion extends ConsumerWidget {
     required this.song,
     required this.onQueueAction,
     required this.child,
-    this.showAlbum = true,
     this.modalExtras,
   });
 
@@ -25,10 +24,7 @@ class TrackActionsRegion extends ConsumerWidget {
   final ValueChanged<QueueAction>? onQueueAction;
   final Widget child;
 
-  /// False on a page of the song's own album.
-  final bool showAlbum;
-
-  /// Screen actions and note, built when the modal opens.
+  /// Screen actions, note and left-out links, built when the modal opens.
   final SongModalExtrasBuilder? modalExtras;
 
   // Opens in the gesture handler itself: nothing is awaited first.
@@ -42,7 +38,6 @@ class TrackActionsRegion extends ConsumerWidget {
     ref,
     song: song,
     onQueueAction: f,
-    showAlbum: showAlbum,
     viaKeyboard: viaKeyboard,
     extras: modalExtras?.call() ?? const SongModalExtras(),
   );

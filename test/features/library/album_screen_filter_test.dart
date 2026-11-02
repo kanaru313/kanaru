@@ -7,6 +7,7 @@ import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../shared/song_modal/song_modal_test_support.dart';
 import 'browse_test_data.dart';
 import 'library_test_harness.dart';
 
@@ -103,6 +104,19 @@ void main() {
       h.container.read(playerServiceProvider).queue.current?.title,
       'My Love',
     );
+  });
+
+  testWidgets('a filtered row leaves Go to album out of its modal', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _album, location: _location);
+    await filterBy(tester, 'love');
+
+    await openSongModal(tester, find.text('My Love'));
+
+    expect(find.text('Go to artist'), findsOneWidget);
+    expect(find.text('Go to album'), findsNothing);
   });
 
   testWidgets('Play still plays the whole album', (tester) async {
