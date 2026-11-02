@@ -2,10 +2,7 @@ part of 'player_service.dart';
 
 /// Feeds [ReplayGainSync] and [OutputDeviceSync] with what it follows: the playback settings, the
 /// devices mpv lists, a device that failed to open and the queue.
-mixin _PlayerAudioOutput on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  int get _turn;
-
+mixin _PlayerAudioOutput on _PlayerCore {
   /// Call once per build, after [_backend] is set.
   void _startAudioOutput() {
     // Read, not watched: the database is set once at startup, and a rebuild

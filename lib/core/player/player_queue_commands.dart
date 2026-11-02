@@ -4,29 +4,7 @@ part of 'player_service.dart';
 /// on by itself. The engine only knows `[current, next]`, so an edit is a new
 /// Dart queue plus a fresh `setNext`; only removing the playing track makes
 /// the engine open something else.
-mixin _PlayerQueueCommands on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  set _ended(bool ended);
-  int get _turn;
-  set _turn(int turn);
-  int get _userQueueChanges;
-  set _userQueueChanges(int count);
-  set _failuresInRow(int count);
-  bool get _allFailed;
-  bool get _wantsPlaying;
-  set _wantsPlaying(bool wanted);
-  List<int> get _handedNext;
-  Set<int> get _upNext;
-  bool get _ended;
-  Random? get _random;
-  void _startShuffledPass();
-  void _dropRepeatTimes();
-  Future<void> _queueNext();
-  Future<void> jump(int index);
-  Future<void> _play(int index, {bool play = true});
-  void _userActed();
-  void _queueReplaced(PlayQueue previous);
-
+mixin _PlayerQueueCommands on _PlayerCore {
   /// Puts [tracks] right after the playing track, behind the ones earlier
   /// calls put there that have not played yet, so they play in the order
   /// they were picked. With nothing queued, plays them instead and returns
@@ -51,16 +29,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
   /// await between, so a build that watches `state.queue` and reads this
   /// never sees a stale count. Costs O(run) set lookups.
   int get upNextRun => _upNextRun(state.queue);
-
-  int _upNextRun(PlayQueue queue) {
-    var count = 0;
-    final start = queue.index + 1;
-    while (start + count < queue.order.length &&
-        _upNext.contains(queue.order[start + count])) {
-      count++;
-    }
-    return count;
-  }
 
   /// Plays [tracks] in the order given on an empty queue. Shuffle stays on if
   /// it was, but only applies to what is added later.
@@ -165,41 +133,6 @@ mixin _PlayerQueueCommands on Notifier<PlayerState> {
       queue: PlayQueue(shuffled: queue.shuffled, repeat: queue.repeat),
     );
     return _backend.stop();
-  }
-
-  /// Playback stopped for good: nothing is wanted playing and the engine's
-  /// next-track bookkeeping is void. [ended] means the queue ran out (play
-  /// restarts it); [resetPosition] false keeps the finished track to seek back
-  /// into. [queue] swaps the queue in the same update. Leaves the engine alone,
-  /// except for ending a counted repeat, which is the engine's loop.
-  void _markStopped({
-    required bool ended,
-    bool resetPosition = true,
-    PlayQueue? queue,
-  }) {
-    _ended = ended;
-    _wantsPlaying = false;
-    _handedNext.clear();
-    _dropRepeatTimes();
-    state = state.copyWith(
-      queue: queue ?? state.queue,
-      playing: false,
-      stopped: true,
-      position: resetPosition ? Duration.zero : state.position,
-      duration: resetPosition ? Duration.zero : state.duration,
-    );
-  }
-
-  /// Runs an engine call made while following the engine on its own, where
-  /// nobody awaits the result: a failure is logged instead of escaping as an
-  /// uncaught error. Only an [Exception] (an engine failure) is caught; an
-  /// [Error] is a bug and still reaches the zone.
-  void _followEngine(String what, Future<void> Function() action) {
-    unawaited(
-      Future.sync(action).catchError((Object error, StackTrace stack) {
-        _log.warning('Could not $what', error, stack);
-      }, test: (error) => error is Exception),
-    );
   }
 
   void _onAdvanced(Track track) {

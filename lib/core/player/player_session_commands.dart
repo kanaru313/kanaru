@@ -3,36 +3,12 @@ part of 'player_service.dart';
 /// Bringing the last playback session back on launch, paused, with the
 /// "play next" tracks still to come, and saving it while the app runs (see
 /// [PlaybackSessionSaver] for when it writes).
-mixin _PlayerSessionCommands on Notifier<PlayerState> {
-  AudioBackend get _backend;
-  StreamController<Duration> get _seeked;
-  bool get _wantsPlaying;
-  bool get _ended;
-  Set<int> get _upNext;
-  Future<void> _play(
-    int index, {
-    bool play = true,
-    Duration start = Duration.zero,
-  });
-
-  PlaybackSessionSaver? _saver;
-
-  /// Identifies the current build, so a restore scheduled by an older one
-  /// does nothing.
-  Object? _sessionBuild;
-
-  /// Whether a track was handed to the engine since this build. A track the
-  /// user opened before the restore ran wins over the restored one.
-  bool _openedSinceBuild = false;
-
+mixin _PlayerSessionCommands on _PlayerCore {
   /// Loads the saved session and sets up saving. Returns the state the
   /// player starts in: the restored queue and volume, paused. The engine is
   /// set up a microtask later, so the first frame and the first MPRIS reply
   /// already show the restored session.
   PlayerState _startSession() {
-    _sessionBuild = null;
-    _openedSinceBuild = false;
-    _saver = null;
     final file = ref.watch(playbackSessionFileProvider);
     if (file == null) return PlayerState();
     var session = file.load();
@@ -111,7 +87,4 @@ mixin _PlayerSessionCommands on Notifier<PlayerState> {
 
   /// A track loaded: the restored session works, so saving can go on.
   void _sessionTrackLoaded() => _saver?.unfreeze();
-
-  /// The user (or an external controller) did something: saving goes on.
-  void _sessionUserActed() => _saver?.unfreeze();
 }
