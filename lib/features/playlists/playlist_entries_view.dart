@@ -334,6 +334,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
           : () => unawaited(_play(entry.entryId, index)),
       onRemove: widget.onRemove == null ? null : () => _onRemove(entry),
       favorites: favorites,
+      savedQueue: widget.savedQueue,
       onQueueAction: entry.track == null || onEntryAction == null
           ? null
           : (action) => onEntryAction(entry, action),

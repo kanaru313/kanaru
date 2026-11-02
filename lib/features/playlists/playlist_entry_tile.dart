@@ -41,6 +41,7 @@ class PlaylistEntryTile extends StatelessWidget {
     this.reorderable = true,
     this.onQueueAction,
     this.favorites = false,
+    this.savedQueue = false,
   });
 
   final PlaylistEntryRow entry;
@@ -64,6 +65,9 @@ class PlaylistEntryTile extends StatelessWidget {
   /// heart so the liked file can still be taken out.
   final bool favorites;
 
+  /// A saved queue: removal reads Remove from queue.
+  final bool savedQueue;
+
   @override
   Widget build(BuildContext context) {
     final track = entry.track;
@@ -74,6 +78,7 @@ class PlaylistEntryTile extends StatelessWidget {
         reorderable: reorderable,
         onRemove: onRemove,
         showFavorite: favorites,
+        savedQueue: savedQueue,
       );
     }
     final remove = onRemove;
@@ -93,7 +98,9 @@ class PlaylistEntryTile extends StatelessWidget {
                 ContextModalAction(
                   id: 'remove-from-playlist',
                   icon: AppIcons.playlistRemove,
-                  label: context.l10n.playlistRemoveEntry,
+                  label: savedQueue
+                      ? context.l10n.queueRemove
+                      : context.l10n.playlistRemoveEntry,
                   destructive: true,
                   onTap: songModalCloseThen(remove),
                 ),

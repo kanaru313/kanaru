@@ -124,6 +124,30 @@ void main() {
       );
     });
 
+    testWidgets('a saved queue row modal says Remove from queue', (
+      tester,
+    ) async {
+      view.rowModals = true;
+      await view.pump(tester, [available(1)], savedQueue: true);
+
+      await tester.tap(
+        find.byType(PlaylistEntryTile),
+        buttons: kSecondaryButton,
+      );
+      await settleSongModal(tester);
+
+      final action = modalAction('remove-from-playlist');
+      expect(
+        find.descendant(of: action, matching: find.text('Remove from queue')),
+        findsOneWidget,
+      );
+      expect(find.text('Remove from playlist'), findsNothing);
+
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      expect(view.removed, [1]);
+    });
+
     testWidgets('the modal of a read-only list has no Remove', (tester) async {
       view.rowModals = true;
       await view.pump(tester, [available(1)], readOnly: true);

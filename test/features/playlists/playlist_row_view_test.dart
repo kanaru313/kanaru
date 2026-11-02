@@ -72,6 +72,13 @@ void main() {
       expect(removeOpacity(tester, 0), 0);
     });
 
+    testWidgets('of a saved queue says Remove from queue', (tester) async {
+      await view.pump(tester, [missing(1)], savedQueue: true);
+
+      expect(find.byTooltip('Remove from queue'), findsOneWidget);
+      expect(remove, findsNothing);
+    });
+
     testWidgets('shows on hover and removes the entry', (tester) async {
       await view.pump(tester, [missing(1)]);
 

@@ -163,6 +163,22 @@ void main() {
     );
   });
 
+  testWidgets('a saved queue row modal says Remove from queue', (tester) async {
+    await openApp(tester, h, ['a', 'b']);
+    final id = await seedQueue(tester, ['a', 'b']);
+    goTo(tester, h, '/queue-history/$id');
+    await settleDb(tester);
+
+    await tester.tap(
+      find.byType(PlaylistEntryTile).first,
+      buttons: kSecondaryButton,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remove from queue'), findsOneWidget);
+    expect(find.text('Remove from playlist'), findsNothing);
+  });
+
   testWidgets('a row opens the saved queue, named by when it was saved', (
     tester,
   ) async {
