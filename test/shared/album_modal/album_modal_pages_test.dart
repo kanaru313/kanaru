@@ -33,7 +33,7 @@ void main() {
     expect(host.location, artistLocation('d'));
   });
 
-  testWidgets("the artists page on an artist's page leaves that artist out", (
+  testWidgets("the artists page on an artist's page includes all artists", (
     tester,
   ) async {
     await pumpAlbumHost(
@@ -42,12 +42,11 @@ void main() {
       pageArtistKey: 'a',
     );
     await openAlbumModalOf(tester);
-    expect(find.text('4 artists'), findsOneWidget);
+    expect(find.text('5 artists'), findsOneWidget);
 
     await tapAlbumRow(tester, 'Go to artist');
     expect(find.text('Artists · Al'), findsOneWidget);
-    expect(find.text('A'), findsNothing);
-    for (final n in ['B', 'C', 'D', 'E']) {
+    for (final n in ['A', 'B', 'C', 'D', 'E']) {
       expect(find.text(n), findsOneWidget);
     }
   });

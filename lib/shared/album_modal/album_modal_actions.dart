@@ -6,18 +6,12 @@ import '../widgets/context_modal/context_modal_spec.dart';
 import 'album_modal_data.dart';
 
 /// The Go to artist row for the loaded artists (greyed out while loading).
-/// Null on an artist's page when that artist is the album's only one.
-ContextModalAction? _artistRow(
+ContextModalAction _artistRow(
   AppLocalizations l10n,
   AlbumModalData data,
   AlbumModalHandlers h,
 ) {
   final artists = data.linkedArtists;
-  if (artists != null &&
-      artists.isEmpty &&
-      (data.links?.artists.isNotEmpty ?? false)) {
-    return null;
-  }
   if (artists == null || artists.isEmpty) {
     final album = data.album;
     return ContextModalAction(
@@ -97,7 +91,7 @@ List<List<ContextModalAction>> albumModalSections(
           subtitle: data.album.title,
           onTap: contextModalCloseThen(h.goToAlbum),
         ),
-      ?_artistRow(l10n, data, h),
+      _artistRow(l10n, data, h),
       ?folder,
     ],
     [

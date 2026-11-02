@@ -185,21 +185,22 @@ void main() {
   });
 
   group("on an artist's page", () {
-    test('a song by that artist alone has no Go to artist', () {
-      final all = _byId(_data(links: _links(), pageArtistKey: 'ann'));
-      expect(all.keys, isNot(contains('artist')));
-      expect(all.keys, isNot(contains('artists')));
+    // pageArtistKey no longer filters out the page artist — all artists show.
+
+    test('Go to artist shows the page artist too (single artist)', () {
+      final a = _byId(_data(links: _links(), pageArtistKey: 'ann'))['artist']!;
+      expect(a.subtitle, 'Ann');
+      expect(a.enabled, isTrue);
     });
 
-    test('Go to artist lists the other artists only', () {
+    test('Go to artist shows every artist including the page artist', () {
       final a = _byId(
         _data(
           links: _links(artists: _names(['Ann', 'Bob'])),
           pageArtistKey: 'ann',
         ),
-      )['artist']!;
-      expect(a.subtitle, 'Bob');
-      expect(a.chips, isNull);
+      )['artists']!;
+      expect([for (final c in a.chips!.items) c.label], ['Ann', 'Bob']);
     });
 
     test('a page of another artist keeps every artist', () {
@@ -229,18 +230,18 @@ void main() {
       expect(a.subtitle, 'No artist');
     });
 
-    test('Go to album artist leaves the page artist out', () {
+    test('Go to album artist shows all album artists including the page artist', () {
       final a = _byId(
         _data(
           links: _links(albumArtists: _names(['Ann', 'Bob'])),
           pageArtistKey: 'ann',
         ),
-      )['album-artist']!;
-      expect(a.subtitle, 'Bob');
+      )['album-artists']!;
+      expect([for (final c in a.chips!.items) c.label], ['Ann', 'Bob']);
     });
 
     test(
-      'Go to album artist is left out when only the page artist is left',
+      'Go to album artist shows the page artist when it is an album-only artist',
       () {
         final all = _byId(
           _data(
@@ -251,14 +252,13 @@ void main() {
             pageArtistKey: 'ann',
           ),
         );
-        expect(all.keys, isNot(contains('album-artist')));
+        expect(all['album-artist']!.subtitle, 'Ann');
         expect(all['artist']!.subtitle, 'Bob');
       },
     );
 
     test('album artists that are all song artists still hide the row', () {
-      // Song by Ann and Bob, album by Ann and Bob, on Ann's page: Bob is
-      // already under Go to artist.
+      // Song by Ann and Bob, album by Ann and Bob: no separate album artist row.
       final all = _byId(
         _data(
           links: _links(

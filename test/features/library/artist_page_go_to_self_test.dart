@@ -61,7 +61,7 @@ Finder _artistNamed(String name) =>
 
 void main() {
   group("on an artist's page", () {
-    testWidgets('a song by that artist alone has no Go to artist', (
+    testWidgets('a song by that artist alone shows Go to artist', (
       tester,
     ) async {
       final h = LibraryHarness();
@@ -70,11 +70,10 @@ void main() {
       await _openSongModalOf(tester, 'solo song');
 
       expect(modalAction('album'), findsOneWidget, reason: 'links loaded');
-      expect(modalAction('artist'), findsNothing);
-      expect(modalAction('artists'), findsNothing);
+      expect(_artistNamed('Ann'), findsOneWidget);
     });
 
-    testWidgets('a song with another artist goes to the other only', (
+    testWidgets('a song with another artist shows all artists', (
       tester,
     ) async {
       final h = LibraryHarness();
@@ -82,13 +81,25 @@ void main() {
 
       await _openSongModalOf(tester, 'duet song');
 
-      expect(modalAction('artists'), findsNothing);
-      expect(_artistNamed('Bob'), findsOneWidget);
-      await tapModalAction(tester, 'Go to artist');
+      final artistsAction = modalAction('artists');
+      expect(artistsAction, findsOneWidget);
+      expect(
+        find.descendant(of: artistsAction, matching: find.text('2 artists')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: artistsAction, matching: find.text('Ann')),
+        findsOneWidget,
+      );
+      final bob =
+          find.descendant(of: artistsAction, matching: find.text('Bob'));
+      expect(bob, findsOneWidget);
+      await tester.tap(bob);
+      await tester.pumpAndSettle();
       expect(location(h), artistLocation('bob'));
     });
 
-    testWidgets('the Albums shelf: an album of that artist alone has no Go '
+    testWidgets('the Albums shelf: an album of that artist alone shows Go '
         'to artist', (tester) async {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: artistLocation('ann'));
@@ -96,8 +107,7 @@ void main() {
       await _openAlbumModalOf(tester, 'Mine');
 
       expect(modalAction('folder'), findsOneWidget, reason: 'links loaded');
-      expect(modalAction('artist'), findsNothing);
-      expect(modalAction('artists'), findsNothing);
+      expect(_artistNamed('Ann'), findsOneWidget);
     });
 
     testWidgets('the Appears on shelf: an album of another artist keeps it', (

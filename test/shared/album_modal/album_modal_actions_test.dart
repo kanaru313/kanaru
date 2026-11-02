@@ -122,30 +122,30 @@ void main() {
   });
 
   group("artists on an artist's page", () {
-    test('the page artist alone: no Go to artist row', () {
+    // pageArtistKey no longer filters out the page artist — all artists show.
+
+    test('the page artist alone: shows Go to artist row', () {
       final byId = _byId(linksOf(), pageArtistKey: 'ann');
-      expect(byId.keys, isNot(contains('artist')));
-      expect(byId.keys, isNot(contains('artists')));
+      expect(byId.keys, contains('artist'));
+      expect(byId['artist']!.subtitle, 'Ann');
       expect(byId.keys, contains('folder'));
     });
 
-    test('with one other artist: a plain row naming the other', () {
+    test('with another artist: shows all artists', () {
       final a = _byId(
         linksOf(artists: artistsOf(['Ann', 'Bob'])),
         pageArtistKey: 'ann',
-      )['artist']!;
-      expect(a.subtitle, 'Bob');
-      expect(a.chips, isNull);
+      )['artists']!;
+      expect([for (final c in a.chips!.items) c.label], ['Ann', 'Bob']);
     });
 
-    test('the count and the page threshold use the other artists', () {
+    test('the count includes all artists and opens a page above the threshold', () {
       final a = _byId(
         linksOf(artists: artistsOf(['Ann', 'B', 'C', 'D'])),
         pageArtistKey: 'ann',
       )['artists']!;
-      expect(a.subtitle, '3 artists');
-      expect(a.opensPage, isFalse);
-      expect([for (final c in a.chips!.items) c.label], ['B', 'C', 'D']);
+      expect(a.subtitle, '4 artists');
+      expect(a.opensPage, isTrue);
     });
 
     test('loading: still the greyed row', () {
@@ -158,13 +158,14 @@ void main() {
       expect(a.subtitle, 'No artist');
     });
 
-    test('linkedArtists leaves the page artist out', () {
+    test('linkedArtists returns all artists including the page artist', () {
+      final all = artistsOf(['Ann', 'Bob']);
       final data = AlbumModalData(
         album: testAlbum,
-        links: linksOf(artists: artistsOf(['Ann', 'Bob'])),
+        links: linksOf(artists: all),
         pageArtistKey: 'ann',
       );
-      expect(data.linkedArtists, artistsOf(['Bob']));
+      expect(data.linkedArtists, all);
       expect(
         AlbumModalData(album: testAlbum, links: null).linkedArtists,
         isNull,

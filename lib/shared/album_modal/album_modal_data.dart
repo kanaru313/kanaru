@@ -30,18 +30,12 @@ class AlbumModalData {
   /// that play or copy it are greyed out. False while the links load.
   final bool gone;
 
-  /// The artist whose page lists the album: Go to artist leaves that artist
-  /// out. Null elsewhere.
+  /// The artist whose page lists the album. Kept for callers; no longer used
+  /// to filter the Go to artist list.
   final String? pageArtistKey;
 
-  /// The artists Go to artist offers: the loaded ones without the page's own
-  /// ([pageArtistKey]). Null while the links load.
-  List<({String key, String name})>? get linkedArtists {
-    final artists = links?.artists;
-    final page = pageArtistKey;
-    if (artists == null || page == null) return artists;
-    return artists.where((a) => a.key != page).toList();
-  }
+  /// The artists Go to artist offers. Null while the links load.
+  List<({String key, String name})>? get linkedArtists => links?.artists;
 
   /// Whether [links] resolved to no album; loading and errors are not gone.
   static bool goneOf(AsyncValue<AlbumLinks?> links) =>

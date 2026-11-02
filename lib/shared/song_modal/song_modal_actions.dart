@@ -73,16 +73,6 @@ List<List<ContextModalAction>> songModalSections(
   final allArtists = links?.artists ?? const [];
   final allAlbumArtists = links?.albumArtists ?? const [];
   final artistKeys = {for (final a in allArtists) a.key};
-  // On an artist's page the links leave that artist out.
-  final page = data.pageArtistKey;
-  List<({String key, String name})> notPage(
-    List<({String key, String name})> list,
-  ) => page == null ? list : list.where((a) => a.key != page).toList();
-  final artists = notPage(allArtists);
-  final albumArtists = notPage(allAlbumArtists);
-  // The page's artist was the only one: nothing else to go to.
-  final onlyPageArtist =
-      links != null && artists.isEmpty && allArtists.isNotEmpty;
   final albumTitle = song.album?.isNotEmpty ?? false ? song.album : null;
   final isFavorite = data.isFavorite;
 
@@ -98,7 +88,7 @@ List<List<ContextModalAction>> songModalSections(
           enabled: links?.album != null,
           onTap: songModalCloseThen(h.goToAlbum),
         ),
-      if (artists.isNotEmpty)
+      if (allArtists.isNotEmpty)
         _artistsAction(
           l10n,
           id: 'artist',
@@ -106,10 +96,10 @@ List<List<ContextModalAction>> songModalSections(
           label: l10n.songModalGoToArtist,
           single: AppIcons.artistOutline,
           many: AppIcons.artists,
-          artists: artists,
+          artists: allArtists,
           open: h.goToArtist,
         )
-      else if (!onlyPageArtist)
+      else
         ContextModalAction(
           id: 'artist',
           icon: AppIcons.artistOutline,
@@ -119,9 +109,8 @@ List<List<ContextModalAction>> songModalSections(
               : l10n.songModalNoArtist,
           enabled: false,
         ),
-      // Only when the album's artist is somebody else than the song's
-      // (judged before the page's artist is left out).
-      if (albumArtists.isNotEmpty &&
+      // Only when the album's artist is somebody else than the song's.
+      if (allAlbumArtists.isNotEmpty &&
           !allAlbumArtists.every((a) => artistKeys.contains(a.key)))
         _artistsAction(
           l10n,
@@ -130,7 +119,7 @@ List<List<ContextModalAction>> songModalSections(
           label: l10n.songModalGoToAlbumArtist,
           single: AppIcons.albumArtist,
           many: AppIcons.artists,
-          artists: albumArtists,
+          artists: allAlbumArtists,
           open: h.goToArtist,
         ),
       if (data.hasLocalPath && !data.showFolder)
