@@ -7201,6 +7201,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.'**
   String get settingsTranslationServicePluginHint;
+
+  /// Title of the dialog that edits a playlist's name and description
+  ///
+  /// In en, this message translates to:
+  /// **'Edit playlist'**
+  String get playlistEditTitle;
+
+  /// Playlist menu row that opens the edit dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get playlistEditAction;
+
+  /// Second line of the playlist menu row that opens the edit dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Name, description, cover'**
+  String get playlistEditActionHint;
+
+  /// Tooltip of the button that closes the edit playlist dialog without saving
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get playlistEditClose;
+
+  /// Label of the playlist description field
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get playlistDescriptionLabel;
+
+  /// Hint inside the empty playlist description field
+  ///
+  /// In en, this message translates to:
+  /// **'Add a description (optional)'**
+  String get playlistDescriptionHint;
+
+  /// Error under the playlist name field when it is blank
+  ///
+  /// In en, this message translates to:
+  /// **'Name can\'t be empty'**
+  String get playlistNameEmptyError;
+
+  /// Label over the playlist cover in the edit dialog; picking a cover is not available yet
+  ///
+  /// In en, this message translates to:
+  /// **'Change cover'**
+  String get playlistChangeCover;
+
+  /// Button that saves the edited playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get playlistEditSave;
+
+  /// Characters typed out of the most allowed in the playlist description
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / {max}'**
+  String playlistEditCounter(int count, int max);
 }
 
 class _AppLocalizationsDelegate

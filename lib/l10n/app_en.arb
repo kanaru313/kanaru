@@ -4852,5 +4852,49 @@
   "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
   "@settingsTranslationServicePluginHint": {
     "description": "Subtitle of the translation service row when a translate plugin is the selected service"
+  },
+  "playlistEditTitle": "Edit playlist",
+  "@playlistEditTitle": {
+    "description": "Title of the dialog that edits a playlist's name and description"
+  },
+  "playlistEditAction": "Edit",
+  "@playlistEditAction": {
+    "description": "Playlist menu row that opens the edit dialog"
+  },
+  "playlistEditActionHint": "Name, description, cover",
+  "@playlistEditActionHint": {
+    "description": "Second line of the playlist menu row that opens the edit dialog"
+  },
+  "playlistEditClose": "Close",
+  "@playlistEditClose": {
+    "description": "Tooltip of the button that closes the edit playlist dialog without saving"
+  },
+  "playlistDescriptionLabel": "Description",
+  "@playlistDescriptionLabel": {
+    "description": "Label of the playlist description field"
+  },
+  "playlistDescriptionHint": "Add a description (optional)",
+  "@playlistDescriptionHint": {
+    "description": "Hint inside the empty playlist description field"
+  },
+  "playlistNameEmptyError": "Name can't be empty",
+  "@playlistNameEmptyError": {
+    "description": "Error under the playlist name field when it is blank"
+  },
+  "playlistChangeCover": "Change cover",
+  "@playlistChangeCover": {
+    "description": "Label over the playlist cover in the edit dialog; picking a cover is not available yet"
+  },
+  "playlistEditSave": "Save",
+  "@playlistEditSave": {
+    "description": "Button that saves the edited playlist"
+  },
+  "playlistEditCounter": "{count} / {max}",
+  "@playlistEditCounter": {
+    "description": "Characters typed out of the most allowed in the playlist description",
+    "placeholders": {
+      "count": {"type": "int"},
+      "max": {"type": "int"}
+    }
   }
 }

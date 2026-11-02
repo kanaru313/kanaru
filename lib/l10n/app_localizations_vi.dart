@@ -4619,4 +4619,36 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsTranslationServicePluginHint =>
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
+
+  @override
+  String get playlistEditTitle => 'Sửa danh sách phát';
+
+  @override
+  String get playlistEditAction => 'Sửa';
+
+  @override
+  String get playlistEditActionHint => 'Tên, mô tả, ảnh bìa';
+
+  @override
+  String get playlistEditClose => 'Đóng';
+
+  @override
+  String get playlistDescriptionLabel => 'Mô tả';
+
+  @override
+  String get playlistDescriptionHint => 'Thêm mô tả (không bắt buộc)';
+
+  @override
+  String get playlistNameEmptyError => 'Tên không được để trống';
+
+  @override
+  String get playlistChangeCover => 'Đổi ảnh bìa';
+
+  @override
+  String get playlistEditSave => 'Lưu';
+
+  @override
+  String playlistEditCounter(int count, int max) {
+    return '$count / $max';
+  }
 }

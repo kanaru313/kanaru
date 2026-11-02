@@ -1859,5 +1859,15 @@
   "settingsTranslationGetServicesHint": "Tìm plugin dịch trong kho plugin",
   "lyricsTranslationBannerOpenPlugin": "Mở cài đặt",
   "lyricsTranslationBannerUseGoogle": "Dịch bằng Google",
-  "settingsTranslationServicePluginHint": "Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch."
+  "settingsTranslationServicePluginHint": "Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.",
+  "playlistEditTitle": "Sửa danh sách phát",
+  "playlistEditAction": "Sửa",
+  "playlistEditActionHint": "Tên, mô tả, ảnh bìa",
+  "playlistEditClose": "Đóng",
+  "playlistDescriptionLabel": "Mô tả",
+  "playlistDescriptionHint": "Thêm mô tả (không bắt buộc)",
+  "playlistNameEmptyError": "Tên không được để trống",
+  "playlistChangeCover": "Đổi ảnh bìa",
+  "playlistEditSave": "Lưu",
+  "playlistEditCounter": "{count} / {max}"
 }

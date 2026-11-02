@@ -4908,4 +4908,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsTranslationServicePluginHint =>
       'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
+
+  @override
+  String get playlistEditTitle => 'Edit playlist';
+
+  @override
+  String get playlistEditAction => 'Edit';
+
+  @override
+  String get playlistEditActionHint => 'Name, description, cover';
+
+  @override
+  String get playlistEditClose => 'Close';
+
+  @override
+  String get playlistDescriptionLabel => 'Description';
+
+  @override
+  String get playlistDescriptionHint => 'Add a description (optional)';
+
+  @override
+  String get playlistNameEmptyError => 'Name can\'t be empty';
+
+  @override
+  String get playlistChangeCover => 'Change cover';
+
+  @override
+  String get playlistEditSave => 'Save';
+
+  @override
+  String playlistEditCounter(int count, int max) {
+    return '$count / $max';
+  }
 }
