@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/widgets/library_grid/library_grid_card.dart';
+import '../../shared/widgets/library_grid/library_grid_delegate.dart';
 import '../../shared/widgets/playlist_cover.dart';
 import '../../shared/fixed_line_strut.dart';
 import 'playlist_modal/playlist_actions_region.dart';
@@ -9,14 +11,8 @@ import 'playlist_modal/playlist_actions_region.dart';
 /// Space around the whole grid.
 const _gridPadding = 24.0;
 
-/// Space between a card's edge and its cover and text.
-const _cardPadding = 8.0;
-
 /// Space between the cover and the name.
 const _gap = 8.0;
-
-/// Widest a card grows; the column count follows from it.
-const _maxCardWidth = 200.0;
 
 /// Height of a card [width] wide: the square cover plus a name of two lines
 /// and a count at the current text scale, so large text never overflows.
@@ -46,17 +42,13 @@ class PlaylistsGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Columns of cards at most 200 px wide, rows tall enough for the
-        // text; a max-extent delegate would make the cells square.
-        final width = constraints.maxWidth - _gridPadding * 2;
-        final columns = (width / _maxCardWidth).ceil().clamp(1, 1 << 20);
-        final cardWidth = width / columns;
+        // text, like the library grids.
         return GridView.builder(
           padding: const EdgeInsets.all(_gridPadding),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisExtent:
-                _cardHeight(context, cardWidth - _cardPadding * 2) +
-                _cardPadding * 2,
+          gridDelegate: libraryGridDelegate(
+            context,
+            constraints.maxWidth - _gridPadding * 2,
+            tileHeight: _cardHeight,
           ),
           itemCount: cards.length,
           itemBuilder: (context, i) => _PlaylistCardTile(
@@ -86,7 +78,7 @@ class _PlaylistCardTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(_cardPadding),
+          padding: const EdgeInsets.all(gridTilePadding),
           child: LayoutBuilder(
             builder: (context, constraints) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
