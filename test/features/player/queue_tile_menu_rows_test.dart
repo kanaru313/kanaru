@@ -3,6 +3,8 @@ import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart';
 import '../library/library_test_harness.dart';
@@ -121,7 +123,7 @@ void main() {
     ]);
   });
 
-  testWidgets('the playing row and a play next row have no Play next', (
+  testWidgets('the playing row and a play next row offer Play next', (
     tester,
   ) async {
     await open(
@@ -133,14 +135,33 @@ void main() {
       ],
     );
     await openQueueMenu(tester, 'p');
-    expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
+    expect(menuLabels(tester, allMenuLabels), contains('Play next'));
     await tester.tapAt(const Offset(2, 2));
     await tester.pumpAndSettle();
 
     await h.container.read(playerServiceProvider.notifier).moveToPlayNext(2);
     await tester.pumpAndSettle();
     await openQueueMenu(tester, 'r');
-    expect(menuLabels(tester, allMenuLabels), isNot(contains('Play next')));
+    expect(menuLabels(tester, allMenuLabels), contains('Play next'));
+  });
+
+  testWidgets('Play next on the playing row queues a copy behind it', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      (p) => [
+        const Track(uri: '/elsewhere/p.mp3', title: 'p'),
+        const Track(uri: '/elsewhere/q.mp3', title: 'q'),
+      ],
+    );
+    await openQueueMenu(tester, 'p');
+    await tester.tap(find.text('Play next'));
+    await settleDb(tester);
+
+    expect(queueTitles(h), ['p', 'p', 'q']);
+    expect(h.container.read(playerServiceProvider).queue.index, 0);
+    expect(h.container.read(playerServiceProvider.notifier).upNextRun, 1);
   });
 
   testWidgets('a played row still offers Play next', (tester) async {
@@ -156,5 +177,28 @@ void main() {
     await tester.pumpAndSettle();
     await openQueueMenu(tester, 'p');
     expect(menuLabels(tester, allMenuLabels), contains('Play next'));
+  });
+
+  testWidgets('Remove from queue has the same icon as in the song modal', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      (p) => [lib(p, 'a'), const Track(uri: '/elsewhere/x.mp3', title: 'x')],
+    );
+    await openQueueMenu(tester, 'x');
+
+    final remove = find.ancestor(
+      of: find.text('Remove from queue'),
+      matching: find.byType(PopupMenuItem<Object>),
+    );
+    expect(
+      find.descendant(
+        of: remove,
+        matching: find.byIcon(AppIcons.playlistRemove),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byIcon(AppIcons.deleteRounded), findsNothing);
   });
 }

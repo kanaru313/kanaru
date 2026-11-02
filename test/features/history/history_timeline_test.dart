@@ -353,7 +353,12 @@ void main() {
         plays: [('A', _at(23, 9))],
       );
 
-      await tester.tap(find.byTooltip('More options'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(HistoryPlayRowTile),
+          matching: find.byTooltip('More options'),
+        ),
+      );
       await settleSongModal(tester);
 
       expect(find.text('Remove from history'), findsOneWidget);
@@ -414,7 +419,13 @@ void main() {
         plays: [('A', _at(23, 9)), ('A', _at(23, 10))],
       );
 
-      expect(find.byTooltip('More options'), findsNWidgets(2));
+      expect(
+        find.descendant(
+          of: find.byType(HistoryPlayRowTile),
+          matching: find.byTooltip('More options'),
+        ),
+        findsNWidgets(2),
+      );
       expect(find.text('#2'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -423,7 +434,13 @@ void main() {
         'no more button', (tester) async {
       await openHistory(tester, h, plays: [('gone', _at(23, 9))]);
 
-      expect(find.byTooltip('More options'), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(HistoryPlayRowTile),
+          matching: find.byTooltip('More options'),
+        ),
+        findsNothing,
+      );
       await tester.tap(find.text('gone.flac'), buttons: kSecondaryButton);
       await tester.pumpAndSettle();
 

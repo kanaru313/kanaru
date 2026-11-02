@@ -55,7 +55,7 @@ void main() {
               child: HistoryPlayRowTile(
                 row: row(latest: latest),
                 onTap: () {},
-                onMenu: (_) {},
+                onMenu: ({required viaKeyboard, required at}) {},
                 onQueueAction: (_) {},
                 modalExtras: () => const SongModalExtras(),
               ),

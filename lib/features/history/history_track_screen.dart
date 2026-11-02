@@ -51,13 +51,15 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
   Future<void> _openMenu(
     HistoryTrackSummary summary,
     HistoryPlayRow row,
-    Offset position,
-  ) async {
+    Offset position, {
+    required bool viaKeyboard,
+  }) async {
     final choice = await showHistoryPlayMenu(
       context,
       position,
       canQueue: summary.track != null,
       canShowTrackHistory: false,
+      viaKeyboard: viaKeyboard,
     );
     if (choice == null || !mounted) return;
     final action = historyQueueActionOf(choice);
@@ -140,9 +142,15 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
                     itemCount: data.plays.length,
                     itemBuilder: (context, i) => HistoryTrackPlayTile(
                       row: data.plays[i],
-                      onMenu: (position) => unawaited(
-                        _openMenu(summary, data.plays[i], position),
-                      ),
+                      onMenu: ({required viaKeyboard, required at}) =>
+                          unawaited(
+                            _openMenu(
+                              summary,
+                              data.plays[i],
+                              at,
+                              viaKeyboard: viaKeyboard,
+                            ),
+                          ),
                     ),
                   ),
           ),

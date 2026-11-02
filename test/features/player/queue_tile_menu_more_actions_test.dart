@@ -42,37 +42,38 @@ void main() {
     await settleDb(tester);
   }
 
-  testWidgets('Play next hands the moved track to the engine as next', (
+  testWidgets('Play next hands the copied track to the engine as next', (
     tester,
   ) async {
     await open(tester);
     await openQueueMenu(tester, 'd');
     await pick(tester, 'Play next');
 
-    expect(queueTitles(h), ['a', 'd', 'b', 'c']);
+    expect(queueTitles(h), ['a', 'd', 'b', 'c', 'd']);
     expect(h.backend.next?.title, 'd');
   });
 
-  testWidgets('Play next from a played row lands after the playing song', (
-    tester,
-  ) async {
-    await open(tester);
-    await player().jump(2);
-    await tester.pumpAndSettle();
-    final calls = h.backend.calls.length;
-    await openQueueMenu(tester, 'a');
-    await pick(tester, 'Play next');
+  testWidgets(
+    'Play next from a played row puts a copy after the playing song',
+    (tester) async {
+      await open(tester);
+      await player().jump(2);
+      await tester.pumpAndSettle();
+      final calls = h.backend.calls.length;
+      await openQueueMenu(tester, 'a');
+      await pick(tester, 'Play next');
 
-    expect(queueTitles(h), ['b', 'c', 'a', 'd']);
-    expect(player().upNextRun, 1);
-    expect(h.container.read(playerServiceProvider).queue.current?.title, 'c');
-    expect(h.backend.next?.title, 'a');
-    expect(
-      h.backend.calls.skip(calls).where((c) => c.startsWith('open')),
-      isEmpty,
-      reason: 'the playing song is not reopened',
-    );
-  });
+      expect(queueTitles(h), ['a', 'b', 'c', 'a', 'd']);
+      expect(player().upNextRun, 1);
+      expect(h.container.read(playerServiceProvider).queue.current?.title, 'c');
+      expect(h.backend.next?.title, 'a');
+      expect(
+        h.backend.calls.skip(calls).where((c) => c.startsWith('open')),
+        isEmpty,
+        reason: 'the playing song is not reopened',
+      );
+    },
+  );
 
   testWidgets('a rescan that dropped the song leaves no way to favorite it', (
     tester,

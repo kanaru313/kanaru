@@ -1,4 +1,5 @@
-import 'package:flutter/gestures.dart' show kSecondaryButton;
+import 'package:flutter/gestures.dart'
+    show PointerDeviceKind, kLongPressTimeout, kSecondaryButton;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
@@ -161,6 +162,28 @@ void main() {
 
       expect(find.text('Go to artist'), findsOneWidget);
       expect(modalAction('remove-from-playlist'), findsNothing);
+    });
+
+    testWidgets('a long press on the drag handle opens no modal', (
+      tester,
+    ) async {
+      view.rowModals = true;
+      await view.pump(tester, [available(1)]);
+
+      // A mouse: the handle's tooltip takes a touch long press by itself.
+      final press = await tester.startGesture(
+        tester.getCenter(find.byIcon(AppIcons.dragHandle)),
+        kind: PointerDeviceKind.mouse,
+      );
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+      await press.up();
+      await settleSongModal(tester);
+      expect(find.text('Go to artist'), findsNothing);
+
+      // The rest of the row still opens it.
+      await tester.longPress(find.text('T1'));
+      await settleSongModal(tester);
+      expect(find.text('Go to artist'), findsOneWidget);
     });
 
     testWidgets('without callbacks rows have no handle and no remove button', (

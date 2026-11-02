@@ -8,7 +8,8 @@ const playlistEntryHandleWidth = 36.0;
 
 /// The drag handle before a playlist row's cover: dragging it moves the row
 /// to [index] of the enclosing reorderable list. A tap on it is swallowed so
-/// a stray click does not start playback through the row's `InkWell`.
+/// a stray click does not start playback through the row's `InkWell`, and a
+/// long press so it does not open the row's song modal.
 class PlaylistEntryHandle extends StatelessWidget {
   const PlaylistEntryHandle({super.key, required this.index});
 
@@ -21,6 +22,9 @@ class PlaylistEntryHandle extends StatelessWidget {
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {},
+      // The long press on the handle is swallowed so it does not open the
+      // row's menu.
+      onLongPress: () {},
       child: MouseRegion(
         cursor: SystemMouseCursors.grab,
         child: Tooltip(

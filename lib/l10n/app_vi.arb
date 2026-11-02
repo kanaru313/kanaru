@@ -139,7 +139,6 @@
   "songsShuffleAll": "Phát ngẫu nhiên tất cả",
   "queuePlayNext": "Phát tiếp theo",
   "queueAddToQueue": "Thêm vào hàng đợi",
-  "queueActionsTooltip": "Thao tác hàng đợi",
   "queuePlayingNext": "Phát tiếp theo: {name}",
   "queuePlaying": "Đang phát: {name}",
   "queueAddedToQueue": "Đã thêm vào hàng đợi: {name}",
@@ -292,7 +291,6 @@
   "queueClear": "Xoá hàng đợi",
   "queueRemove": "Xoá khỏi hàng đợi",
   "queueMenuStale": "Hàng đợi đã thay đổi nên chưa thực hiện gì",
-  "queueAlreadyUpNext": "Bài này đang phát hoặc sắp phát",
   "queueReorder": "Kéo để sắp xếp lại",
   "queueShowCurrent": "Tới bài đang phát",
   "queueClose": "Đóng danh sách đang phát",
@@ -652,10 +650,6 @@
   "historyLoadFailed": "Không đọc được lịch sử. Xem chi tiết trong nhật ký.",
   "@historyLoadFailed": {
     "description": "Message of the History page when reading it failed"
-  },
-  "historyMore": "Thêm",
-  "@historyMore": {
-    "description": "Tooltip of the more button on a History row"
   },
   "historyOlderYear": "Xem năm {year}",
   "@historyOlderYear": {

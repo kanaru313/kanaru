@@ -5,7 +5,7 @@ import '../../core/database/history_rows.dart';
 import '../../core/player/playing_track_path.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
-import '../../shared/widgets/menu_keyboard_region.dart';
+import '../../shared/widgets/context_menu_region.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_row_view.dart';
 import '../../shared/widgets/song_tile.dart';
@@ -36,8 +36,8 @@ class HistoryPlayRowTile extends ConsumerWidget {
   /// Plays from this row; ignored on a play that cannot play.
   final VoidCallback onTap;
 
-  /// Opens the menu with its corner at the given global position.
-  final ValueChanged<Offset> onMenu;
+  /// Opens the menu of a missing file at the given global point.
+  final ContextMenuOpen onMenu;
 
   /// Queue action picked in the song modal of a row in the library.
   final ValueChanged<QueueAction> onQueueAction;
@@ -98,21 +98,16 @@ class HistoryPlayRowTile extends ConsumerWidget {
     }
     // A missing play has no ink well to take focus, so it is a focus stop of
     // its own: the Menu key needs focus inside the region.
-    return MenuKeyboardRegion(
+    return ContextMenuRegion(
       onOpen: onMenu,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onSecondaryTapUp: (d) => onMenu(d.globalPosition),
-        onLongPressStart: (d) => onMenu(d.globalPosition),
-        child: Focus(
-          child: Opacity(
-            opacity: 0.6,
-            child: SongRowView(
-              title: row.path.split('/').last,
-              artist: l10n.historyTrackMissing,
-              detail: playedAt,
-              badge: badge,
-            ),
+      child: Focus(
+        child: Opacity(
+          opacity: 0.6,
+          child: SongRowView(
+            title: row.path.split('/').last,
+            artist: l10n.historyTrackMissing,
+            detail: playedAt,
+            badge: badge,
           ),
         ),
       ),

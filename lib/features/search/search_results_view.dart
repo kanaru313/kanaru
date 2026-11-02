@@ -51,6 +51,13 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
   bool _albums = false;
   bool _artists = false;
 
+  /// Remembers the query: a result was played, queued or opened. Some calls
+  /// come from a modal's footer after the modal has closed, so it checks that
+  /// this State is still mounted.
+  void _recordQuery() {
+    if (mounted) widget.onOpened();
+  }
+
   /// The queue entry for [song], with its cover.
   Track _track(TrackListItem song) =>
       trackFromListItem(song, ref.read(coverCacheDirectoryProvider));
@@ -75,11 +82,11 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
               song: song,
               // Plays only this song: a search result has no list context.
               onTap: () {
-                widget.onOpened();
+                _recordQuery();
                 playTracks(ref, [_track(song)], 0);
               },
               onQueueAction: (action) {
-                widget.onOpened();
+                _recordQuery();
                 enqueueLoaded(ref, context, action, [_track(song)], song.title);
               },
             ),
@@ -98,13 +105,17 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
             rowBuilder: (album) => AlbumListTile(
               album: album,
               onTap: () {
-                widget.onOpened();
+                _recordQuery();
                 context.go(albumLocation(album.key));
+              },
+              onPlay: () {
+                _recordQuery();
+                unawaited(playAlbum(ref, album.key));
               },
               // This State stays mounted under the modal, so its ref and
               // context are live when the action is picked.
               onQueueAction: (action) {
-                if (mounted) widget.onOpened();
+                _recordQuery();
                 enqueueAlbum(ref, context, action, album.key, album.title);
               },
             ),
@@ -120,12 +131,15 @@ class _SearchResultsViewState extends ConsumerState<SearchResultsView> {
             rowBuilder: (artist) => ArtistTile(
               artist: artist,
               onTap: () {
-                widget.onOpened();
+                _recordQuery();
                 context.go(artistLocation(artist.key));
               },
-              onPlay: () => unawaited(playArtist(ref, artist.key)),
+              onPlay: () {
+                _recordQuery();
+                unawaited(playArtist(ref, artist.key));
+              },
               onQueueAction: (action) {
-                if (mounted) widget.onOpened();
+                _recordQuery();
                 enqueueArtist(ref, context, action, artist.key, artist.name);
               },
             ),

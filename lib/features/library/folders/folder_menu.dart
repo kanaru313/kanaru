@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/context_menu_region.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
-import '../../../shared/widgets/menu_keyboard_region.dart';
 import 'folder_tree.dart';
 
 /// What the menu of a folder can do, on all the songs below it (or only the
@@ -75,10 +75,15 @@ class FolderActionsRegion extends StatelessWidget {
   final bool withPlayAllBelow;
   final Widget child;
 
-  Future<void> _open(BuildContext context, Offset position) async {
-    final action = await showMenu<FolderAction>(
-      context: context,
-      position: menuPositionAt(context, position),
+  Future<void> _open(
+    BuildContext context,
+    Offset position, {
+    required bool viaKeyboard,
+  }) async {
+    final action = await showContextMenu<FolderAction>(
+      context,
+      at: position,
+      viaKeyboard: viaKeyboard,
       items: folderMenuItems(
         context,
         withPlay: true,
@@ -89,14 +94,10 @@ class FolderActionsRegion extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => MenuKeyboardRegion(
-    onOpen: (position) => _open(context, position),
-    child: GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onSecondaryTapUp: (details) => _open(context, details.globalPosition),
-      onLongPressStart: (details) => _open(context, details.globalPosition),
-      child: child,
-    ),
+  Widget build(BuildContext context) => ContextMenuRegion(
+    onOpen: ({required viaKeyboard, required at}) =>
+        _open(context, at, viaKeyboard: viaKeyboard),
+    child: child,
   );
 }
 
@@ -137,7 +138,7 @@ class FolderActionsButton extends StatelessWidget {
   Widget build(BuildContext context) => !withSongActions && !withPlayAllBelow
       ? const SizedBox.shrink()
       : PopupMenuButton<FolderAction>(
-          tooltip: context.l10n.queueActionsTooltip,
+          tooltip: context.l10n.songModalMoreOptions,
           icon: const Icon(AppIcons.more),
           onSelected: onSelected,
           itemBuilder: (context) => folderMenuItems(

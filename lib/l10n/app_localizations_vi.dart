@@ -599,9 +599,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueAddToQueue => 'Thêm vào hàng đợi';
 
   @override
-  String get queueActionsTooltip => 'Thao tác hàng đợi';
-
-  @override
   String queuePlayingNext(String name) {
     return 'Phát tiếp theo: $name';
   }
@@ -1072,9 +1069,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueMenuStale => 'Hàng đợi đã thay đổi nên chưa thực hiện gì';
-
-  @override
-  String get queueAlreadyUpNext => 'Bài này đang phát hoặc sắp phát';
 
   @override
   String get queueReorder => 'Kéo để sắp xếp lại';
@@ -1851,9 +1845,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get historyLoadFailed =>
       'Không đọc được lịch sử. Xem chi tiết trong nhật ký.';
-
-  @override
-  String get historyMore => 'Thêm';
 
   @override
   String historyOlderYear(int year) {

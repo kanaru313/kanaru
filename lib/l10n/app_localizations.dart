@@ -932,12 +932,6 @@ abstract class AppLocalizations {
   /// **'Add to queue'**
   String get queueAddToQueue;
 
-  /// No description provided for @queueActionsTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Queue actions'**
-  String get queueActionsTooltip;
-
   /// No description provided for @queuePlayingNext.
   ///
   /// In en, this message translates to:
@@ -1699,12 +1693,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The queue changed, so nothing was done'**
   String get queueMenuStale;
-
-  /// Snackbar when Play next is picked on the queue row that is playing or already in the play next block
-  ///
-  /// In en, this message translates to:
-  /// **'Already playing or up next'**
-  String get queueAlreadyUpNext;
 
   /// No description provided for @queueReorder.
   ///
@@ -2899,12 +2887,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t read the history. See the log for details.'**
   String get historyLoadFailed;
-
-  /// Tooltip of the more button on a History row
-  ///
-  /// In en, this message translates to:
-  /// **'More'**
-  String get historyMore;
 
   /// Last row of the History list: switches to an older year
   ///

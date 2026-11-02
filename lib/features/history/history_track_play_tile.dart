@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/format_duration.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/widgets/menu_keyboard_region.dart';
+import '../../shared/widgets/context_menu_more_button.dart';
+import '../../shared/widgets/context_menu_region.dart';
 
 /// Fixed height of a line of the song history list.
 const historyTrackRowExtent = 56.0;
@@ -28,8 +28,8 @@ class HistoryTrackPlayTile extends StatelessWidget {
 
   final HistoryPlayRow row;
 
-  /// Opens the menu with its corner at the given global position.
-  final ValueChanged<Offset> onMenu;
+  /// Opens the menu at the given global point.
+  final ContextMenuOpen onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -83,17 +83,7 @@ class HistoryTrackPlayTile extends StatelessWidget {
               ),
             ),
           ),
-        Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(AppIcons.more),
-            iconSize: 20,
-            tooltip: l10n.historyMore,
-            onPressed: () {
-              final box = context.findRenderObject()! as RenderBox;
-              onMenu(box.localToGlobal(Offset(0, box.size.height)));
-            },
-          ),
-        ),
+        ContextMenuMoreButton(onOpen: onMenu),
       ],
     );
 
@@ -101,17 +91,12 @@ class HistoryTrackPlayTile extends StatelessWidget {
       height: historyTrackRowExtent,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-        child: MenuKeyboardRegion(
+        child: ContextMenuRegion(
           onOpen: onMenu,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onSecondaryTapUp: (d) => onMenu(d.globalPosition),
-            onLongPressStart: (d) => onMenu(d.globalPosition),
-            child: Material(
-              color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-              child: content,
-            ),
+          child: Material(
+            color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(8),
+            child: content,
           ),
         ),
       ),

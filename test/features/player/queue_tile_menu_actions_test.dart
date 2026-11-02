@@ -48,12 +48,14 @@ void main() {
     await settleDb(tester);
   }
 
-  testWidgets('Play next moves the track without a copy', (tester) async {
+  testWidgets('Play next queues a copy and leaves the row where it is', (
+    tester,
+  ) async {
     await open(tester);
     await openQueueMenu(tester, 'c');
     await pick(tester, 'Play next');
 
-    expect(queueTitles(h), ['a', 'c', 'b']);
+    expect(queueTitles(h), ['a', 'c', 'b', 'c']);
     expect(player().upNextRun, 1);
   });
 

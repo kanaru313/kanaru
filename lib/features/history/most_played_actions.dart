@@ -34,7 +34,7 @@ class MostPlayedMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return PopupMenuButton<MostPlayedChoice>(
-      tooltip: l10n.historyMore,
+      tooltip: l10n.songModalMoreOptions,
       icon: const Icon(AppIcons.more),
       onSelected: onSelected,
       itemBuilder: (context) => [

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/folder_queries.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
@@ -11,6 +12,7 @@ import 'package:kanaru/features/library/folders/folder_art.dart';
 import 'package:kanaru/features/library/folders/folder_content_view.dart';
 import 'package:kanaru/features/library/folders/folder_header.dart';
 import 'package:kanaru/features/library/folders/folder_list_tile.dart';
+import 'package:kanaru/features/library/folders/folder_menu.dart';
 import 'package:kanaru/features/library/folders/folder_page_parts.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/hover_underline_links.dart';
@@ -37,11 +39,6 @@ void main() {
       t.title,
   ];
 
-  Future<void> openMore(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Queue actions'));
-    await tester.pumpAndSettle();
-  }
-
   Finder onPage(String text) => find.descendant(
     of: find.byType(CustomScrollView),
     matching: find.text(text),
@@ -49,6 +46,11 @@ void main() {
 
   Finder inHeader(Finder matching) =>
       find.descendant(of: find.byType(FolderHeader), matching: matching);
+
+  Future<void> openMore(WidgetTester tester) async {
+    await tester.tap(inHeader(find.byTooltip('More options')));
+    await tester.pumpAndSettle();
+  }
 
   RenderParagraph crumbLine(WidgetTester tester) => tester.renderObject(
     find
@@ -218,6 +220,26 @@ void main() {
 
     await tester.tap(find.text('CD 2'), buttons: kSecondaryButton);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to queue'));
+    await settleIo(tester, h);
+
+    expect(queued(h), ['c']);
+  });
+
+  testWidgets('the Menu key on a subfolder opens its menu on the first row', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: _rock);
+
+    Focus.of(tester.element(find.text('CD 2'))).requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+    await tester.pumpAndSettle();
+
+    final focused = FocusManager.instance.primaryFocus?.context
+        ?.findAncestorWidgetOfExactType<PopupMenuItem<FolderAction>>();
+    expect(focused?.value, FolderAction.play);
     await tester.tap(find.text('Add to queue'));
     await settleIo(tester, h);
 
@@ -438,7 +460,7 @@ void main() {
     expect(find.text('Hidden'), findsNothing);
     expect(onPage('s'), findsOneWidget);
     expect(find.byTooltip('Show hidden items'), findsNothing);
-    expect(find.byTooltip('Queue actions'), findsOneWidget);
+    expect(inHeader(find.byTooltip('More options')), findsOneWidget);
   });
 
   testWidgets('a dot folder that is not in the library shows not found', (
@@ -628,7 +650,7 @@ void main() {
       final shuffle = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Shuffle'),
       );
-      expect(find.byTooltip('Queue actions'), findsOneWidget);
+      expect(inHeader(find.byTooltip('More options')), findsOneWidget);
       await openMore(tester);
       expect(find.text('Play all below'), findsOneWidget);
       expect(find.text('Add to queue'), findsNothing);

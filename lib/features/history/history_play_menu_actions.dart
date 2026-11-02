@@ -44,11 +44,16 @@ mixin HistoryPlayMenuActions<T extends ConsumerStatefulWidget>
   /// Opens the popup of [row], used for a row with no song in the library.
   /// The play is the one the menu was opened on: the list may move before a
   /// choice is made.
-  Future<void> openPlayMenu(HistoryPlayRow row, Offset position) async {
+  Future<void> openPlayMenu(
+    HistoryPlayRow row,
+    Offset position, {
+    required bool viaKeyboard,
+  }) async {
     final choice = await showHistoryPlayMenu(
       context,
       position,
       canQueue: row.track != null,
+      viaKeyboard: viaKeyboard,
     );
     if (choice == null || !mounted) return;
     final action = historyQueueActionOf(choice);

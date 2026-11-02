@@ -165,7 +165,7 @@ void main() {
       await open(tester);
 
       expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
-      await tester.tap(find.byTooltip('More'));
+      await tester.tap(inPane(find.byTooltip('More options')));
       await tester.pumpAndSettle();
       expect(find.text('Create playlist'), findsOneWidget);
       expect(find.text('Play next'), findsOneWidget);
