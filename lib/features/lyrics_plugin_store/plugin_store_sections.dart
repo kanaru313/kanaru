@@ -14,11 +14,15 @@ class PluginStoreSections extends StatelessWidget {
   const PluginStoreSections({
     super.key,
     required this.view,
+    required this.onClearFilters,
     required this.onOpenInstalled,
     required this.onOpenCatalogItem,
   });
 
   final PluginStoreView view;
+
+  /// "Clear filters" of the empty state; shown while a group has a pick.
+  final VoidCallback onClearFilters;
   final void Function(String installId, PluginKind? kind) onOpenInstalled;
   final void Function(String repoUrl, String slug) onOpenCatalogItem;
 
@@ -42,6 +46,7 @@ class PluginStoreSections extends StatelessWidget {
             ),
             row: row,
             kind: kind,
+            showKindTag: view.showKindTag,
             repo: repos[row.repoUrl],
             onOpen: () {
               final record = row.record;
@@ -80,11 +85,20 @@ class PluginStoreSections extends StatelessWidget {
         if (view.isEmpty)
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              l10n.lyricsStoreNoMatch,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            child: Column(
+              children: [
+                Text(
+                  l10n.lyricsStoreNoMatch,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (view.filters.activeCount > 0)
+                  TextButton(
+                    onPressed: onClearFilters,
+                    child: Text(l10n.lyricsStoreFilterClear),
+                  ),
+              ],
             ),
           ),
         if (view.needsNewerApp > 0)

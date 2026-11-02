@@ -5978,29 +5978,107 @@ abstract class AppLocalizations {
   /// **'Search by name, author, repo, host'**
   String get lyricsStoreSearchHint;
 
-  /// Source chip that shows every plugin
+  /// 'All' chip of a filter group; picks nothing, so every value shows
   ///
   /// In en, this message translates to:
   /// **'All'**
   String get lyricsStoreChipAll;
 
-  /// Store kind chip that lists lyrics plugins
+  /// Lyrics plugin kind: Type filter value and tag on store rows
   ///
   /// In en, this message translates to:
   /// **'Lyrics'**
   String get lyricsStoreKindLyrics;
 
-  /// Store kind chip that lists translation plugins
+  /// Translation plugin kind: Type filter value and tag on store rows
   ///
   /// In en, this message translates to:
   /// **'Translate'**
   String get lyricsStoreKindTranslate;
 
-  /// Source chip and row subtitle of a plugin installed from a zip file
+  /// Source filter value and row subtitle of a plugin installed from a zip file
   ///
   /// In en, this message translates to:
   /// **'From file'**
   String get lyricsStoreFromFile;
+
+  /// Tooltip of the filter button in the plugin store app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get lyricsStoreFilterTooltip;
+
+  /// Screen reader label of the filter button while filter groups have a pick
+  ///
+  /// In en, this message translates to:
+  /// **'Filter, {count} active'**
+  String lyricsStoreFilterActiveLabel(int count);
+
+  /// Title of the plugin store filter modal
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get lyricsStoreFilterTitle;
+
+  /// Filter group of the plugin kind (lyrics, translate)
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get lyricsStoreFilterGroupType;
+
+  /// Filter group of the languages a plugin serves
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get lyricsStoreFilterGroupLanguage;
+
+  /// Filter group of the plugin authors
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get lyricsStoreFilterGroupAuthor;
+
+  /// Filter group of where a plugin comes from (repositories, file)
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get lyricsStoreFilterGroupSource;
+
+  /// Hint of the author search field in the filter modal
+  ///
+  /// In en, this message translates to:
+  /// **'Search authors'**
+  String get lyricsStoreFilterAuthorSearch;
+
+  /// Footer of the filter modal: how many plugins the list shows
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Showing 1 plugin} other{Showing {count} plugins}}'**
+  String lyricsStoreFilterShowing(int count);
+
+  /// Filter modal button that removes every pick
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get lyricsStoreFilterClearAll;
+
+  /// Filter modal button that closes it
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get lyricsStoreFilterDone;
+
+  /// Button of the empty store list that removes every filter pick
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get lyricsStoreFilterClear;
+
+  /// Language filter value of plugins that work for every language
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get lyricsStoreLanguageGlobal;
 
   /// Store section of plugins with a newer version
   ///

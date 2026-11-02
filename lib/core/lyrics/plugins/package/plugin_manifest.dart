@@ -60,6 +60,7 @@ class PluginManifest {
     this.translate,
     this.author = '',
     this.description = '',
+    this.languages = const [],
     this.config = const [],
   });
 
@@ -81,6 +82,10 @@ class PluginManifest {
   final PluginTranslateSpec? translate;
   final String author;
   final String description;
+
+  /// Normalized language keys the plugin serves (`vie`, `zho`); empty means
+  /// global (any language). Only the store's Language filter reads it.
+  final List<String> languages;
   final List<PluginConfigField> config;
 
   /// The entry script names of this kind, all non-null.

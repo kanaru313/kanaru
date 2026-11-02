@@ -4104,6 +4104,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsStoreFromFile => 'From file';
 
   @override
+  String get lyricsStoreFilterTooltip => 'Filter';
+
+  @override
+  String lyricsStoreFilterActiveLabel(int count) {
+    return 'Filter, $count active';
+  }
+
+  @override
+  String get lyricsStoreFilterTitle => 'Filters';
+
+  @override
+  String get lyricsStoreFilterGroupType => 'Type';
+
+  @override
+  String get lyricsStoreFilterGroupLanguage => 'Language';
+
+  @override
+  String get lyricsStoreFilterGroupAuthor => 'Author';
+
+  @override
+  String get lyricsStoreFilterGroupSource => 'Source';
+
+  @override
+  String get lyricsStoreFilterAuthorSearch => 'Search authors';
+
+  @override
+  String lyricsStoreFilterShowing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Showing $count plugins',
+      one: 'Showing 1 plugin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsStoreFilterClearAll => 'Clear all';
+
+  @override
+  String get lyricsStoreFilterDone => 'Done';
+
+  @override
+  String get lyricsStoreFilterClear => 'Clear filters';
+
+  @override
+  String get lyricsStoreLanguageGlobal => 'Global';
+
+  @override
   String lyricsStoreSectionUpdates(int count) {
     return 'Updates ($count)';
   }

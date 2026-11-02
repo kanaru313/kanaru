@@ -4,6 +4,9 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_queries.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest_parser.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_package_reader.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_log_paths.dart';
 import 'package:kanaru/core/lyrics/plugins/store/lyrics_plugin_dirs.dart';
 import 'package:kanaru/core/lyrics/plugins/store/plugin_install_id.dart';
@@ -37,6 +40,37 @@ void main() {
     expect(manifest['config']['token']['format'], 'secret');
     expect(await File('$dir/src/search.js').readAsString(), '// search');
     expect(await File('$dir/icon.png').readAsBytes(), [1, 2, 3]);
+  });
+
+  test('writePackage omits languages when the package has none', () async {
+    await dirs.writePackage('plugin-aaaaaaaaaaaa/v1-7', testPackage());
+    final manifest = jsonDecode(
+      await File('${dirs.resolve('plugin-aaaaaaaaaaaa/v1-7').path}/plugin.json')
+          .readAsString(),
+    ) as Map<String, dynamic>;
+    expect((manifest['metadata'] as Map).containsKey('languages'), isFalse);
+  });
+
+  test('writePackage keeps the languages in plugin.json', () async {
+    final base = testPackage().manifest;
+    final package = PluginPackage(
+      manifest: PluginManifest(
+        kind: base.kind,
+        apiVersion: base.apiVersion,
+        name: base.name,
+        version: base.version,
+        hosts: base.hosts,
+        searchScript: base.searchScript,
+        lyricsScript: base.lyricsScript,
+        languages: const ['vie', 'zho'],
+      ),
+      files: testPackage().files,
+    );
+    await dirs.writePackage('plugin-aaaaaaaaaaaa/v1-6', package);
+    final bytes = await File(
+      '${dirs.resolve('plugin-aaaaaaaaaaaa/v1-6').path}/plugin.json',
+    ).readAsBytes();
+    expect(parsePluginManifest(bytes).languages, ['vie', 'zho']);
   });
 
   test('writePackage refuses a path in a script name and cleans up', () async {

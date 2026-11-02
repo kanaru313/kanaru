@@ -12,14 +12,13 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_banner.dart';
 import 'plugin_store_empty.dart';
-import 'plugin_store_kind_chips.dart';
+import 'plugin_store_filter_button.dart';
 import 'plugin_store_menu.dart';
 import 'plugin_store_providers.dart';
 import 'plugin_store_sections.dart';
-import 'plugin_store_source_chips.dart';
 
 /// The plugin store: what the added repositories offer next to the plugins
-/// already installed, with search, a source filter, and one-tap install,
+/// already installed, with search, the filter modal, and one-tap install,
 /// update and uninstall. Opening it fetches every repository once.
 ///
 /// The page navigates only through its callbacks, so the router decides where
@@ -30,7 +29,7 @@ class PluginStorePage extends ConsumerStatefulWidget {
     required this.onOpenInstalled,
     required this.onOpenCatalogItem,
     required this.onOpenRepositories,
-    this.initialKind = PluginKind.lyrics,
+    this.initialKind,
   });
 
   /// A row of an installed plugin was tapped.
@@ -42,8 +41,9 @@ class PluginStorePage extends ConsumerStatefulWidget {
   /// "Repository (N)" was chosen in the menu.
   final VoidCallback onOpenRepositories;
 
-  /// The kind chip selected when the page opens.
-  final PluginKind initialKind;
+  /// The kind preselected in the filters when the page opens; null lists
+  /// every kind.
+  final PluginKind? initialKind;
 
   @override
   ConsumerState<PluginStorePage> createState() => _PluginStorePageState();
@@ -75,11 +75,13 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
     return PageScaffold(
       title: l10n.lyricsStoreTitle,
       actions: [
-        if (data != null && data.available)
+        if (data != null && data.available) ...[
+          PluginStoreFilterButton(initialKind: widget.initialKind),
           PluginStoreMenu(
             repositoryCount: data.sources.length,
             onOpenRepositories: widget.onOpenRepositories,
           ),
+        ],
       ],
       body: view.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -112,10 +114,14 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
                 children: [
                   PluginStoreBanner(failing: view.failingRepos),
                   _SearchField(controller: _search),
-                  PluginStoreKindChips(initialKind: widget.initialKind),
-                  PluginStoreSourceChips(view: view),
                   PluginStoreSections(
                     view: view,
+                    onClearFilters: ref
+                        .read(
+                          pluginStoreFiltersProvider(widget.initialKind)
+                              .notifier,
+                        )
+                        .clearAll,
                     onOpenInstalled: widget.onOpenInstalled,
                     onOpenCatalogItem: widget.onOpenCatalogItem,
                   ),

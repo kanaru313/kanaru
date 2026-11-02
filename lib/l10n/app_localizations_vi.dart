@@ -3826,6 +3826,49 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreFromFile => 'Từ file';
 
   @override
+  String get lyricsStoreFilterTooltip => 'Bộ lọc';
+
+  @override
+  String lyricsStoreFilterActiveLabel(int count) {
+    return 'Bộ lọc, $count đang bật';
+  }
+
+  @override
+  String get lyricsStoreFilterTitle => 'Bộ lọc';
+
+  @override
+  String get lyricsStoreFilterGroupType => 'Loại';
+
+  @override
+  String get lyricsStoreFilterGroupLanguage => 'Ngôn ngữ';
+
+  @override
+  String get lyricsStoreFilterGroupAuthor => 'Tác giả';
+
+  @override
+  String get lyricsStoreFilterGroupSource => 'Nguồn';
+
+  @override
+  String get lyricsStoreFilterAuthorSearch => 'Tìm tác giả';
+
+  @override
+  String lyricsStoreFilterShowing(int count) {
+    return 'Hiện $count plugin';
+  }
+
+  @override
+  String get lyricsStoreFilterClearAll => 'Xoá hết';
+
+  @override
+  String get lyricsStoreFilterDone => 'Xong';
+
+  @override
+  String get lyricsStoreFilterClear => 'Xoá bộ lọc';
+
+  @override
+  String get lyricsStoreLanguageGlobal => 'Quốc tế';
+
+  @override
   String lyricsStoreSectionUpdates(int count) {
     return 'Cập nhật ($count)';
   }

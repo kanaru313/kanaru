@@ -1,3 +1,4 @@
+import 'package:material_ui/material_ui.dart' show FilterChip, Text;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_page.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
 
@@ -326,11 +328,11 @@ void main() {
       ],
     );
 
-    testWidgets('the lyrics mounts start on Lyrics', (tester) async {
+    testWidgets('the lyrics mounts start on all kinds', (tester) async {
       for (final base in [lyricsStoreRoute, lyricsSourcesStoreRoute]) {
         await pumpMixed(tester, base);
         expect(find.text('LyrNew'), findsOneWidget, reason: base);
-        expect(find.text('TrNew'), findsNothing, reason: base);
+        expect(find.text('TrNew'), findsOneWidget, reason: base);
       }
     });
 
@@ -339,6 +341,55 @@ void main() {
       expect(find.text('TrNew'), findsOneWidget);
       expect(find.text('TrFile'), findsOneWidget);
       expect(find.text('LyrNew'), findsNothing);
+    });
+
+    testWidgets('filter picks do not carry over between mounts', (
+      tester,
+    ) async {
+      Future<void> pick(String label) async {
+        await tester.tap(find.byIcon(AppIcons.filter));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byWidgetPredicate(
+            (w) =>
+                w is FilterChip &&
+                w.label is Text &&
+                ((w.label as Text).textSpan?.toPlainText() ??
+                        (w.label as Text).data ??
+                        '')
+                    .startsWith(label),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(en.lyricsStoreFilterDone));
+        await tester.pumpAndSettle();
+      }
+
+      final router = await pumpMixed(tester, lyricsSourcesStoreRoute);
+      await pick(en.lyricsStoreKindLyrics);
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsNothing);
+
+      // The translation mount starts on Translate, not on the Lyrics pick.
+      router.go(translationPluginsRoute);
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsNothing);
+      expect(find.text('TrNew'), findsOneWidget);
+      await tester.tap(find.byIcon(AppIcons.filter));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilterChip, en.lyricsStoreChipAll).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(en.lyricsStoreFilterDone));
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsOneWidget);
+
+      // Back in a lyrics mount nothing is picked.
+      router.go(lyricsSourcesStoreRoute);
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsOneWidget);
     });
 
     testWidgets('an installed row opens the page of its kind', (tester) async {
@@ -396,26 +447,6 @@ void main() {
       await tester.tap(find.text(en.lyricsStoreItemOpenInstalled));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, translationPluginRoute(idB));
-    });
-
-    testWidgets('the chip picked in one mount does not leak into another', (
-      tester,
-    ) async {
-      final router = await pumpMixed(tester, lyricsSourcesStoreRoute);
-      await tester.tap(find.text(en.lyricsStoreKindTranslate));
-      await tester.pumpAndSettle();
-      expect(find.text('TrNew'), findsOneWidget);
-
-      router.go(translationPluginsRoute);
-      await tester.pumpAndSettle();
-      expect(find.text('TrNew'), findsOneWidget);
-      expect(find.text('LyrNew'), findsNothing);
-
-      await tester.tap(find.text(en.lyricsStoreKindLyrics));
-      await tester.pumpAndSettle();
-      router.go(lyricsSourcesStoreRoute);
-      await tester.pumpAndSettle();
-      expect(find.text('LyrNew'), findsOneWidget);
     });
 
     testWidgets('an item opened from the translation mount stays in it', (

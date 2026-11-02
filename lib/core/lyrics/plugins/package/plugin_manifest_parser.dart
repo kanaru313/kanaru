@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import '../../../database/lyrics_plugin_spec.dart';
 import '../../online/lyrics_provider_registry.dart';
 import 'plugin_config_parser.dart';
+import 'plugin_languages.dart';
 import 'plugin_manifest.dart';
 import 'plugin_package_problem.dart';
 import 'plugin_text_clean.dart';
@@ -83,6 +84,8 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
     keepNewlines: true,
   );
 
+  final languages = parsePluginLanguages(metadata['languages']);
+
   final script = json['script'];
   if (script is! Map<String, dynamic>) throw _invalid('script');
   PluginTranslateSpec? translate;
@@ -110,6 +113,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
     hosts: hosts,
     author: author,
     description: description,
+    languages: languages,
     searchScript: isLyrics
         ? _scriptRef(script['search'], 'script.search')
         : null,

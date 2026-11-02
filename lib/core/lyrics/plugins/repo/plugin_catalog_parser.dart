@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import '../../../database/lyrics_plugin_spec.dart';
 import '../../online/lyrics_provider_registry.dart';
+import '../package/plugin_languages.dart';
 import '../package/plugin_text_clean.dart';
 import 'plugin_catalog.dart';
 import 'repo_address_rules.dart';
@@ -26,7 +27,8 @@ const _maxReferenceLength = 2048;
 /// [PluginCatalog.dropped]; the entry rules are those of the plugin
 /// manifest (name, version, hosts, text cleaning), plus the slug rule, the
 /// `type` of `lyrics`, and the address rules for `path` (a bad `path` drops
-/// the entry) and `icon` (a bad `icon` only drops the icon). An entry whose
+/// the entry) and `icon` (a bad `icon` only drops the icon). The optional
+/// `languages` never drops an entry: a bad value means global. An entry whose
 /// `apiVersion` is newer than this app understands is kept.
 PluginCatalog parsePluginCatalog(Uint8List bytes, PluginCatalogOrigin origin) {
   if (bytes.length > repoCatalogMaxBytes) {
@@ -112,6 +114,7 @@ PluginCatalogEntry? _entry(
     icon: icon,
     description: description,
     author: author,
+    languages: parsePluginLanguages(json['languages']),
   );
 }
 

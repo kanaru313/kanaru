@@ -5,6 +5,7 @@ import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'plugin_store_actions.dart';
+import 'plugin_store_kind_tag.dart';
 import 'plugin_store_providers.dart';
 import 'store_row_icon.dart';
 
@@ -30,6 +31,7 @@ class PluginStoreRow extends ConsumerWidget {
     required this.kind,
     required this.repo,
     required this.onOpen,
+    this.showKindTag = false,
   });
 
   final StoreRow row;
@@ -38,6 +40,9 @@ class PluginStoreRow extends ConsumerWidget {
   /// The plugin's repository, for the catalog icon; null for a file plugin.
   final PluginRepo? repo;
   final VoidCallback onOpen;
+
+  /// Puts the plugin's kind in front of the subtitle.
+  final bool showKindTag;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,9 +80,7 @@ class PluginStoreRow extends ConsumerWidget {
       onTap: onOpen,
       leading: StoreRowIcon(row: row, repo: repo),
       title: Text(row.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: subtitle.isEmpty
-          ? null
-          : Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: _subtitle(subtitle),
       trailing: busy
           ? Semantics(
               label: l10n.lyricsStoreWorking,
@@ -92,6 +95,23 @@ class PluginStoreRow extends ConsumerWidget {
               ),
             )
           : _action(context, l10n),
+    );
+  }
+
+  Widget? _subtitle(String text) {
+    final label = text.isEmpty
+        ? null
+        : Text(text, maxLines: 1, overflow: TextOverflow.ellipsis);
+    final rowKind = row.kind;
+    if (!showKindTag || rowKind == null) return label;
+    return Row(
+      children: [
+        PluginStoreKindTag(kind: rowKind),
+        if (label != null) ...[
+          const SizedBox(width: 6),
+          Flexible(child: label),
+        ],
+      ],
     );
   }
 

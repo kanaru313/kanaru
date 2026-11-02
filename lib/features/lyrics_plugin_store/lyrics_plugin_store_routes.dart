@@ -10,8 +10,8 @@ import 'plugin_store_page.dart';
 import 'repositories_page.dart';
 
 /// The plugin store pages mounted at [base] (an absolute location);
-/// [path] is [base] relative to its parent route. The page opens on the
-/// [initialKind] chip.
+/// [path] is [base] relative to its parent route. The page preselects
+/// [initialKind] in its filters (null lists every kind).
 ///
 /// The router mounts the store twice, at [lyricsStoreRoute] and under the
 /// sources page at [lyricsSourcesStoreRoute], so each hop into it is a push
@@ -24,7 +24,7 @@ import 'repositories_page.dart';
 GoRoute lyricsStoreRoutesAt({
   required String base,
   required String path,
-  PluginKind initialKind = PluginKind.lyrics,
+  PluginKind? initialKind,
 }) => GoRoute(
   path: path,
   builder: (context, state) => PluginStorePage(
@@ -81,7 +81,7 @@ GoRoute lyricsRootStoreMount() => lyricsStoreRoutesAt(
 );
 
 /// The store mounted for translation services (route `translation-plugins`
-/// below Playback settings); it opens on the Translate chip.
+/// below Playback settings); it preselects Translate.
 GoRoute translationStoreMount() => lyricsStoreRoutesAt(
   base: translationPluginsRoute,
   path: translationPluginsRoute.substring('$settingsPlaybackRoute/'.length),
