@@ -4,7 +4,7 @@ import '../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../l10n/l10n.dart';
-import '../lyrics_provider_name.dart';
+import '../../../../shared/lyrics_picker/lyrics_source_name_text.dart';
 
 /// The text of the lyrics source button for [source]: what the song shows
 /// now and, for lyrics picked without a choice, that Kanaru picked them

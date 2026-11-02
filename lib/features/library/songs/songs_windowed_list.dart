@@ -13,7 +13,7 @@ import 'songs_list_provider.dart';
 import '../../../shared/widgets/library_grid/song_grid_tile.dart';
 import '../../../shared/widgets/library_grid/library_grid_card.dart';
 import '../albums/album_grid.dart' show albumGridPadding;
-import 'song_grid_delegate.dart';
+import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
 
 /// Row used to measure the list: every line and a duration, the tallest a
 /// row gets, so rows without an artist or album are not squeezed.
@@ -111,9 +111,10 @@ class _SongsWindowedListState extends ConsumerState<SongsWindowedList> {
             albumGridPadding,
             libraryBottomInset,
           ),
-          gridDelegate: songGridDelegate(
+          gridDelegate: libraryGridDelegate(
             context,
             constraints.maxWidth - albumGridPadding * 2,
+            tileHeight: SongGridTile.heightFor,
           ),
           itemCount: widget.songs.ids.length,
           itemBuilder: (context, i) {

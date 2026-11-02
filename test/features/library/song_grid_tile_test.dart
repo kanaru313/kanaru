@@ -21,7 +21,7 @@ import 'list_view_modes_override.dart';
 
 import 'package:kanaru/shared/widgets/library_grid/song_grid_tile.dart';
 import 'package:kanaru/shared/widgets/library_grid/library_grid_card.dart';
-import 'package:kanaru/features/library/songs/song_grid_delegate.dart';
+import 'package:kanaru/shared/widgets/library_grid/library_grid_delegate.dart';
 
 TrackListItem _song({String? album = 'Album', int? durationMs = 262000}) =>
     TrackListItem(
@@ -138,7 +138,11 @@ void main() {
             host(
               Builder(
                 builder: (context) {
-                  delegate = songGridDelegate(context, width);
+                  delegate = libraryGridDelegate(
+                    context,
+                    width,
+                    tileHeight: SongGridTile.heightFor,
+                  );
                   final fixed =
                       delegate as SliverGridDelegateWithFixedCrossAxisCount;
                   return SizedBox(
