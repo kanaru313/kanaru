@@ -89,6 +89,7 @@ class _PageBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final bodyBuilder = page.bodyBuilder;
     final itemBuilder = page.itemBuilder;
+    final bottomPadding = page.footerBuilder == null ? 8.0 : 0.0;
     return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
       child: FadeEdgeScrollView(
@@ -97,7 +98,7 @@ class _PageBody extends StatelessWidget {
             ? ListView(
                 controller: controller,
                 shrinkWrap: true,
-                padding: EdgeInsets.zero,
+                padding: EdgeInsets.only(bottom: bottomPadding),
                 children: bodyBuilder(context, nav),
               )
             : CustomScrollView(
