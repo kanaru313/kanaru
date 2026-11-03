@@ -15,6 +15,7 @@ ContextModalPage mostPlayedModalPage(MostPlayedModalSession session) =>
       headerBuilder: (context, nav) => MostPlayedModalHeader(
         rangeText: session.rangeText,
         totals: session.totals,
+        coverKeys: session.coverKeys,
       ),
       bodyBuilder: (context, nav) => [
         Column(

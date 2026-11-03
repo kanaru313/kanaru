@@ -4,10 +4,12 @@ import '../../../core/database/history_rows.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/widgets/context_modal/context_modal_header.dart';
+import '../../../shared/widgets/playlist_cover.dart';
+import '../history_side_pane.dart' show historyCollageSeed;
 
-const double _tileSize = 64;
+const double _coverSize = 64;
 
-/// Top of the History modal: a history tile, "History" and, once the totals
+/// Top of the History modal: the page's collage, "History" and, once the totals
 /// are read, "N listens • M songs • since date". No tap: the first row
 /// takes keyboard focus.
 class HistoryPageModalHeader extends StatelessWidget {
@@ -24,15 +26,11 @@ class HistoryPageModalHeader extends StatelessWidget {
     final overview = this.overview;
     final first = overview?.firstPlayedAt;
     return ContextModalHeader(
-      leading: SizedBox.square(
-        dimension: _tileSize,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(AppIcons.history, size: 32, color: colors.primary),
-        ),
+      leading: PlaylistCover(
+        coverKeys: overview?.coverKeys ?? const [],
+        size: _coverSize,
+        seed: historyCollageSeed,
+        icon: AppIcons.history,
       ),
       lines: [
         contextModalHeaderLine(l10n.navHistory, theme.textTheme.titleMedium),

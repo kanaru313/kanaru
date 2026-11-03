@@ -12,7 +12,7 @@ import '../../shared/widgets/playlist_cover.dart';
 
 /// Seed of the collage: the same arrangement in the pane, the header and the
 /// backdrop.
-const _collageSeed = 'history';
+const historyCollageSeed = 'history';
 
 /// The Play / Shuffle / ⋮ callbacks of the History page.
 typedef HistoryPageCallbacks = ({
@@ -116,12 +116,12 @@ class HistorySidePane extends StatelessWidget {
     return DetailSidePane(
       cover: CollageHeroBackdrop(
         coverKeys: overview?.coverKeys ?? const [],
-        seed: _collageSeed,
+        seed: historyCollageSeed,
         icon: AppIcons.history,
       ),
       coverOverlay: CollageHeroCard(
         coverKeys: overview?.coverKeys ?? const [],
-        seed: _collageSeed,
+        seed: historyCollageSeed,
         icon: AppIcons.history,
       ),
       details: HistoryDetails(
@@ -156,7 +156,7 @@ class HistoryHeader extends StatelessWidget {
           PlaylistCover(
             coverKeys: overview?.coverKeys ?? const [],
             size: 120,
-            seed: _collageSeed,
+            seed: historyCollageSeed,
             icon: AppIcons.history,
           ),
           const SizedBox(width: 24),

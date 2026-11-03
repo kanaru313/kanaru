@@ -8,6 +8,7 @@ import 'package:kanaru/features/history/history_side_pane.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_header.dart';
+import 'package:kanaru/shared/widgets/playlist_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../support/settle_modal.dart';
@@ -114,10 +115,21 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(ContextModalHeader),
-        matching: find.byIcon(AppIcons.history),
+        matching: find.byType(PlaylistCover),
       ),
       findsOneWidget,
     );
+    final cover = tester.widget<PlaylistCover>(
+      find.descendant(
+        of: find.byType(ContextModalHeader),
+        matching: find.byType(PlaylistCover),
+      ),
+    );
+    expect(cover.seed, historyCollageSeed);
+    expect(cover.icon, AppIcons.history);
+    // The page behind the modal draws the same collage.
+    final page = tester.widget<PlaylistCover>(find.byType(PlaylistCover).first);
+    expect(cover.coverKeys, page.coverKeys);
     expect(
       find.descendant(
         of: find.byType(ContextModalHeader),

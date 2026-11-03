@@ -10,6 +10,7 @@ import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:kanaru/shared/widgets/context_menu_more_button.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_header.dart';
+import 'package:kanaru/shared/widgets/playlist_cover.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/stats/gated_query_interceptor.dart';
@@ -138,10 +139,14 @@ void main() {
       find.descendant(of: header, matching: find.text('Most played')),
       findsOneWidget,
     );
-    expect(
-      find.descendant(of: header, matching: find.byIcon(AppIcons.mostPlayed)),
-      findsOneWidget,
+    final cover = tester.widget<PlaylistCover>(
+      find.descendant(of: header, matching: find.byType(PlaylistCover)),
     );
+    expect(cover.seed, mostPlayedCollageSeed);
+    expect(cover.icon, AppIcons.mostPlayed);
+    // The page behind the modal draws the same collage.
+    final page = tester.widget<PlaylistCover>(find.byType(PlaylistCover).first);
+    expect(cover.coverKeys, page.coverKeys);
     expect(
       find.descendant(of: header, matching: find.text('4 songs • 9 listens')),
       findsOneWidget,

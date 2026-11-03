@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/history_rows.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
+import '../../../core/database/playlist_cover_keys.dart';
 import '../../../core/m3u/m3u_write.dart' show M3uExportEntry, M3uPathStyle;
 import '../../../core/player/track.dart';
 import '../../../l10n/app_localizations.dart';
@@ -32,10 +33,16 @@ class MostPlayedModalSession {
     required this.messenger,
     required this.rootNavigator,
     required this.save,
-  }) : tracks = historyTopPlayable(rows, covers);
+  }) : tracks = historyTopPlayable(rows, covers),
+       coverKeys = pickCollageKeys([
+         for (final row in rows) row.track?.coverKey,
+       ]);
 
   /// The library songs of the ranking, in rank order.
   final List<Track> tracks;
+
+  /// The collage keys of the ranking, picked as the page picks them.
+  final List<String> coverKeys;
 
   /// The range's text; names the playlist, the export and the snackbars.
   final String rangeText;

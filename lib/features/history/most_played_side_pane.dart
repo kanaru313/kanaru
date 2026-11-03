@@ -8,7 +8,7 @@ import '../../shared/widgets/playlist_cover.dart';
 
 /// Seed of the collage: the same arrangement in the pane, the header and the
 /// backdrop.
-const _collageSeed = 'most-played';
+const mostPlayedCollageSeed = 'most-played';
 
 /// Title, the range, the totals and the buttons, shared by the header and the
 /// side pane.
@@ -88,12 +88,12 @@ class MostPlayedSidePane extends StatelessWidget {
     return DetailSidePane(
       cover: CollageHeroBackdrop(
         coverKeys: coverKeys,
-        seed: _collageSeed,
+        seed: mostPlayedCollageSeed,
         icon: AppIcons.mostPlayed,
       ),
       coverOverlay: CollageHeroCard(
         coverKeys: coverKeys,
-        seed: _collageSeed,
+        seed: mostPlayedCollageSeed,
         icon: AppIcons.mostPlayed,
       ),
       details: MostPlayedDetails(
@@ -132,7 +132,7 @@ class MostPlayedHeader extends StatelessWidget {
           PlaylistCover(
             coverKeys: coverKeys,
             size: 120,
-            seed: _collageSeed,
+            seed: mostPlayedCollageSeed,
             icon: AppIcons.mostPlayed,
           ),
           const SizedBox(width: 24),
