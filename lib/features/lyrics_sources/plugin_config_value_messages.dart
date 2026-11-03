@@ -47,6 +47,5 @@ String pluginValueProblemMessage(
   PluginValueProblem.badUrl => l10n.pluginConfigUrlInvalid,
   PluginValueProblem.badItem => l10n.pluginConfigItemInvalid,
   PluginValueProblem.badKey => l10n.pluginConfigKeyInvalid,
-  PluginValueProblem.duplicateKey => l10n.pluginConfigKeyDuplicate,
   PluginValueProblem.notOption => l10n.pluginConfigInvalidValue,
 };

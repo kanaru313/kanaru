@@ -116,12 +116,12 @@ class LyricsPluginConfigStore {
   ) async {
     var all = true;
     for (final field in schema.where(isSecretField)) {
-      all &= await deleteSecret(installId, field.key);
+      all &= await _deleteSecret(installId, field.key);
     }
     return all;
   }
 
-  Future<bool> deleteSecret(String installId, String key) async {
+  Future<bool> _deleteSecret(String installId, String key) async {
     try {
       await _secrets.delete(lyricsPluginSecretName(installId, key));
       return true;
@@ -146,7 +146,7 @@ class LyricsPluginConfigStore {
     for (final old in before) {
       final now = after.where((f) => f.key == old.key).firstOrNull;
       if (isSecretField(old) && (now == null || !isSecretField(now))) {
-        await deleteSecret(installId, old.key);
+        await _deleteSecret(installId, old.key);
       }
       if (now != null && !isSecretField(old) && isSecretField(now)) {
         final value = values[old.key];

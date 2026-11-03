@@ -33,10 +33,6 @@ enum PluginValueProblem {
   badUrl,
   badItem,
   badKey,
-
-  /// Two map rows share a key. A stored map cannot hold this; the editor
-  /// reports it for rows it has not saved.
-  duplicateKey,
 }
 
 /// Whether [value] is a legal value of [field] (emptiness is not checked:
