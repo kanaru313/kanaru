@@ -2,7 +2,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import 'folder_art.dart';
+import 'folder_modal/folder_more_button.dart';
 import 'folder_tree.dart';
 
 /// Art, [breadcrumb], name, optional counts and the Play and Shuffle buttons
@@ -16,6 +18,7 @@ class FolderHeader extends StatelessWidget {
     this.directArt = false,
     required this.onPlay,
     required this.onShuffle,
+    this.onQueueAction,
     this.counts,
     this.trailing = const [],
   });
@@ -31,6 +34,7 @@ class FolderHeader extends StatelessWidget {
   /// Null disables the button.
   final VoidCallback? onPlay;
   final VoidCallback? onShuffle;
+  final ValueChanged<QueueAction>? onQueueAction;
 
   /// The counts line under the name, given the muted text style.
   final Widget Function(TextStyle? style)? counts;
@@ -90,6 +94,13 @@ class FolderHeader extends StatelessWidget {
                       icon: const Icon(AppIcons.shuffle),
                       label: Text(l10n.libraryShuffle),
                     ),
+                    if (onQueueAction != null)
+                      FolderMoreButton(
+                        folder: folder,
+                        direct: directArt,
+                        onQueueAction: onQueueAction!,
+                        showFolder: false,
+                      ),
                     ...trailing,
                   ],
                 ),

@@ -906,6 +906,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foldersPlayAllBelow => 'Play all below';
 
   @override
+  String foldersSubfolderCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subfolders',
+      one: '1 subfolder',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get favoritesEmptyMessage => 'Songs you like will show up here.';
 
   @override
@@ -4957,6 +4968,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get genreModalSplitMergeHint =>
       'Split tagged genres or combine different spellings';
+
+  @override
+  String get folderModalLabel => 'Folder options';
+
+  @override
+  String get folderModalCopyPath => 'Copy folder path';
+
+  @override
+  String get folderModalPathCopied => 'Path copied to clipboard';
+
+  @override
+  String get folderModalExcludeFromLibrary => 'Exclude from library';
 
   @override
   String translationNoticePluginTitle(String service) {

@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/widgets/library_grid/round_grid_tile.dart';
-import 'folder_grid_tile.dart';
-import 'folder_menu.dart';
-import 'folder_tree.dart';
 import '../../../shared/widgets/library_grid/library_grid_delegate.dart';
+import '../../../shared/widgets/library_grid/round_grid_tile.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
+import 'folder_grid_tile.dart';
+import 'folder_tree.dart';
 
 /// A folder to show in [FolderGrid] or [SliverFolderGrid]: the node, the name
 /// to show for it, and in flat mode the line of folders above it and whether
@@ -37,7 +37,7 @@ bool _anyParentLine(List<FolderEntry> folders) =>
 Widget _tile(
   FolderEntry entry,
   void Function(FolderNode folder) onTap,
-  void Function(FolderNode folder, FolderAction action)? onAction, {
+  void Function(FolderNode folder, QueueAction action)? onQueueAction, {
   required bool showPaths,
 }) => FolderGridTile(
   folder: entry.folder,
@@ -46,9 +46,9 @@ Widget _tile(
   showPath: entry.folder.ambiguousRoot && showPaths,
   parentLine: entry.parentLine,
   direct: entry.direct,
-  onAction: onAction == null
+  onQueueAction: onQueueAction == null
       ? null
-      : (action) => onAction(entry.folder, action),
+      : (action) => onQueueAction(entry.folder, action),
 );
 
 /// [folders] as a scrolling grid.
@@ -58,7 +58,7 @@ class FolderGrid extends StatelessWidget {
     required this.folders,
     required this.onTap,
     this.showPaths = false,
-    this.onAction,
+    this.onQueueAction,
   });
 
   final List<FolderEntry> folders;
@@ -66,7 +66,7 @@ class FolderGrid extends StatelessWidget {
 
   /// Whether folders in music folders that share a name show their path.
   final bool showPaths;
-  final void Function(FolderNode folder, FolderAction action)? onAction;
+  final void Function(FolderNode folder, QueueAction action)? onQueueAction;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -88,7 +88,7 @@ class FolderGrid extends StatelessWidget {
       ),
       itemCount: folders.length,
       itemBuilder: (context, i) =>
-          _tile(folders[i], onTap, onAction, showPaths: showPaths),
+          _tile(folders[i], onTap, onQueueAction, showPaths: showPaths),
     ),
   );
 }
@@ -100,7 +100,7 @@ class SliverFolderGrid extends StatelessWidget {
     required this.folders,
     required this.onTap,
     this.showPaths = false,
-    this.onAction,
+    this.onQueueAction,
   });
 
   final List<FolderEntry> folders;
@@ -108,7 +108,7 @@ class SliverFolderGrid extends StatelessWidget {
 
   /// Whether folders in music folders that share a name show their path.
   final bool showPaths;
-  final void Function(FolderNode folder, FolderAction action)? onAction;
+  final void Function(FolderNode folder, QueueAction action)? onQueueAction;
 
   @override
   Widget build(BuildContext context) => SliverPadding(
@@ -126,7 +126,7 @@ class SliverFolderGrid extends StatelessWidget {
         ),
         itemCount: folders.length,
         itemBuilder: (context, i) =>
-            _tile(folders[i], onTap, onAction, showPaths: showPaths),
+            _tile(folders[i], onTap, onQueueAction, showPaths: showPaths),
       ),
     ),
   );

@@ -7,10 +7,11 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/settings/library_sort.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
-import '../../../shared/widgets/view_mode_toggle.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/page_scaffold.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/view_mode_toggle.dart';
 import '../library_browse_body.dart';
 import '../library_detail_body.dart';
 import '../library_view_modes.dart';
@@ -19,7 +20,6 @@ import 'folder_actions.dart';
 import 'folder_content_view.dart';
 import 'folder_grid.dart';
 import 'folder_list_tile.dart';
-import 'folder_menu.dart';
 import 'folder_trail.dart';
 import 'folder_tree.dart';
 import 'folders_provider.dart';
@@ -49,8 +49,8 @@ class FoldersScreen extends ConsumerWidget {
         ref.watch(libraryDatabaseProvider) != null &&
         ref.watch(libraryHasRootsProvider);
     void open(FolderNode folder) => context.go(folderLocation(folder.path));
-    void act(FolderNode folder, FolderAction action) =>
-        runFolderAction(ref, context, action, folder, recursive: hierarchy);
+    void enqueue(FolderNode folder, QueueAction action) =>
+        enqueueFolder(ref, context, action, folder, recursive: hierarchy);
     final tree = ref.watch(folderTreeProvider).value;
     // Flat tiles are named by the folder and the folders above it, and stand
     // for their own songs only.
@@ -99,7 +99,7 @@ class FoldersScreen extends ConsumerWidget {
                     folders: [for (final f in folders) entry(f)],
                     onTap: open,
                     showPaths: true,
-                    onAction: act,
+                    onQueueAction: enqueue,
                   ),
                   AlbumsView.list => ListView.builder(
                     padding: libraryListBottomPadding,
@@ -113,7 +113,7 @@ class FoldersScreen extends ConsumerWidget {
                       direct: !hierarchy,
                       onTap: () => open(folders[i]),
                       showPath: hierarchy && folders[i].ambiguousRoot,
-                      onAction: (action) => act(folders[i], action),
+                      onQueueAction: (action) => enqueue(folders[i], action),
                     ),
                   ),
                 },

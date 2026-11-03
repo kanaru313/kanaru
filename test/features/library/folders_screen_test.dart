@@ -240,7 +240,7 @@ void main() {
     expect(location(h), folderLocation('/m/Rock'));
   });
 
-  testWidgets('right click on a folder offers the six actions', (tester) async {
+  testWidgets('right click on a folder offers the actions', (tester) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
     await openWithTracks(tester, h, _tracks, location: '/folders');
 
@@ -248,12 +248,14 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final item in [
-      'Play',
+      'Go to folder',
+      'Play all',
       'Shuffle',
       'Play next',
       'Add to queue',
       'Add to playlist…',
       'Create playlist',
+      'Advanced',
     ]) {
       expect(find.text(item), findsOneWidget, reason: item);
     }

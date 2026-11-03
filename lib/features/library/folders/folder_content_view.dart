@@ -100,8 +100,8 @@ class _FolderContentViewState extends ConsumerState<FolderContentView> {
             children: children,
             view: modes.folders,
             onOpen: (child) => context.go(folderLocation(child.path)),
-            onAction: (child, action) =>
-                runFolderAction(ref, context, action, child),
+            onQueueAction: (child, action) =>
+                enqueueFolder(ref, context, action, child),
           ),
         ],
         if (list && showFolders && showSongs)

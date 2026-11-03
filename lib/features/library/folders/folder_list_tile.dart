@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import 'folder_art.dart';
 import 'folder_counts_line.dart';
-import 'folder_menu.dart';
+import 'folder_modal/folder_actions_region.dart';
+import 'folder_modal/folder_more_button.dart';
 import 'folder_tree.dart';
 
 /// One folder row: folder art, [title] (the folder name, or its label in
@@ -17,7 +19,7 @@ class FolderListTile extends StatelessWidget {
     this.showPath = false,
     this.parentLine,
     this.direct = false,
-    this.onAction,
+    this.onQueueAction,
   });
 
   final FolderNode folder;
@@ -33,8 +35,8 @@ class FolderListTile extends StatelessWidget {
   /// Shows the folder's own songs only: art, count and menu (the flat list).
   final bool direct;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
-  final ValueChanged<FolderAction>? onAction;
+  /// Picked from the modal of a right click, long press or more button.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +58,26 @@ class FolderListTile extends StatelessWidget {
                 counts,
               ],
             ),
-      trailing: const Icon(AppIcons.chevronRight),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (onQueueAction != null)
+            FolderMoreButton(
+              folder: folder,
+              direct: direct,
+              onQueueAction: onQueueAction!,
+              showFolder: true,
+            ),
+          const Icon(AppIcons.chevronRight),
+        ],
+      ),
       onTap: onTap,
     );
-    return folderTileMenu(
+    return FolderActionsRegion(
       folder: folder,
       direct: direct,
-      onAction: onAction,
+      onQueueAction: onQueueAction,
+      showFolder: true,
       child: tile,
     );
   }

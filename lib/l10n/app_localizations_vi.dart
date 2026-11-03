@@ -852,6 +852,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get foldersPlayAllBelow => 'Phát cả thư mục con';
 
   @override
+  String foldersSubfolderCount(int count) {
+    return '$count thư mục con';
+  }
+
+  @override
   String get favoritesEmptyMessage => 'Bài hát bạn thích sẽ hiện ở đây.';
 
   @override
@@ -4662,6 +4667,18 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get genreModalSplitMergeHint =>
       'Tách các thể loại được gắn thẻ hoặc gộp các cách viết khác nhau';
+
+  @override
+  String get folderModalLabel => 'Tùy chọn thư mục';
+
+  @override
+  String get folderModalCopyPath => 'Sao chép đường dẫn thư mục';
+
+  @override
+  String get folderModalPathCopied => 'Đã sao chép đường dẫn';
+
+  @override
+  String get folderModalExcludeFromLibrary => 'Loại trừ khỏi thư viện';
 
   @override
   String translationNoticePluginTitle(String service) {

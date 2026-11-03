@@ -12,7 +12,6 @@ import 'package:kanaru/features/library/folders/folder_art.dart';
 import 'package:kanaru/features/library/folders/folder_content_view.dart';
 import 'package:kanaru/features/library/folders/folder_header.dart';
 import 'package:kanaru/features/library/folders/folder_list_tile.dart';
-import 'package:kanaru/features/library/folders/folder_menu.dart';
 import 'package:kanaru/features/library/folders/folder_page_parts.dart';
 import 'package:kanaru/shared/library_route_keys.dart';
 import 'package:kanaru/shared/widgets/hover_underline_links.dart';
@@ -237,9 +236,16 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
     await tester.pumpAndSettle();
 
-    final focused = FocusManager.instance.primaryFocus?.context
-        ?.findAncestorWidgetOfExactType<PopupMenuItem<FolderAction>>();
-    expect(focused?.value, FolderAction.play);
+    final modal = find.bySemanticsLabel('Folder options');
+    expect(modal, findsWidgets);
+    final ctx = FocusManager.instance.primaryFocus?.context;
+    expect(
+      find.descendant(
+        of: modal.last,
+        matching: find.byElementPredicate((e) => e == ctx),
+      ),
+      findsWidgets,
+    );
     await tester.tap(find.text('Add to queue'));
     await settleIo(tester, h);
 
@@ -296,7 +302,7 @@ void main() {
     expect(await tester.runAsync(h.db.playlistCards), isEmpty);
   });
 
-  testWidgets('Create playlist on a folder without songs only says so', (
+  testWidgets('Create playlist on a folder without songs is disabled', (
     tester,
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
@@ -310,10 +316,11 @@ void main() {
       buttons: kSecondaryButton,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Create playlist'));
-    await tester.pumpAndSettle();
 
-    expect(find.text('No songs in this folder'), findsOneWidget);
+    final action = tester.widget<InkWell>(
+      find.widgetWithText(InkWell, 'Create playlist'),
+    );
+    expect(action.onTap, isNull);
     expect(find.byType(AlertDialog), findsNothing);
     expect(await tester.runAsync(h.db.playlistCards), isEmpty);
   });
@@ -653,8 +660,18 @@ void main() {
       expect(inHeader(find.byTooltip('More options')), findsOneWidget);
       await openMore(tester);
       expect(find.text('Play all below'), findsOneWidget);
-      expect(find.text('Add to queue'), findsNothing);
-      expect(find.text('Create playlist'), findsNothing);
+      expect(
+        tester
+            .widget<InkWell>(find.widgetWithText(InkWell, 'Add to queue'))
+            .onTap,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<InkWell>(find.widgetWithText(InkWell, 'Create playlist'))
+            .onTap,
+        isNull,
+      );
       await tester.tapAt(const Offset(1, 1));
       await tester.pumpAndSettle();
       expect(play.onPressed, isNull);

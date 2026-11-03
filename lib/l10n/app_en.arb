@@ -655,6 +655,13 @@
   "foldersCreatePlaylist": "Create playlist",
   "foldersEmptyFolder": "No songs in this folder",
   "foldersPlayAllBelow": "Play all below",
+  "foldersSubfolderCount": "{count, plural, =1{1 subfolder} other{{count} subfolders}}",
+  "@foldersSubfolderCount": {
+    "description": "Subfolder count shown in folder header or context modal",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "favoritesEmptyMessage": "Songs you like will show up here.",
   "searchEmptyTitle": "Search your library",
   "searchEmptyMessage": "Find songs, albums and artists.",
@@ -4915,6 +4922,22 @@
   "genreModalSplitMergeHint": "Split tagged genres or combine different spellings",
   "@genreModalSplitMergeHint": {
     "description": "Quiet line under Split or merge genre"
+  },
+  "folderModalLabel": "Folder options",
+  "@folderModalLabel": {
+    "description": "Semantics label for the folder options modal sheet"
+  },
+  "folderModalCopyPath": "Copy folder path",
+  "@folderModalCopyPath": {
+    "description": "Folder options row that copies the folder's file path to clipboard"
+  },
+  "folderModalPathCopied": "Path copied to clipboard",
+  "@folderModalPathCopied": {
+    "description": "Snackbar shown after copying folder path to clipboard"
+  },
+  "folderModalExcludeFromLibrary": "Exclude from library",
+  "@folderModalExcludeFromLibrary": {
+    "description": "Folder options row that adds the folder to library excluded folders"
   },
   "translationNoticePluginTitle": "Lyrics will be sent to the plugin {service}",
   "@translationNoticePluginTitle": {

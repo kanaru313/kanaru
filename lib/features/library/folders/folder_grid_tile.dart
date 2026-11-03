@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'folder_art.dart';
-import 'folder_counts_line.dart';
-import 'folder_menu.dart';
-import 'folder_tree.dart';
 import '../../../shared/fixed_line_strut.dart';
 import '../../../shared/widgets/library_grid/library_grid_card.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
+import 'folder_art.dart';
+import 'folder_counts_line.dart';
+import 'folder_modal/folder_actions_region.dart';
+import 'folder_tree.dart';
 
 /// One folder in a grid: layered folder art holding one cover, [title] and the counts line.
 class FolderGridTile extends StatelessWidget {
@@ -17,7 +18,7 @@ class FolderGridTile extends StatelessWidget {
     this.showPath = false,
     this.parentLine,
     this.direct = false,
-    this.onAction,
+    this.onQueueAction,
   });
 
   final FolderNode folder;
@@ -33,8 +34,8 @@ class FolderGridTile extends StatelessWidget {
   /// Shows the folder's own songs only: art, count and menu (flat mode).
   final bool direct;
 
-  /// Picked from the menu of a right click or long press; no menu without it.
-  final ValueChanged<FolderAction>? onAction;
+  /// Picked from the modal of a right click, long press or more button.
+  final ValueChanged<QueueAction>? onQueueAction;
 
   @override
   Widget build(BuildContext context) {
@@ -82,10 +83,11 @@ class FolderGridTile extends StatelessWidget {
       ),
     );
     if (showPath) tile = Tooltip(message: folder.path, child: tile);
-    return folderTileMenu(
+    return FolderActionsRegion(
       folder: folder,
       direct: direct,
-      onAction: onAction,
+      onQueueAction: onQueueAction,
+      showFolder: true,
       child: tile,
     );
   }

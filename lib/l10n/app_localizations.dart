@@ -1334,6 +1334,12 @@ abstract class AppLocalizations {
   /// **'Play all below'**
   String get foldersPlayAllBelow;
 
+  /// Subfolder count shown in folder header or context modal
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 subfolder} other{{count} subfolders}}'**
+  String foldersSubfolderCount(int count);
+
   /// No description provided for @favoritesEmptyMessage.
   ///
   /// In en, this message translates to:
@@ -7267,6 +7273,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Split tagged genres or combine different spellings'**
   String get genreModalSplitMergeHint;
+
+  /// Semantics label for the folder options modal sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Folder options'**
+  String get folderModalLabel;
+
+  /// Folder options row that copies the folder's file path to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Copy folder path'**
+  String get folderModalCopyPath;
+
+  /// Snackbar shown after copying folder path to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Path copied to clipboard'**
+  String get folderModalPathCopied;
+
+  /// Folder options row that adds the folder to library excluded folders
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude from library'**
+  String get folderModalExcludeFromLibrary;
 
   /// Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name
   ///

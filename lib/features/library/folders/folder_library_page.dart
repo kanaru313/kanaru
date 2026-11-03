@@ -9,7 +9,6 @@ import 'folder_actions.dart';
 import 'folder_content_view.dart';
 import 'folder_counts_line.dart';
 import 'folder_header.dart';
-import 'folder_menu.dart';
 import 'folders_provider.dart';
 
 /// The page of a folder of the library: its subfolders (with the tree on)
@@ -33,8 +32,6 @@ class LibraryFolderPage extends ConsumerWidget {
     final songs = data.songs;
     final flat = !modes.foldersHierarchy;
     final noSongs = flat && songs.isEmpty;
-    void run(FolderAction action) =>
-        runFolderAction(ref, context, action, folder, recursive: !flat);
     // The folders above are links in the tree view only; the current folder
     // is the page title below.
     final trail = data.trail;
@@ -71,15 +68,20 @@ class LibraryFolderPage extends ConsumerWidget {
           style: style,
           directSongs: flat ? songs.length : null,
         ),
-        onPlay: noSongs ? null : () => run(FolderAction.play),
-        onShuffle: noSongs ? null : () => run(FolderAction.shuffle),
-        trailing: [
-          FolderActionsButton(
-            withPlayAllBelow: flat && folder.children.isNotEmpty,
-            withSongActions: !noSongs,
-            onSelected: run,
-          ),
-        ],
+        onPlay: noSongs
+            ? null
+            : () => playFolder(ref, context, folder, recursive: !flat),
+        onShuffle: noSongs
+            ? null
+            : () => playFolder(
+                ref,
+                context,
+                folder,
+                shuffle: true,
+                recursive: !flat,
+              ),
+        onQueueAction: (action) =>
+            enqueueFolder(ref, context, action, folder, recursive: !flat),
       ),
     );
   }

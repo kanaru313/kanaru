@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/settings/library_sort.dart';
+import '../../../shared/widgets/queue_actions_menu.dart';
 import 'folder_grid.dart';
 import 'folder_list_tile.dart';
-import 'folder_menu.dart';
 import 'folder_tree.dart';
 
 /// The subfolders of a folder page as a grid or a list.
@@ -13,13 +13,13 @@ class SliverSubfolders extends StatelessWidget {
     required this.children,
     required this.view,
     required this.onOpen,
-    required this.onAction,
+    required this.onQueueAction,
   });
 
   final List<FolderNode> children;
   final AlbumsView view;
   final void Function(FolderNode folder) onOpen;
-  final void Function(FolderNode folder, FolderAction action) onAction;
+  final void Function(FolderNode folder, QueueAction action) onQueueAction;
 
   @override
   Widget build(BuildContext context) => switch (view) {
@@ -29,7 +29,7 @@ class SliverSubfolders extends StatelessWidget {
           (folder: c, title: c.name, parentLine: null, direct: false),
       ],
       onTap: onOpen,
-      onAction: onAction,
+      onQueueAction: onQueueAction,
     ),
     AlbumsView.list => SliverList.builder(
       itemCount: children.length,
@@ -37,7 +37,7 @@ class SliverSubfolders extends StatelessWidget {
         folder: children[i],
         title: children[i].name,
         onTap: () => onOpen(children[i]),
-        onAction: (action) => onAction(children[i], action),
+        onQueueAction: (action) => onQueueAction(children[i], action),
       ),
     ),
   };
