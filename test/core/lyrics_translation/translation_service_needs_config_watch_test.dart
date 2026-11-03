@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
@@ -12,12 +14,18 @@ import 'fake_plugin_runner.dart';
 const _id = 'plugin-abcdefghijkl';
 
 class _Controller extends Fake implements LyricsPluginsController {
-  _Controller(this.answer);
+  _Controller(this.answer, {this.gate});
 
   final bool answer;
 
+  /// When set, the check waits for it.
+  final Completer<void>? gate;
+
   @override
-  Future<bool> needsConfig(String installId) async => answer;
+  Future<bool> needsConfig(String installId) async {
+    await gate?.future;
+    return answer;
+  }
 }
 
 void main() {
@@ -27,6 +35,7 @@ void main() {
     required bool needs,
     TranslationServiceId service = TranslationServiceId.google,
     bool live = true,
+    Completer<void>? gate,
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -36,7 +45,9 @@ void main() {
         lyricsPluginRecordsProvider.overrideWithValue([
           if (live) translateRecord(_id, name: 'Gemini'),
         ]),
-        lyricsPluginsControllerProvider.overrideWithValue(_Controller(needs)),
+        lyricsPluginsControllerProvider.overrideWithValue(
+          _Controller(needs, gate: gate),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -80,6 +91,17 @@ void main() {
       expect(back.read(pluginNeedsConfigNoticesProvider), isNull);
       expect(gone.read(pluginNeedsConfigNoticesProvider), isNull);
     });
+  });
+
+  test('the service changed again during the check reports nothing', () async {
+    final gate = Completer<void>();
+    final c = make(needs: true, gate: gate);
+    pick(c, plugin);
+    await settle();
+    pick(c, TranslationServiceId.google);
+    gate.complete();
+    await settle();
+    expect(c.read(pluginNeedsConfigNoticesProvider), isNull);
   });
 
   test('an unrelated settings change reports nothing', () async {

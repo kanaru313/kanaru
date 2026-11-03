@@ -13,6 +13,14 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
           ]))
           .watch();
 
+  /// Whether [providerId] is on; false when it has no row or is off.
+  Future<bool> lyricsSourceIsOn(String providerId) async {
+    final row = await (select(
+      lyricsSourcePrefs,
+    )..where((t) => t.providerId.equals(providerId))).getSingleOrNull();
+    return row?.enabled ?? false;
+  }
+
   /// The position for a source with no row: after every row, and never 0
   /// (the implicit position of `lrclib`).
   Future<int> nextLyricsSourcePosition() async {

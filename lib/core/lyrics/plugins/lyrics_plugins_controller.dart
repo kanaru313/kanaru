@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -175,7 +176,8 @@ class LyricsPluginsController {
       () => _db.setLyricsSourceEnabled(installId, enabled),
     );
     if (enabled && result == LyricsPluginWrite.written) {
-      await _reportIfNeedsConfig(installId);
+      // The notice is a courtesy: the keyring read must not delay the switch.
+      unawaited(_reportIfNeedsConfig(installId));
     }
     return result;
   }
@@ -190,6 +192,8 @@ class LyricsPluginsController {
       final row = await _db.lyricsPluginById(installId);
       if (row == null || row.removedAt != null) return;
       if (!await needsConfig(installId)) return;
+      // Switched off again while the check ran: nothing to configure.
+      if (!await _db.lyricsSourceIsOn(installId)) return;
       callback(installId, row.name, PluginKind.fromValue(row.kind));
     } on Object catch (error) {
       _log.fine('Could not check the plugin settings: ${error.runtimeType}');

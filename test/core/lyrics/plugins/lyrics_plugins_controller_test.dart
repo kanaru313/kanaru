@@ -178,6 +178,7 @@ void main() {
         await reporting.setEnabled(r.installId, true),
         LyricsPluginWrite.written,
       );
+      await pumpEventQueue();
       expect(reports, [(r.installId, 'Needy', PluginKind.lyrics)]);
     });
 
@@ -197,6 +198,19 @@ void main() {
       );
       await reporting.setConfigValue(r.installId, 'apiKey', 'k');
       await reporting.setEnabled(r.installId, true);
+      await pumpEventQueue();
+      expect(reports, isEmpty);
+    });
+
+    test('switched on then off at once reports nothing', () async {
+      final r = await reporting.installPackage(
+        testPackage(config: const [apiKey]),
+        file,
+      );
+      final on = reporting.setEnabled(r.installId, true);
+      final off = reporting.setEnabled(r.installId, false);
+      await Future.wait([on, off]);
+      await pumpEventQueue();
       expect(reports, isEmpty);
     });
 
@@ -210,6 +224,7 @@ void main() {
         await reporting.setEnabled(r.installId, true),
         LyricsPluginWrite.skipped,
       );
+      await pumpEventQueue();
       expect(reports, isEmpty);
     });
   });
