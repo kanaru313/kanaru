@@ -14,7 +14,6 @@ class PlaylistActionsRegion extends ConsumerWidget {
     required this.coverKeys,
     required this.child,
     this.showGoTo = true,
-    this.savedQueue = false,
     this.beforeRead,
   });
 
@@ -24,9 +23,6 @@ class PlaylistActionsRegion extends ConsumerWidget {
 
   /// False on the page of the playlist itself.
   final bool showGoTo;
-
-  /// Opens the Queue modal: [playlist] is a saved queue.
-  final bool savedQueue;
   final Future<void> Function()? beforeRead;
 
   @override
@@ -39,7 +35,6 @@ class PlaylistActionsRegion extends ConsumerWidget {
             playlist: playlist,
             coverKeys: coverKeys,
             showGoTo: showGoTo,
-            savedQueue: savedQueue,
             viaKeyboard: viaKeyboard,
             beforeRead: beforeRead,
           ),

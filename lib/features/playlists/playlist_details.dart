@@ -6,6 +6,7 @@ import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import 'playlist_display_name.dart';
 import 'playlist_modal/playlist_description_box.dart';
 import 'playlist_modal/playlist_more_button.dart';
+import 'saved_queue_modal/saved_queue_more_button.dart';
 
 /// Name (bold, two lines at most), song count, the description (three lines,
 /// then it scrolls; left out when empty), then Play / Shuffle and one
@@ -52,13 +53,19 @@ class PlaylistDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final menu = PlaylistMoreButton(
-      playlist: head.playlist,
-      coverKeys: head.coverKeys,
-      showGoTo: false,
-      savedQueue: savedQueue,
-      beforeRead: beforeRead,
-    );
+    final menu = savedQueue
+        ? SavedQueueMoreButton(
+            playlist: head.playlist,
+            coverKeys: head.coverKeys,
+            showGoTo: false,
+            beforeRead: beforeRead,
+          )
+        : PlaylistMoreButton(
+            playlist: head.playlist,
+            coverKeys: head.coverKeys,
+            showGoTo: false,
+            beforeRead: beforeRead,
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

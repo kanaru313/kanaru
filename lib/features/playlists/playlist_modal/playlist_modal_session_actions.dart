@@ -1,15 +1,11 @@
-import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/playlist_modal_queries.dart';
-import '../../../core/database/queue_history_queries.dart';
 import '../../../core/database/playlist_page_queries.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
-import '../../../shared/widgets/app_snack_bar.dart';
-import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../m3u_export_flow.dart';
 import '../playlist_delete_dialog.dart';
@@ -17,10 +13,7 @@ import '../playlist_display_name.dart';
 import '../playlist_edit_flow.dart';
 import '../playlist_page_actions.dart';
 import '../playlist_play_actions.dart';
-import '../queue_history_routes.dart';
 import 'playlist_modal_session.dart';
-
-final _log = Logger('queue_history');
 
 /// The actions of the first page and the exports, each one reading the
 /// opener's captured state through the session.
@@ -46,7 +39,6 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
       },
       label: playlistDisplayName(latest, l10n),
       excludePlaylistId: latest.id,
-      suggestedName: savedQueue ? playlistDisplayName(latest, l10n) : null,
     );
   }
 
@@ -106,35 +98,6 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
       l10n: l10n,
       playlist: latest,
     );
-  }
-
-  /// Delete queue: confirms above the modal (cancel comes back to it), then
-  /// closes the modal, waits for the opener's writes and, on the queue's own
-  /// page, leaves it for the Queues list before deleting, so the page never
-  /// reloads to "not found".
-  Future<void> deleteQueue(ContextModalNav nav, PlaylistSummary latest) async {
-    final db = this.db;
-    final navigator = rootNavigator;
-    if (db == null || navigator == null || !navigator.mounted) return;
-    if (dialogOpen) return;
-    dialogOpen = true;
-    final confirmed = await confirmAction(
-      navigator.context,
-      title: l10n.queueHistoryDeleteTitle,
-      body: l10n.queueHistoryDeleteMessage,
-      confirmLabel: l10n.queueHistoryDelete,
-    ).whenComplete(() => dialogOpen = false);
-    if (!confirmed) return;
-    nav.close();
-    await ready();
-    try {
-      if (!showGoTo) router?.go(queueHistoryPath);
-      await db.deleteQueueSnapshot(latest.id);
-      say(AppSnackBarKind.success, l10n.queueHistoryDeleted);
-    } catch (error, stack) {
-      _log.severe('Deleting saved queue ${latest.id} failed', error, stack);
-      say(AppSnackBarKind.error, l10n.libraryUnexpectedError);
-    }
   }
 
   Future<void> export(PlaylistSummary latest, M3uPathStyle style) async {

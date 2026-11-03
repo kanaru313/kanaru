@@ -38,7 +38,6 @@ PlaylistModalData _data({
   bool gone = false,
   PlaylistModalStats? stats,
   bool showGoTo = true,
-  bool savedQueue = false,
 }) {
   final p = playlist ?? _playlist();
   return PlaylistModalData(
@@ -58,7 +57,6 @@ PlaylistModalData _data({
           ),
     stats: stats,
     showGoTo: showGoTo,
-    savedQueue: savedQueue,
   );
 }
 
@@ -76,7 +74,7 @@ PlaylistModalHandlers _handlers() {
     exportAbsolute: noop,
     exportRelative: noop,
     removeDuplicates: noop,
-    removeMissing: (_) {},
+    removeMissing: noop,
     openAdvanced: (_) {},
   );
 }
@@ -176,36 +174,6 @@ void main() {
         if (a.id == 'advanced') continue;
         expect(a.enabled, isFalse, reason: a.id);
       }
-    });
-  });
-
-  group('saved queue rows', () {
-    test('first page drops Edit, relabels Delete and Go to', () {
-      final rows = _rows(_data(savedQueue: true));
-      expect(rows.keys, isNot(contains('edit')));
-      expect(rows['go-to-playlist']!.label, 'Go to queue');
-      expect(rows['delete']!.label, 'Delete queue');
-      expect(rows['delete']!.destructive, isTrue);
-      expect(rows['add-to-playlist']!.enabled, isTrue);
-    });
-
-    test('Add to playlist is greyed when nothing can play', () {
-      final rows = _rows(_data(savedQueue: true, hasPlayable: false));
-      expect(rows['add-to-playlist']!.enabled, isFalse);
-      expect(rows['delete']!.enabled, isTrue);
-    });
-
-    test('Advanced has no Duplicate and no Remove duplicates', () {
-      final rows = _advanced(
-        _data(
-          savedQueue: true,
-          stats: const PlaylistModalStats(missing: 2, repeats: 3),
-        ),
-      );
-      expect(rows.keys, isNot(contains('duplicate')));
-      expect(rows.keys, isNot(contains('remove-duplicates')));
-      expect(rows.keys, contains('remove-missing'));
-      expect(rows.keys, contains('add-all-to-favorites'));
     });
   });
 

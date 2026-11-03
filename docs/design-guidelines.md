@@ -353,7 +353,7 @@ The playlist's context modal (`lib/features/playlists/playlist_modal/`, opened b
 
 ## Queue modal
 
-The saved queue's context modal is the playlist modal with `savedQueue: true` (dialog named "Queue options"). Opened from a Queues row (right click, long press, Menu key, Shift+F10, ⋮) and from the ⋮ of the saved queue page (click, Enter, Space; no Go to queue there).
+The saved queue's context modal is its own modal, `features/playlists/saved_queue_modal/` (`openSavedQueueModal`; not the playlist modal; dialog named "Queue options"). Opened from a Queues row (right click, long press, Menu key, Shift+F10, ⋮) and from the ⋮ of the saved queue page (click, Enter, Space; no Go to queue there).
 
 - **Header**: collage (seed `queue:<id>`), the queue name (when it was saved, never the stored placeholder) and "N songs • length • K missing" (length when above 0, missing when above 0). The header goes to the queue; no cover button, no description.
 - **Rows**: Go to queue | Play, Shuffle, Add to playlist…, Advanced | Delete queue ("The songs stay in your library", destructive, confirm above the modal; Cancel returns to it). Footer: Play next and Add to queue. Play, Shuffle, Add to playlist, Add all to Favorites and the footer are greyed when no song can play; Play then says so in its subtitle.

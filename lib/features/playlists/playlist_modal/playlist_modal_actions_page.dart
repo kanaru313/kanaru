@@ -20,8 +20,6 @@ ContextModalPage playlistModalActionsPage(PlaylistModalSession session) {
     snapshot: session.playlist,
     snapshotCoverKeys: session.coverKeys,
     showGoTo: session.showGoTo,
-    savedQueue: session.savedQueue,
-    queueL10n: session.l10n,
   );
   PlaylistModalHandlers handlersOf(
     BuildContext context,
@@ -45,9 +43,7 @@ ContextModalPage playlistModalActionsPage(PlaylistModalSession session) {
           onTap: session.showGoTo && !data.gone
               ? () => contextModalCloseThen(handlers.goToPlaylist)(nav)
               : null,
-          showCoverButton: !data.isFavorites && !data.gone && !data.savedQueue,
-          savedQueue: data.savedQueue,
-          stats: data.stats,
+          showCoverButton: !data.isFavorites && !data.gone,
         );
       },
     ),

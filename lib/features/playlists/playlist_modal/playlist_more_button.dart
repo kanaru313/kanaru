@@ -13,7 +13,6 @@ class PlaylistMoreButton extends ConsumerWidget {
     required this.playlist,
     required this.coverKeys,
     this.showGoTo = true,
-    this.savedQueue = false,
     this.beforeRead,
     this.color,
   });
@@ -21,9 +20,6 @@ class PlaylistMoreButton extends ConsumerWidget {
   final PlaylistSummary playlist;
   final List<String> coverKeys;
   final bool showGoTo;
-
-  /// Opens the Queue modal: [playlist] is a saved queue.
-  final bool savedQueue;
   final Future<void> Function()? beforeRead;
 
   /// Icon color; null keeps the theme's.
@@ -38,7 +34,6 @@ class PlaylistMoreButton extends ConsumerWidget {
           playlist: playlist,
           coverKeys: coverKeys,
           showGoTo: showGoTo,
-          savedQueue: savedQueue,
           viaKeyboard: viaKeyboard,
           beforeRead: beforeRead,
         );

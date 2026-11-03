@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/features/playlists/saved_queue_modal/saved_queue_more_button.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/menu_keyboard_region.dart';
@@ -361,7 +362,8 @@ void main() {
     ) async {
       await view.pump(tester, [available(1), available(2)], savedQueue: true);
 
-      await openPageModal(tester);
+      await tester.tap(find.byType(SavedQueueMoreButton));
+      await settleModal(tester);
       expect(modalAction('delete'), findsOneWidget);
       expect(modalAction('edit'), findsNothing);
       expect(modalAction('go-to-playlist'), findsNothing);

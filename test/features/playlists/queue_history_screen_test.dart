@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/queue_history_queries.dart';
 import 'package:kanaru/core/database/queue_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/playlists/playlist_modal/playlist_more_button.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
+import 'package:kanaru/features/playlists/saved_queue_modal/saved_queue_more_button.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/page_scaffold.dart';
 import 'package:material_ui/material_ui.dart';
@@ -112,9 +112,9 @@ void main() {
     goTo(tester, h, '/queue-history/$id');
     await settleDb(tester);
 
-    expect(find.byType(PlaylistMoreButton), findsOneWidget);
+    expect(find.byType(SavedQueueMoreButton), findsOneWidget);
     expect(find.byTooltip('Playlist actions'), findsNothing);
-    await tester.tap(find.byType(PlaylistMoreButton));
+    await tester.tap(find.byType(SavedQueueMoreButton));
     await settleModal(tester);
     expect(
       find.byKey(const ValueKey('context-modal-action-play-all')),

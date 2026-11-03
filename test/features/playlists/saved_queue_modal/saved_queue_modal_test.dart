@@ -8,14 +8,16 @@ import 'package:kanaru/core/database/queue_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/playlists/playlist_modal/playlist_more_button.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
+import 'package:kanaru/features/playlists/saved_queue_modal/saved_queue_more_button.dart';
 import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_header.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../library/browse_test_data.dart';
 import '../../library/library_test_harness.dart';
+import '../add_to_playlist_test_support.dart';
 import '../playlist_test_data.dart';
-import 'playlist_modal_test_support.dart';
+import '../playlist_modal/playlist_modal_test_support.dart';
 
 void main() {
   late Directory tmp;
@@ -127,7 +129,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(QueueSnapshotRow),
-          matching: find.byType(PlaylistMoreButton),
+          matching: find.byType(SavedQueueMoreButton),
         ),
       );
       await settleModal(tester);
@@ -174,7 +176,7 @@ void main() {
 
       await openRowModal(tester);
       await tester.tap(
-        find.byKey(const ValueKey('playlist-modal-add-to-queue')),
+        find.byKey(const ValueKey('saved-queue-modal-add-to-queue')),
       );
       await settleDb(tester);
       expect(queueTitles(h), hasLength(6));
@@ -213,6 +215,33 @@ void main() {
       expect(enabled(tester, 'play-all'), isFalse);
       expect(enabled(tester, 'add-to-playlist'), isFalse);
       expect(enabled(tester, 'delete'), isTrue);
+    });
+  });
+
+  group('which modal a page opens', () {
+    testWidgets('the ⋮ of a saved queue page opens the saved-queue modal', (
+      tester,
+    ) async {
+      await seed(tester, location: 'page');
+      await tester.tap(find.byType(SavedQueueMoreButton));
+      await settleModal(tester);
+
+      expect(find.text('Delete queue'), findsOneWidget);
+      expect(modalAction('play-all'), findsOneWidget);
+      expect(modalAction('go-to-playlist'), findsNothing);
+      expect(modalAction('edit'), findsNothing);
+    });
+
+    testWidgets('the ⋮ of a playlist page still opens the playlist modal', (
+      tester,
+    ) async {
+      await openMix(tester, h);
+      await tester.tap(find.byType(PlaylistMoreButton));
+      await settleModal(tester);
+
+      expect(modalAction('edit'), findsOneWidget);
+      expect(find.text('Delete playlist'), findsOneWidget);
+      expect(find.text('Delete queue'), findsNothing);
     });
   });
 
@@ -256,7 +285,7 @@ void main() {
     testWidgets('confirm on the page lands on the Queues list', (tester) async {
       final id = await seed(tester, location: 'page');
       expect(location(h), '/queue-history/$id');
-      await tester.tap(find.byType(PlaylistMoreButton));
+      await tester.tap(find.byType(SavedQueueMoreButton));
       await settleModal(tester);
       expect(modalAction('go-to-playlist'), findsNothing);
       await tester.tap(modalAction('delete'));
@@ -320,6 +349,24 @@ void main() {
       await tester.tap(find.text('New playlist…'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextField, queueName), findsOneWidget);
+    });
+
+    testWidgets('Add to playlist copies the missing entries too', (
+      tester,
+    ) async {
+      await seed(tester, titles: ['a', 'a'], missing: ['/gone/x.flac']);
+      final target = await seedPlaylist(tester, h, 'Target', [], now: 2);
+      await openRowModal(tester);
+      await tester.tap(modalAction('add-to-playlist'));
+      await settleDb(tester);
+      await tester.tap(inPicker('Target'));
+      await tester.pumpAndSettle();
+      await tester.tap(pickerAdd);
+      await settleDb(tester);
+
+      final copied = await storedPaths(tester, h, target);
+      expect(copied, hasLength(3));
+      expect(copied.last, '/gone/x.flac');
     });
 
     testWidgets(

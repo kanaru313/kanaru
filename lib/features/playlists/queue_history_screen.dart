@@ -14,12 +14,12 @@ import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'collage_list_row.dart';
-import 'playlist_modal/open_playlist_modal.dart';
-import 'playlist_modal/playlist_more_button.dart';
 import 'playlist_screen_states.dart';
 import 'queue_history_actions.dart';
 import 'queue_history_providers.dart';
 import 'queue_history_routes.dart';
+import 'saved_queue_modal/open_saved_queue_modal.dart';
+import 'saved_queue_modal/saved_queue_more_button.dart';
 
 final _log = Logger('queue_history');
 
@@ -105,18 +105,16 @@ class QueueSnapshotRow extends ConsumerWidget {
       onTap: () => context.go(queueHistoryLocation(snapshot.id)),
       onPlay: () => unawaited(playQueueSnapshot(ref, context, snapshot.id)),
       playTooltip: l10n.queueHistoryPlay,
-      onOpenModal: ({required viaKeyboard}) => openPlaylistModal(
+      onOpenModal: ({required viaKeyboard}) => openSavedQueueModal(
         context,
         ref,
         playlist: summary,
         coverKeys: snapshot.coverKeys,
-        savedQueue: true,
         viaKeyboard: viaKeyboard,
       ),
-      trailing: PlaylistMoreButton(
+      trailing: SavedQueueMoreButton(
         playlist: summary,
         coverKeys: snapshot.coverKeys,
-        savedQueue: true,
       ),
     );
   }
