@@ -1895,5 +1895,21 @@
   "playlistDuplicatesRemoved": "{count, plural, other{Đã xoá {count} bài trùng}}",
   "playlistRemoveMissing": "Xoá bài không còn",
   "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
-  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}"
+  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}",
+  "historyModalLabel": "Tuỳ chọn lịch sử",
+  "@historyModalLabel": {
+    "description": "Semantic label of the History modal and its more button on the History page"
+  },
+  "historyMostPlayedHint": "Những bài bạn nghe nhiều nhất",
+  "@historyMostPlayedHint": {
+    "description": "Subtitle of the Most played row in the History modal"
+  },
+  "historyNothingInLibrary": "Không có bài nào đã nghe còn trong thư viện",
+  "@historyNothingInLibrary": {
+    "description": "Snackbar when no played song is in the library any more (History modal)"
+  },
+  "historyLastPlayedFirst": "Nghe gần nhất trước",
+  "@historyLastPlayedFirst": {
+    "description": "Subtitle of the History modal export rows: the order of the exported songs"
+  }
 }

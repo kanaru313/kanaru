@@ -15,6 +15,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'history_calendar_dialog.dart';
 import 'history_days.dart';
 import 'history_filter_results.dart';
+import 'history_modal/open_history_page_modal.dart';
 import 'history_page_actions.dart';
 import 'history_page_layout.dart';
 import 'history_providers.dart';
@@ -158,7 +159,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
   HistoryPageCallbacks _callbacks() => (
     onPlay: () => unawaited(playAllHistory(ref)),
     onShuffle: () => unawaited(shuffleAllHistory(ref, context)),
-    onQueueAction: (action) => queueAllHistory(ref, context, action),
+    onOpenModal: ({required viaKeyboard, required at}) =>
+        openHistoryPageModal(ref, context, viaKeyboard: viaKeyboard),
   );
 
   Widget _states(Widget body) =>

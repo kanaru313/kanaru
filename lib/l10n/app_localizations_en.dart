@@ -5196,4 +5196,17 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get historyModalLabel => 'History options';
+
+  @override
+  String get historyMostPlayedHint => 'Songs you play the most';
+
+  @override
+  String get historyNothingInLibrary =>
+      'None of the songs you played are in your library';
+
+  @override
+  String get historyLastPlayedFirst => 'Last played first';
 }

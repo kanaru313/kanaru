@@ -5191,5 +5191,21 @@
         "type": "int"
       }
     }
+  },
+  "historyModalLabel": "History options",
+  "@historyModalLabel": {
+    "description": "Semantic label of the History modal and its more button on the History page"
+  },
+  "historyMostPlayedHint": "Songs you play the most",
+  "@historyMostPlayedHint": {
+    "description": "Subtitle of the Most played row in the History modal"
+  },
+  "historyNothingInLibrary": "None of the songs you played are in your library",
+  "@historyNothingInLibrary": {
+    "description": "Snackbar when no played song is in the library any more (History modal)"
+  },
+  "historyLastPlayedFirst": "Last played first",
+  "@historyLastPlayedFirst": {
+    "description": "Subtitle of the History modal export rows: the order of the exported songs"
   }
 }

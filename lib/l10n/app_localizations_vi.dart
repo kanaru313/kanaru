@@ -4886,4 +4886,17 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get historyModalLabel => 'Tuỳ chọn lịch sử';
+
+  @override
+  String get historyMostPlayedHint => 'Những bài bạn nghe nhiều nhất';
+
+  @override
+  String get historyNothingInLibrary =>
+      'Không có bài nào đã nghe còn trong thư viện';
+
+  @override
+  String get historyLastPlayedFirst => 'Nghe gần nhất trước';
 }

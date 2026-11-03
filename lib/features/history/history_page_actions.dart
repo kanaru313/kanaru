@@ -7,7 +7,6 @@ import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 import 'history_error_log.dart';
 
 /// Replaces the queue with every played song still in the library, the one
@@ -21,20 +20,7 @@ Future<void> playAllHistory(WidgetRef ref) => playFromDatabase(
   ],
 );
 
-/// Queues every played song still in the library, last played first, by
-/// [action] (Play next, Add to queue, Add to playlist).
-void queueAllHistory(WidgetRef ref, BuildContext context, QueueAction action) =>
-    enqueueFromDatabase(
-      ref,
-      context,
-      action,
-      context.l10n.navHistory,
-      (db, covers) async => [
-        for (final t in await db.historyPlayedTracks()) trackFromRow(t, covers),
-      ],
-    );
-
-/// Shuffles the same songs into the queue. A failed read is logged and
+/// Shuffles every played song into the queue. A failed read is logged and
 /// reported in a snackbar; leaving the page before the read ends plays
 /// nothing.
 Future<void> shuffleAllHistory(WidgetRef ref, BuildContext context) async {

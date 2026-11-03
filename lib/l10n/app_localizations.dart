@@ -7561,6 +7561,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}'**
   String playlistMissingRemoved(int count);
+
+  /// Semantic label of the History modal and its more button on the History page
+  ///
+  /// In en, this message translates to:
+  /// **'History options'**
+  String get historyModalLabel;
+
+  /// Subtitle of the Most played row in the History modal
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you play the most'**
+  String get historyMostPlayedHint;
+
+  /// Snackbar when no played song is in the library any more (History modal)
+  ///
+  /// In en, this message translates to:
+  /// **'None of the songs you played are in your library'**
+  String get historyNothingInLibrary;
+
+  /// Subtitle of the History modal export rows: the order of the exported songs
+  ///
+  /// In en, this message translates to:
+  /// **'Last played first'**
+  String get historyLastPlayedFirst;
 }
 
 class _AppLocalizationsDelegate
