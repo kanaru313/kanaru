@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../icons/app_icons.dart';
-import '../app_snack_bar.dart';
 import 'context_modal_chips.dart';
+import 'context_modal_coming_soon_button.dart';
 import 'context_modal_nav.dart';
 import 'context_modal_spec.dart';
 
@@ -36,14 +36,7 @@ class _ContextModalActionTileState extends State<ContextModalActionTile> {
     return onTap == null ? null : () => onTap(widget.nav);
   }
 
-  void _showComingSoon() {
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      appSnackBar(
-        kind: AppSnackBarKind.info,
-        title: context.l10n.contextModalComingSoonSnack,
-      ),
-    );
-  }
+  void _showComingSoon() => showContextModalComingSoon(context);
 
   @override
   Widget build(BuildContext context) {

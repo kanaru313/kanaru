@@ -32,4 +32,52 @@ void main() {
     expect(tester.getSize(find.byType(CoverArt)), const Size(64, 64));
     expect(find.text('Song'), findsOneWidget);
   });
+
+  group('with onTap', () {
+    Future<void> pumpTappable(WidgetTester tester, VoidCallback onTap) =>
+        tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: SongModalHeader(
+                  song: const TrackListItem(
+                    id: 1,
+                    path: '/m/a.flac',
+                    title: 'Song',
+                  ),
+                  onTap: onTap,
+                ),
+              ),
+            ),
+          ),
+        );
+
+    testWidgets('a tap calls onTap', (tester) async {
+      var taps = 0;
+      await pumpTappable(tester, () => taps++);
+      await tester.tap(find.text('Song'));
+      expect(taps, 1);
+    });
+
+    testWidgets('it is a button with the Song info hint', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpTappable(tester, () {});
+      final node = tester.getSemantics(
+        find.ancestor(of: find.text('Song'), matching: find.byType(InkWell)),
+      );
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.hint, 'Song info');
+      handle.dispose();
+    });
+
+    testWidgets('the ink can take keyboard focus', (tester) async {
+      await pumpTappable(tester, () {});
+      expect(
+        tester.widget<InkWell>(find.byType(InkWell)).canRequestFocus,
+        isTrue,
+      );
+    });
+  });
 }

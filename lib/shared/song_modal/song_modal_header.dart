@@ -6,6 +6,7 @@ import '../../core/database/song_row.dart';
 import '../../core/indexer/cover_paths.dart';
 import '../../l10n/l10n.dart';
 import '../icons/app_icons.dart';
+import '../widgets/context_modal/context_modal_header.dart';
 import '../widgets/cover_art.dart';
 
 const double _coverSize = 64;
@@ -35,39 +36,28 @@ class SongModalHeader extends ConsumerWidget {
       ref.watch(coverCacheDirectoryProvider),
       song.coverKey,
     );
-    Widget line(String text, TextStyle? style) =>
-        Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
-    final content = Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
-      child: Row(
-        spacing: 16,
-        children: [
-          CoverArt(
-            path: cover,
-            size: _coverSize,
-            placeholder: const Center(child: Icon(AppIcons.musicNoteOutlined)),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (artist.isNotEmpty) line(artist, quiet),
-                line(song.title, theme.textTheme.titleMedium),
-                line(
-                  album == null || album.isEmpty
-                      ? context.l10n.songModalUnknownAlbum
-                      : album,
-                  quiet,
-                ),
-                if (note != null) line(note!, quiet),
-              ],
-            ),
-          ),
-          if (onTap != null) const Icon(AppIcons.chevronRight),
-        ],
+    return ContextModalHeader(
+      leading: CoverArt(
+        path: cover,
+        size: _coverSize,
+        placeholder: const Center(child: Icon(AppIcons.musicNoteOutlined)),
       ),
+      lines: [
+        if (artist.isNotEmpty) contextModalHeaderLine(artist, quiet),
+        contextModalHeaderLine(song.title, theme.textTheme.titleMedium),
+        contextModalHeaderLine(
+          album == null || album.isEmpty
+              ? context.l10n.songModalUnknownAlbum
+              : album,
+          quiet,
+        ),
+        if (note != null) contextModalHeaderLine(note!, quiet),
+      ],
+      trailing: onTap == null ? null : const Icon(AppIcons.chevronRight),
+      onTap: onTap,
+      tapHint: context.l10n.songInfoTitle,
+      // The only keyboard path to Song info: the actions page has no such row.
+      canRequestFocus: true,
     );
-    return onTap == null ? content : InkWell(onTap: onTap, child: content);
   }
 }
