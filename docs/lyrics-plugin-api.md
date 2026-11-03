@@ -351,13 +351,30 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | `translate` | translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
 | `config` | optional object, at most 20 fields, kept in order |
 
-Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`:
+Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`. Common optional attributes: `subtitle` (help text under the title, at most 300 characters, newlines kept), `required` (boolean, default `false`) and `default`. Attributes that do not apply to a field's mode and format are ignored (`pattern` and `patternMessage` included), except `format`: a `format` on a `toggle`, or any `format` but `text` on a `map`, or an unknown one anywhere, is invalid (`config.<key>.format`).
 
-- `input`: `format` is `text` (default), `number` or `secret`. Optional `default`: a string; for `number` also a finite JSON number or a plain decimal string (`-2.5`, `1e3`; no `NaN`, `Infinity` or hex), stored as text because scripts read config as strings).
-- `select`: `format` is absent or `single`. `options` is 1 to 50 items of `{value, title}`, both required, values unique. Optional `default` must be one of the values.
-- `toggle`: no `format`. Optional `default` is a boolean.
+| mode | `format` | Extra attributes | `default` |
+|---|---|---|---|
+| `input` | `text` (default) | `placeholder`, `minLength`, `maxLength` | string |
+| `input` | `multiline` | `rows` (1 to 10, default 3), `minLength`, `maxLength` | string |
+| `input` | `number` | `min`, `max`, `step` (finite numbers) | finite number, or a plain decimal string (`-2.5`, `1e3`) read as a number |
+| `input` | `integer` | `min`, `max`, `step` (integers) | integer |
+| `input` | `secret` | `placeholder` | none (a string default is ignored; any other type is invalid) |
+| `input` | `url` | `placeholder` | `https` URL |
+| `select` | `single` (default) | `options` | one option value |
+| `select` | `multiple` | `options`, `minItems`, `maxItems` | list of distinct option values |
+| `toggle` | none | none | boolean |
+| `list` | `text` (default), `number`, `integer`, `url` | `placeholder`, `minItems`, `maxItems` | list of that item kind |
+| `map` | none (or `text`) | `maxItems` | object of string values |
 
-Every field may also carry `subtitle`: optional help text under the title, at most 300 characters, newlines kept.
+- `select` `options` is 1 to 50 items of `{value, title, subtitle?}`; `value` and `title` are required and values are unique. `minItems` and `maxItems` of a `multiple` select cannot exceed the number of options.
+- Caps: at most 20 fields; at most 50 list items, map entries and options; text values, list items, map values, URLs and secrets at most 2000 characters; `placeholder` at most 200; `maxLength` at most 2000; integers within plus or minus 9007199254740991 (the largest a script reads exactly); numbers are finite.
+- `url` accepts `https` only (scheme in any case), with a host, no user name or password (`https://@host` included), no whitespace and no control or invisible characters, because the plugin `fetch` refuses anything else. The port is not checked.
+- Map keys are 1 to 100 characters with no control or format characters and no space at either end; `__proto__` is refused; keys are case sensitive and unique. Values are strings, 0 to 2000 characters.
+- Ordering: `min` <= `max`, `minLength` <= `maxLength`, `minItems` <= `maxItems`, else invalid (reported on the first of the pair). `minLength` is 0 to 2000, `maxLength` 1 to 2000, `minItems` 0 to the cap, `maxItems` 1 to the cap. For `integer`, `min`, `max`, `step` and `default` must be integers (`step` at least 1); `step` of a `number` is greater than 0.
+- `list` items are non-empty and not blank. `step` is a hint for the form's Up and Down keys and is not enforced on values. `min`, `max`, `minLength` and `maxLength` are enforced.
+- `required`: the field must have a value before the plugin runs; a default counts as a value. A list, a map and a multiple select need at least one entry, a secret needs a saved value. A toggle ignores `required`.
+- A default that breaks the field's own rules makes the manifest invalid (`config.<key>.default`). Defaults are typed as in the table: a number, an integer, a boolean, a list or an object where the field holds one.
 
 The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, always as a string (`"true"` or `"false"` for a toggle). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
 

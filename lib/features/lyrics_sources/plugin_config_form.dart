@@ -55,6 +55,9 @@ class PluginConfigForm extends ConsumerWidget {
     final key = ValueKey('$id/${record.updatedAt}/${field.key}');
     final value = state.stored[field.key] ?? field.defaultValue;
     switch (field.mode) {
+      case PluginConfigMode.list:
+      case PluginConfigMode.map:
+        return const SizedBox.shrink();
       case PluginConfigMode.toggle:
         return PluginConfigToggleField(
           key: key,
