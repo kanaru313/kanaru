@@ -90,7 +90,7 @@ void main() {
 
     expect(find.text('Add all to Favorites'), findsOneWidget);
     final add = tester.getTopLeft(albumModalAction('add-all-to-favorites'));
-    for (final other in ['show-in-file-manager', 'remove-from-library']) {
+    for (final other in ['remove-from-library', 'delete-files']) {
       expect(
         add.dy,
         lessThan(tester.getTopLeft(albumModalAction(other)).dy),

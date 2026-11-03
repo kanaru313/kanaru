@@ -108,18 +108,17 @@ void main() {
     expect(find.text('Go to folder'), findsNothing);
   });
 
-  testWidgets('Advanced opens a page and Back returns', (tester) async {
-    final host = await pumpAlbumHost(tester, links: linksOf());
+  testWidgets('Advanced opens a page and shows actions', (tester) async {
+    await pumpAlbumHost(tester, links: linksOf());
     await openAlbumModalOf(tester);
 
     await tapAlbumRow(tester, 'Advanced');
+    expect(find.text('Add all to Favorites'), findsOneWidget);
     expect(find.text('Delete files'), findsOneWidget);
     expect(find.text('3 files'), findsOneWidget);
     expect(find.text('Keeps the files'), findsOneWidget);
     expect(find.text('Go to artist'), findsNothing);
-
-    await tapAlbumRow(tester, 'Show in file manager');
-    expect(host.shownInFileManager, ['/m/Rock/1.flac']);
+    expect(find.text('Show in file manager'), findsNothing);
   });
 
   testWidgets('Advanced: Back returns, coming soon rows stay', (tester) async {

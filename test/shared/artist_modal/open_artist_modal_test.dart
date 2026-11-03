@@ -136,16 +136,14 @@ void main() {
     expect(find.text('Go to folder'), findsNothing);
   });
 
-  testWidgets('Advanced: favorites, file manager and coming soon rows', (
-    tester,
-  ) async {
-    final host = await pumpArtistHost(tester, links: linksOf());
+  testWidgets('Advanced: favorites and coming soon rows', (tester) async {
+    await pumpArtistHost(tester, links: linksOf());
     await openArtistModalOf(tester);
 
     await tapArtistRow(tester, 'Advanced');
     expect(find.text('Add all to Favorites'), findsOneWidget);
     expect(find.text('12 songs'), findsNothing);
-    expect(find.text('/m/Rock'), findsOneWidget);
+    expect(find.text('Show in file manager'), findsNothing);
     expect(find.text('Split or merge artist'), findsOneWidget);
     expect(find.text('Delete files'), findsOneWidget);
     expect(find.text('12 files'), findsOneWidget);
@@ -154,12 +152,9 @@ void main() {
 
     await tapArtistRow(tester, 'Split or merge artist');
     expect(find.textContaining("isn't available yet"), findsOneWidget);
-
-    await tapArtistRow(tester, 'Show in file manager');
-    expect(host.shownInFileManager, ['/m/Rock/1.flac']);
   });
 
-  testWidgets('Advanced without a local folder leaves out the file manager', (
+  testWidgets('Advanced without a local folder keeps Add all to Favorites', (
     tester,
   ) async {
     await pumpArtistHost(tester, links: linksOf(folders: const []));

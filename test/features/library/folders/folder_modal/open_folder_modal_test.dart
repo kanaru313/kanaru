@@ -110,33 +110,21 @@ void main() {
       await openFolderModalOf(tester);
 
       await tapFolderRow(tester, 'Advanced');
-      expect(find.text('Show in file manager'), findsOneWidget);
+      expect(find.text('Show in file manager'), findsNothing);
       expect(find.text('Copy folder path'), findsOneWidget);
       expect(find.text('Exclude from library'), findsOneWidget);
       expect(find.text('Keeps the files'), findsOneWidget);
       expect(find.text('Delete files'), findsOneWidget);
       expect(
         find.text('/m/Rock'),
-        findsNWidgets(2),
-      ); // subtitle of both file manager and copy path
+        findsOneWidget,
+      ); // subtitle of copy path
       expect(find.text('Go to folder'), findsNothing);
 
       await tester.tap(find.byTooltip('Back'));
       await settleModal(tester);
       expect(find.text('Go to folder'), findsOneWidget);
       expect(find.text('Advanced'), findsOneWidget);
-    });
-
-    testWidgets('Show in file manager invokes file manager with folder path', (
-      tester,
-    ) async {
-      final host = await pumpFolderHost(tester);
-      await openFolderModalOf(tester);
-
-      await tapFolderRow(tester, 'Advanced');
-      await tapFolderRow(tester, 'Show in file manager');
-
-      expect(host.shownInFileManager, [testFolder.path]);
     });
 
     testWidgets(
@@ -181,7 +169,7 @@ void main() {
 
       await tapFolderRow(tester, 'Advanced');
       expect(find.text('Exclude from library'), findsNothing);
-      expect(find.text('Show in file manager'), findsOneWidget);
+      expect(find.text('Show in file manager'), findsNothing);
       expect(find.text('Copy folder path'), findsOneWidget);
       expect(find.text('Delete files'), findsOneWidget);
     });

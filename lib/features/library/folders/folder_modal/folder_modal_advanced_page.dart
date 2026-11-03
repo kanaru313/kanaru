@@ -7,7 +7,7 @@ import '../../../../shared/widgets/context_modal/context_modal_route.dart';
 import 'folder_modal_links.dart';
 import 'folder_modal_session.dart';
 
-/// The Advanced page of the folder context modal: file manager, copy path,
+/// The Advanced page of the folder context modal: copy path,
 /// library exclusion, and delete files.
 ContextModalPage folderModalAdvancedPage(FolderModalSession session) =>
     ContextModalPage(
@@ -34,13 +34,6 @@ ContextModalPage folderModalAdvancedPage(FolderModalSession session) =>
             mainAxisSize: MainAxisSize.min,
             children: contextModalSections(nav, [
               [
-                ContextModalAction(
-                  id: 'show-in-file-manager',
-                  icon: AppIcons.folderOpen,
-                  label: l10n.libraryShowInFileManager,
-                  subtitle: session.folder.path,
-                  onTap: contextModalCloseThen(() => h.showInFileManager(null)),
-                ),
                 ContextModalAction(
                   id: 'copy-path',
                   icon: AppIcons.copy,

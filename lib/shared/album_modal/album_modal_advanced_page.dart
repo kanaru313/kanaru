@@ -8,10 +8,9 @@ import '../widgets/context_modal/context_modal_route.dart';
 import 'album_modal_data.dart';
 import 'album_modal_session.dart';
 
-/// The Advanced page: Add all to Favorites, Show in file manager, and the
-/// actions not available yet. It watches the album's links itself, which keeps
-/// them alive while this page covers the first one; a gone album greys out
-/// Add all to Favorites.
+/// The Advanced page: Add all to Favorites, and the actions not available yet.
+/// It watches the album's links itself, which keeps them alive while this page
+/// covers the first one; a gone album greys out Add all to Favorites.
 ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
     ContextModalPage(
       key: 'album-advanced',
@@ -25,7 +24,6 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
             final l10n = context.l10n;
             final async = ref.watch(albumModalLinksProvider(session.album.key));
             final links = async.asData?.value;
-            final main = links?.folders.firstOrNull;
             final handlers = session.handlers();
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -38,22 +36,6 @@ ContextModalPage albumModalAdvancedPage(AlbumModalSession session) =>
                     enabled: !AlbumModalData.goneOf(async),
                     onTap: contextModalCloseThen(handlers.addAllToFavorites),
                   ),
-                ],
-                [
-                  // Folders are empty for an album with no local file.
-                  if (links == null || main != null)
-                    ContextModalAction(
-                      id: 'show-in-file-manager',
-                      icon: AppIcons.folderOpen,
-                      label: l10n.libraryShowInFileManager,
-                      subtitle: main?.path,
-                      enabled: main != null,
-                      onTap: main == null
-                          ? null
-                          : contextModalCloseThen(
-                              () => handlers.showInFileManager(main.samplePath),
-                            ),
-                    ),
                 ],
                 [
                   ContextModalAction(

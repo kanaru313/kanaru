@@ -202,10 +202,10 @@ void main() {
       ]);
     });
 
-    testWidgets('Advanced page displays options and handles file manager & coming soon', (
+    testWidgets('Advanced page displays options and handles coming soon', (
       tester,
     ) async {
-      final host = await pumpGenreHost(tester, links: linksOf());
+      await pumpGenreHost(tester, links: linksOf());
       await openGenreModalOf(tester);
 
       await tapGenreRow(tester, 'Edit tags');
@@ -214,8 +214,7 @@ void main() {
       await tapGenreRow(tester, 'Advanced');
       expect(find.text('Advanced'), findsOneWidget);
       expect(find.text('Add all to Favorites'), findsOneWidget);
-      expect(find.text('Show in file manager'), findsOneWidget);
-      expect(find.text('/m/Rock'), findsOneWidget);
+      expect(find.text('Show in file manager'), findsNothing);
       expect(find.text('Split or merge genre'), findsOneWidget);
       expect(find.text('Remove from library'), findsOneWidget);
       expect(find.text('Delete files'), findsOneWidget);
@@ -228,9 +227,6 @@ void main() {
 
       await tapGenreRow(tester, 'Delete files');
       expect(find.textContaining("isn't available yet"), findsOneWidget);
-
-      await tapGenreRow(tester, 'Show in file manager');
-      expect(host.shownInFileManager, ['/m/Rock/1.flac']);
     });
 
     testWidgets('Add all to Favorites adds genre tracks to Favorites playlist', (
