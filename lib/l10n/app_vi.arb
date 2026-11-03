@@ -1977,6 +1977,8 @@
   "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
   "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}",
   "pluginNeedsConfigTitle": "{name} cần được cấu hình",
+  "pluginsNeedConfigTitleTwo": "{first} và {second} cần được cấu hình",
+  "pluginsNeedConfigTitleMany": "{first}, {second} và {more, plural, other{{more} plugin khác}} cần được cấu hình",
   "pluginOpenConfig": "Mở cấu hình",
   "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy."
 }

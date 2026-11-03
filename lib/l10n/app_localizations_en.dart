@@ -5248,6 +5248,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String pluginsNeedConfigTitleTwo(String first, String second) {
+    return '$first and $second need configuration';
+  }
+
+  @override
+  String pluginsNeedConfigTitleMany(String first, String second, int more) {
+    String _temp0 = intl.Intl.pluralLogic(
+      more,
+      locale: localeName,
+      other: '$more more',
+      one: '1 more',
+    );
+    return '$first, $second and $_temp0 need configuration';
+  }
+
+  @override
   String get pluginOpenConfig => 'Open config';
 
   @override

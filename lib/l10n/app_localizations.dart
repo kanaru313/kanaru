@@ -7628,6 +7628,18 @@ abstract class AppLocalizations {
   /// **'{name} needs configuration'**
   String pluginNeedsConfigTitle(String name);
 
+  /// Snack bar: two plugins have an empty required setting and were not run
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {second} need configuration'**
+  String pluginsNeedConfigTitleTwo(String first, String second);
+
+  /// Snack bar: three or more plugins have an empty required setting and were not run; two are named, more is how many are left
+  ///
+  /// In en, this message translates to:
+  /// **'{first}, {second} and {more, plural, =1{1 more} other{{more} more}} need configuration'**
+  String pluginsNeedConfigTitleMany(String first, String second, int more);
+
   /// Snack bar action: open the plugin's settings page
   ///
   /// In en, this message translates to:

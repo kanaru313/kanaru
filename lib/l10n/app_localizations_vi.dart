@@ -4938,6 +4938,21 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String pluginsNeedConfigTitleTwo(String first, String second) {
+    return '$first và $second cần được cấu hình';
+  }
+
+  @override
+  String pluginsNeedConfigTitleMany(String first, String second, int more) {
+    String _temp0 = intl.Intl.pluralLogic(
+      more,
+      locale: localeName,
+      other: '$more plugin khác',
+    );
+    return '$first, $second và $_temp0 cần được cấu hình';
+  }
+
+  @override
   String get pluginOpenConfig => 'Mở cấu hình';
 
   @override

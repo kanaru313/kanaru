@@ -7,6 +7,7 @@ import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,6 +38,14 @@ void main() {
         GoRoute(
           path: '$lyricsSourcesRoute/plugin/:$lyricsPluginIdParam',
           builder: (_, _) => const Text('lyrics plugin page'),
+        ),
+        GoRoute(
+          path: lyricsSourcesRoute,
+          builder: (_, _) => const Text('lyrics sources page'),
+        ),
+        GoRoute(
+          path: settingsPlaybackRoute,
+          builder: (_, _) => const Text('playback settings'),
         ),
         GoRoute(
           path: translationPluginRoutePattern,
@@ -170,25 +179,148 @@ void main() {
     expect(find.text('Demo needs configuration'), findsOneWidget);
   });
 
-  testWidgets('two reports behind another snack bar queue only one', (
+  void reportOne(String id, String name, PluginKind kind) => container
+      .read(pluginNeedsConfigNoticesProvider.notifier)
+      .report(id, name, kind);
+
+  testWidgets('two plugins behind another snack bar: none lost, one notice', (
     tester,
   ) async {
     await pump(tester);
     showForeign(tester);
     await tester.pumpAndSettle();
 
-    report(PluginKind.lyrics);
+    reportOne('a', 'Alpha', PluginKind.lyrics);
     await tester.pump();
-    report(PluginKind.lyrics);
-    await tester.pump();
+    reportOne('b', 'Beta', PluginKind.lyrics);
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // The foreign one ends, ours shows once and, when closed, nothing more.
+    // The other feature's bar is still there, untouched.
+    expect(find.text('foreign'), findsOneWidget);
+
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
-    expect(find.text('Demo needs configuration'), findsOneWidget);
+    expect(find.text('Alpha and Beta need configuration'), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
     ScaffoldMessenger.of(tester.element(find.text('home')))
         .hideCurrentSnackBar();
     await tester.pumpAndSettle();
     expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('a report while ours slides in joins the same notice', (
+    tester,
+  ) async {
+    await pump(tester);
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pump(const Duration(milliseconds: 50));
+    reportOne('b', 'Beta', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alpha and Beta need configuration'), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
+  });
+
+  testWidgets('two reports while ours is visible make one merged notice', (
+    tester,
+  ) async {
+    await pump(tester);
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+    reportOne('b', 'Beta', PluginKind.translate);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Alpha and Beta need configuration'), findsOneWidget);
+  });
+
+  testWidgets('the same plugin twice lists one name', (tester) async {
+    await pump(tester);
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alpha needs configuration'), findsOneWidget);
+  });
+
+  testWidgets('the list resets once the notice is closed', (tester) async {
+    await pump(tester);
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+    ScaffoldMessenger.of(tester.element(find.text('home')))
+        .hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    reportOne('b', 'Beta', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Beta needs configuration'), findsOneWidget);
+  });
+
+  testWidgets('four plugins: two names and a count', (tester) async {
+    await pump(tester);
+    for (final n in ['A', 'B', 'C', 'D']) {
+      reportOne(n, n, PluginKind.lyrics);
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('A, B and 2 more need configuration'), findsOneWidget);
+  });
+
+  testWidgets('three plugins: "1 more"', (tester) async {
+    await pump(tester);
+    for (final n in ['A', 'B', 'C']) {
+      reportOne(n, n, PluginKind.lyrics);
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('A, B and 1 more need configuration'), findsOneWidget);
+  });
+
+  Future<void> openFor(
+    WidgetTester tester,
+    List<(String, PluginKind)> plugins,
+  ) async {
+    await pump(tester);
+    for (final (id, kind) in plugins) {
+      reportOne(id, id, kind);
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open config'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('several lyrics plugins: Open config goes to the sources page', (
+    tester,
+  ) async {
+    await openFor(tester, [('a', PluginKind.lyrics), ('b', PluginKind.lyrics)]);
+    expect(location(), lyricsSourcesRoute);
+    expect(container.read(nowPlayingOpenProvider), isFalse);
+  });
+
+  testWidgets('several translate plugins: Open config goes to translation', (
+    tester,
+  ) async {
+    await openFor(tester, [
+      ('a', PluginKind.translate),
+      ('b', PluginKind.translate),
+    ]);
+    expect(
+      location(),
+      settingsFocusLocation(SettingsAnchor.playbackTranslation),
+    );
+  });
+
+  testWidgets('mixed kinds: Open config goes to the sources page', (
+    tester,
+  ) async {
+    await openFor(tester, [
+      ('a', PluginKind.lyrics),
+      ('b', PluginKind.translate),
+    ]);
+    expect(location(), lyricsSourcesRoute);
   });
 }
