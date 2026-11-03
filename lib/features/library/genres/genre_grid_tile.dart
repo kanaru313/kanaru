@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/genre_modal/genre_actions_region.dart';
 import '../../../shared/genre_summaries.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart' show unknownGenreKey;
@@ -26,19 +27,23 @@ class GenreGridTile extends StatelessWidget {
   final ValueChanged<QueueAction>? onQueueAction;
 
   @override
-  Widget build(BuildContext context) => RoundGridTile(
-    avatarBuilder: (size) => PlaylistCover(
-      coverKeys: genre.coverKeys,
-      size: size,
-      seed: 'genre:${genre.key}',
-      icon: genre.key == unknownGenreKey
-          ? AppIcons.genreOutlined
-          : AppIcons.genre,
-    ),
-    title: genreDisplayName(context.l10n, genre.key, genre.name),
-    subtitle: context.l10n.albumsSongCount(genre.songCount),
-    onTap: onTap,
+  Widget build(BuildContext context) => GenreActionsRegion(
+    genre: genre,
     onQueueAction: onQueueAction,
+    child: RoundGridTile(
+      avatarBuilder: (size) => PlaylistCover(
+        coverKeys: genre.coverKeys,
+        size: size,
+        seed: 'genre:${genre.key}',
+        icon: genre.key == unknownGenreKey
+            ? AppIcons.genreOutlined
+            : AppIcons.genre,
+      ),
+      title: genreDisplayName(context.l10n, genre.key, genre.name),
+      subtitle: context.l10n.albumsSongCount(genre.songCount),
+      onTap: onTap,
+      onQueueAction: null,
+    ),
   );
 }
 

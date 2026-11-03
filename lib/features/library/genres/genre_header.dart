@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/genre_modal/genre_more_button.dart';
+import '../../../shared/genre_summaries.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/library_route_keys.dart' show unknownGenreKey;
 import '../../../shared/widgets/playlist_cover.dart';
@@ -8,6 +10,7 @@ import '../../../shared/widgets/queue_actions_menu.dart';
 import '../../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/collage_hero_cover.dart';
+import 'genre_display_name.dart';
 
 /// Header of a genre page in a narrow window: cover collage beside the name,
 /// "N albums · N songs" and the Play, Shuffle and queue buttons. A wide
@@ -15,21 +18,15 @@ import '../../../shared/widgets/detail_page/collage_hero_cover.dart';
 class GenreHeader extends StatelessWidget {
   const GenreHeader({
     super.key,
-    required this.genreKey,
-    required this.name,
+    required this.genre,
     required this.albumCount,
-    required this.songCount,
-    required this.coverKeys,
     required this.onPlay,
     required this.onShuffle,
     required this.onQueueAction,
   });
 
-  final String genreKey;
-  final String name;
+  final GenreSummary genre;
   final int albumCount;
-  final int songCount;
-  final List<String> coverKeys;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
@@ -41,17 +38,16 @@ class GenreHeader extends StatelessWidget {
       child: Row(
         children: [
           PlaylistCover(
-            coverKeys: coverKeys,
+            coverKeys: genre.coverKeys,
             size: 120,
-            seed: 'genre:$genreKey',
-            icon: _genreIcon(genreKey),
+            seed: 'genre:${genre.key}',
+            icon: _genreIcon(genre.key),
           ),
           const SizedBox(width: 24),
           Expanded(
             child: _GenreDetails(
-              name: name,
+              genre: genre,
               albumCount: albumCount,
-              songCount: songCount,
               titleStyle: Theme.of(context).textTheme.headlineMedium,
               onPlay: onPlay,
               onShuffle: onShuffle,
@@ -71,21 +67,15 @@ class GenreHeader extends StatelessWidget {
 class GenreSidePane extends StatelessWidget {
   const GenreSidePane({
     super.key,
-    required this.genreKey,
-    required this.name,
+    required this.genre,
     required this.albumCount,
-    required this.songCount,
-    required this.coverKeys,
     required this.onPlay,
     required this.onShuffle,
     required this.onQueueAction,
   });
 
-  final String genreKey;
-  final String name;
+  final GenreSummary genre;
   final int albumCount;
-  final int songCount;
-  final List<String> coverKeys;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
   final ValueChanged<QueueAction> onQueueAction;
@@ -94,19 +84,18 @@ class GenreSidePane extends StatelessWidget {
   Widget build(BuildContext context) {
     return DetailSidePane(
       cover: CollageHeroBackdrop(
-        coverKeys: coverKeys,
-        seed: 'genre:$genreKey',
-        icon: _genreIcon(genreKey),
+        coverKeys: genre.coverKeys,
+        seed: 'genre:${genre.key}',
+        icon: _genreIcon(genre.key),
       ),
       coverOverlay: CollageHeroCard(
-        coverKeys: coverKeys,
-        seed: 'genre:$genreKey',
-        icon: _genreIcon(genreKey),
+        coverKeys: genre.coverKeys,
+        seed: 'genre:${genre.key}',
+        icon: _genreIcon(genre.key),
       ),
       details: _GenreDetails(
-        name: name,
+        genre: genre,
         albumCount: albumCount,
-        songCount: songCount,
         titleStyle: Theme.of(context).textTheme.headlineSmall,
         actionsAtEnd: true,
         onPlay: onPlay,
@@ -124,9 +113,8 @@ IconData _genreIcon(String genreKey) =>
 /// buttons, at the right end of the column when [actionsAtEnd] is on.
 class _GenreDetails extends StatelessWidget {
   const _GenreDetails({
-    required this.name,
+    required this.genre,
     required this.albumCount,
-    required this.songCount,
     required this.titleStyle,
     this.actionsAtEnd = false,
     required this.onPlay,
@@ -134,9 +122,8 @@ class _GenreDetails extends StatelessWidget {
     required this.onQueueAction,
   });
 
-  final String name;
+  final GenreSummary genre;
   final int albumCount;
-  final int songCount;
   final TextStyle? titleStyle;
   final bool actionsAtEnd;
   final VoidCallback onPlay;
@@ -151,7 +138,7 @@ class _GenreDetails extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          name,
+          genreDisplayName(l10n, genre.key, genre.name),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: titleStyle?.copyWith(fontWeight: FontWeight.bold),
@@ -159,7 +146,7 @@ class _GenreDetails extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '${l10n.artistsAlbumCount(albumCount)} · '
-          '${l10n.albumsSongCount(songCount)}',
+          '${l10n.albumsSongCount(genre.songCount)}',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -173,7 +160,12 @@ class _GenreDetails extends StatelessWidget {
             playLabel: l10n.albumsPlay,
             onPlay: onPlay,
             onShuffle: onShuffle,
-            onQueueAction: onQueueAction,
+            onQueueAction: null,
+            menu: GenreMoreButton(
+              genre: genre,
+              onQueueAction: onQueueAction,
+              showGenre: false,
+            ),
           ),
         ),
       ],

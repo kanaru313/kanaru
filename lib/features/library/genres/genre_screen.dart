@@ -7,6 +7,7 @@ import '../../../core/database/library_startup.dart';
 import '../../../core/player/track.dart' as player;
 import '../../../l10n/l10n.dart';
 import '../../../shared/enqueue_tracks.dart';
+import '../../../shared/genre_summaries.dart';
 import '../../../shared/library_route_keys.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -22,9 +23,10 @@ import '../library_detail_body.dart';
 import '../../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../../shared/widgets/detail_page/tracks_toolbar.dart';
-import 'genre_display_name.dart';
+import 'enqueue_genre.dart';
 import 'genre_header.dart';
 import 'genre_page_data.dart';
+import 'genres_provider.dart';
 
 /// One genre: header, then its albums on one line scrolling sideways, then its
 /// songs. A wide window puts the header in a side pane beside the rest.
@@ -85,18 +87,32 @@ class _GenrePageState extends ConsumerState<_GenrePage>
     final l10n = context.l10n;
     final data = widget.data;
     final songs = data.tracks;
-    final name = genreDisplayName(l10n, widget.genreKey, data.name);
     final coverDirectory = ref.watch(coverCacheDirectoryProvider);
     // Built when a track is tapped, not on every rebuild of a long page.
     List<player.Track> queueOf(List<BrowseTrack> list) => [
       for (final t in list) trackFromRow(t, coverDirectory),
     ];
 
+    final summary = ref.watch(
+      genresProvider.select(
+        (genres) => genres.whenData(
+          (list) => list.where((g) => g.key == widget.genreKey).firstOrNull,
+        ),
+      ),
+    ).value ?? GenreSummary(
+      key: widget.genreKey,
+      name: data.name,
+      songCount: songs.length,
+      raws: [data.name],
+      withoutGenre: widget.genreKey == unknownGenreKey,
+      coverKeys: data.coverKeys,
+    );
+
     // Play and Shuffle in the header always take every song.
     void onPlay() => playTracks(ref, queueOf(songs), 0);
     void onShuffle() => shuffleTracks(ref, queueOf(songs));
     void onQueueAction(QueueAction action) =>
-        enqueueLoaded(ref, context, action, queueOf(songs), name);
+        enqueueGenre(ref, context, action, summary);
 
     return CoverTintPageBackground.blend(
       coverKeys: data.coverKeys,
@@ -113,11 +129,8 @@ class _GenrePageState extends ConsumerState<_GenrePage>
                   if (!wide)
                     SliverToBoxAdapter(
                       child: GenreHeader(
-                        genreKey: widget.genreKey,
-                        name: name,
+                        genre: summary,
                         albumCount: data.albums.length,
-                        songCount: songs.length,
-                        coverKeys: data.coverKeys,
                         onPlay: onPlay,
                         onShuffle: onShuffle,
                         onQueueAction: onQueueAction,
@@ -180,11 +193,8 @@ class _GenrePageState extends ConsumerState<_GenrePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GenreSidePane(
-                genreKey: widget.genreKey,
-                name: name,
+                genre: summary,
                 albumCount: data.albums.length,
-                songCount: songs.length,
-                coverKeys: data.coverKeys,
                 onPlay: onPlay,
                 onShuffle: onShuffle,
                 onQueueAction: onQueueAction,
