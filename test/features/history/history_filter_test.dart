@@ -233,6 +233,17 @@ void main() {
       expect(_shownAt(tester), [_at(20)]);
     });
 
+    historyTestWidgets('a play of a file gone from the library is not listed', (
+      tester,
+    ) async {
+      // The filter matches tags, which only a library song has.
+      await open(tester, [('Lal Gone', _at(20)), ('Lal Two', _at(21))]);
+      await _filterBy(tester, 'lal');
+
+      expect(_shownAt(tester), [_at(21)]);
+      expect(find.text('Lal Gone.flac'), findsNothing);
+    });
+
     historyTestWidgets('over the limit, the last line says it was cut', (
       tester,
     ) async {

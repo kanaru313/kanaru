@@ -14,8 +14,9 @@ import 'history_delete_undo.dart';
 import 'history_plays_version.dart';
 
 /// What the song modal of a played song adds: Song history (opens
-/// `location(path)`) and, for a play of the journal ([playId] set), a red
-/// Remove from history with an Undo snackbar.
+/// `location(path)`; left out when [location] is null, on the song's own
+/// page), a [headerNote] chip and, for a play of the journal ([playId] set),
+/// a red Remove from history with an Undo snackbar.
 ///
 /// Call it when the modal opens (it is a `SongModalExtrasBuilder` body): the
 /// router, database, messenger, texts, version notifier and undo service are
@@ -26,8 +27,9 @@ SongModalExtras historyPlayExtras({
   required BuildContext context,
   required WidgetRef ref,
   required String path,
-  required String Function(String path) location,
+  required String Function(String path)? location,
   int? playId,
+  String? headerNote,
 }) {
   final l10n = context.l10n;
   final router = GoRouter.of(context);
@@ -36,13 +38,15 @@ SongModalExtras historyPlayExtras({
   final version = ref.read(historyPlaysVersionProvider.notifier);
   final undo = ref.read(historyDeleteUndoProvider);
   return SongModalExtras(
+    headerNote: headerNote,
     actions: [
-      ContextModalAction(
-        id: 'song-history',
-        icon: AppIcons.history,
-        label: l10n.historyShowTrackHistory,
-        onTap: songModalCloseThen(() => router.go(location(path))),
-      ),
+      if (location != null)
+        ContextModalAction(
+          id: 'song-history',
+          icon: AppIcons.history,
+          label: l10n.historyShowTrackHistory,
+          onTap: songModalCloseThen(() => router.go(location(path))),
+        ),
       if (playId != null && db != null)
         ContextModalAction(
           id: 'remove-from-history',

@@ -1958,6 +1958,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String historyPlayedChip(String when) {
+    return 'Đã nghe $when';
+  }
+
+  @override
+  String historyTopRankChip(int rank, String listens) {
+    return '#$rank · $listens';
+  }
+
+  @override
+  String get historyMissingPlayModalLabel => 'Tùy chọn lượt nghe';
+
+  @override
   String historyTopCapped(int count) {
     return 'Hiện $count bài đầu';
   }

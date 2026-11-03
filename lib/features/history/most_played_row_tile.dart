@@ -16,9 +16,8 @@ import '../../shared/widgets/song_tile.dart';
 /// is dimmed and does not play.
 ///
 /// A row in the library opens the song modal (right click, long press, Menu
-/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file has no
-/// song modal: its small menu opens through [onMenu] with the pointer position
-/// (the row's start for the key).
+/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file opens its
+/// Missing-play modal through [onMenu].
 class MostPlayedRowTile extends ConsumerWidget {
   const MostPlayedRowTile({
     super.key,
@@ -37,13 +36,13 @@ class MostPlayedRowTile extends ConsumerWidget {
   /// Plays from this row; ignored on a song that cannot play.
   final VoidCallback onTap;
 
-  /// Opens the menu of a missing file at the given global point.
+  /// Opens the modal of a missing file.
   final ContextMenuOpen onMenu;
 
   /// Queue action picked in the song modal of a row in the library.
   final ValueChanged<QueueAction> onQueueAction;
 
-  /// Song history and the listen count note, built when the modal opens.
+  /// Song history and the rank chip, built when the modal opens.
   final SongModalExtrasBuilder modalExtras;
 
   @override

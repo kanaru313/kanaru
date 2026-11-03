@@ -1487,6 +1487,31 @@
       }
     }
   },
+  "historyPlayedChip": "Played {when}",
+  "@historyPlayedChip": {
+    "description": "Chip in the modal of a History row: when it was played, the row's own text",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "historyTopRankChip": "#{rank} · {listens}",
+  "@historyTopRankChip": {
+    "description": "Chip in the modal of a Most played row: its place and listen count",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "listens": {
+        "type": "String"
+      }
+    }
+  },
+  "historyMissingPlayModalLabel": "Listen options",
+  "@historyMissingPlayModalLabel": {
+    "description": "Screen reader name of the modal of a played file that is not in the library"
+  },
   "historyTopCapped": "Showing first {count}",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",

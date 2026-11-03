@@ -500,25 +500,28 @@ void main() {
       expect(_queue(h), ['/m/B.flac']);
     });
 
-    historyTestWidgets('a song gone from the library keeps the small menu', (
-      tester,
-    ) async {
-      await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
+    historyTestWidgets(
+      'a song gone from the library opens the Missing-play modal',
+      (tester) async {
+        await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
 
-      expect(
-        find.descendant(
-          of: find.byType(MostPlayedRowTile),
-          matching: find.byTooltip('More options'),
-        ),
-        findsNothing,
-      );
-      await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: find.byType(MostPlayedRowTile),
+            matching: find.byTooltip('More options'),
+          ),
+          findsNothing,
+        );
+        await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
+        await settleModal(tester);
 
-      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
-      expect(find.bySemanticsLabel('Song options'), findsNothing);
-      expect(find.text('Remove from history'), findsNothing);
-    });
+        expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+        expect(find.text('Not in library'), findsWidgets);
+        expect(find.text('#1 · 1 listen'), findsOneWidget);
+        expect(find.text('Song history'), findsOneWidget);
+        expect(find.text('Remove from history'), findsNothing);
+      },
+    );
   });
 
   group('create playlist', () {

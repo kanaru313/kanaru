@@ -9,11 +9,20 @@ import '../../shared/widgets/context_menu_region.dart';
 /// Fixed height of a line of the song history list.
 const historyTrackRowExtent = 56.0;
 
+/// The "date · time" a play started, the text of its row and the chip of its
+/// modal.
+String historyTrackPlayWhen(BuildContext context, int playedAt) {
+  final dates = MaterialLocalizations.of(context);
+  final at = DateTime.fromMillisecondsSinceEpoch(playedAt);
+  return '${dates.formatMediumDate(at)} · '
+      '${dates.formatTimeOfDay(TimeOfDay.fromDateTime(at), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context))}';
+}
+
 /// One play on the page of a song: the day and time it started, how long it
 /// was listened to (left out when unknown), the "Nth listen" badge and a more
 /// button.
 ///
-/// The menu opens on a right click, a long press, the Menu key, Shift+F10 and
+/// The modal opens on a right click, a long press, the Menu key, Shift+F10 and
 /// the more button, always through [onMenu] with the pointer position (a
 /// point near the row start for a key). The keys work while focus is in the
 /// row, which today is its more button. Removing a play is only in that menu,
@@ -36,11 +45,7 @@ class HistoryTrackPlayTile extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final dates = MaterialLocalizations.of(context);
-    final at = DateTime.fromMillisecondsSinceEpoch(row.playedAt);
-    final when =
-        '${dates.formatMediumDate(at)} · '
-        '${dates.formatTimeOfDay(TimeOfDay.fromDateTime(at), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context))}';
+    final when = historyTrackPlayWhen(context, row.playedAt);
     final small = theme.textTheme.bodySmall?.copyWith(
       color: colors.onSurfaceVariant,
     );

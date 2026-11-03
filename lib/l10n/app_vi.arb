@@ -737,6 +737,27 @@
       }
     }
   },
+  "historyPlayedChip": "Đã nghe {when}",
+  "@historyPlayedChip": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "historyTopRankChip": "#{rank} · {listens}",
+  "@historyTopRankChip": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "listens": {
+        "type": "String"
+      }
+    }
+  },
+  "historyMissingPlayModalLabel": "Tùy chọn lượt nghe",
+  "@historyMissingPlayModalLabel": {},
   "historyTopCapped": "Hiện {count} bài đầu",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",

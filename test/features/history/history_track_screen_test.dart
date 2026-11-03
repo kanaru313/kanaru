@@ -10,6 +10,7 @@ import 'package:kanaru/features/history/history_track_play_tile.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../support/settle_modal.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int day, [int hour = 9]) => DateTime(2026, 10, day, hour);
@@ -41,7 +42,7 @@ Future<Set<int>> _ids(WidgetTester tester, LibraryHarness h) async {
   return {for (final Play p in rows!) p.id};
 }
 
-Future<void> _menuOfRow(WidgetTester tester, int index, String item) async {
+Future<void> _menuOfRow(WidgetTester tester, int index, String? item) async {
   await tester.tap(
     find
         .descendant(
@@ -51,6 +52,7 @@ Future<void> _menuOfRow(WidgetTester tester, int index, String item) async {
         .at(index),
   );
   await tester.pumpAndSettle();
+  if (item == null) return;
   await tester.tap(find.text(item));
   await tester.pumpAndSettle();
   await settleHistory(tester);
@@ -160,6 +162,44 @@ void main() {
       expect(find.text('Remove from history'), findsOneWidget);
     });
 
+    historyTestWidgets('the song modal shows the played chip', (tester) async {
+      await insertTracks(tester, h, [song('A')]);
+      await _insert(tester, h, '/m/A.flac', _at(22));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, historyTrackLocation('/m/A.flac'));
+      await settleHistory(tester);
+
+      await _menuOfRow(tester, 0, null);
+
+      expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsOneWidget);
+    });
+
+    historyTestWidgets('a song gone from the library opens the Missing-play '
+        'modal with Remove only', (tester) async {
+      await insertTracks(tester, h, const []);
+      await _insert(tester, h, '/m/gone.flac', _at(22));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, historyTrackLocation('/m/gone.flac'));
+      await settleHistory(tester);
+
+      await tester.tap(
+        find.byType(HistoryTrackPlayTile),
+        buttons: kSecondaryButton,
+      );
+      await settleModal(tester);
+
+      expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsOneWidget);
+      expect(find.text('Song history'), findsNothing);
+      expect(find.text('Play next'), findsNothing);
+
+      await tester.tap(find.text('Remove from history'));
+      await settleModal(tester);
+      await settleHistory(tester);
+
+      expect(find.text('No listens yet'), findsOneWidget);
+      expect(await _ids(tester, h), isEmpty);
+    });
+
     historyTestWidgets('no path says the song was not found', (tester) async {
       await insertTracks(tester, h, const []);
       await h.pump(tester, hasRoots: true);
@@ -197,6 +237,31 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(find.text('Remove from history'), findsNothing);
+    });
+
+    historyTestWidgets('a missing song modal opened by key focuses Remove', (
+      tester,
+    ) async {
+      await insertTracks(tester, h, const []);
+      await _insert(tester, h, '/m/gone.flac', _at(22));
+      await h.pump(tester, hasRoots: true);
+      goTo(tester, h, historyTrackLocation('/m/gone.flac'));
+      await settleHistory(tester);
+      Focus.of(tester.element(find.byIcon(AppIcons.more).first)).requestFocus();
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+      await settleModal(tester);
+
+      expect(
+        find.descendant(
+          of: find.byElementPredicate(
+            (e) => e == FocusManager.instance.primaryFocus?.context,
+          ),
+          matching: find.text('Remove from history'),
+        ),
+        findsOneWidget,
+      );
     });
 
     historyTestWidgets('Shift+F10 opens the row menu; Esc closes it', (

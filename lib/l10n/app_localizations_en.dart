@@ -2060,6 +2060,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String historyPlayedChip(String when) {
+    return 'Played $when';
+  }
+
+  @override
+  String historyTopRankChip(int rank, String listens) {
+    return '#$rank · $listens';
+  }
+
+  @override
+  String get historyMissingPlayModalLabel => 'Listen options';
+
+  @override
   String historyTopCapped(int count) {
     return 'Showing first $count';
   }

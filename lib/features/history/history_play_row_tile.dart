@@ -10,17 +10,27 @@ import '../../shared/widgets/missing_song_row.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_tile.dart';
 
+/// The "date - time" text of a play, the third line of its row and the chip of
+/// its modal, so the two never differ.
+String historyPlayedText(BuildContext context, int playedAt) {
+  final played = DateTime.fromMillisecondsSinceEpoch(playedAt);
+  final time = MaterialLocalizations.of(context).formatTimeOfDay(
+    TimeOfDay.fromDateTime(played),
+    alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+  );
+  return context.l10n.historyPlayedAt(played, time);
+}
+
 /// One play of the timeline: the library song row with "date - time" as its
 /// third line and the "#N" listen badge above the duration. A play whose file
 /// is not in the library shows its file name, is dimmed and does not play.
 /// Only the newest play of the playing track gets the playing fill.
 ///
 /// A row in the library opens the song modal (right click, long press, Menu
-/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file has no
-/// song modal: its small menu opens through [onMenu] with the pointer position
-/// (the row's start for the key). Removing a play is only in those menus,
-/// never one tap on the row: the list moves under the pointer when plays come
-/// and go.
+/// key, Shift+F10 or the ⋮ button) with [modalExtras]. A missing file opens
+/// its Missing-play modal through [onMenu]. Removing a play is only in those
+/// modals, never one tap on the row: the list moves under the pointer when
+/// plays come and go.
 class HistoryPlayRowTile extends ConsumerWidget {
   const HistoryPlayRowTile({
     super.key,
@@ -36,24 +46,20 @@ class HistoryPlayRowTile extends ConsumerWidget {
   /// Plays from this row; ignored on a play that cannot play.
   final VoidCallback onTap;
 
-  /// Opens the menu of a missing file at the given global point.
+  /// Opens the modal of a missing file.
   final ContextMenuOpen onMenu;
 
   /// Queue action picked in the song modal of a row in the library.
   final ValueChanged<QueueAction> onQueueAction;
 
-  /// Song history and Remove from history, built when the modal opens.
+  /// Song history, Remove from history and the played chip, built when the
+  /// modal opens.
   final SongModalExtrasBuilder modalExtras;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final played = DateTime.fromMillisecondsSinceEpoch(row.playedAt);
-    final time = MaterialLocalizations.of(context).formatTimeOfDay(
-      TimeOfDay.fromDateTime(played),
-      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
-    );
-    final playedAt = l10n.historyPlayedAt(played, time);
+    final playedAt = historyPlayedText(context, row.playedAt);
     final nth = row.nth;
     final track = row.track;
     // Only the newest play of the playing track is marked, not every listen
