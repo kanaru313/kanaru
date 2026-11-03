@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/history_rows.dart';
-import 'package:kanaru/features/history/history_modal/history_page_modal_actions.dart';
+import 'package:kanaru/features/history/history_page_modal/history_page_modal_actions.dart';
+import 'package:kanaru/features/history/history_page_modal/history_page_modal_data.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_spec.dart';
 

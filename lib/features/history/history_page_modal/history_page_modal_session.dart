@@ -19,7 +19,7 @@ import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../history_routes.dart';
 import 'history_clear_dialog.dart';
-import 'history_page_modal_actions.dart';
+import 'history_page_modal_data.dart';
 
 final _log = Logger('history');
 

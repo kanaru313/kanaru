@@ -15,7 +15,7 @@ import '../../shared/widgets/page_scaffold.dart';
 import 'history_calendar_dialog.dart';
 import 'history_days.dart';
 import 'history_filter_results.dart';
-import 'history_modal/open_history_page_modal.dart';
+import 'history_page_modal/open_history_page_modal.dart';
 import 'history_page_actions.dart';
 import 'history_page_layout.dart';
 import 'history_providers.dart';

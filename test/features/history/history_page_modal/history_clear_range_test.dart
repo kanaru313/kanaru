@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/features/history/history_modal/history_clear_range.dart';
+import 'package:kanaru/features/history/history_page_modal/history_clear_range.dart';
 
 int _ms(DateTime t) => t.millisecondsSinceEpoch;
 

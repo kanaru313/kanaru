@@ -11,7 +11,7 @@ import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 
 import '../history_top_queue.dart';
-import 'most_played_modal_actions.dart';
+import 'most_played_modal_data.dart';
 
 /// What one open Most played modal holds: the ranking on show when it opened,
 /// cut to the songs still in the library (rank order), and everything its

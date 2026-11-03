@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/history/most_played_modal/most_played_modal_actions.dart';
+import 'package:kanaru/features/history/most_played_modal/most_played_modal_data.dart';
 import 'package:kanaru/l10n/app_localizations_en.dart';
 
 void main() {

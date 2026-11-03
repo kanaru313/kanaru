@@ -1,36 +1,8 @@
-import 'package:flutter/widgets.dart' show VoidCallback;
-
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/m3u/m3u_export_actions.dart';
-import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
 import 'history_day_modal_data.dart';
-
-/// What the Day modal's rows do. Each runs after the modal has closed except
-/// [openAdvanced] (pushes the page) and [remove] (confirms above the modal
-/// first, then closes it).
-class HistoryDayModalHandlers {
-  const HistoryDayModalHandlers({
-    required this.playAll,
-    required this.shuffle,
-    required this.addToPlaylist,
-    required this.openInMostPlayed,
-    required this.exportAbsolute,
-    required this.exportRelative,
-    required this.remove,
-    this.openAdvanced,
-  });
-
-  final VoidCallback playAll;
-  final VoidCallback shuffle;
-  final VoidCallback addToPlaylist;
-  final VoidCallback openInMostPlayed;
-  final VoidCallback exportAbsolute;
-  final VoidCallback exportRelative;
-  final void Function(ContextModalNav nav) remove;
-  final void Function(ContextModalNav nav)? openAdvanced;
-}
 
 /// The rows of the first page in two groups: play and copy actions with
 /// Advanced; Remove. The footer's queue buttons are not here. Everything

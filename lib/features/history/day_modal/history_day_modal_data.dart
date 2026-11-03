@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show VoidCallback;
 import 'package:intl/intl.dart';
 
 import '../../../core/database/history_rows.dart';
@@ -5,6 +6,7 @@ import '../../../core/m3u/m3u_write.dart' show M3uExportEntry;
 import '../../../core/player/track.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/format_duration.dart' show formatDuration;
+import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/library_row.dart' show rowLength;
 import '../history_days.dart';
 import '../history_day_queue.dart';
@@ -91,4 +93,29 @@ class HistoryDayModalData {
   static String _length(AppLocalizations l10n, int ms) => ms < 60000
       ? formatDuration(Duration(milliseconds: ms))
       : rowLength(l10n, ms);
+}
+
+/// What the Day modal's rows do. Each runs after the modal has closed except
+/// [openAdvanced] (pushes the page) and [remove] (confirms above the modal
+/// first, then closes it).
+class HistoryDayModalHandlers {
+  const HistoryDayModalHandlers({
+    required this.playAll,
+    required this.shuffle,
+    required this.addToPlaylist,
+    required this.openInMostPlayed,
+    required this.exportAbsolute,
+    required this.exportRelative,
+    required this.remove,
+    this.openAdvanced,
+  });
+
+  final VoidCallback playAll;
+  final VoidCallback shuffle;
+  final VoidCallback addToPlaylist;
+  final VoidCallback openInMostPlayed;
+  final VoidCallback exportAbsolute;
+  final VoidCallback exportRelative;
+  final void Function(ContextModalNav nav) remove;
+  final void Function(ContextModalNav nav)? openAdvanced;
 }
