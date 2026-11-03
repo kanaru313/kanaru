@@ -4,15 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/genre_queries.dart';
 import '../../../core/database/library_database.dart';
 import '../../../core/database/library_startup.dart';
-import '../../../core/settings/library_sort.dart';
 import '../../../core/database/throttled_tracks_query.dart';
-import '../../../shared/library_browse_refresh.dart';
 import '../../../shared/album_sort.dart';
+import '../../../shared/library_browse_refresh.dart';
 import 'genres_provider.dart';
 
-/// The order of the albums of a genre page: by title, then album key, as the
-/// Albums tab breaks ties.
-const genreAlbumsSort = SortChoice(AlbumSortField.title);
+export '../../../shared/album_sort.dart' show genreAlbumsSort;
 
 /// What a genre page shows: its name, the albums holding at least one of its
 /// tracks (each as the Albums list shows it, in [genreAlbumsSort] order) and

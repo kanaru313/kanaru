@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show listEquals;
+
 import '../core/database/genre_names.dart';
 import 'library_route_keys.dart' show unknownGenreKey;
 import 'artist_summaries.dart' show preferredSpelling;
@@ -46,6 +48,27 @@ class GenreSummary {
     raws: raws,
     withoutGenre: withoutGenre,
     coverKeys: coverKeys,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GenreSummary &&
+          other.key == key &&
+          other.name == name &&
+          other.songCount == songCount &&
+          other.withoutGenre == withoutGenre &&
+          listEquals(other.raws, raws) &&
+          listEquals(other.coverKeys, coverKeys);
+
+  @override
+  int get hashCode => Object.hash(
+    key,
+    name,
+    songCount,
+    withoutGenre,
+    Object.hashAll(raws),
+    Object.hashAll(coverKeys),
   );
 }
 

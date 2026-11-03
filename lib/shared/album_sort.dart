@@ -3,6 +3,9 @@ import '../core/database/text_keys.dart';
 import '../core/settings/library_sort.dart';
 import './sort_compare.dart';
 
+/// The order of the albums of a genre page/modal: by title, then album key.
+const genreAlbumsSort = SortChoice(AlbumSortField.title);
+
 /// An album with its sort keys made once, not on every comparison.
 typedef _Keyed = ({AlbumSummary album, String title, String? artist});
 
