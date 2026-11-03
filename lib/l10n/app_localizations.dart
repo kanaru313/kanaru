@@ -2792,29 +2792,59 @@ abstract class AppLocalizations {
   /// **'{date} - {time}'**
   String historyPlayedAt(DateTime date, String time);
 
-  /// Tooltip of the menu button on a History day bar
+  /// Tooltip of the menu button on a History day bar, semantics label of the bar button, and semantic label of the Day modal
   ///
   /// In en, this message translates to:
   /// **'Day options'**
   String get historyDayMenu;
 
-  /// Menu item that saves the songs of a History day as a playlist
+  /// Day modal row and confirm button that remove every listen shown for a History day
   ///
   /// In en, this message translates to:
-  /// **'Create playlist from this day'**
-  String get historyDayCreatePlaylist;
-
-  /// Menu item that removes every listen shown for a History day
-  ///
-  /// In en, this message translates to:
-  /// **'Remove this day\'s listens'**
+  /// **'Remove day from history'**
   String get historyDayDelete;
 
-  /// Suggested name of a playlist made from a History day
+  /// Title of the Day modal for the day before today
   ///
   /// In en, this message translates to:
-  /// **'History · {date}'**
-  String historyDayPlaylistName(DateTime date);
+  /// **'Yesterday'**
+  String get historyDayYesterday;
+
+  /// Second line of the Day modal rows that use the songs of a day: how many, and in what order
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song, last played first} other{{count} songs, last played first}}'**
+  String historyOrderLastPlayedFirst(int count);
+
+  /// Second line of the Day modal row that removes the day's listens
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen · the song stays in your library} other{{count} listens · songs stay in your library}}'**
+  String historyDayRemoveHint(int count);
+
+  /// Title of the question asked before the listens of a History day are removed
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this day?'**
+  String get historyDayRemoveTitle;
+
+  /// Body of the question asked before the listens of a History day are removed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The listen of {date} is removed from History and Most played. The song stays in your library.} other{All {count} listens of {date} are removed from History and Most played. The songs stay in your library.}}'**
+  String historyDayRemoveBody(int count, String date);
+
+  /// Day modal row that shows the ranking of the day on the Most played page
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Most played'**
+  String get historyOpenInMostPlayed;
+
+  /// Second line of the Add to playlist row of the Day modal: the name the New playlist option starts with
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist suggests “{name}”'**
+  String historyNewPlaylistSuggests(String name);
 
   /// How many plays a History day holds
   ///

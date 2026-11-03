@@ -15,6 +15,7 @@ class ContextMenuMoreButton extends StatelessWidget {
     required this.onOpen,
     this.color,
     this.icon = AppIcons.more,
+    this.tooltip,
   });
 
   final ContextMenuOpen onOpen;
@@ -24,6 +25,9 @@ class ContextMenuMoreButton extends StatelessWidget {
 
   /// The glyph: vertical dots by default, horizontal ones for a day bar.
   final IconData icon;
+
+  /// Tooltip text; null keeps "More options".
+  final String? tooltip;
 
   /// The button's bottom-left in global coordinates, or null while it is not
   /// laid out.
@@ -54,7 +58,7 @@ class ContextMenuMoreButton extends StatelessWidget {
               SingleActivator(key): () => open(viaKeyboard: true),
           },
           child: IconButton(
-            tooltip: context.l10n.songModalMoreOptions,
+            tooltip: tooltip ?? context.l10n.songModalMoreOptions,
             icon: Icon(icon),
             iconSize: 20,
             color: color,

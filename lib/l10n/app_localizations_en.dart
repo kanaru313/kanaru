@@ -1872,17 +1872,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyDayMenu => 'Day options';
 
   @override
-  String get historyDayCreatePlaylist => 'Create playlist from this day';
+  String get historyDayDelete => 'Remove day from history';
 
   @override
-  String get historyDayDelete => 'Remove this day\'s listens';
+  String get historyDayYesterday => 'Yesterday';
 
   @override
-  String historyDayPlaylistName(DateTime date) {
-    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
-    final String dateString = dateDateFormat.format(date);
+  String historyOrderLastPlayedFirst(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs, last played first',
+      one: '1 song, last played first',
+    );
+    return '$_temp0';
+  }
 
-    return 'History · $dateString';
+  @override
+  String historyDayRemoveHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listens · songs stay in your library',
+      one: '1 listen · the song stays in your library',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyDayRemoveTitle => 'Remove this day?';
+
+  @override
+  String historyDayRemoveBody(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'All $count listens of $date are removed from History and Most played. The songs stay in your library.',
+      one:
+          'The listen of $date is removed from History and Most played. The song stays in your library.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyOpenInMostPlayed => 'Open in Most played';
+
+  @override
+  String historyNewPlaylistSuggests(String name) {
+    return 'New playlist suggests “$name”';
   }
 
   @override

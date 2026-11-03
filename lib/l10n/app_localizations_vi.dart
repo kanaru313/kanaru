@@ -1777,17 +1777,51 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyDayMenu => 'Tuỳ chọn ngày';
 
   @override
-  String get historyDayCreatePlaylist => 'Tạo playlist từ ngày này';
+  String get historyDayDelete => 'Xoá ngày khỏi lịch sử';
 
   @override
-  String get historyDayDelete => 'Xoá lượt nghe của ngày';
+  String get historyDayYesterday => 'Hôm qua';
 
   @override
-  String historyDayPlaylistName(DateTime date) {
-    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
-    final String dateString = dateDateFormat.format(date);
+  String historyOrderLastPlayedFirst(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài, nghe gần nhất trước',
+    );
+    return '$_temp0';
+  }
 
-    return 'Lịch sử · $dateString';
+  @override
+  String historyDayRemoveHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe · bài hát vẫn ở trong thư viện',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyDayRemoveTitle => 'Xoá ngày này?';
+
+  @override
+  String historyDayRemoveBody(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Cả $count lượt nghe của $date sẽ bị xoá khỏi Lịch sử và Phát nhiều nhất. Các bài hát vẫn ở trong thư viện.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyOpenInMostPlayed => 'Mở trong Phát nhiều nhất';
+
+  @override
+  String historyNewPlaylistSuggests(String name) {
+    return 'Playlist mới gợi ý tên “$name”';
   }
 
   @override

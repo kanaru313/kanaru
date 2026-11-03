@@ -562,24 +562,17 @@
   "@historyDayMenu": {
     "description": "Tooltip of the menu button on a History day bar"
   },
-  "historyDayCreatePlaylist": "Tạo playlist từ ngày này",
-  "@historyDayCreatePlaylist": {
-    "description": "Menu item that saves the songs of a History day as a playlist"
-  },
-  "historyDayDelete": "Xoá lượt nghe của ngày",
+  "historyDayDelete": "Xoá ngày khỏi lịch sử",
   "@historyDayDelete": {
-    "description": "Menu item that removes every listen shown for a History day"
+    "description": "Day modal row and confirm button that remove every listen shown for a History day"
   },
-  "historyDayPlaylistName": "Lịch sử · {date}",
-  "@historyDayPlaylistName": {
-    "description": "Suggested name of a playlist made from a History day",
-    "placeholders": {
-      "date": {
-        "type": "DateTime",
-        "format": "yMMMd"
-      }
-    }
-  },
+  "historyDayYesterday": "Hôm qua",
+  "historyOrderLastPlayedFirst": "{count, plural, other{{count} bài, nghe gần nhất trước}}",
+  "historyDayRemoveHint": "{count, plural, other{{count} lượt nghe · bài hát vẫn ở trong thư viện}}",
+  "historyDayRemoveTitle": "Xoá ngày này?",
+  "historyDayRemoveBody": "{count, plural, other{Cả {count} lượt nghe của {date} sẽ bị xoá khỏi Lịch sử và Phát nhiều nhất. Các bài hát vẫn ở trong thư viện.}}",
+  "historyOpenInMostPlayed": "Mở trong Phát nhiều nhất",
+  "historyNewPlaylistSuggests": "Playlist mới gợi ý tên “{name}”",
   "historyListenCount": "{count, plural, other{{count} lượt nghe}}",
   "@historyListenCount": {
     "description": "How many plays a History day holds",

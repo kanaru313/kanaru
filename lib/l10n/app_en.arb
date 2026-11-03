@@ -1263,23 +1263,60 @@
   },
   "historyDayMenu": "Day options",
   "@historyDayMenu": {
-    "description": "Tooltip of the menu button on a History day bar"
+    "description": "Tooltip of the menu button on a History day bar, semantics label of the bar button, and semantic label of the Day modal"
   },
-  "historyDayCreatePlaylist": "Create playlist from this day",
-  "@historyDayCreatePlaylist": {
-    "description": "Menu item that saves the songs of a History day as a playlist"
-  },
-  "historyDayDelete": "Remove this day's listens",
+  "historyDayDelete": "Remove day from history",
   "@historyDayDelete": {
-    "description": "Menu item that removes every listen shown for a History day"
+    "description": "Day modal row and confirm button that remove every listen shown for a History day"
   },
-  "historyDayPlaylistName": "History · {date}",
-  "@historyDayPlaylistName": {
-    "description": "Suggested name of a playlist made from a History day",
+  "historyDayYesterday": "Yesterday",
+  "@historyDayYesterday": {
+    "description": "Title of the Day modal for the day before today"
+  },
+  "historyOrderLastPlayedFirst": "{count, plural, =1{1 song, last played first} other{{count} songs, last played first}}",
+  "@historyOrderLastPlayedFirst": {
+    "description": "Second line of the Day modal rows that use the songs of a day: how many, and in what order",
     "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyDayRemoveHint": "{count, plural, =1{1 listen · the song stays in your library} other{{count} listens · songs stay in your library}}",
+  "@historyDayRemoveHint": {
+    "description": "Second line of the Day modal row that removes the day's listens",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyDayRemoveTitle": "Remove this day?",
+  "@historyDayRemoveTitle": {
+    "description": "Title of the question asked before the listens of a History day are removed"
+  },
+  "historyDayRemoveBody": "{count, plural, =1{The listen of {date} is removed from History and Most played. The song stays in your library.} other{All {count} listens of {date} are removed from History and Most played. The songs stay in your library.}}",
+  "@historyDayRemoveBody": {
+    "description": "Body of the question asked before the listens of a History day are removed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
       "date": {
-        "type": "DateTime",
-        "format": "yMMMd"
+        "type": "String"
+      }
+    }
+  },
+  "historyOpenInMostPlayed": "Open in Most played",
+  "@historyOpenInMostPlayed": {
+    "description": "Day modal row that shows the ranking of the day on the Most played page"
+  },
+  "historyNewPlaylistSuggests": "New playlist suggests “{name}”",
+  "@historyNewPlaylistSuggests": {
+    "description": "Second line of the Add to playlist row of the Day modal: the name the New playlist option starts with",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
     }
   },
