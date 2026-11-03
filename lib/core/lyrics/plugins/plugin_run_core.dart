@@ -90,7 +90,7 @@ class PluginRunOutcome {
 
   /// The config the run saw (secrets included): only for hiding values in
   /// the log.
-  final Map<String, String> config;
+  final PluginConfigMap config;
 }
 
 /// The part of a script run that does not depend on what the script is for:
@@ -113,7 +113,7 @@ class PluginRunCore {
   final PluginRuntime _runtime;
   final PluginRunRegistry _runs;
   final LyricsPluginDirs _dirs;
-  final Future<Map<String, String>> Function(String installId) _loadConfig;
+  final Future<PluginConfigMap> Function(String installId) _loadConfig;
 
   /// The package cache every front shares.
   final PluginPackageLoader packages;

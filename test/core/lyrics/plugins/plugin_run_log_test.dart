@@ -173,6 +173,18 @@ void main() {
       expect(hide('x aaaaaaaa1 x bbbbbbbb2 x ccccccccc3'), 'x *** x *** x ***');
     });
 
+    test('list items and map values are hidden, numbers are not', () {
+      final hide = configValueHider({
+        'keys': ['listsecret1', 'other'],
+        'map': {'h': 'mapsecret22', 'mapkeyname': 'v'},
+        'n': 12345678,
+      });
+      expect(
+        hide('listsecret1 mapsecret22 mapkeyname 12345678'),
+        '*** *** *** 12345678',
+      );
+    });
+
     test('short tokens of a list stay readable', () {
       final hide = configValueHider({'k': 'shorty,longerkey99'});
       expect(hide('shorty longerkey99'), 'shorty ***');

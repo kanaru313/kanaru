@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_queries.dart';
+import '../../plugin_runtime/plugin_runtime.dart';
 import '../../secrets/secret_store_provider.dart' show ResolvedSecretStore;
 import 'lyrics_plugin_record.dart';
 import 'package/plugin_package_reader.dart';
@@ -194,7 +195,7 @@ class LyricsPluginsController {
   ) => _queue.run(() => _config.setValue(installId, key, value));
 
   /// What a script run reads as `localConfig`, secrets included.
-  Future<Map<String, String>> configForRun(String installId) =>
+  Future<PluginConfigMap> configForRun(String installId) =>
       _config.configForRun(installId);
 
   /// The non-secret values as stored, for the config form.

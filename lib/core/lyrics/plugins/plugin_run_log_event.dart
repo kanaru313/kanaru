@@ -1,3 +1,4 @@
+import '../../plugin_runtime/plugin_runtime.dart';
 import 'plugin_fetch_bridge.dart';
 
 /// The `kind` of a run that did not fail but printed to the console.
@@ -52,7 +53,7 @@ class PluginRunLogEvent {
   final List<PluginRequestRecord> requests;
 
   /// The JSON object of the log line, with every [config] value hidden.
-  Map<String, Object?> toJson(Map<String, String> config) {
+  Map<String, Object?> toJson(PluginConfigMap config) {
     final hide = configValueHider(config);
     return {
       'ts': time.toUtc().toIso8601String(),
@@ -80,11 +81,12 @@ class PluginRunLogEvent {
 /// or semicolons) also hides each token of at least eight characters, so a
 /// line naming one key does not leak it. Longer values go first, so
 /// overlapping secrets are hidden whole.
-String Function(String) configValueHider(Map<String, String> config) {
+String Function(String) configValueHider(PluginConfigMap config) {
+  final leaves = [for (final value in config.values) ..._stringLeaves(value)];
   final values = <String>{
-    for (final value in config.values)
+    for (final value in leaves)
       if (value.length >= _minMaskedLength) value,
-    for (final value in config.values)
+    for (final value in leaves)
       for (final token in value.split(RegExp(r'[\s,;]+')))
         if (token.length >= _minMaskedTokenLength) token,
   };
@@ -107,3 +109,15 @@ Object? _hideDeep(Object? value, String Function(String) hide) =>
       Map() => {for (final e in value.entries) e.key: _hideDeep(e.value, hide)},
       _ => value,
     };
+
+// The strings of a config value: itself, list items, map keys and values. Numbers
+// and bools hold nothing to hide.
+Iterable<String> _stringLeaves(Object? value) => switch (value) {
+  String() => [value],
+  List() => value.expand(_stringLeaves),
+  Map() => [
+    ...value.keys.expand(_stringLeaves),
+    ...value.values.expand(_stringLeaves),
+  ],
+  _ => const [],
+};

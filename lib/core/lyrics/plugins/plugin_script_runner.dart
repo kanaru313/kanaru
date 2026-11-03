@@ -43,7 +43,7 @@ class PluginScriptRunner {
     required PluginRunRegistry runs,
     required this._runLog,
     required LyricsPluginDirs dirs,
-    required Future<Map<String, String>> Function(String installId) loadConfig,
+    required Future<PluginConfigMap> Function(String installId) loadConfig,
     PluginPackageLoader? packages,
     Duration outerDeadline = pluginRunOuterDeadline,
     DateTime Function()? clock,

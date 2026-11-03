@@ -106,7 +106,7 @@ class PluginProviderEnv {
   static Future<PluginProviderEnv> create({
     Duration outerDeadline = pluginRunOuterDeadline,
     DateTime Function()? clock,
-    Future<Map<String, String>> Function(String installId)? loadConfig,
+    Future<PluginConfigMap> Function(String installId)? loadConfig,
   }) async {
     final store = await StoreEnv.create();
     final runtime = ScriptedRuntime();

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
+import '../../plugin_runtime/plugin_runtime.dart';
 import 'plugin_log_paths.dart';
 import 'plugin_run_log_event.dart';
 import 'store/plugin_install_id.dart' show pluginInstallIdPattern;
@@ -53,7 +54,7 @@ class PluginRunLog {
   /// write; never throws.
   Future<void> write(
     PluginRunLogEvent event, {
-    Map<String, String> config = const {},
+    PluginConfigMap config = const {},
   }) {
     if (event.kind == pluginRunOkKind && event.console.isEmpty) {
       return Future.value();

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
+import '../../plugin_runtime/plugin_runtime.dart';
 import '../online/lyrics_fetch_exception.dart';
 import 'plugin_run_log.dart';
 
@@ -51,7 +52,7 @@ void logPluginFailure({
 void recordPluginRun(
   PluginRunLog log,
   PluginRunLogEvent event,
-  Map<String, String> config, {
+  PluginConfigMap config, {
   required bool failed,
   String appLogLabel = 'Lyrics plugin',
 }) {

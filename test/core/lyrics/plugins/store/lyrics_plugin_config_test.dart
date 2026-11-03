@@ -70,12 +70,12 @@ void main() {
     expect(await controller.configForRun(p.installId), {
       'token': secretValue,
       'region': 'eu', // default
-      'strict': 'true', // default
+      'strict': true, // default
     });
     await controller.setConfigValue(p.installId, 'strict', false);
     await controller.setConfigValue(p.installId, 'region', 'us');
     final merged = await controller.configForRun(p.installId);
-    expect(merged['strict'], 'false');
+    expect(merged['strict'], false);
     expect(merged['region'], 'us');
     await controller.setConfigValue(p.installId, 'region', '');
     expect((await controller.configForRun(p.installId))['region'], 'eu');
