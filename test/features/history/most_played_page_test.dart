@@ -16,6 +16,7 @@ import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
+import '../../support/settle_modal.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int month, int day, [int hour = 9]) =>
@@ -193,21 +194,22 @@ void main() {
       expect(_queue(h).toSet(), {'/m/A.flac', '/m/B.flac', '/m/C.flac'});
     });
 
-    historyTestWidgets('the more menu is vertical and queues the songs', (
-      tester,
-    ) async {
-      await open(tester);
+    historyTestWidgets(
+      'the more button is vertical and opens the modal that queues the songs',
+      (tester) async {
+        await open(tester);
 
-      expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
-      await tester.tap(inPane(find.byTooltip('More options')));
-      await tester.pumpAndSettle();
-      expect(find.text('Create playlist'), findsOneWidget);
-      expect(find.text('Play next'), findsOneWidget);
+        expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
+        await tester.tap(inPane(find.byTooltip('More options')));
+        await settleModal(tester);
+        expect(find.text('Add to playlist…'), findsOneWidget);
+        expect(find.text('Play next'), findsOneWidget);
 
-      await tester.tap(find.text('Add to queue'));
-      await settleHistory(tester);
-      expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
-    });
+        await tester.tap(find.text('Add to queue'));
+        await settleHistory(tester);
+        expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
+      },
+    );
 
     historyTestWidgets('a narrow window shows the header above the list', (
       tester,

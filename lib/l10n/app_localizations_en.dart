@@ -2081,16 +2081,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyPlayAll => 'Play all';
 
   @override
-  String get historyCreatePlaylist => 'Create playlist';
-
-  @override
   String historyTopPlaylistName(String range) {
     return 'Most played · $range';
-  }
-
-  @override
-  String historyPlaylistCreated(String name) {
-    return 'Created playlist $name';
   }
 
   @override
@@ -5206,6 +5198,20 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count missing songs removed',
       one: '1 missing song removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostPlayedModalLabel => 'Most played options';
+
+  @override
+  String historyOrderRank(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs, in rank order',
+      one: '1 song, in rank order',
     );
     return '$_temp0';
   }

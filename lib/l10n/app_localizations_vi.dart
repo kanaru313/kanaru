@@ -1979,16 +1979,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyPlayAll => 'Phát tất cả';
 
   @override
-  String get historyCreatePlaylist => 'Tạo playlist';
-
-  @override
   String historyTopPlaylistName(String range) {
     return 'Nghe nhiều nhất · $range';
-  }
-
-  @override
-  String historyPlaylistCreated(String name) {
-    return 'Đã tạo playlist $name';
   }
 
   @override
@@ -4896,6 +4888,19 @@ class AppLocalizationsVi extends AppLocalizations {
       count,
       locale: localeName,
       other: 'Đã xoá $count bài không còn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostPlayedModalLabel => 'Tuỳ chọn nghe nhiều nhất';
+
+  @override
+  String historyOrderRank(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài, theo thứ hạng',
     );
     return '$_temp0';
   }

@@ -110,10 +110,15 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
       onPlay: playable ? () => playMostPlayed(ref, rows!) : null,
       onShuffle: playable ? () => shuffleMostPlayed(ref, rows!) : null,
       onQueueAction: null,
-      menu: MostPlayedMenuButton(
-        enabled: playable,
-        onSelected: (choice) =>
-            runMostPlayedChoice(ref, context, choice, rows!, rangeText),
+      menu: mostPlayedMoreButton(
+        ref,
+        context,
+        rows: rows,
+        rangeText: rangeText,
+        totals: totals,
+        // `rows` still belong to the last range while the next one loads
+        // or after its read failed.
+        stale: loading || failed,
       ),
     );
     final summary = totals == null

@@ -3062,23 +3062,11 @@ abstract class AppLocalizations {
   /// **'Play all'**
   String get historyPlayAll;
 
-  /// Button that saves the Most played list as a playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Create playlist'**
-  String get historyCreatePlaylist;
-
   /// Suggested name of a playlist made from the Most played list
   ///
   /// In en, this message translates to:
   /// **'Most played · {range}'**
   String historyTopPlaylistName(String range);
-
-  /// Snackbar after a playlist was made from the Most played list
-  ///
-  /// In en, this message translates to:
-  /// **'Created playlist {name}'**
-  String historyPlaylistCreated(String name);
 
   /// Message of the Most played page when the range has no plays
   ///
@@ -7579,6 +7567,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}'**
   String playlistMissingRemoved(int count);
+
+  /// Semantic label of the Most played modal
+  ///
+  /// In en, this message translates to:
+  /// **'Most played options'**
+  String get mostPlayedModalLabel;
+
+  /// Second line of the Most played modal rows that use the ranking: how many songs, and in what order
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song, in rank order} other{{count} songs, in rank order}}'**
+  String historyOrderRank(int count);
 
   /// Semantic label of the History modal and its more button on the History page
   ///

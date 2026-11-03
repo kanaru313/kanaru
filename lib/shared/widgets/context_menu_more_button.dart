@@ -16,6 +16,7 @@ class ContextMenuMoreButton extends StatelessWidget {
     this.color,
     this.icon = AppIcons.more,
     this.tooltip,
+    this.enabled = true,
   });
 
   final ContextMenuOpen onOpen;
@@ -28,6 +29,9 @@ class ContextMenuMoreButton extends StatelessWidget {
 
   /// Tooltip text; null keeps "More options".
   final String? tooltip;
+
+  /// False greys the button out: no click and no key opens anything.
+  final bool enabled;
 
   /// The button's bottom-left in global coordinates, or null while it is not
   /// laid out.
@@ -42,6 +46,7 @@ class ContextMenuMoreButton extends StatelessWidget {
     return Builder(
       builder: (context) {
         void open({required bool viaKeyboard}) {
+          if (!enabled) return;
           final at = _anchorOf(context);
           if (at != null) onOpen(viaKeyboard: viaKeyboard, at: at);
         }
@@ -64,7 +69,7 @@ class ContextMenuMoreButton extends StatelessWidget {
             color: color,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-            onPressed: () => open(viaKeyboard: false),
+            onPressed: enabled ? () => open(viaKeyboard: false) : null,
           ),
         );
       },

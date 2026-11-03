@@ -771,24 +771,11 @@
   "@historyPlayAll": {
     "description": "Button that plays the Most played list from the top"
   },
-  "historyCreatePlaylist": "Tạo playlist",
-  "@historyCreatePlaylist": {
-    "description": "Button that saves the Most played list as a playlist"
-  },
   "historyTopPlaylistName": "Nghe nhiều nhất · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
     "placeholders": {
       "range": {
-        "type": "String"
-      }
-    }
-  },
-  "historyPlaylistCreated": "Đã tạo playlist {name}",
-  "@historyPlaylistCreated": {
-    "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -1917,6 +1904,19 @@
   "playlistRemoveMissing": "Xoá bài không còn",
   "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
   "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}",
+  "mostPlayedModalLabel": "Tuỳ chọn nghe nhiều nhất",
+  "@mostPlayedModalLabel": {
+    "description": "Semantic label of the Most played modal"
+  },
+  "historyOrderRank": "{count, plural, other{{count} bài, theo thứ hạng}}",
+  "@historyOrderRank": {
+    "description": "Second line of the Most played modal rows that use the ranking: how many songs, and in what order",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "historyModalLabel": "Tuỳ chọn lịch sử",
   "@historyModalLabel": {
     "description": "Semantic label of the History modal and its more button on the History page"

@@ -1525,24 +1525,11 @@
   "@historyPlayAll": {
     "description": "Button that plays the Most played list from the top"
   },
-  "historyCreatePlaylist": "Create playlist",
-  "@historyCreatePlaylist": {
-    "description": "Button that saves the Most played list as a playlist"
-  },
   "historyTopPlaylistName": "Most played · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
     "placeholders": {
       "range": {
-        "type": "String"
-      }
-    }
-  },
-  "historyPlaylistCreated": "Created playlist {name}",
-  "@historyPlaylistCreated": {
-    "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -5211,6 +5198,19 @@
   "playlistMissingRemoved": "{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}",
   "@playlistMissingRemoved": {
     "description": "Snackbar after missing songs were removed from a playlist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mostPlayedModalLabel": "Most played options",
+  "@mostPlayedModalLabel": {
+    "description": "Semantic label of the Most played modal"
+  },
+  "historyOrderRank": "{count, plural, =1{1 song, in rank order} other{{count} songs, in rank order}}",
+  "@historyOrderRank": {
+    "description": "Second line of the Most played modal rows that use the ranking: how many songs, and in what order",
     "placeholders": {
       "count": {
         "type": "int"
