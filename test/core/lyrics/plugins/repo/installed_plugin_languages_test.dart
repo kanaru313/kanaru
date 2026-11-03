@@ -9,6 +9,7 @@ import 'package:kanaru/core/lyrics/plugins/repo/installed_plugin_languages_provi
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_limits.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
+import 'package:logging/logging.dart';
 
 LyricsPluginRecord record(
   String id, {
@@ -76,6 +77,55 @@ void main() {
       expect(await read('{"metadata": {}}'), isEmpty);
       expect(await read('{"metadata": {"languages": "vi"}}'), isEmpty);
     });
+
+    List<LogRecord> captureLogs() {
+      final records = <LogRecord>[];
+      final previous = Logger.root.level;
+      Logger.root.level = Level.ALL;
+      final sub = Logger.root.onRecord.listen(records.add);
+      addTearDown(() {
+        sub.cancel();
+        Logger.root.level = previous;
+      });
+      return records;
+    }
+
+    test('a missing file logs fine and is global', () async {
+      final logs = captureLogs();
+      expect(await readInstalledPluginLanguages(tmp), isEmpty);
+      final mine = logs.where((r) => r.message.contains(tmp.path)).toList();
+      expect(mine, hasLength(1));
+      expect(mine.single.level, Level.FINE);
+    });
+
+    test('garbled JSON logs a warning and is global', () async {
+      final logs = captureLogs();
+      expect(await read('{not json'), isEmpty);
+      final mine = logs.where((r) => r.message.contains(tmp.path)).toList();
+      expect(mine, hasLength(1));
+      expect(mine.single.level, Level.WARNING);
+    });
+
+    test('invalid UTF-8 logs a warning and is global', () async {
+      final logs = captureLogs();
+      File('${tmp.path}/plugin.json').writeAsBytesSync([0xff, 0xfe, 0xfd]);
+      expect(await readInstalledPluginLanguages(tmp), isEmpty);
+      final mine = logs.where((r) => r.message.contains(tmp.path)).toList();
+      expect(mine, hasLength(1));
+      expect(mine.single.level, Level.WARNING);
+    });
+
+    test(
+      'plugin.json being a directory logs a warning and is global',
+      () async {
+        final logs = captureLogs();
+        Directory('${tmp.path}/plugin.json').createSync();
+        expect(await readInstalledPluginLanguages(tmp), isEmpty);
+        final mine = logs.where((r) => r.message.contains(tmp.path)).toList();
+        expect(mine, hasLength(1));
+        expect(mine.single.level, Level.WARNING);
+      },
+    );
 
     test('an oversized file is global', () async {
       final pad = ' ' * (maxPluginManifestBytes + 1);
