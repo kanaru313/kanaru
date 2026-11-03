@@ -5630,6 +5630,108 @@ abstract class AppLocalizations {
   /// **'Could not reach the system keyring. Unlock the keyring or restart Kanaru, then try again.'**
   String get pluginConfigSecretStoreFailed;
 
+  /// No description provided for @pluginConfigRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This setting is required'**
+  String get pluginConfigRequired;
+
+  /// No description provided for @pluginConfigIntegerInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number'**
+  String get pluginConfigIntegerInvalid;
+
+  /// No description provided for @pluginConfigBelowMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be at least {min}'**
+  String pluginConfigBelowMin(String min);
+
+  /// No description provided for @pluginConfigAboveMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be at most {max}'**
+  String pluginConfigAboveMax(String max);
+
+  /// No description provided for @pluginConfigTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Enter at least 1 character} other{Enter at least {count} characters}}'**
+  String pluginConfigTooShort(int count);
+
+  /// No description provided for @pluginConfigTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Enter at most 1 character} other{Enter at most {count} characters}}'**
+  String pluginConfigTooLong(int count);
+
+  /// No description provided for @pluginConfigUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an https address'**
+  String get pluginConfigUrlInvalid;
+
+  /// No description provided for @pluginConfigTooFewItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Pick or add at least 1 item} other{Pick or add at least {count} items}}'**
+  String pluginConfigTooFewItems(int count);
+
+  /// No description provided for @pluginConfigTooManyItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{At most 1 item is allowed} other{At most {count} items are allowed}}'**
+  String pluginConfigTooManyItems(int count);
+
+  /// No description provided for @pluginConfigItemInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the entries is not valid'**
+  String get pluginConfigItemInvalid;
+
+  /// No description provided for @pluginConfigKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name of 1 to 100 characters, with no space at either end'**
+  String get pluginConfigKeyInvalid;
+
+  /// No description provided for @pluginConfigKeyDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Another row already uses this name'**
+  String get pluginConfigKeyDuplicate;
+
+  /// No description provided for @pluginConfigListRowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} {index}'**
+  String pluginConfigListRowLabel(String title, int index);
+
+  /// No description provided for @pluginConfigAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get pluginConfigAddItem;
+
+  /// No description provided for @pluginConfigRemoveItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get pluginConfigRemoveItem;
+
+  /// No description provided for @pluginConfigMapKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get pluginConfigMapKeyLabel;
+
+  /// No description provided for @pluginConfigMapValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get pluginConfigMapValueLabel;
+
   /// No description provided for @pluginDataTitle.
   ///
   /// In en, this message translates to:

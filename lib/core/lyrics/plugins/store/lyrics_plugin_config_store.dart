@@ -83,22 +83,16 @@ class LyricsPluginConfigStore {
       }
       final value = stored[field.key] ?? field.defaultValue;
       if (value != null && pluginValueFits(field, value)) {
-        out[field.key] = _typed(field, value);
+        out[field.key] = _typed(value);
       }
     }
     return out;
   }
 
-  // A fitting value as the script reads it: collections are copied, a number
-  // kept as text by the form is sent as its number.
-  Object _typed(PluginConfigField field, Object value) => switch (value) {
+  // A fitting value as the script reads it: collections are copied.
+  Object _typed(Object value) => switch (value) {
     List() => [...value],
     Map() => {...value},
-    String() when field.mode == PluginConfigMode.input =>
-      field.inputFormat == PluginInputFormat.number ||
-              field.inputFormat == PluginInputFormat.integer
-          ? num.parse(value)
-          : value,
     _ => value,
   };
 

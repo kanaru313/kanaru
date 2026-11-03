@@ -22,7 +22,7 @@ const _number = PluginConfigField(
   title: 'Limit',
   mode: PluginConfigMode.input,
   inputFormat: PluginInputFormat.number,
-  defaultValue: '10',
+  defaultValue: 10,
 );
 const _text = PluginConfigField(
   key: 'name',
@@ -339,7 +339,7 @@ void main() {
       await tester.enterText(field, '25.5');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      expect(plugins.configWrites, [(idA, 'limit', '25.5')]);
+      expect(plugins.configWrites, [(idA, 'limit', 25.5)]);
       expect(find.text(en.pluginConfigNumberInvalid), findsNothing);
     });
 

@@ -6,7 +6,6 @@ import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics_translation/translation_jobs.dart';
 import '../../core/lyrics_translation/translation_service.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('lyrics_sources');
 
@@ -23,27 +22,38 @@ String? pluginConfigWriteMessage(
   PluginConfigWrite.secretStoreFailed => l10n.pluginConfigSecretStoreFailed,
 };
 
-/// Saves one config value and reports a refusal in a snackbar. Returns
-/// whether it was saved, so the field can keep its old value when not.
-Future<bool> savePluginConfigValue(
+/// How a save ended: [message] says why it was refused (worded for the field
+/// to show inline), null when it was saved. A [retryable] refusal came from
+/// something that may pass later (the keyring, an exception); the same value
+/// is worth sending again.
+class PluginConfigSaveResult {
+  const PluginConfigSaveResult(this.message, {this.retryable = false});
+
+  final String? message;
+  final bool retryable;
+
+  bool get saved => message == null;
+}
+
+/// Saves one config value; see [PluginConfigSaveResult].
+Future<PluginConfigSaveResult> savePluginConfigValue(
   BuildContext context,
   WidgetRef ref,
   String installId,
   String key,
   Object? value,
-) => savePluginConfigValueWith(
-  controller: ref.read(lyricsPluginsControllerProvider),
-  onSaved: () => forgetTranslationFailures(
-    ref.read(translationJobsProvider.notifier),
-    installId,
-  ),
-  // Taken before the await: leaving the page meanwhile must not throw.
-  messenger: ScaffoldMessenger.maybeOf(context),
-  l10n: context.l10n,
-  installId: installId,
-  key: key,
-  value: value,
-);
+) {
+  // Read before the await: the page may close while the save runs.
+  final jobs = ref.read(translationJobsProvider.notifier);
+  return savePluginConfigValueWith(
+    controller: ref.read(lyricsPluginsControllerProvider),
+    onSaved: () => forgetTranslationFailures(jobs, installId),
+    l10n: context.l10n,
+    installId: installId,
+    key: key,
+    value: value,
+  );
+}
 
 /// A changed key or setting may fix what failed: the translations that failed
 /// for this plugin are tried again from scratch. A lyrics plugin has none.
@@ -54,40 +64,32 @@ void forgetTranslationFailures(TranslationJobs jobs, String installId) {
 }
 
 /// Like [savePluginConfigValue] with everything it needs already in hand, so
-/// a field being torn down can still save its last edit.
-Future<bool> savePluginConfigValueWith({
+/// a field being torn down can still save its last edit. An exception is
+/// logged and reported as a failed save.
+Future<PluginConfigSaveResult> savePluginConfigValueWith({
   required LyricsPluginsController? controller,
-  required ScaffoldMessengerState? messenger,
   required AppLocalizations l10n,
   required String installId,
   required String key,
   required Object? value,
   void Function()? onSaved,
 }) async {
-  if (controller == null) return false;
-  String? message;
+  if (controller == null) {
+    return PluginConfigSaveResult(l10n.pluginConfigSaveFailed, retryable: true);
+  }
+  final PluginConfigWrite result;
   try {
-    message = pluginConfigWriteMessage(
-      l10n,
-      await controller.setConfigValue(installId, key, value),
-    );
+    result = await controller.setConfigValue(installId, key, value);
   } catch (error, stackTrace) {
     _log.warning('Saving a plugin setting failed', error, stackTrace);
-    message = l10n.pluginConfigSaveFailed;
+    return PluginConfigSaveResult(l10n.pluginConfigSaveFailed, retryable: true);
   }
-  if (message == null) {
-    onSaved?.call();
-    return true;
-  }
-  if (messenger == null) {
-    // Torn down with nowhere to tell the user: keep a trace.
-    _log.warning('A plugin setting was not saved and nothing could show it');
-  } else {
-    messenger.showSnackBar(
-      appSnackBar(kind: AppSnackBarKind.error, title: message),
-    );
-  }
-  return false;
+  final message = pluginConfigWriteMessage(l10n, result);
+  if (message == null) onSaved?.call();
+  return PluginConfigSaveResult(
+    message,
+    retryable: result == PluginConfigWrite.secretStoreFailed,
+  );
 }
 
 /// Switches a source on or off; a failure is logged. A plugin removed

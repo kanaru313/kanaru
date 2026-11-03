@@ -368,7 +368,7 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 |---|---|---|---|
 | `input` | `text` (default) | `placeholder`, `minLength`, `maxLength` | string |
 | `input` | `multiline` | `rows` (1 to 10, default 3), `minLength`, `maxLength` | string |
-| `input` | `number` | `min`, `max`, `step` (finite numbers) | finite number, or a plain decimal string (`-2.5`, `1e3`) read as a number |
+| `input` | `number` | `min`, `max`, `step` (finite numbers) | finite number, or a plain decimal string (`-2.5`, `1e3`) read as that number (only a default; a stored value must be a number) |
 | `input` | `integer` | `min`, `max`, `step` (integers) | integer |
 | `input` | `secret` | `placeholder` | none (a string default is ignored; any other type is invalid) |
 | `input` | `url` | `placeholder` | `https` URL |

@@ -39,9 +39,6 @@ enum PluginValueProblem {
   duplicateKey,
 }
 
-final _decimal = RegExp(r'^-?\d+(\.\d+)?([eE][+-]?\d+)?$');
-final _wholeNumber = RegExp(r'^-?\d+$');
-
 /// Whether [value] is a legal value of [field] (emptiness is not checked:
 /// `required` is the caller's concern).
 bool pluginValueFits(PluginConfigField field, Object? value) =>
@@ -131,19 +128,11 @@ PluginValueProblem? _input(PluginConfigField field, Object? value) {
 }
 
 /// [value] as a finite number (an integer in the safe range when
-/// [whole]), or null. A plain decimal string is read as its number: the
-/// form still writes numbers as text.
+/// [whole]), or null. A string is never read as a number.
 num? _numberOf(Object? value, bool whole) {
-  num? number;
-  if (value is num) {
-    number = value;
-  } else if (value is String) {
-    if (!(whole ? _wholeNumber : _decimal).hasMatch(value)) return null;
-    number = num.tryParse(value);
-  }
-  if (number == null || !number.isFinite) return null;
-  if (whole && number is! int) return null;
-  return number;
+  if (value is! num || !value.isFinite) return null;
+  if (whole && value is! int) return null;
+  return value;
 }
 
 PluginValueProblem? _range(PluginConfigField field, num number) {

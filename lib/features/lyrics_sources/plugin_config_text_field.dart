@@ -1,257 +1,179 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
-import '../../core/lyrics/plugins/store/plugin_config_values.dart';
-import '../../core/lyrics_translation/translation_jobs.dart';
-import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import 'plugin_config_save.dart';
+import 'plugin_config_commit_mixin.dart';
+import 'plugin_config_label.dart';
+import 'plugin_config_payload_checks.dart';
 import 'plugin_config_subtitle.dart';
+import 'plugin_config_value_messages.dart';
 
-/// An `input` field of a plugin's form: text, number (number keyboard, checked
-/// before saving) or secret (hidden, with a reveal toggle). It saves when the
-/// user presses Enter or leaves the field, not on every key.
+/// An `input` field of a plugin's form other than a secret: text, multiline,
+/// url, number or integer. It saves when the user presses Enter (not in a
+/// multiline box) or leaves the field, not on every key; a number is saved
+/// as a number. Arrow Up and Down step a number by the field's `step`.
+/// Saving an empty text removes the saved value.
 ///
-/// A secret is never read back: the field starts empty and says whether a
-/// value is saved. Saving an empty text removes the saved value.
+/// A mistake shows under the box once the field was left, and goes when the
+/// text is fixed.
 class PluginConfigTextField extends ConsumerStatefulWidget {
   const PluginConfigTextField({
     super.key,
     required this.installId,
     required this.field,
     required this.initialText,
-    required this.hasSavedSecret,
-    required this.usingFallback,
   });
 
   final String installId;
   final PluginConfigField field;
 
-  /// Saved value, else the manifest's default; empty for a secret.
+  /// Saved value, else the manifest's default, as text.
   final String initialText;
-  final bool hasSavedSecret;
-
-  /// The secret store is a file or memory: the note says so.
-  final bool usingFallback;
 
   @override
   ConsumerState<PluginConfigTextField> createState() => _State();
 }
 
-class _State extends ConsumerState<PluginConfigTextField> {
+class _State extends ConsumerState<PluginConfigTextField>
+    with PluginConfigCommit<PluginConfigTextField> {
   late final TextEditingController _text = TextEditingController(
     text: widget.initialText,
   );
   late final FocusNode _focus = FocusNode()..addListener(_onFocus);
-  late String _saved = widget.initialText;
-  late bool _hasSecret = widget.hasSavedSecret;
-  bool _revealed = false;
-  String? _error;
 
-  /// A save is under way: Enter and then leaving the field must not save
-  /// the same text twice. Text committed meanwhile waits in [_queued].
-  bool _saving = false;
-  bool _queued = false;
-  String? _inFlight;
-
-  /// The text whose save was refused; it is not tried again at teardown.
-  String? _refused;
-
-  // Kept for the save at teardown, when the context can no longer be asked.
-  LyricsPluginsController? _plugins;
-  AppLocalizations? _l10n;
-  TranslationJobs? _jobs;
-
-  bool get _isSecret => widget.field.inputFormat == PluginInputFormat.secret;
-  bool get _isNumber => widget.field.inputFormat == PluginInputFormat.number;
+  PluginInputFormat get _format =>
+      widget.field.inputFormat ?? PluginInputFormat.text;
+  bool get _isNumeric =>
+      _format == PluginInputFormat.number ||
+      _format == PluginInputFormat.integer;
+  bool get _isMultiline => _format == PluginInputFormat.multiline;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _plugins = ref.read(lyricsPluginsControllerProvider);
-    _l10n = context.l10n;
-    _jobs = ref.read(translationJobsProvider.notifier);
+  PluginConfigField get commitField => widget.field;
+  @override
+  String get commitInstallId => widget.installId;
+
+  @override
+  Object? get commitPayload {
+    final text = _text.text;
+    if (!_isNumeric || text.isEmpty) return text;
+    return pluginParseFinite(
+          text,
+          whole: _format == PluginInputFormat.integer,
+        ) ??
+        text;
   }
 
-  /// Whether the box holds text nobody is saving yet and that may be saved.
-  bool _worthSaving(String text) =>
-      text != _saved &&
-      text != _inFlight &&
-      text != _refused &&
-      !(_isSecret && text.isEmpty) &&
-      !(_isNumber && text.isNotEmpty && !pluginValueFits(widget.field, text));
+  @override
+  void initState() {
+    super.initState();
+    commitStart(commitPayload);
+  }
 
   @override
   void dispose() {
-    // Leaving the page with the field still focused does not call the focus
-    // listener; the last edit is saved here, best effort.
-    final text = _text.text;
-    final plugins = _plugins;
-    final l10n = _l10n;
-    final jobs = _jobs;
-    if (_worthSaving(text) && plugins != null && l10n != null) {
-      unawaited(
-        savePluginConfigValueWith(
-          controller: plugins,
-          // The page is going away: a snackbar has no Scaffold left to show
-          // in, so a refusal is only logged.
-          messenger: null,
-          l10n: l10n,
-          installId: widget.installId,
-          key: widget.field.key,
-          value: text,
-          onSaved: jobs == null
-              ? null
-              : () => forgetTranslationFailures(jobs, widget.installId),
-        ),
-      );
-    }
+    commitTeardown();
     _focus.dispose();
     _text.dispose();
     super.dispose();
   }
 
   void _onFocus() {
-    if (!_focus.hasFocus) _commit();
+    if (!_focus.hasFocus) commitOnBlur();
   }
 
-  /// A secret box is empty unless the user typed a new value; leaving it
-  /// empty changes nothing (use the clear button to remove the saved value).
-  Future<void> _commit() async {
-    if (_saving) {
-      _queued = true;
-      return;
+  /// Moves the number by [direction] steps, within min and max.
+  void _step(int direction) {
+    final field = widget.field;
+    final whole = _format == PluginInputFormat.integer;
+    final typed = pluginParseFinite(_text.text);
+    final start =
+        typed ?? (field.defaultValue is num ? field.defaultValue as num : 0);
+    final step = field.step != null && field.step!.isFinite ? field.step! : 1;
+    var next = start + direction * step;
+    // Float sums such as 0.1 + 0.2 are rounded away.
+    if (next is double && next.isFinite) {
+      next = (next * 1e10).round() / 1e10;
     }
-    final text = _text.text;
-    if (text == _saved || (_isSecret && text.isEmpty)) return;
-    if (_isNumber && text.isNotEmpty && !pluginValueFits(widget.field, text)) {
-      setState(() => _error = context.l10n.pluginConfigNumberInvalid);
-      return;
-    }
-    setState(() => _error = null);
-    _saving = true;
-    _inFlight = text;
-    final bool ok;
-    try {
-      ok = await savePluginConfigValue(
-        context,
-        ref,
-        widget.installId,
-        widget.field.key,
-        text,
-      );
-    } finally {
-      _saving = false;
-      _inFlight = null;
-    }
-    if (!mounted) return;
-    _refused = ok ? null : text;
-    if (ok) {
-      _saved = _isSecret ? '' : text;
-      if (_isSecret) {
-        setState(() {
-          _hasSecret = true;
-          // Text typed during the save stays.
-          if (_text.text == text) _text.clear();
-        });
-      }
-    }
-    if (_queued) {
-      _queued = false;
-      unawaited(_commit());
-    }
-  }
-
-  Future<void> _clearSecret() async {
-    final ok = await savePluginConfigValue(
-      context,
-      ref,
-      widget.installId,
-      widget.field.key,
-      '',
+    if (!next.isFinite) return;
+    // Rounding comes first so a whole number never leaves fractional limits.
+    if (whole) next = next.round();
+    final min = field.min == null
+        ? null
+        : (whole ? field.min!.ceil() : field.min!);
+    final max = field.max == null
+        ? null
+        : (whole ? field.max!.floor() : field.max!);
+    if (min != null && next < min) next = min;
+    if (max != null && next > max) next = max;
+    final text = pluginNumberText(next);
+    _text.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
-    if (ok && mounted) setState(() => _hasSecret = false);
+    commitChanged();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final helper = _isSecret
-        ? (widget.usingFallback
-              ? l10n.pluginSecretFallbackNote
-              : (_hasSecret ? l10n.pluginSecretSaved : l10n.pluginSecretNote))
-        : null;
+    final field = widget.field;
+    final box = TextField(
+      controller: _text,
+      focusNode: _focus,
+      keyboardType: switch (_format) {
+        PluginInputFormat.multiline => TextInputType.multiline,
+        PluginInputFormat.url => TextInputType.url,
+        PluginInputFormat.integer => const TextInputType.numberWithOptions(
+          signed: true,
+        ),
+        PluginInputFormat.number => const TextInputType.numberWithOptions(
+          decimal: true,
+          signed: true,
+        ),
+        _ => TextInputType.text,
+      },
+      minLines: _isMultiline ? field.rows ?? pluginConfigDefaultRows : 1,
+      maxLines: _isMultiline ? field.rows ?? pluginConfigDefaultRows : 1,
+      inputFormatters: [
+        if (_format == PluginInputFormat.number)
+          FilteringTextInputFormatter.allow(RegExp(r'[-+0-9.eE]')),
+        if (_format == PluginInputFormat.integer)
+          FilteringTextInputFormatter.allow(RegExp(r'[-+0-9]')),
+      ],
+      onChanged: (_) => commitChanged(),
+      onSubmitted: _isMultiline ? null : (_) => commit(),
+      decoration: InputDecoration(
+        label: PluginConfigLabel(field),
+        border: const OutlineInputBorder(),
+        errorText: commitError,
+        errorMaxLines: 3,
+        alignLabelWithHint: _isMultiline,
+        // A cleared box means the manifest's default applies.
+        hintText:
+            field.placeholder ??
+            (field.defaultValue is String
+                ? field.defaultValue as String
+                : null),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PluginConfigSubtitle(widget.field.subtitle),
+        PluginConfigSubtitle(field.subtitle),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextField(
-            controller: _text,
-            focusNode: _focus,
-            obscureText: _isSecret && !_revealed,
-            autocorrect: !_isSecret,
-            enableSuggestions: !_isSecret,
-            keyboardType: _isNumber
-                ? const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: true,
-                  )
-                : TextInputType.text,
-            inputFormatters: [
-              if (_isNumber)
-                FilteringTextInputFormatter.allow(RegExp(r'[-+0-9.eE]')),
-            ],
-            onSubmitted: (_) => _commit(),
-            decoration: InputDecoration(
-              labelText: widget.field.title,
-              border: const OutlineInputBorder(),
-              errorText: _error,
-              helperText: helper,
-              helperMaxLines: 3,
-              helperStyle: widget.usingFallback && _isSecret
-                  ? TextStyle(color: theme.colorScheme.tertiary)
-                  : null,
-              // A cleared box means the manifest's default applies.
-              hintText: _isSecret
-                  ? (_hasSecret ? '••••••••' : null)
-                  : (widget.field.defaultValue is String
-                        ? widget.field.defaultValue as String
-                        : null),
-              suffixIcon: !_isSecret
-                  ? null
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_hasSecret)
-                          IconButton(
-                            tooltip: l10n.pluginSecretClear,
-                            icon: const Icon(AppIcons.closeRounded),
-                            onPressed: _clearSecret,
-                          ),
-                        IconButton(
-                          tooltip: _revealed
-                              ? l10n.pluginSecretHide
-                              : l10n.pluginSecretShow,
-                          icon: Icon(
-                            _revealed
-                                ? AppIcons.visibilityOff
-                                : AppIcons.visibility,
-                          ),
-                          onPressed: () =>
-                              setState(() => _revealed = !_revealed),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
+          child: _isNumeric
+              ? CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                        _step(1),
+                    const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                        _step(-1),
+                  },
+                  child: box,
+                )
+              : box,
         ),
       ],
     );

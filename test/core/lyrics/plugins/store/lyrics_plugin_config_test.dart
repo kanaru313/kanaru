@@ -87,7 +87,8 @@ void main() {
         controller.setConfigValue(p.installId, key, v);
     expect(await set('region', 'moon'), PluginConfigWrite.invalidValue);
     expect(await set('limit', 'ten'), PluginConfigWrite.invalidValue);
-    expect(await set('limit', '10'), PluginConfigWrite.written);
+    expect(await set('limit', '10'), PluginConfigWrite.invalidValue);
+    expect(await set('limit', 10), PluginConfigWrite.written);
     expect(await set('strict', 'yes'), PluginConfigWrite.invalidValue);
     expect(await set('nope', 'x'), PluginConfigWrite.unknownKey);
     expect(

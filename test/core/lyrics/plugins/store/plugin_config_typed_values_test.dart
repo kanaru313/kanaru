@@ -116,10 +116,36 @@ void main() {
     );
   });
 
-  test('a number kept as text is read as a number', () async {
+  test('a number sent as text is refused', () async {
     final id = await install([_number]);
-    await c.setConfigValue(id, 'limit', '10');
-    expect((await c.configForRun(id))['limit'], 10);
+    expect(
+      await c.setConfigValue(id, 'limit', '10'),
+      PluginConfigWrite.invalidValue,
+    );
+    expect(await c.configForRun(id), isEmpty);
+  });
+
+  test('a stored string is dropped when the field becomes a number', () async {
+    final id = await install([_text(PluginInputFormat.text)]);
+    await c.setConfigValue(id, 'k', '10');
+    await update(id, [
+      const PluginConfigField(
+        key: 'k',
+        title: 'K',
+        mode: PluginConfigMode.input,
+        inputFormat: PluginInputFormat.number,
+      ),
+    ]);
+    expect(await c.storedConfig(id), isEmpty);
+    expect(await c.configForRun(id), isEmpty);
+  });
+
+  test('writes issued one after another land in that order', () async {
+    final id = await install([_text(PluginInputFormat.text)]);
+    final first = c.setConfigValue(id, 'k', 'a');
+    final second = c.setConfigValue(id, 'k', 'b');
+    await Future.wait([first, second]);
+    expect(await c.storedConfig(id), {'k': 'b'});
   });
 
   test('a secret over 2000 characters reads absent', () async {

@@ -23,39 +23,45 @@ void main() {
     });
   });
 
-  test('a refused save with nowhere to tell the user is logged', () async {
-    final saved = await savePluginConfigValueWith(
+  test('a refused save returns its message and logs nothing', () async {
+    final message = await savePluginConfigValueWith(
       controller: FakePlugins()..configResult = PluginConfigWrite.tooLarge,
-      messenger: null,
       l10n: en,
       installId: idA,
       key: 'name',
       value: 'x',
     );
 
-    expect(saved, isFalse);
-    expect(
-      logs.where(
-        (r) =>
-            r.level == Level.WARNING &&
-            r.message.contains('was not saved and nothing could show it'),
-      ),
-      hasLength(1),
-    );
+    expect(message.message, en.pluginConfigTooLarge);
+    expect(message.retryable, isFalse);
+    expect(logs, isEmpty);
   });
 
-  test('a saved value logs nothing', () async {
-    final saved = await savePluginConfigValueWith(
+  test('a saved value returns no message and logs nothing', () async {
+    final message = await savePluginConfigValueWith(
       controller: FakePlugins(),
-      messenger: null,
       l10n: en,
       installId: idA,
       key: 'name',
       value: 'x',
     );
 
-    expect(saved, isTrue);
+    expect(message.saved, isTrue);
     expect(logs, isEmpty);
+  });
+
+  test('an exception is logged and reported as a failed save', () async {
+    final message = await savePluginConfigValueWith(
+      controller: _ThrowingPlugins(),
+      l10n: en,
+      installId: idA,
+      key: 'name',
+      value: 'x',
+    );
+
+    expect(message.message, en.pluginConfigSaveFailed);
+    expect(message.retryable, isTrue);
+    expect(logs.where((r) => r.level == Level.WARNING), hasLength(1));
   });
 
   test('onSaved runs only when the value was saved', () async {
@@ -66,7 +72,6 @@ void main() {
     ]) {
       await savePluginConfigValueWith(
         controller: FakePlugins()..configResult = result,
-        messenger: null,
         l10n: en,
         installId: idA,
         key: 'name',
@@ -97,4 +102,13 @@ class _RecordingJobs extends TranslationJobs {
 
   @override
   void clearFailures(TranslationServiceId service) => cleared.add(service);
+}
+
+class _ThrowingPlugins extends FakePlugins {
+  @override
+  Future<PluginConfigWrite> setConfigValue(
+    String installId,
+    String key,
+    Object? value,
+  ) async => throw StateError('boom');
 }

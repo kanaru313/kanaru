@@ -1592,6 +1592,75 @@
   "pluginConfigTooLarge": "Cài đặt của plugin quá lớn, không lưu được.",
   "pluginConfigUnknownKey": "Cài đặt này không còn nữa. Plugin có thể đã bị gỡ hoặc đổi.",
   "pluginConfigSecretStoreFailed": "Không truy cập được kho khóa của hệ thống. Hãy mở khóa kho khóa hoặc khởi động lại Kanaru rồi thử lại.",
+  "pluginConfigRequired": "Cài đặt này là bắt buộc",
+  "pluginConfigIntegerInvalid": "Nhập một số nguyên",
+  "pluginConfigBelowMin": "Phải từ {min} trở lên",
+  "@pluginConfigBelowMin": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginConfigAboveMax": "Phải từ {max} trở xuống",
+  "@pluginConfigAboveMax": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginConfigTooShort": "{count, plural, other{Nhập ít nhất {count} ký tự}}",
+  "@pluginConfigTooShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigTooLong": "{count, plural, other{Nhập tối đa {count} ký tự}}",
+  "@pluginConfigTooLong": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigUrlInvalid": "Nhập địa chỉ https",
+  "pluginConfigTooFewItems": "{count, plural, other{Chọn hoặc thêm ít nhất {count} mục}}",
+  "@pluginConfigTooFewItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigTooManyItems": "{count, plural, other{Chỉ được tối đa {count} mục}}",
+  "@pluginConfigTooManyItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigItemInvalid": "Một trong các mục không hợp lệ",
+  "pluginConfigKeyInvalid": "Nhập tên dài 1 đến 100 ký tự, không có khoảng trắng ở hai đầu",
+  "pluginConfigKeyDuplicate": "Một dòng khác đã dùng tên này",
+  "pluginConfigListRowLabel": "{title} {index}",
+  "@pluginConfigListRowLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigAddItem": "Thêm",
+  "pluginConfigRemoveItem": "Xóa",
+  "pluginConfigMapKeyLabel": "Tên",
+  "pluginConfigMapValueLabel": "Giá trị",
   "pluginDataTitle": "Dữ liệu",
   "pluginStorageTitle": "Bộ nhớ riêng của plugin",
   "pluginStorageUsage": "{used} / {limit}",

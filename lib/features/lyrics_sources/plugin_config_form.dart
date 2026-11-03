@@ -5,8 +5,13 @@ import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../l10n/l10n.dart';
 import 'plugin_config_choice_fields.dart';
+import 'plugin_config_list_field.dart';
+import 'plugin_config_map_field.dart';
+import 'plugin_config_multi_select_field.dart';
+import 'plugin_config_secret_field.dart';
 import 'plugin_config_state_provider.dart';
 import 'plugin_config_text_field.dart';
+import 'plugin_config_value_messages.dart';
 import 'plugin_section_title.dart';
 
 /// "Cài đặt của plugin": the form the plugin's manifest declares. Nothing is
@@ -56,8 +61,21 @@ class PluginConfigForm extends ConsumerWidget {
     final value = state.stored[field.key] ?? field.defaultValue;
     switch (field.mode) {
       case PluginConfigMode.list:
+        return PluginConfigListField(
+          key: key,
+          installId: id,
+          field: field,
+          initialItems: value is List ? value : const [],
+        );
       case PluginConfigMode.map:
-        return const SizedBox.shrink();
+        return PluginConfigMapField(
+          key: key,
+          installId: id,
+          field: field,
+          initialEntries: value is Map
+              ? {for (final e in value.entries) '${e.key}': '${e.value}'}
+              : const {},
+        );
       case PluginConfigMode.toggle:
         return PluginConfigToggleField(
           key: key,
@@ -66,6 +84,16 @@ class PluginConfigForm extends ConsumerWidget {
           initialValue: value is bool && value,
         );
       case PluginConfigMode.select:
+        if (field.selectFormat == PluginSelectFormat.multiple) {
+          return PluginConfigMultiSelectField(
+            key: key,
+            installId: id,
+            field: field,
+            initialValues: value is List
+                ? [...value.whereType<String>()]
+                : const [],
+          );
+        }
         return PluginConfigSelectField(
           key: key,
           installId: id,
@@ -73,14 +101,24 @@ class PluginConfigForm extends ConsumerWidget {
           initialValue: value is String ? value : null,
         );
       case PluginConfigMode.input:
-        final secret = field.inputFormat == PluginInputFormat.secret;
+        if (field.inputFormat == PluginInputFormat.secret) {
+          return PluginConfigSecretField(
+            key: key,
+            installId: id,
+            field: field,
+            hasSavedSecret: state.savedSecrets.contains(field.key),
+            usingFallback: state.secretsUsingFallback,
+          );
+        }
         return PluginConfigTextField(
           key: key,
           installId: id,
           field: field,
-          initialText: secret || value is! String ? '' : value,
-          hasSavedSecret: state.savedSecrets.contains(field.key),
-          usingFallback: state.secretsUsingFallback,
+          initialText: switch (value) {
+            String() => value,
+            num() => pluginNumberText(value),
+            _ => '',
+          },
         );
     }
   }

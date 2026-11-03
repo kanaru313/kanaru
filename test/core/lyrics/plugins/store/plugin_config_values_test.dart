@@ -111,12 +111,12 @@ void main() {
       expectProblem(_input(PluginInputFormat.integer), 9007199254740991, null);
     });
 
-    test('plain decimal text is read as its number', () {
-      expectProblem(n, '2.5', null);
-      expectProblem(n, '99', PluginValueProblem.aboveMax);
+    test('text is never read as a number', () {
+      expectProblem(n, '2.5', PluginValueProblem.wrongType);
       expectProblem(n, 'x', PluginValueProblem.wrongType);
-      expectProblem(n, '1e999', PluginValueProblem.wrongType);
-      expectProblem(i, '3.5', PluginValueProblem.wrongType);
+      expectProblem(i, '3', PluginValueProblem.wrongType);
+      expectProblem(n, 99, PluginValueProblem.aboveMax);
+      expectProblem(n, double.infinity, PluginValueProblem.wrongType);
     });
   });
 
