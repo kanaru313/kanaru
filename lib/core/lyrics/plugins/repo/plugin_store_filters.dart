@@ -28,18 +28,15 @@ Map<StoreFacet, Set<String>> storeRowFacetKeys(StoreRow row) {
 }
 
 /// Whether a row with [rowKeys] in [facet] passes the [selected] keys of that
-/// facet: an empty selection passes; a global plugin passes any language
-/// selection (it is never hidden by the language filter); otherwise the row
-/// needs one of the selected keys.
+/// facet: an empty selection passes; otherwise the row needs one of the
+/// selected keys. A global plugin carries [pluginLanguagesGlobal] as its
+/// language key, so a language pick hides it unless Global is picked too.
 bool storeFacetPasses(
   StoreFacet facet,
   Set<String> selected,
   Set<String> rowKeys,
 ) {
   if (selected.isEmpty) return true;
-  if (facet == StoreFacet.language && rowKeys.contains(pluginLanguagesGlobal)) {
-    return true;
-  }
   return rowKeys.any(selected.contains);
 }
 

@@ -392,9 +392,17 @@ void main() {
       ]),
     ];
 
-    test('language filter keeps global plugins', () {
+    test('a language pick lists only plugins of that language', () {
       final v = view([], catalog, filters: only(StoreFacet.language, 'vie'));
-      expect(names(v.notInstalled), ['Viet', 'Any']);
+      expect(names(v.notInstalled), ['Viet']);
+      final both = only(
+        StoreFacet.language,
+        'vie',
+      ).toggled(StoreFacet.language, '*');
+      expect(names(view([], catalog, filters: both).notInstalled), [
+        'Viet',
+        'Any',
+      ]);
     });
 
     test('author filter folds case and OR-s values', () {

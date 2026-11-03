@@ -15,6 +15,9 @@ final _validKey = RegExp(r'^[a-z]{2,3}$');
 /// content, several languages.
 const _unusableKeys = {'und', 'zxx', 'mul'};
 
+/// Items that mean "any language": the whole plugin is global.
+const _globalAliases = {pluginLanguagesGlobal, 'all', 'any'};
+
 /// Reads the optional `languages` field of a plugin manifest or catalog entry
 /// into normalized language keys (see `languageKey`: `vi` becomes `vie`).
 ///
@@ -23,14 +26,14 @@ const _unusableKeys = {'und', 'zxx', 'mul'};
 /// list, a list over 50 items, or a list with no usable item is global.
 /// Items that are not strings, are empty, are `und`, `zxx` or `mul`, or are
 /// not a 2 to 3 letter code are skipped; repeats are removed; at most 20 are
-/// kept. A `*` item makes the whole plugin global.
+/// kept. A `*`, `all` or `any` item (any case) makes the whole plugin global.
 List<String> parsePluginLanguages(Object? value) {
   if (value is! List || value.length > _maxListLength) return const [];
   final keys = <String>[];
   for (final item in value) {
     if (item is! String) continue;
     final text = item.trim();
-    if (text == pluginLanguagesGlobal) return const [];
+    if (_globalAliases.contains(text.toLowerCase())) return const [];
     if (text.isEmpty) continue;
     final key = languageKey(text);
     if (!_validKey.hasMatch(key) || _unusableKeys.contains(key)) continue;

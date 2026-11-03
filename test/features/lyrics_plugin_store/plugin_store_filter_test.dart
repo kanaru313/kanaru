@@ -186,17 +186,21 @@ void main() {
       expect(find.text('Other  1'), findsOneWidget);
     });
 
-    testWidgets('a language pick keeps global plugins in the list', (
-      tester,
-    ) async {
-      await pump(tester);
-      await _openModal(tester);
-      expect(find.text('Global  2'), findsOneWidget);
-      await _tap(tester, _chip(en.languageNameVie));
-      expectRows(['Lyr VI', 'Tr Glob', 'FileTr']);
-      await _tap(tester, _chip(en.languageNameZho));
-      expectRows(['Lyr VI', 'Lyr ZH', 'Tr Glob', 'FileTr']);
-    });
+    testWidgets(
+      'a language pick lists only that language; Global adds global plugins',
+      (tester) async {
+        await pump(tester);
+        await _openModal(tester);
+        expect(find.text('Global  2'), findsOneWidget);
+        await _tap(tester, _chip(en.languageNameVie));
+        expectRows(['Lyr VI']);
+        expect(find.text('Global  2'), findsOneWidget);
+        await _tap(tester, _chip(en.languageNameZho));
+        expectRows(['Lyr VI', 'Lyr ZH']);
+        await _tap(tester, _chip('Global'));
+        expectRows(['Lyr VI', 'Lyr ZH', 'Tr Glob', 'FileTr']);
+      },
+    );
 
     testWidgets('the source group lists repositories and From file', (
       tester,
