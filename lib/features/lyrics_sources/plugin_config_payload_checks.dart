@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:kanaru/core/lyrics/plugins/package/plugin_number_text.dart';
+
 /// A string that tells two payloads apart, for "is this already saved".
 /// Never throws: a value JSON cannot hold (NaN, Infinity) falls back to its
 /// text.
@@ -28,10 +30,5 @@ bool pluginPayloadHasNonFinite(Object? payload) => switch (payload) {
 
 /// [text] as a finite number (an int when [whole]); null when it is not one
 /// (hex, `Infinity`, `NaN` and values past the double range included).
-num? pluginParseFinite(String text, {bool whole = false}) {
-  if (!RegExp(r'^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$').hasMatch(text)) {
-    return null;
-  }
-  final value = whole ? int.tryParse(text) : num.tryParse(text);
-  return value != null && value.isFinite ? value : null;
-}
+num? pluginParseFinite(String text, {bool whole = false}) =>
+    parsePluginNumberText(text, whole: whole);

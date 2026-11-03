@@ -1,10 +1,8 @@
 import '../store/plugin_config_values.dart';
 import 'plugin_config_field.dart';
+import 'plugin_number_text.dart';
 import 'plugin_package_problem.dart';
 import 'plugin_text_clean.dart';
-
-// Plain decimal text: no NaN, Infinity, hex or surrounding spaces.
-final _decimal = RegExp(r'^-?\d+(\.\d+)?([eE][+-]?\d+)?$');
 
 /// `invalidManifest` naming [field] (`config.<key>.<attr>`).
 PluginPackageProblem invalidConfig(String field) => PluginPackageProblem(
@@ -159,10 +157,9 @@ Object? _inputDefault(Object? value, PluginInputFormat format, String field) {
     if (value is String) return null;
     throw invalidConfig(field);
   }
-  if (format == PluginInputFormat.number &&
-      value is String &&
-      _decimal.hasMatch(value)) {
-    return num.tryParse(value);
+  if (format == PluginInputFormat.number && value is String) {
+    final parsed = parsePluginNumberText(value);
+    if (parsed != null) return parsed;
   }
   final numeric =
       format == PluginInputFormat.number || format == PluginInputFormat.integer;

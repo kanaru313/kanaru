@@ -3,9 +3,22 @@ import '../package/plugin_text_clean.dart';
 import 'plugin_config_values.dart';
 
 final _whitespace = RegExp(r'\s');
-// The text between `://` and the first `/`, `?` or `#`; the parsed authority
-// drops an empty user name, so `https://@host` is caught on the raw text.
-final _authority = RegExp(r'^[^:/?#]*://([^/?#]*)');
+
+/// The text between `://` and the first `/`, `?` or `#`, or null without
+/// `://`. The parsed authority drops an empty user name, so `https://@host`
+/// is caught on the raw text; an `@` later in the URL is not user info.
+String? _authorityOf(String value) {
+  final scheme = value.indexOf('://');
+  if (scheme < 0) return null;
+  final start = scheme + 3;
+  var end = start;
+  while (end < value.length) {
+    final c = value[end];
+    if (c == '/' || c == '?' || c == '#') break;
+    end++;
+  }
+  return value.substring(start, end);
+}
 
 /// https only, with a host and no credentials, as the plugin `fetch` needs.
 PluginValueProblem? pluginUrlProblem(String value) {
@@ -18,7 +31,7 @@ PluginValueProblem? pluginUrlProblem(String value) {
   if (uri == null ||
       uri.scheme.toLowerCase() != 'https' ||
       uri.host.isEmpty ||
-      _authority.firstMatch(value)?.group(1)?.contains('@') != false) {
+      _authorityOf(value)?.contains('@') != false) {
     return PluginValueProblem.badUrl;
   }
   return null;
