@@ -94,7 +94,9 @@
   define('sleep', function sleep(ms) { n.sleep(Num(ms)); });
 
   define('localConfig', freeze({
-    getItem: function getItem(key) { return orNull(n.configGet(strict(key))); }
+    getItem: function getItem(key) { var t = n.configGet(strict(key));
+      if (t === undefined || t === null) return null;
+      try { return parse(t); } catch (e) { throw makeError('TypeError', 'localConfig value is not valid JSON'); } }
   }));
 
   define('localStorage', freeze({

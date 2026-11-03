@@ -38,8 +38,9 @@ pub struct PluginScriptRequest {
     /// the caller should keep its own outer deadline.
     pub timeout_ms: u32,
     /// The plugin's configuration, readable by the script as
-    /// `localConfig.getItem(key)`. Secrets included; the runtime never puts
-    /// these values in a log line or an error text it makes.
+    /// `localConfig.getItem(key)`. Each value is JSON text; the script gets it
+    /// parsed. Secrets included; the runtime never puts these values in a log
+    /// line or an error text it makes.
     pub config: Vec<(String, String)>,
     /// The plugin's stored map as a JSON object of strings (`localStorage`).
     /// Empty text means nothing stored.

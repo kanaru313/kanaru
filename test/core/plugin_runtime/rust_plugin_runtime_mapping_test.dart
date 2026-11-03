@@ -191,6 +191,32 @@ void main() {
   });
 
   group('request', () {
+    test('encodes typed config values as JSON text', () {
+      final request = nativeRequestFrom(
+        const PluginRunRequest(
+          files: [PluginSourceFile(name: 'a.js', code: 'a')],
+          entry: 'a.js',
+          inputJson: '{}',
+          config: {
+            's': 'x"y',
+            'n': 5,
+            'b': true,
+            'l': ['a'],
+            'm': {'k': 'v'},
+          },
+          storageJson: '',
+        ),
+        1,
+      );
+      expect(request.config, [
+        ('s', '"x\\"y"'),
+        ('n', '5'),
+        ('b', 'true'),
+        ('l', '["a"]'),
+        ('m', '{"k":"v"}'),
+      ]);
+    });
+
     test('maps files, config, input and storage', () {
       final request = nativeRequestFrom(
         const PluginRunRequest(
@@ -211,7 +237,7 @@ void main() {
       expect(request.inputJson, '{"q":1}');
       expect(request.timeoutMs, 2000);
       expect(request.storageJson, '{"s":"1"}');
-      expect(request.config, [('k', 'v'), ('k2', 'v2')]);
+      expect(request.config, [('k', '"v"'), ('k2', '"v2"')]);
       expect(request.files.map((f) => (f.name, f.code)), [
         ('search.js', 'a'),
         ('util.js', 'b'),

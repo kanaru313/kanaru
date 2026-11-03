@@ -629,7 +629,7 @@ fn runtime_made_errors_never_contain_config_values() {
             &script,
             answerer,
             RunOptions {
-                config: vec![("apiKey".to_owned(), SECRET.to_owned())],
+                config: vec![("apiKey".to_owned(), format!("\"{SECRET}\""))],
                 ..RunOptions::default()
             },
         );
@@ -650,13 +650,35 @@ fn runtime_made_errors_never_contain_config_values() {
         &script,
         answerer,
         RunOptions {
-            config: vec![("apiKey".to_owned(), SECRET.to_owned())],
+            config: vec![("apiKey".to_owned(), format!("\"{SECRET}\""))],
             ..RunOptions::default()
         },
     );
     assert_eq!(r.status, S::Ok, "{r:?}");
     assert!(!r.output_json.contains(SECRET), "{}", r.output_json);
     assert!(r.output_json.contains("NetworkError"), "{}", r.output_json);
+}
+
+#[test]
+fn config_values_inside_arrays_never_leak_into_runtime_text() {
+    const SECRET: &str = "s3cr3t-token-value";
+    let (answerer, _) = recording(|_| outcome_response(Outcome::Network));
+    let r = run_with_fetch(
+        "function execute() {
+           var key = localConfig.getItem('keys')[0];
+           var texts = [];
+           try { fetch('https://t.test/' + key, {queries: {k: key}, headers: {'X-Key': key}}); } catch (e) { texts.push(e.name + ': ' + e.message); }
+           try { fetch('https://t.test/', {method: key}); } catch (e) { texts.push(e.name + ': ' + e.message); }
+           return Response.success(texts);
+         }",
+        answerer,
+        RunOptions {
+            config: vec![("keys".to_owned(), format!("[\"{SECRET}\"]"))],
+            ..RunOptions::default()
+        },
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert!(!format!("{r:?}").contains(SECRET), "{r:?}");
 }
 
 #[test]

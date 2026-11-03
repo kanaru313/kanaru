@@ -168,7 +168,18 @@ Blocks the script thread for `ms` (negative or not a number counts as 0). The ti
 
 ### `localConfig.getItem(key)`
 
-The plugin's configuration as the app set it (secrets included): a string, or `null` when the key is not set. Read-only. The runtime never writes these values to the log or to any message it makes; what a script does with them (for example in `console.log`) is the plugin author's duty.
+The plugin's configuration as the app set it (secrets included), as a typed value: a string, a number, a boolean, an array or an object, or `null` when the key is not set. Read-only; each call returns a fresh copy, so changing a returned array or object does not affect later reads.
+
+| Field | Value |
+|-------|-------|
+| `toggle` | boolean |
+| `input` number, integer | number |
+| `input` text, multiline, secret, url | string |
+| `select` single | string |
+| `select` multiple | array of strings |
+| `list` | array (strings or numbers, by its format) |
+| `map` | object of strings |
+| not set | `null` | The runtime never writes these values to the log or to any message it makes; what a script does with them (for example in `console.log`) is the plugin author's duty.
 
 ### `localStorage`
 
@@ -376,7 +387,7 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 - `required`: the field must have a value before the plugin runs; a default counts as a value. A list, a map and a multiple select need at least one entry, a secret needs a saved value. A toggle ignores `required`.
 - A default that breaks the field's own rules makes the manifest invalid (`config.<key>.default`). Defaults are typed as in the table: a number, an integer, a boolean, a list or an object where the field holds one.
 
-The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, always as a string (`"true"` or `"false"` for a toggle). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
+The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, as a typed value (see [`localConfig.getItem`](#localconfiggetitemkey)). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
 
 ### `apiVersion` policy
 

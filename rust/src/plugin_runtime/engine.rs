@@ -34,7 +34,7 @@ pub struct JobSpec {
     pub input_json: String,
     pub timeout: Duration,
     pub cancel: Arc<AtomicBool>,
-    /// Read-only `localConfig` entries.
+    /// Read-only `localConfig` entries; values are JSON texts.
     pub config: Vec<(String, String)>,
     /// The plugin's stored map as JSON; empty means nothing stored.
     pub storage_json: String,

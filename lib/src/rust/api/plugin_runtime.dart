@@ -305,8 +305,9 @@ class PluginScriptRequest {
   final int timeoutMs;
 
   /// The plugin's configuration, readable by the script as
-  /// `localConfig.getItem(key)`. Secrets included; the runtime never puts
-  /// these values in a log line or an error text it makes.
+  /// `localConfig.getItem(key)`. Each value is JSON text; the script gets it
+  /// parsed. Secrets included; the runtime never puts these values in a log
+  /// line or an error text it makes.
   final List<(String, String)> config;
 
   /// The plugin's stored map as a JSON object of strings (`localStorage`).
