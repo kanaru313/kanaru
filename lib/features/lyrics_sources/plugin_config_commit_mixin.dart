@@ -45,6 +45,15 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   /// Called after [payload] was saved.
   void onCommitted(Object? payload) {}
 
+  /// Choice editors (switch, dropdown, chips) show what the user picked right
+  /// away; when the store refuses the latest pick they go back to the last
+  /// saved value ([onCommitRefused]) and the reason stays under the field.
+  bool get commitRevertsOnRefusal => false;
+
+  /// Called when the latest pick was refused and [commitRevertsOnRefusal] is
+  /// set: show [lastSaved] again (a string, number, list or map, as saved).
+  void onCommitRefused(Object? lastSaved) {}
+
   /// Whether the user has left the field; no error shows before.
   bool commitTouched = false;
 
@@ -52,6 +61,7 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   String? commitError;
 
   String _saved = '';
+  Object? _savedPayload = '';
   String? _inFlight;
   String? _refused;
   String? _refusedMessage;
@@ -66,7 +76,10 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   TranslationJobs? _jobs;
 
   /// Tells the mixin what is already saved; call from `initState`.
-  void commitStart(Object? saved) => _saved = _signature(saved);
+  void commitStart(Object? saved) {
+    _saved = _signature(saved);
+    _savedPayload = saved;
+  }
 
   @override
   void didChangeDependencies() {
@@ -171,10 +184,21 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
     _failedSig = message == null ? null : sig;
     if (message == null) {
       _saved = commitSkipsEmpty ? _signature('') : sig;
+      _savedPayload = commitSkipsEmpty ? '' : payload;
       onCommitted(payload);
     }
+    // A newer pick is waiting: it replaces this one, nothing to take back.
+    final revert = message != null && commitRevertsOnRefusal && !_queued;
+    if (revert) {
+      // The same pick may be tried again later.
+      _refused = null;
+      _failedSig = null;
+    }
     if (mounted) {
-      setState(() => commitError = _display(context.l10n, commitPayload));
+      setState(() {
+        if (revert) onCommitRefused(_savedPayload);
+        commitError = revert ? message : _display(context.l10n, commitPayload);
+      });
     }
     if (_queued) {
       _queued = false;

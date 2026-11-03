@@ -7,7 +7,8 @@ import 'plugin_config_group.dart';
 
 /// A `select` field with `multiple` values: one `FilterChip` per option. Each
 /// toggle saves the whole choice (in the manifest's option order); a choice
-/// outside the item limits shows its error under the chips and is not saved.
+/// outside the item limits, or one the store refuses, shows its error under the
+/// chips; a refused choice goes back to the last saved one.
 class PluginConfigMultiSelectField extends ConsumerStatefulWidget {
   const PluginConfigMultiSelectField({
     super.key,
@@ -42,6 +43,17 @@ class _State extends ConsumerState<PluginConfigMultiSelectField>
     for (final option in widget.field.options)
       if (_chosen.contains(option.value)) option.value,
   ];
+
+  @override
+  bool get commitRevertsOnRefusal => true;
+
+  @override
+  void onCommitRefused(Object? lastSaved) {
+    final saved = lastSaved is List ? lastSaved : const [];
+    _chosen
+      ..clear()
+      ..addAll(saved.whereType<String>());
+  }
 
   @override
   void initState() {

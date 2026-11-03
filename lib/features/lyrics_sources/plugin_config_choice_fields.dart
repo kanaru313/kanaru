@@ -2,14 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
+import 'plugin_config_commit_mixin.dart';
 import 'plugin_config_label.dart';
-import 'plugin_config_save.dart';
 import 'plugin_config_subtitle.dart';
 
-export 'plugin_config_toggle_field.dart';
-
 /// A `select` field with one value: a dropdown of the manifest's options,
-/// each with its subtitle. It saves at once; when the save fails the old
+/// each with its subtitle. It saves at once; when the save is refused the old
 /// choice comes back and the reason shows under the box.
 class PluginConfigSelectField extends ConsumerStatefulWidget {
   const PluginConfigSelectField({
@@ -29,56 +27,43 @@ class PluginConfigSelectField extends ConsumerStatefulWidget {
   ConsumerState<PluginConfigSelectField> createState() => _SelectState();
 }
 
-class _SelectState extends ConsumerState<PluginConfigSelectField> {
-  String? _error;
-  bool _saving = false;
-  // What the user last picked, and what the store last accepted.
-  late String? _wanted;
-  late String? _saved;
+class _SelectState extends ConsumerState<PluginConfigSelectField>
+    with PluginConfigCommit<PluginConfigSelectField> {
   late String? _value =
       widget.field.options.any((o) => o.value == widget.initialValue)
       ? widget.initialValue
       : null;
 
   @override
+  PluginConfigField get commitField => widget.field;
+  @override
+  String get commitInstallId => widget.installId;
+  // Nothing chosen is an empty string (no saved value).
+  @override
+  Object? get commitPayload => _value ?? '';
+  @override
+  bool get commitRevertsOnRefusal => true;
+
+  @override
+  void onCommitRefused(Object? lastSaved) =>
+      _value = lastSaved is String && lastSaved.isNotEmpty ? lastSaved : null;
+
+  @override
   void initState() {
     super.initState();
-    _wanted = _saved = _value;
+    commitStart(commitPayload);
   }
 
-  Future<void> _choose(String? next) async {
+  @override
+  void dispose() {
+    commitTeardown();
+    super.dispose();
+  }
+
+  void _choose(String? next) {
     if (next == null || next == _value) return;
     setState(() => _value = next);
-    _wanted = next;
-    // One save at a time; what was picked meanwhile goes next, latest wins.
-    if (_saving) return;
-    _saving = true;
-    try {
-      while (mounted && _wanted != _saved) {
-        final target = _wanted;
-        final result = await savePluginConfigValue(
-          context,
-          ref,
-          widget.installId,
-          widget.field.key,
-          target,
-        );
-        if (!mounted) return;
-        if (result.saved) {
-          _saved = target;
-          setState(() => _error = null);
-        } else if (_wanted == target) {
-          // Nothing newer was picked: the old choice comes back.
-          _wanted = _saved;
-          setState(() {
-            _error = result.message;
-            _value = _saved;
-          });
-        }
-      }
-    } finally {
-      _saving = false;
-    }
+    commit();
   }
 
   @override
@@ -94,7 +79,7 @@ class _SelectState extends ConsumerState<PluginConfigSelectField> {
             decoration: InputDecoration(
               label: PluginConfigLabel(widget.field),
               border: const OutlineInputBorder(),
-              errorText: _error,
+              errorText: commitError,
               errorMaxLines: 3,
             ),
             child: DropdownButtonHideUnderline(

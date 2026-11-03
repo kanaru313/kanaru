@@ -11,6 +11,7 @@ import 'plugin_config_multi_select_field.dart';
 import 'plugin_config_secret_field.dart';
 import 'plugin_config_state_provider.dart';
 import 'plugin_config_text_field.dart';
+import 'plugin_config_toggle_field.dart';
 import 'plugin_config_value_messages.dart';
 import 'plugin_section_title.dart';
 
