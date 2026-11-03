@@ -19,7 +19,8 @@ import 'plugin_store_sections.dart';
 
 /// The plugin store: what the added repositories offer next to the plugins
 /// already installed, with search, the filter modal, and one-tap install,
-/// update and uninstall. Opening it fetches every repository once.
+/// update and uninstall. Opening it fetches the repositories that are stale (see
+/// `repoNeedsRefresh`).
 ///
 /// The page navigates only through its callbacks, so the router decides where
 /// they lead.
@@ -57,7 +58,7 @@ class _PluginStorePageState extends ConsumerState<PluginStorePage> {
     super.initState();
     // After the first frame: the actions read the surrounding widgets.
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(PluginStoreActions(context).refreshAll());
+      if (mounted) unawaited(PluginStoreActions(context).refreshStale());
     });
   }
 

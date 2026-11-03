@@ -186,17 +186,21 @@ void main() {
       expect(find.text('Other  1'), findsOneWidget);
     });
 
-    testWidgets('a language pick keeps global plugins in the list', (
-      tester,
-    ) async {
-      await pump(tester);
-      await _openModal(tester);
-      expect(find.text('Global  2'), findsOneWidget);
-      await _tap(tester, _chip(en.languageNameVie));
-      expectRows(['Lyr VI', 'Tr Glob', 'FileTr']);
-      await _tap(tester, _chip(en.languageNameZho));
-      expectRows(['Lyr VI', 'Lyr ZH', 'Tr Glob', 'FileTr']);
-    });
+    testWidgets(
+      'a language pick lists only that language; Global adds global plugins',
+      (tester) async {
+        await pump(tester);
+        await _openModal(tester);
+        expect(find.text('Global  2'), findsOneWidget);
+        await _tap(tester, _chip(en.languageNameVie));
+        expectRows(['Lyr VI']);
+        expect(find.text('Global  2'), findsOneWidget);
+        await _tap(tester, _chip(en.languageNameZho));
+        expectRows(['Lyr VI', 'Lyr ZH']);
+        await _tap(tester, _chip('Global'));
+        expectRows(['Lyr VI', 'Lyr ZH', 'Tr Glob', 'FileTr']);
+      },
+    );
 
     testWidgets('the source group lists repositories and From file', (
       tester,
@@ -289,6 +293,28 @@ void main() {
       expect(_chip('oss'), findsOneWidget);
       expect(_chip('kanaru313'), findsNothing);
       expect(_chip('jp-fans'), findsNothing);
+    });
+
+    testWidgets('Clear all also clears the author search', (tester) async {
+      await pump(tester);
+      await _openModal(tester);
+      final search = find.byWidgetPredicate(
+        (w) => w is TextField && w.decoration?.hintText == 'Search authors',
+      );
+      await tester.enterText(search, 'oss');
+      await tester.pumpAndSettle();
+      expect(_chip('kanaru313'), findsNothing);
+      await _tap(tester, _chip('Lyrics'));
+      await _tap(tester, find.text('Clear all'));
+      final field = find.descendant(
+        of: search,
+        matching: find.byType(EditableText),
+      );
+      expect(tester.widget<EditableText>(field).controller.text, '');
+      expect(_chip('kanaru313'), findsOneWidget);
+      expect(_chip('jp-fans'), findsOneWidget);
+      expect(_chip('oss'), findsOneWidget);
+      expectRows(all);
     });
 
     testWidgets('no author search below four authors', (tester) async {

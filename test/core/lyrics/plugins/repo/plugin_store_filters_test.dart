@@ -81,11 +81,15 @@ void main() {
     expect(f.matches(keys(author: {'c'}), skip: StoreFacet.author), isTrue);
   });
 
-  test('a global plugin passes any language selection', () {
+  test('a language pick hides global plugins unless Global is picked', () {
     final vie = none.toggled(StoreFacet.language, 'vie');
-    expect(vie.matches(keys()), isTrue);
+    expect(vie.matches(keys()), isFalse);
     expect(vie.matches(keys(languages: {'vie', 'jpn'})), isTrue);
     expect(vie.matches(keys(languages: {'zho'})), isFalse);
+    final both = vie.toggled(StoreFacet.language, '*');
+    expect(both.matches(keys()), isTrue);
+    expect(both.matches(keys(languages: {'vie'})), isTrue);
+    expect(both.matches(keys(languages: {'zho'})), isFalse);
   });
 
   test('the global value selects only global plugins', () {

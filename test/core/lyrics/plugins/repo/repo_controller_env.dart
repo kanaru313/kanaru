@@ -73,7 +73,7 @@ class RepoEnv {
   final RecordingDialer dialer;
   final LyricsPluginReposController repos;
 
-  static Future<RepoEnv> create() async {
+  static Future<RepoEnv> create({DateTime Function()? clock}) async {
     final store = await StoreEnv.create();
     final server = await TestServer.start();
     final resolver = FakeResolver({
@@ -90,6 +90,7 @@ class RepoEnv {
       plugins: store.controller,
       reader: PluginPackageReader(FakeRuntime()),
       http: RepoHttp(resolver: resolver.call, dialer: dialer.call),
+      clock: clock,
     );
     final env = RepoEnv._(store, server, resolver, dialer, repos);
     server.handler = env._serve;

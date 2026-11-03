@@ -30,6 +30,15 @@ void main() {
       expect(parsePluginLanguages([' * ']), isEmpty);
     });
 
+    test('all and any are global aliases', () {
+      expect(parsePluginLanguages(['all']), isEmpty);
+      expect(parsePluginLanguages(['ANY']), isEmpty);
+      expect(parsePluginLanguages([' All ', 'vi']), isEmpty);
+      expect(parsePluginLanguages(['vi', 'any']), isEmpty);
+      expect(parsePluginLanguages(['vi', 'alls']), ['vie']);
+      expect(parsePluginLanguages(['vi', 'anyone']), ['vie']);
+    });
+
     test('items that are not usable codes are skipped', () {
       expect(parsePluginLanguages([1, null, '', 'vi']), ['vie']);
       expect(parsePluginLanguages(['und', 'zxx', 'mul']), isEmpty);

@@ -76,9 +76,9 @@ void main() {
     expect(group(g, StoreFacet.source).values.first.label, 'Repo B');
   });
 
-  test('language counts include global plugins', () {
+  test('language counts exclude global plugins', () {
     final g = computeStoreFacets(rows, none, all);
-    expect(counts(group(g, StoreFacet.language)), {'*': 1, 'jpn': 3, 'vie': 3});
+    expect(counts(group(g, StoreFacet.language)), {'*': 1, 'jpn': 2, 'vie': 2});
   });
 
   test('counts skip their own group but follow the others and the search', () {

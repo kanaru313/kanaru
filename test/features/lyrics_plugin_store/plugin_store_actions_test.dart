@@ -211,8 +211,9 @@ void main() {
       );
       await tester.tap(find.text('Refresh and try again'));
       await tester.pumpAndSettle();
-      // Opening refreshed everything; the retry refreshes only that repository.
-      expect(repos.refreshAllCalls, 1);
+      // Opening refreshed only stale repositories; the retry refreshes only
+      // that repository.
+      expect(repos.refreshAllCalls, 0);
       expect(repos.refreshed, [repoA]);
       expect(repos.installs, hasLength(2));
     });

@@ -56,7 +56,7 @@ void main() {
     recordOf('plugin-file', name: 'FromZip'),
   ];
 
-  testWidgets('opening the store refreshes every repository once', (
+  testWidgets('opening the store refreshes only stale repositories', (
     tester,
   ) async {
     final fake = FakeRepos();
@@ -66,7 +66,8 @@ void main() {
       repos: [repo],
       reposController: fake,
     );
-    expect(fake.refreshAllCalls, 1);
+    expect(fake.refreshStaleCalls, 1);
+    expect(fake.refreshAllCalls, 0);
   });
 
   testWidgets('shows the three sections with counts and the footer', (
@@ -180,8 +181,9 @@ void main() {
       expect(find.text('2 repositories could not be loaded'), findsOneWidget);
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
-      // Once when the page opened, once for the retry.
-      expect(fake.refreshAllCalls, 2);
+      // The retry refreshes everything.
+      expect(fake.refreshAllCalls, 1);
+      expect(fake.refreshStaleCalls, 1);
     });
 
     testWidgets('texts are Vietnamese in the Vietnamese locale', (
@@ -279,7 +281,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Refresh all'));
       await tester.pumpAndSettle();
-      expect(fake.refreshAllCalls, 2);
+      expect(fake.refreshAllCalls, 1);
     });
 
     testWidgets('refresh all is disabled without a repository', (tester) async {
