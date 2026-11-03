@@ -74,7 +74,7 @@ The song page (`HistoryTrackScreen`, `/history/track?path=`) reads one song's to
 | Address | `historyTrackLocation(path)` builds the location with `Uri(path:, queryParameters:)`, so every character of the path is percent-encoded and decoded back unchanged (tests cover `+`, `%`, `#`, `?`, `&`, `=`, spaces, non-ASCII and a 4000-character path). The route lives in `historyRoutes`, a sub-route of the History branch; `app/` is not touched. Opening it uses `context.go`: going back rebuilds `/history` with its tab and range, as the page below stays mounted. |
 | One read | `historyTrackProvider` runs `historyTrackSummary` and `historyTrackPlays` in one transaction, so the count in the header and the list agree. It reads again on the shared plays version (insert and delete, not checkpoints) and, at most once per browse interval, after a scan. |
 | Path | The query path is only used to look the song up and to name it when it has no library row. The player gets the path of the `tracks` row that matches, never the query string; with no match (an orphan path, `http://…`, a missing or empty parameter) there is no Play button and the player is never called. |
-| Removal | Only through the row menu, capturing `plays.id` when it opens, with the same Undo as the journal. Removing every play leaves the page open with "No listens yet". |
+| Removal | Only through the row modal (Remove from history), capturing `plays.id` when it opens, with the same Undo as the journal. Removing every play leaves the page open with "No listens yet". |
 
 ### Playlist kinds
 
