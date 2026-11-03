@@ -19,7 +19,7 @@ Related: [code-standards.md](./code-standards.md) (widget conventions), [feature
 |---|---|---|
 | Base | Material 3 via `ColorScheme.fromSeed` | `lib/app/theme.dart` |
 | Seed color | `#FFB4A2` (`kanaruSeedColor`), used when the system gives no accent. It is the logo wedge color: as a tonal-spot seed only its hue counts, and the dark primary equals it, so the app matches its logo | `lib/app/theme.dart` |
-| Logo | `KanaruLogo` draws the app icon (dark squircle `#1B1F2A`, white stem, `#FFB4A2` wedge) with fixed colors, same as the desktop icon; not theme-tinted (decision: the tinted monochrome glyph looked poor). Sizes: 28 in the sidebar (expanded and rail), 40 in Settings → About | `lib/shared/widgets/kanaru_logo.dart` |
+| Logo | `KanaruLogo` draws the app icon (dark squircle `#1B1F2A`, white stem, `#FFB4A2` wedge) with fixed colors, same as the desktop icon; not theme-tinted (decision: the tinted monochrome glyph looked poor). Sizes: 28 in the sidebar (expanded and rail), 72 in the centered Settings → About header (logo, app name, version above the rows) | `lib/shared/widgets/kanaru_logo.dart` |
 | System accent | `dynamic_color` (`DynamicColorBuilder`) supplies the GTK accent on Linux; the scheme is harmonized with it | `lib/app/app.dart`, `lib/app/theme.dart` |
 | Modes | Light, dark, system. Changes apply immediately; the applied appearance is debounced by 600 ms (`appliedAppearanceProvider`) | `core/settings/applied_appearance_provider.dart` |
 | AMOLED black | Not built (UI-08) | features.md |

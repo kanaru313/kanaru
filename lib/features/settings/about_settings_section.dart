@@ -12,7 +12,8 @@ import '../../shared/widgets/app_snack_bar.dart';
 
 const _licenseName = 'GPL-3.0-or-later';
 
-/// The About page's rows: version, license, third-party licenses, source code.
+/// The About page's rows: header with logo and version, license, third-party
+/// licenses, source code.
 class AboutSettingsSection extends ConsumerWidget {
   const AboutSettingsSection({super.key});
 
@@ -24,11 +25,7 @@ class AboutSettingsSection extends ConsumerWidget {
       // The page title already says it.
       title: null,
       children: [
-        ListTile(
-          leading: const KanaruLogo(size: 40),
-          title: Text(l10n.appTitle),
-          subtitle: Text('${l10n.settingsVersion} $kanaruVersion'),
-        ),
+        const _AboutHeader(),
         ListTile(
           title: Text(l10n.settingsLicense),
           subtitle: const Text(_licenseName),
@@ -61,6 +58,51 @@ class AboutSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+/// Centered logo, app name and version. Read as one node by screen readers.
+class _AboutHeader extends StatelessWidget {
+  const _AboutHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      // The section column aligns children to the start; fill the width.
+      child: SizedBox(
+        width: double.infinity,
+        child: MergeSemantics(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const KanaruLogo(size: 72),
+              const SizedBox(height: 16),
+              Semantics(
+                header: true,
+                child: Text(
+                  l10n.appTitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${l10n.settingsVersion} $kanaruVersion',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
