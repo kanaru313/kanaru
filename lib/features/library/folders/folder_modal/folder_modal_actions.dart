@@ -22,6 +22,15 @@ List<List<ContextModalAction>> folderModalSections(
           label: l10n.songModalGoToFolder,
           subtitle: data.folder.label,
           onTap: contextModalCloseThen(h.goToFolder),
+          trailing: [
+            ContextModalTrailing(
+              icon: AppIcons.openExternal,
+              tooltip: l10n.libraryShowInFileManager,
+              onTap: contextModalCloseThen(
+                () => h.showInFileManager(data.stats?.samplePath),
+              ),
+            ),
+          ],
         ),
     ],
     [

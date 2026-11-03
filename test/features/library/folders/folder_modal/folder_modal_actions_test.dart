@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/folders/folder_modal/folder_modal_actions.dart';
 import 'package:kanaru/features/library/folders/folder_modal/folder_modal_data.dart';
+import 'package:kanaru/features/library/folders/folder_modal/folder_modal_links.dart';
 import 'package:kanaru/features/library/folders/folder_tree.dart';
 import 'package:kanaru/l10n/app_localizations_en.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_nav.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_spec.dart';
 
@@ -18,6 +20,7 @@ class _CallTracker {
   int addToPlaylist = 0;
   int createPlaylist = 0;
   int openAdvanced = 0;
+  final showInFileManager = <String?>[];
 }
 
 FolderModalHandlers _handlersOf(
@@ -30,7 +33,7 @@ FolderModalHandlers _handlersOf(
   playAllBelow: withPlayAllBelow ? () => tracker.playAllBelow++ : null,
   addToPlaylist: () => tracker.addToPlaylist++,
   createPlaylist: () => tracker.createPlaylist++,
-  showInFileManager: (_) {},
+  showInFileManager: tracker.showInFileManager.add,
   copyPath: () {},
   excludeFromLibrary: () {},
 );
@@ -40,6 +43,7 @@ List<List<ContextModalAction>> _sections({
   bool direct = false,
   bool showFolder = true,
   bool gone = false,
+  FolderStats? stats,
   FolderModalHandlers? handlers,
   void Function(ContextModalNav)? openAdvanced,
 }) {
@@ -49,6 +53,7 @@ List<List<ContextModalAction>> _sections({
     direct: direct,
     showFolder: showFolder,
     gone: gone,
+    stats: stats,
   );
   return folderModalSections(
     _l10n,
@@ -210,6 +215,7 @@ void main() {
     final sections = _sections(
       folder: folder,
       direct: true,
+      stats: testStats,
       handlers: _handlersOf(tracker, withPlayAllBelow: true),
       openAdvanced: (_) => advancedOpened++,
     );
@@ -226,29 +232,39 @@ void main() {
     expect(tracker.goToFolder, 1);
     expect(closed, 1);
 
+    expect(byId['folder']!.trailing, hasLength(1));
+    expect(byId['folder']!.trailing.single.icon, AppIcons.openExternal);
+    expect(
+      byId['folder']!.trailing.single.tooltip,
+      _l10n.libraryShowInFileManager,
+    );
+    byId['folder']!.trailing.single.onTap(nav);
+    expect(tracker.showInFileManager, [testStats.samplePath]);
+    expect(closed, 2);
+
     byId['play-all']!.onTap!(nav);
     expect(tracker.playAll, 1);
-    expect(closed, 2);
+    expect(closed, 3);
 
     byId['shuffle']!.onTap!(nav);
     expect(tracker.shuffle, 1);
-    expect(closed, 3);
+    expect(closed, 4);
 
     byId['play-all-below']!.onTap!(nav);
     expect(tracker.playAllBelow, 1);
-    expect(closed, 4);
+    expect(closed, 5);
 
     byId['add-to-playlist']!.onTap!(nav);
     expect(tracker.addToPlaylist, 1);
-    expect(closed, 5);
+    expect(closed, 6);
 
     byId['create-playlist']!.onTap!(nav);
     expect(tracker.createPlaylist, 1);
-    expect(closed, 6);
+    expect(closed, 7);
 
     byId['advanced']!.onTap!(nav);
     expect(advancedOpened, 1);
     // advanced opens a page, so it does not close the modal
-    expect(closed, 6);
+    expect(closed, 7);
   });
 }

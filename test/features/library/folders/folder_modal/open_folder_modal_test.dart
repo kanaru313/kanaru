@@ -84,6 +84,25 @@ void main() {
     expect(host.queueActions, [QueueAction.playNext, QueueAction.addToQueue]);
   });
 
+  testWidgets(
+    'Go to folder trailing button opens file manager with sample path',
+    (tester) async {
+      final host = await pumpFolderHost(tester);
+      await openFolderModalOf(tester);
+
+      final trailingFinder = find.descendant(
+        of: folderModalAction('folder'),
+        matching: find.byTooltip('Show in file manager'),
+      );
+      expect(trailingFinder, findsOneWidget);
+
+      await tester.tap(trailingFinder);
+      await settleModal(tester);
+
+      expect(host.shownInFileManager, [testStats.samplePath]);
+    },
+  );
+
   group('Advanced page', () {
     testWidgets('opens Advanced page, shows items, and Back returns', (
       tester,
