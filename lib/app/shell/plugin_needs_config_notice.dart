@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/lyrics_plugin_spec.dart';
 import '../../core/lyrics/plugins/plugin_needs_config_notices.dart';
+import '../../core/lyrics_translation/translation_service_needs_config_watch.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_source_routes.dart';
@@ -111,6 +112,8 @@ class _PluginNeedsConfigNoticeHostState
 
   @override
   Widget build(BuildContext context) {
+    // Keeps the translation-service watcher alive.
+    ref.watch(translationServiceNeedsConfigWatchProvider);
     ref.listen(pluginNeedsConfigNoticesProvider, (previous, next) {
       if (next != null) _show(next);
     });

@@ -5,6 +5,7 @@ import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service_needs_config_watch.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:material_ui/material_ui.dart';
@@ -60,6 +61,8 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+    // The shell keeps this watcher alive in the app.
+    container.read(translationServiceNeedsConfigWatchProvider);
     await tester.pumpWidget(
       translationApp(container, const LyricsTranslationButton()),
     );

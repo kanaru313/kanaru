@@ -43,6 +43,7 @@ class LyricsPluginsController {
     required this._secretStore,
     required this._reader,
     required PluginRunRegistry runs,
+    this.onNeedsConfig,
     DateTime Function()? clock,
     Random? random,
   }) : _dirs = LyricsPluginDirs(dataDirectory),
@@ -77,6 +78,12 @@ class LyricsPluginsController {
   late final LyricsPluginInstaller _installer;
   late final LyricsPluginUninstaller _uninstaller;
   late final Future<void> _ready;
+
+  /// Called after a plugin was switched on while a required config field is
+  /// empty (the plugin stays on). Never called for switching off or for a
+  /// write that did not happen.
+  final void Function(String installId, String name, PluginKind? kind)?
+  onNeedsConfig;
 
   /// Completes when the startup sweep has finished.
   Future<void> get ready => _ready;
@@ -163,8 +170,31 @@ class LyricsPluginsController {
   Future<LyricsPluginUninstall> undoInstall(String installId) =>
       uninstall(installId);
 
-  Future<LyricsPluginWrite> setEnabled(String installId, bool enabled) =>
-      _queue.run(() => _db.setLyricsSourceEnabled(installId, enabled));
+  Future<LyricsPluginWrite> setEnabled(String installId, bool enabled) async {
+    final result = await _queue.run(
+      () => _db.setLyricsSourceEnabled(installId, enabled),
+    );
+    if (enabled && result == LyricsPluginWrite.written) {
+      await _reportIfNeedsConfig(installId);
+    }
+    return result;
+  }
+
+  /// Asks [onNeedsConfig] to report [installId] when a required field is
+  /// empty. Runs outside the queue; the notice is a courtesy, so a failure is
+  /// logged and swallowed.
+  Future<void> _reportIfNeedsConfig(String installId) async {
+    final callback = onNeedsConfig;
+    if (callback == null) return;
+    try {
+      final row = await _db.lyricsPluginById(installId);
+      if (row == null || row.removedAt != null) return;
+      if (!await needsConfig(installId)) return;
+      callback(installId, row.name, PluginKind.fromValue(row.kind));
+    } on Object catch (error) {
+      _log.fine('Could not check the plugin settings: ${error.runtimeType}');
+    }
+  }
 
   /// Puts [ids] (`lrclib` and plugin ids) first, in order; returns the ids
   /// that were written and the ones skipped (removed or unknown plugins).

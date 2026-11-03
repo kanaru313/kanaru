@@ -6,6 +6,7 @@ import '../../secrets/secret_store_provider.dart';
 import 'lyrics_plugins_controller.dart';
 import 'package/plugin_package_reader.dart';
 import 'plugin_log_paths.dart';
+import 'plugin_needs_config_notices.dart';
 import 'plugin_run_registry.dart';
 import 'store/plugin_file_reader.dart';
 
@@ -27,5 +28,9 @@ final lyricsPluginsControllerProvider = Provider<LyricsPluginsController?>((
       TimeLimitedCheckRuntime(ref.watch(pluginRuntimeProvider)),
     ),
     runs: ref.watch(pluginRunRegistryProvider),
+    // Read when called: the controller outlives no notice state.
+    onNeedsConfig: (installId, name, kind) => ref
+        .read(pluginNeedsConfigNoticesProvider.notifier)
+        .report(installId, name, kind),
   );
 });

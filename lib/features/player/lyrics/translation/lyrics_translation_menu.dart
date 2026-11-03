@@ -12,7 +12,6 @@ import '../../../../core/lyrics_translation/translation_service_resolution.dart'
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/icons/app_icons.dart';
-import '../../../../shared/lyrics_plugins/plugin_needs_config_request.dart';
 import '../../../../shared/settings_routes.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
@@ -89,8 +88,6 @@ List<Widget> lyricsTranslationMenuItems(
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
     }
-    // Only when the pick took effect (the notice may have been cancelled).
-    await reportPickedServiceNeedsConfig(container, service);
   }
 
   void openSettings() {
