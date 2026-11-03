@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart' show InkWell;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/database/playlist_modal_queries.dart';
+import 'package:kanaru/core/database/playlist_favorites.dart';
+import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
 import 'package:kanaru/features/playlists/playlist_modal/playlist_modal_actions.dart';
 import 'package:kanaru/features/playlists/playlist_modal/playlist_modal_data.dart';
@@ -258,6 +259,43 @@ void main() {
       await tester.tap(modalAction('play-all'));
       await settleModal(tester);
       expect(modalAction('play-all'), findsOneWidget, reason: 'still open');
+    });
+
+    testWidgets('the cover button shows for an ordinary playlist', (
+      tester,
+    ) async {
+      await insertTracks(tester, h, const [TestTrack('a')]);
+      final id = await seedPlaylist(tester, h, 'Mix', ['a']);
+      await pumpModalHost(tester, h, id: id);
+      await openPlaylistModalOf(tester);
+
+      expect(find.byTooltip(_l10n.playlistModalChangeCover), findsOneWidget);
+    });
+
+    testWidgets('the cover button is absent for Favorites', (tester) async {
+      await insertTracks(tester, h, const [TestTrack('a')]);
+      final id = await tester.runAsync(
+        () => h.db.ensureFavoritesPlaylist(now: 1),
+      );
+      await pumpModalHost(tester, h, id: id!);
+      await openPlaylistModalOf(tester);
+
+      expect(find.byTooltip(_l10n.playlistModalChangeCover), findsNothing);
+    });
+
+    testWidgets('the cover button goes when the playlist is deleted', (
+      tester,
+    ) async {
+      await insertTracks(tester, h, const [TestTrack('a')]);
+      final id = await seedPlaylist(tester, h, 'Mix', ['a']);
+      await pumpModalHost(tester, h, id: id);
+      await openPlaylistModalOf(tester);
+      expect(find.byTooltip(_l10n.playlistModalChangeCover), findsOneWidget);
+
+      await tester.runAsync(() => h.db.deletePlaylist(id));
+      await settleModal(tester);
+
+      expect(find.byTooltip(_l10n.playlistModalChangeCover), findsNothing);
     });
   });
 }
