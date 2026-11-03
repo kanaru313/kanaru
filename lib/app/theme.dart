@@ -1,4 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:material_color_utilities/material_color_utilities.dart'
+    show Cam16, Hct;
 import 'package:material_ui/material_ui.dart';
 
 import 'page_transition.dart';
@@ -11,6 +13,9 @@ const kanaruSeedColor = Color(0xFFFFB4A2);
 /// Builds the Material 3 theme. With a [coverSeed] (colors from the playing
 /// cover) the scheme comes from it; otherwise from a dynamic [ColorScheme]
 /// if the platform provides one, else from [kanaruSeedColor].
+///
+/// In dark mode an error color too close to the primary is replaced (see
+/// [_withDistinctError]).
 ///
 /// The result is cached by its inputs: a scheme is costly to compute and every
 /// rebuild of the app shell asks for one, so the same inputs give the same
@@ -51,13 +56,15 @@ ThemeData _buildTheme(
   Color? coverSeed,
   String? fontFamily,
 ) {
-  final colorScheme = coverSeed != null
-      ? ColorScheme.fromSeed(seedColor: coverSeed, brightness: brightness)
-      : dynamicScheme?.harmonized() ??
-            ColorScheme.fromSeed(
-              seedColor: kanaruSeedColor,
-              brightness: brightness,
-            );
+  final colorScheme = _withDistinctError(
+    coverSeed != null
+        ? ColorScheme.fromSeed(seedColor: coverSeed, brightness: brightness)
+        : dynamicScheme?.harmonized() ??
+              ColorScheme.fromSeed(
+                seedColor: kanaruSeedColor,
+                brightness: brightness,
+              ),
+  );
 
   final base = ThemeData(
     colorScheme: colorScheme,
@@ -74,6 +81,34 @@ ThemeData _buildTheme(
   );
   return base.copyWith(
     snackBarTheme: _snackBarTheme(colorScheme, base.textTheme),
+  );
+}
+
+/// Below this CAM16-UCS distance an error color reads as the primary. Dark
+/// tonal-spot schemes put both at tone 80, where reds hold only ~30 chroma,
+/// so a red-family accent lands within ~4 of the error (the logo seed: 2.4).
+/// Light pairs stay at 8.2 or more, since the light error keeps chroma 84.
+const _minErrorDistance = 7.0;
+
+/// Dark error tone used on a collision: low enough for the requested chroma
+/// to show (84 is clamped to the sRGB gamut at this tone, about 61 to 66),
+/// high enough for 4.5:1 on the dark surfaces and with the tone-20 onError.
+const _collidingDarkErrorTone = 65.0;
+
+/// Chroma of the Material 3 error palette.
+const _errorChroma = 84.0;
+
+/// In dark mode, swaps `error` for a lower-tone, high-chroma red of the same
+/// hue when it sits too close to `primary`. Returns [scheme] itself otherwise.
+ColorScheme _withDistinctError(ColorScheme scheme) {
+  if (scheme.brightness != Brightness.dark) return scheme;
+  final error = scheme.error.toARGB32();
+  final distance = Cam16.fromInt(scheme.primary.toARGB32())
+      .distance(Cam16.fromInt(error));
+  if (distance >= _minErrorDistance) return scheme;
+  final hue = Hct.fromInt(error).hue; // keeps the harmonized hue
+  return scheme.copyWith(
+    error: Color(Hct.from(hue, _errorChroma, _collidingDarkErrorTone).toInt()),
   );
 }
 
