@@ -118,6 +118,8 @@ void main() {
     await openModal(tester);
 
     for (final label in [
+      'Play all',
+      'Shuffle',
       'Add to playlist…',
       'Add all to Favorites',
       'Play next',
@@ -125,14 +127,14 @@ void main() {
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
-    // The four actions only: the page's Play and Shuffle are not rows.
+    // The six actions only.
     expect(
       find.byWidgetPredicate((w) {
         final key = w.key;
         return key is ValueKey<String> &&
             key.value.startsWith('context-modal-action-');
       }),
-      findsNWidgets(4),
+      findsNWidgets(6),
     );
     final header = find.byType(ContextModalHeader);
     expect(
@@ -170,7 +172,7 @@ void main() {
       await settleModal(tester);
 
       expect(_row('add-to-playlist'), findsOneWidget);
-      expect(_focusIn(_row('add-to-playlist')), isTrue);
+      expect(_focusIn(_row('play-all')), isTrue);
     });
   }
 
@@ -222,6 +224,30 @@ void main() {
     await open(tester, plays: [('Ghost', _at(10, 15))]);
 
     expect(_moreEnabled(tester), isFalse);
+  });
+
+  historyTestWidgets('Play all replaces the queue in rank order', (
+    tester,
+  ) async {
+    await open(tester);
+    await openModal(tester);
+    await tester.tap(_row('play-all'));
+    await settleHistory(tester);
+
+    expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
+    expect(h.container.read(playerServiceProvider).queue.shuffled, isFalse);
+  });
+
+  historyTestWidgets('Shuffle queues the same songs with shuffle on', (
+    tester,
+  ) async {
+    await open(tester);
+    await openModal(tester);
+    await tester.tap(_row('shuffle'));
+    await settleHistory(tester);
+
+    expect(_queue(h).toSet(), {'/m/B.flac', '/m/A.flac', '/m/C.flac'});
+    expect(h.container.read(playerServiceProvider).queue.shuffled, isTrue);
   });
 
   historyTestWidgets('Add to queue takes the library songs in rank order', (

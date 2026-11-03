@@ -11,6 +11,8 @@ import '../../../shared/widgets/library_row.dart' show joinRowDetails;
 /// except [openAdvanced], which pushes the page.
 class HistoryPageModalHandlers {
   const HistoryPageModalHandlers({
+    required this.play,
+    required this.shuffle,
     required this.addToPlaylist,
     required this.openMostPlayed,
     required this.exportAbsolute,
@@ -19,6 +21,8 @@ class HistoryPageModalHandlers {
     this.openAdvanced,
   });
 
+  final VoidCallback play;
+  final VoidCallback shuffle;
   final VoidCallback addToPlaylist;
   final VoidCallback openMostPlayed;
   final VoidCallback exportAbsolute;
@@ -30,7 +34,7 @@ class HistoryPageModalHandlers {
   final void Function(ContextModalNav nav)? openAdvanced;
 }
 
-/// The rows of the first page: Add to playlist, Most played, Advanced. The
+/// The rows of the first page: Play all and Shuffle; Add to playlist, Most played, Advanced. The
 /// footer's queue buttons are not here. The song actions are enabled by the
 /// number of listens, not songs: the songs still in the library are only
 /// known when a row is tapped, which then says so when there are none.
@@ -39,6 +43,22 @@ List<List<ContextModalAction>> historyPageModalSections(
   HistoryOverview? overview,
   HistoryPageModalHandlers h,
 ) => [
+  [
+    ContextModalAction(
+      id: 'play-all',
+      icon: AppIcons.play,
+      label: l10n.albumModalPlayAll,
+      enabled: _hasPlays(overview),
+      onTap: contextModalCloseThen(h.play),
+    ),
+    ContextModalAction(
+      id: 'shuffle',
+      icon: AppIcons.shuffle,
+      label: l10n.libraryShuffle,
+      enabled: _hasPlays(overview),
+      onTap: contextModalCloseThen(h.shuffle),
+    ),
+  ],
   [
     ContextModalAction(
       id: 'add-to-playlist',

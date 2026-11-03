@@ -6,6 +6,7 @@ import '../../../core/database/history_rows.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/database/playlist_cover_keys.dart';
 import '../../../core/m3u/m3u_write.dart' show M3uExportEntry, M3uPathStyle;
+import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/m3u/m3u_export_flow.dart';
@@ -69,6 +70,13 @@ class MostPlayedModalSession {
   void queue(QueueAction action) =>
       runner.queueHost?.enqueueLoaded(action, tracks, rangeText);
 
+  /// Replaces the queue with the ranking's songs in rank order; [shuffle]
+  /// turns shuffle on and starts from a random one.
+  Future<void> play({bool shuffle = false}) async {
+    final player = runner.container.read(playerServiceProvider.notifier);
+    await (shuffle ? player.openShuffled(tracks) : player.openTracks(tracks));
+  }
+
   Future<void> addToPlaylist() async {
     final navigator = rootNavigator;
     if (navigator == null || !navigator.mounted) return;
@@ -106,6 +114,8 @@ class MostPlayedModalSession {
 
   /// The callbacks the rows call.
   MostPlayedModalHandlers handlers() => MostPlayedModalHandlers(
+    play: () => unawaited(play()),
+    shuffle: () => unawaited(play(shuffle: true)),
     addToPlaylist: () => unawaited(addToPlaylist()),
     addToFavorites: () => unawaited(addToFavorites()),
     exportAbsolute: () => unawaited(export(M3uPathStyle.absolute)),

@@ -96,6 +96,8 @@ void main() {
     await openModal(tester);
 
     for (final label in [
+      'Play all',
+      'Shuffle',
       'Add to playlist…',
       'Advanced',
       'Play next',
@@ -149,8 +151,8 @@ void main() {
       await tester.sendKeyEvent(key);
       await settleModal(tester);
 
-      expect(_row('add-to-playlist'), findsOneWidget);
-      expect(_focusIn(_row('add-to-playlist')), isTrue);
+      expect(_row('play-all'), findsOneWidget);
+      expect(_focusIn(_row('play-all')), isTrue);
     });
   }
 
@@ -165,6 +167,30 @@ void main() {
       expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/Z.flac']);
     },
   );
+
+  historyTestWidgets('Play all queues the played songs, last played first', (
+    tester,
+  ) async {
+    await open(tester);
+    await openModal(tester);
+    await tester.tap(_row('play-all'));
+    await settleHistory(tester);
+
+    expect(_queue(h), isNotEmpty);
+    expect(h.container.read(playerServiceProvider).queue.shuffled, isFalse);
+  });
+
+  historyTestWidgets('Shuffle queues the played songs with shuffle on', (
+    tester,
+  ) async {
+    await open(tester);
+    await openModal(tester);
+    await tester.tap(_row('shuffle'));
+    await settleHistory(tester);
+
+    expect(_queue(h), isNotEmpty);
+    expect(h.container.read(playerServiceProvider).queue.shuffled, isTrue);
+  });
 
   historyTestWidgets('Most played goes to the ranking', (tester) async {
     await open(tester);
@@ -256,6 +282,11 @@ void main() {
       findsOneWidget,
     );
     expect(pickerAdd, findsNothing);
+    await tester.pumpAndSettle(const Duration(seconds: 6));
+    await openModal(tester);
+    await tester.tap(_row('play-all'));
+    await settleModal(tester);
+    expect(_queue(h), isEmpty);
 
     await tester.pumpAndSettle(const Duration(seconds: 6));
     await openModal(tester);

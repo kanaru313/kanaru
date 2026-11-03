@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/history_queries.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/m3u/m3u_write.dart' show M3uExportEntry, M3uPathStyle;
+import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../core/stats/listen_clear_scope.dart';
 import '../../../core/stats/listen_recorder.dart';
@@ -97,6 +98,15 @@ class HistoryPageModalSession {
   void queue(QueueAction action) =>
       runner.queueHost?.enqueueFromDatabase(action, label, _readPlayed);
 
+  /// Replaces the queue with the played songs, last played first; [shuffle]
+  /// turns shuffle on and starts from a random one.
+  Future<void> play({bool shuffle = false}) async {
+    final tracks = await _readOrSay();
+    if (tracks == null) return;
+    final player = runner.container.read(playerServiceProvider.notifier);
+    await (shuffle ? player.openShuffled(tracks) : player.openTracks(tracks));
+  }
+
   Future<void> addToPlaylist() async {
     final navigator = rootNavigator;
     if (navigator == null || !navigator.mounted) return;
@@ -184,6 +194,8 @@ class HistoryPageModalSession {
   }) => HistoryPageModalHandlers(
     clear: recorder == null ? null : (nav) => unawaited(clear(nav, plays)),
     openAdvanced: openAdvanced,
+    play: () => unawaited(play()),
+    shuffle: () => unawaited(play(shuffle: true)),
     addToPlaylist: () => unawaited(addToPlaylist()),
     openMostPlayed: () => runner.goTo(mostPlayedPath),
     exportAbsolute: () => unawaited(export(M3uPathStyle.absolute)),

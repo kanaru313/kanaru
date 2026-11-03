@@ -17,6 +17,8 @@ HistoryOverview _overview(int plays) => HistoryOverview(
 HistoryPageModalHandlers _handlers() {
   void noop() {}
   return HistoryPageModalHandlers(
+    play: noop,
+    shuffle: noop,
     addToPlaylist: noop,
     openMostPlayed: noop,
     exportAbsolute: noop,
@@ -32,11 +34,18 @@ Map<String, ContextModalAction> _byId(List<List<ContextModalAction>> groups) =>
     };
 
 void main() {
-  test('the first page lists add to playlist, most played, advanced', () {
+  test('the first page lists play all and shuffle, then add to playlist, most played, advanced', () {
     final groups = historyPageModalSections(_l10n, _overview(3), _handlers());
-    expect(groups, hasLength(1));
+    expect(
+      [
+        for (final g in groups) [for (final a in g) a.id],
+      ],
+      [
+        ['play-all', 'shuffle'],
+        ['add-to-playlist', 'most-played', 'advanced'],
+      ],
+    );
     final rows = _byId(groups);
-    expect(rows.keys, ['add-to-playlist', 'most-played', 'advanced']);
     expect(
       rows['add-to-playlist']!.subtitle,
       'New playlist suggests “History”',
@@ -56,6 +65,8 @@ void main() {
         historyPageModalSections(_l10n, overview, _handlers()),
       );
       expect(rows['add-to-playlist']!.enabled, enabled);
+      expect(rows['play-all']!.enabled, enabled);
+      expect(rows['shuffle']!.enabled, enabled);
       expect(rows['most-played']!.enabled, isTrue);
       final adv = _byId(
         historyPageModalAdvancedSections(_l10n, overview, _handlers()),
@@ -83,6 +94,8 @@ void main() {
 
   group('Clear history', () {
     HistoryPageModalHandlers withClear() => HistoryPageModalHandlers(
+      play: () {},
+      shuffle: () {},
       addToPlaylist: () {},
       openMostPlayed: () {},
       exportAbsolute: () {},

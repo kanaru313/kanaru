@@ -8,19 +8,23 @@ import '../../../shared/widgets/library_row.dart' show joinRowDetails;
 /// What the Most played modal's rows do. Each runs after the modal closed.
 class MostPlayedModalHandlers {
   const MostPlayedModalHandlers({
+    required this.play,
+    required this.shuffle,
     required this.addToPlaylist,
     required this.addToFavorites,
     required this.exportAbsolute,
     required this.exportRelative,
   });
 
+  final VoidCallback play;
+  final VoidCallback shuffle;
   final VoidCallback addToPlaylist;
   final VoidCallback addToFavorites;
   final VoidCallback exportAbsolute;
   final VoidCallback exportRelative;
 }
 
-/// The rows in two groups: Add to playlist and Add all to Favorites; the two
+/// The rows in three groups: Play all and Shuffle; Add to playlist and Add all to Favorites; the two
 /// M3U exports (absolute and relative paths, rank order). [songs] is the
 /// number of library songs the rows act on; none disables every row. The
 /// footer's queue buttons are not here.
@@ -33,6 +37,22 @@ List<List<ContextModalAction>> mostPlayedModalSections(
   final order = l10n.historyOrderRank(songs);
   final enabled = songs > 0;
   return [
+    [
+      ContextModalAction(
+        id: 'play-all',
+        icon: AppIcons.play,
+        label: l10n.albumModalPlayAll,
+        enabled: enabled,
+        onTap: contextModalCloseThen(h.play),
+      ),
+      ContextModalAction(
+        id: 'shuffle',
+        icon: AppIcons.shuffle,
+        label: l10n.libraryShuffle,
+        enabled: enabled,
+        onTap: contextModalCloseThen(h.shuffle),
+      ),
+    ],
     [
       ContextModalAction(
         id: 'add-to-playlist',

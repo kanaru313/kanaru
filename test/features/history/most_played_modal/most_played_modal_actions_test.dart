@@ -10,6 +10,8 @@ void main() {
       () => taps.add(id);
 
   MostPlayedModalHandlers handlers() => MostPlayedModalHandlers(
+    play: tap('play'),
+    shuffle: tap('shuffle'),
     addToPlaylist: tap('playlist'),
     addToFavorites: tap('favorites'),
     exportAbsolute: tap('absolute'),
@@ -18,24 +20,28 @@ void main() {
 
   setUp(() => taps = []);
 
-  test('two groups: playlist and favorites, then both exports', () {
-    final sections = mostPlayedModalSections(
-      l10n,
-      'Last 30 days',
-      3,
-      handlers(),
-    );
+  test(
+    'three groups: play and shuffle, playlist and favorites, then both exports',
+    () {
+      final sections = mostPlayedModalSections(
+        l10n,
+        'Last 30 days',
+        3,
+        handlers(),
+      );
 
-    expect(
-      [
-        for (final s in sections) [for (final a in s) a.id],
-      ],
-      [
-        ['add-to-playlist', 'add-all-to-favorites'],
-        ['export-absolute', 'export-relative'],
-      ],
-    );
-  });
+      expect(
+        [
+          for (final s in sections) [for (final a in s) a.id],
+        ],
+        [
+          ['play-all', 'shuffle'],
+          ['add-to-playlist', 'add-all-to-favorites'],
+          ['export-absolute', 'export-relative'],
+        ],
+      );
+    },
+  );
 
   test('subtitles name the suggested playlist and count the songs', () {
     final rows = {
@@ -79,7 +85,7 @@ void main() {
       handlers(),
     ).expand((s) => s);
 
-    expect(rows, hasLength(4));
+    expect(rows, hasLength(6));
     expect(rows.every((a) => !a.enabled), isTrue);
   });
 }
