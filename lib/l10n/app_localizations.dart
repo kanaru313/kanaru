@@ -2792,29 +2792,59 @@ abstract class AppLocalizations {
   /// **'{date} - {time}'**
   String historyPlayedAt(DateTime date, String time);
 
-  /// Tooltip of the menu button on a History day bar
+  /// Tooltip of the menu button on a History day bar, semantics label of the bar button, and semantic label of the Day modal
   ///
   /// In en, this message translates to:
   /// **'Day options'**
   String get historyDayMenu;
 
-  /// Menu item that saves the songs of a History day as a playlist
+  /// Day modal row and confirm button that remove every listen shown for a History day
   ///
   /// In en, this message translates to:
-  /// **'Create playlist from this day'**
-  String get historyDayCreatePlaylist;
-
-  /// Menu item that removes every listen shown for a History day
-  ///
-  /// In en, this message translates to:
-  /// **'Remove this day\'s listens'**
+  /// **'Remove day from history'**
   String get historyDayDelete;
 
-  /// Suggested name of a playlist made from a History day
+  /// Title of the Day modal for the day before today
   ///
   /// In en, this message translates to:
-  /// **'History · {date}'**
-  String historyDayPlaylistName(DateTime date);
+  /// **'Yesterday'**
+  String get historyDayYesterday;
+
+  /// Second line of the Day modal rows that use the songs of a day: how many, and in what order
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song, last played first} other{{count} songs, last played first}}'**
+  String historyOrderLastPlayedFirst(int count);
+
+  /// Second line of the Day modal row that removes the day's listens
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 listen · the song stays in your library} other{{count} listens · songs stay in your library}}'**
+  String historyDayRemoveHint(int count);
+
+  /// Title of the question asked before the listens of a History day are removed
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this day?'**
+  String get historyDayRemoveTitle;
+
+  /// Body of the question asked before the listens of a History day are removed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The listen of {date} is removed from History and Most played. The song stays in your library.} other{All {count} listens of {date} are removed from History and Most played. The songs stay in your library.}}'**
+  String historyDayRemoveBody(int count, String date);
+
+  /// Day modal row that shows the ranking of the day on the Most played page
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Most played'**
+  String get historyOpenInMostPlayed;
+
+  /// Second line of the Add to playlist row of the Day modal: the name the New playlist option starts with
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist suggests “{name}”'**
+  String historyNewPlaylistSuggests(String name);
 
   /// How many plays a History day holds
   ///
@@ -3002,6 +3032,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
   String historyTopPlayCount(int count);
 
+  /// Chip in the modal of a Most played row: its place and listen count
+  ///
+  /// In en, this message translates to:
+  /// **'#{rank} · {listens}'**
+  String historyTopRankChip(int rank, String listens);
+
+  /// Screen reader name of the modal of a played file that is not in the library
+  ///
+  /// In en, this message translates to:
+  /// **'Listen options'**
+  String get historyMissingPlayModalLabel;
+
   /// Note under the Most played list when it was cut at its limit
   ///
   /// In en, this message translates to:
@@ -3014,23 +3056,11 @@ abstract class AppLocalizations {
   /// **'Play all'**
   String get historyPlayAll;
 
-  /// Button that saves the Most played list as a playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Create playlist'**
-  String get historyCreatePlaylist;
-
   /// Suggested name of a playlist made from the Most played list
   ///
   /// In en, this message translates to:
   /// **'Most played · {range}'**
   String historyTopPlaylistName(String range);
-
-  /// Snackbar after a playlist was made from the Most played list
-  ///
-  /// In en, this message translates to:
-  /// **'Created playlist {name}'**
-  String historyPlaylistCreated(String name);
 
   /// Message of the Most played page when the range has no plays
   ///
@@ -3200,18 +3230,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t read that playlist file. See the log for details.'**
   String get playlistM3uImportFailed;
 
-  /// Playlist menu item: save as M3U with absolute paths
-  ///
-  /// In en, this message translates to:
-  /// **'Export M3U (full paths)…'**
-  String get playlistM3uExportAbsolute;
-
-  /// Playlist menu item: save as M3U with paths relative to the file
-  ///
-  /// In en, this message translates to:
-  /// **'Export M3U (relative paths)…'**
-  String get playlistM3uExportRelative;
-
   /// Snackbar after exporting a playlist
   ///
   /// In en, this message translates to:
@@ -3302,25 +3320,7 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get queueHistoryPlay;
 
-  /// Menu row that plays a saved queue shuffled
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle'**
-  String get queueHistoryShuffle;
-
-  /// Menu row that copies a saved queue into a new playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Save as playlist'**
-  String get queueHistorySaveAsPlaylist;
-
-  /// Snackbar after a saved queue was copied into a new playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Saved as {name}'**
-  String queueHistorySavedAsPlaylist(String name);
-
-  /// Menu row and dialog button that delete a saved queue
+  /// Button of the dialog that confirms deleting a saved queue
   ///
   /// In en, this message translates to:
   /// **'Delete'**
@@ -3359,7 +3359,7 @@ abstract class AppLocalizations {
   /// Empty state message of a saved queue whose songs were all removed
   ///
   /// In en, this message translates to:
-  /// **'All its songs were removed. You can delete it from Queues.'**
+  /// **'All its songs were removed. You can delete it from the ⋮ menu.'**
   String get queueHistoryEntriesEmptyMessage;
 
   /// Snackbar when moving or removing a song of a saved queue fails
@@ -3379,6 +3379,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It may have been deleted.'**
   String get queueHistoryNotFoundMessage;
+
+  /// Semantic label of the saved queue context modal
+  ///
+  /// In en, this message translates to:
+  /// **'Queue options'**
+  String get queueModalLabel;
+
+  /// Queue modal row and header tap hint that open the saved queue page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to queue'**
+  String get queueModalGoTo;
+
+  /// Queue modal row that deletes the saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Delete queue'**
+  String get queueModalDelete;
+
+  /// Subtitle of the Delete queue row
+  ///
+  /// In en, this message translates to:
+  /// **'The songs stay in your library'**
+  String get queueModalDeleteHint;
+
+  /// Queue modal header part: songs of the queue not in the library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missing'**
+  String queueModalMissingCount(int count);
+
+  /// Title of the dialog confirming that missing songs leave a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Remove missing songs?'**
+  String get queueModalRemoveMissingTitle;
+
+  /// Body of the dialog confirming that missing songs leave a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.'**
+  String get queueModalRemoveMissingBody;
 
   /// Shown in the lyrics slot of Now Playing when the song has no lyrics
   ///
@@ -7466,7 +7508,7 @@ abstract class AppLocalizations {
   /// **'Created “{name}”'**
   String playlistDuplicated(String name);
 
-  /// Label of the two M3U export rows of the playlist modal
+  /// Label of the M3U export row of the context modals
   ///
   /// In en, this message translates to:
   /// **'Export as M3U'**
@@ -7478,11 +7520,11 @@ abstract class AppLocalizations {
   /// **'Absolute paths'**
   String get playlistExportAbsoluteHint;
 
-  /// Second line of the M3U export row that writes relative paths
+  /// Tooltip of the button on the Export as M3U row that writes relative paths
   ///
   /// In en, this message translates to:
-  /// **'Relative paths (next to the music)'**
-  String get playlistExportRelativeHint;
+  /// **'Export with relative paths'**
+  String get m3uExportRelativeTooltip;
 
   /// Playlist modal row that removes repeated songs
   ///
@@ -7519,6 +7561,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}'**
   String playlistMissingRemoved(int count);
+
+  /// Semantic label of the Most played modal
+  ///
+  /// In en, this message translates to:
+  /// **'Most played options'**
+  String get mostPlayedModalLabel;
+
+  /// Second line of the Most played modal rows that use the ranking: how many songs, and in what order
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song, in rank order} other{{count} songs, in rank order}}'**
+  String historyOrderRank(int count);
+
+  /// Semantic label of the History modal and its more button on the History page
+  ///
+  /// In en, this message translates to:
+  /// **'History options'**
+  String get historyModalLabel;
+
+  /// Subtitle of the Most played row in the History modal
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you play the most'**
+  String get historyMostPlayedHint;
+
+  /// Snackbar when no played song is in the library any more (History modal)
+  ///
+  /// In en, this message translates to:
+  /// **'None of the songs you played are in your library'**
+  String get historyNothingInLibrary;
+
+  /// Subtitle of the History modal export rows: the order of the exported songs
+  ///
+  /// In en, this message translates to:
+  /// **'Last played first'**
+  String get historyLastPlayedFirst;
+
+  /// History modal Advanced row that opens the clear dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history…'**
+  String get historyClear;
+
+  /// Subtitle of the Clear history row
+  ///
+  /// In en, this message translates to:
+  /// **'Last hour, today, 7 days or everything'**
+  String get historyClearHint;
+
+  /// Title of the clear history dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history?'**
+  String get historyClearTitle;
+
+  /// Body of the clear history dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Listens are removed from History and Most played. The songs stay in your library. This can\'t be undone.'**
+  String get historyClearBody;
+
+  /// Clear history dialog option
+  ///
+  /// In en, this message translates to:
+  /// **'Last hour'**
+  String get historyClearLastHour;
+
+  /// Clear history dialog option: since local midnight
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyClearToday;
+
+  /// Clear history dialog option: today and the 6 days before
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get historyClearDays7;
+
+  /// Clear history dialog option: the whole history
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get historyClearEverything;
+
+  /// Clear history dialog: shown under an option whose listen count could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t count the listens'**
+  String get historyClearCountFailed;
+
+  /// Clear history dialog: button that reads the failed listen counts again
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get historyClearRetry;
+
+  /// Snackbar after the History was cleared for a range
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to clear} =1{Cleared 1 listen from history} other{Cleared {count} listens from history}}'**
+  String historyCleared(int count);
 }
 
 class _AppLocalizationsDelegate

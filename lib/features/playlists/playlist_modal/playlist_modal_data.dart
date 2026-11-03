@@ -5,7 +5,7 @@ import '../../../core/database/playlist_modal_queries.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../playlist_page_data.dart';
-import 'playlist_modal_stats_provider.dart';
+import '../playlist_modal_stats_provider.dart';
 
 /// What the actions page needs to know about the playlist, to decide which
 /// rows show and which are greyed out.

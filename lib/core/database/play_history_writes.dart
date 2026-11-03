@@ -42,7 +42,19 @@ extension PlayHistoryWrites on LibraryDatabase {
     return changed > 0;
   }
 
-  /// Deletes every play; the triggers empty `play_stats`. Returns how many
+  /// Deletes the plays with `played_at` in `[from, to)`; a missing side is
+  /// open and no bounds at all deletes every play. The triggers keep
+  /// `play_stats` equal to a `GROUP BY` over what is left. Returns how many
   /// plays were removed.
-  Future<int> clearPlayHistory() => delete(plays).go();
+  Future<int> clearPlayHistory({int? from, int? to}) {
+    if (from == null && to == null) return delete(plays).go();
+    return (delete(plays)..where((p) {
+          final inRange = <Expression<bool>>[
+            ?from == null ? null : p.playedAt.isBiggerOrEqualValue(from),
+            ?to == null ? null : p.playedAt.isSmallerThanValue(to),
+          ];
+          return inRange.reduce((a, b) => a & b);
+        }))
+        .go();
+  }
 }

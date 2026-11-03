@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/database/library_database.dart' show AlbumKey;
+import 'package:kanaru/core/database/library_database.dart'
+    show AlbumKey, LibraryDatabase;
 import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/enqueue_from_database.dart';
 import 'package:kanaru/shared/queue_host.dart';
@@ -19,6 +21,9 @@ const _tracks = [
   TestTrack('b1', artist: 'Bob', album: 'Beta', track: 1),
 ];
 const _alpha = AlbumKey('ann', 'alpha');
+
+Track _track(Map<String, String> paths, String title) =>
+    Track(uri: paths[title]!, title: title);
 
 void main() {
   List<String> queue(LibraryHarness h) => [
@@ -153,6 +158,108 @@ void main() {
     await settleDb(tester);
 
     expect(await storedPaths(tester, h, mix!), [paths['a1'], paths['a2']]);
+  });
+
+  /// Opens the picker's name dialog and returns the text its field offers.
+  Future<String> suggestedNameOf(WidgetTester tester) async {
+    await tester.tap(find.text('New playlist…'));
+    await tester.pumpAndSettle();
+    return tester.widget<TextField>(find.byType(TextField)).controller!.text;
+  }
+
+  testWidgets('addToPlaylist reads the paths and suggests the name', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    final (host, _, _) = await openAndLeave(tester, h);
+    final paths = await trackPaths(tester, h);
+    LibraryDatabase? readWith;
+
+    host.addToPlaylist(
+      (db) async {
+        readWith = db;
+        return [paths['a1']!, '/gone/missing.mp3'];
+      },
+      'Mix',
+      suggestedName: 'Friday mix',
+    );
+    await settleDb(tester);
+
+    expect(readWith, same(h.db));
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(await suggestedNameOf(tester), 'Friday mix');
+  });
+
+  testWidgets('enqueueLoaded forwards the suggested name', (tester) async {
+    final h = LibraryHarness();
+    final (host, _, _) = await openAndLeave(tester, h);
+
+    host.enqueueLoaded(
+      QueueAction.addToPlaylist,
+      [_track(await trackPaths(tester, h), 'a1')],
+      'Mix',
+      suggestedName: 'Loaded mix',
+    );
+    await settleDb(tester);
+
+    expect(await suggestedNameOf(tester), 'Loaded mix');
+  });
+
+  testWidgets('enqueueFromDatabase forwards the suggested name', (
+    tester,
+  ) async {
+    final h = LibraryHarness();
+    final (host, _, _) = await openAndLeave(tester, h);
+    final paths = await trackPaths(tester, h);
+
+    host.enqueueFromDatabase(
+      QueueAction.addToPlaylist,
+      'Mix',
+      (_, _) async => [_track(paths, 'a1')],
+      suggestedName: 'Read mix',
+    );
+    await settleDb(tester);
+
+    expect(await suggestedNameOf(tester), 'Read mix');
+  });
+
+  testWidgets('addToPlaylist without a library does nothing', (tester) async {
+    final h = LibraryHarness();
+    await openWithTracks(tester, h, _tracks, location: '/albums');
+    late QueueHost host;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: h.container,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                host = QueueHost.captured(
+                  container: h.container,
+                  messenger: ScaffoldMessenger.of(context),
+                  l10n: context.l10n,
+                  dialogContext: context,
+                  db: null,
+                );
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    var read = false;
+
+    host.addToPlaylist((_) async {
+      read = true;
+      return const [];
+    }, 'Mix');
+    await tester.pumpAndSettle();
+
+    expect(read, isFalse);
+    expect(find.byType(AlertDialog), findsNothing);
   });
 
   testWidgets('playAlbumIn plays the album in page order without a ref', (

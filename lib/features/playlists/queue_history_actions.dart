@@ -1,32 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_page_queries.dart';
-import '../../core/database/queue_history_queries.dart';
+import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
-import '../../shared/icons/app_icons.dart';
-import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
-import '../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import '../../shared/widgets/confirm_dialog.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 
 final _log = Logger('queue_history');
-
-/// What the menu of a saved queue can do.
-enum QueueSnapshotAction {
-  play,
-  shuffle,
-  playNext,
-  addToQueue,
-  saveAsPlaylist,
-  delete,
-}
 
 /// The name of a saved queue: when it was saved, in the user's language.
 String queueSnapshotName(AppLocalizations l10n, int savedAt) {
@@ -34,136 +17,50 @@ String queueSnapshotName(AppLocalizations l10n, int savedAt) {
   return l10n.queueHistorySavedAt(when, when);
 }
 
-/// Carries out [action] on saved queue [id], saved at [savedAt]. The
-/// messenger, navigator and texts are captured before the first `await`;
-/// playing or queuing after the read needs [ref], so it is dropped when the
-/// row left the tree meanwhile. Failures are logged and reported in a
-/// snackbar, never thrown.
-Future<void> runQueueSnapshotAction(
+/// [summary] of a saved queue under its shown name. The stored name is a
+/// placeholder; `created_at` is the time the queue was saved.
+PlaylistSummary namedQueueSummary(
+  PlaylistSummary summary,
+  AppLocalizations l10n,
+) => PlaylistSummary(
+  id: summary.id,
+  name: queueSnapshotName(l10n, summary.createdAt),
+  createdAt: summary.createdAt,
+  entryCount: summary.entryCount,
+);
+
+/// Replaces the player queue with the songs of saved queue [id] that are in
+/// the library. The messenger and texts are captured before the first
+/// `await`; playing needs [ref], so it is dropped when the row left the tree
+/// meanwhile. Failures are logged and reported in a snackbar, never thrown.
+Future<void> playQueueSnapshot(
   WidgetRef ref,
   BuildContext context,
-  QueueSnapshotAction action, {
-  required int id,
-  required int savedAt,
-}) async {
+  int id,
+) async {
   final db = ref.read(libraryDatabaseProvider);
   if (db == null || !context.mounted) return;
   final messenger = ScaffoldMessenger.of(context);
-  final navigator = Navigator.of(context, rootNavigator: true);
   final l10n = context.l10n;
   final covers = ref.read(coverCacheDirectoryProvider);
-  final name = queueSnapshotName(l10n, savedAt);
   try {
-    switch (action) {
-      case QueueSnapshotAction.delete:
-        if (!await _confirmDelete(navigator.context, l10n)) return;
-        await db.deleteQueueSnapshot(id);
-        messenger.showAppSnackBar(
-          AppSnackBarKind.success,
-          l10n.queueHistoryDeleted,
-        );
-      case QueueSnapshotAction.saveAsPlaylist:
-        final paths = await db.queueSnapshotPaths(id);
-        if (paths.isEmpty || !navigator.mounted) return;
-        final created = await promptAndCreatePlaylist(
-          navigator.context,
-          db,
-          messenger,
-          l10n,
-          paths: paths,
-          initialName: name,
-        );
-        if (created != null) {
-          messenger.showAppSnackBar(
-            AppSnackBarKind.success,
-            l10n.queueHistorySavedAsPlaylist(created.name),
-          );
-        }
-      case QueueSnapshotAction.play ||
-          QueueSnapshotAction.shuffle ||
-          QueueSnapshotAction.playNext ||
-          QueueSnapshotAction.addToQueue:
-        final playable = await db.playlistPlayableTracks(id);
-        // The row may be gone (deleted, pruned, another page): `ref` with it.
-        if (!context.mounted) return;
-        final tracks = [
-          for (final p in playable) trackFromRow(p.track, covers),
-        ];
-        if (tracks.isEmpty) {
-          messenger.showAppSnackBar(
-            AppSnackBarKind.info,
-            l10n.queueHistoryNothingToPlay,
-          );
-          return;
-        }
-        switch (action) {
-          case QueueSnapshotAction.play:
-            playTracks(ref, tracks, 0);
-          case QueueSnapshotAction.shuffle:
-            shuffleTracks(ref, tracks);
-          case _:
-            await enqueueTracks(
-              ref,
-              messenger,
-              l10n,
-              action == QueueSnapshotAction.playNext
-                  ? QueueAction.playNext
-                  : QueueAction.addToQueue,
-              () async => tracks,
-              name,
-            );
-        }
+    final playable = await db.playlistPlayableTracks(id);
+    // The row may be gone (deleted, pruned, another page): `ref` with it.
+    if (!context.mounted) return;
+    final tracks = [for (final p in playable) trackFromRow(p.track, covers)];
+    if (tracks.isEmpty) {
+      messenger.showAppSnackBar(
+        AppSnackBarKind.info,
+        l10n.queueHistoryNothingToPlay,
+      );
+      return;
     }
+    playTracks(ref, tracks, 0);
   } catch (error, stack) {
-    _log.severe('A saved queue action failed', error, stack);
+    _log.severe('Playing a saved queue failed', error, stack);
     messenger.showAppSnackBar(
       AppSnackBarKind.error,
       l10n.libraryUnexpectedError,
     );
   }
-}
-
-Future<bool> _confirmDelete(BuildContext context, AppLocalizations l10n) =>
-    confirmAction(
-      context,
-      title: l10n.queueHistoryDeleteTitle,
-      body: l10n.queueHistoryDeleteMessage,
-      confirmLabel: l10n.queueHistoryDelete,
-      destructive: false,
-    );
-
-/// The rows of the saved queue menu.
-List<PopupMenuEntry<QueueSnapshotAction>> queueSnapshotMenuItems(
-  BuildContext context,
-) {
-  final l10n = context.l10n;
-  return [
-    menuRow(QueueSnapshotAction.play, AppIcons.play, l10n.queueHistoryPlay),
-    menuRow(
-      QueueSnapshotAction.shuffle,
-      AppIcons.shuffle,
-      l10n.queueHistoryShuffle,
-    ),
-    menuRow(
-      QueueSnapshotAction.playNext,
-      AppIcons.playlistPlay,
-      l10n.queuePlayNext,
-    ),
-    menuRow(
-      QueueSnapshotAction.addToQueue,
-      AppIcons.addToQueue,
-      l10n.queueAddToQueue,
-    ),
-    menuRow(
-      QueueSnapshotAction.saveAsPlaylist,
-      AppIcons.saveQueue,
-      l10n.queueHistorySaveAsPlaylist,
-    ),
-    const PopupMenuDivider(),
-    menuRow(
-      QueueSnapshotAction.delete,
-      AppIcons.deleteOutline,
-      l10n.queueHistoryDelete,
-    ),
-  ];
 }

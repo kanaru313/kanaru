@@ -1,7 +1,7 @@
 import '../widgets/context_modal/context_modal_route.dart';
 
 /// What a screen adds to the song modal of one of its rows: [actions] shown
-/// before the links, a quiet [headerNote] line under the album, and which
+/// before the links, a [headerNote] chip under the album, and which
 /// links point back at the page itself ([showAlbum], [pageArtistKey],
 /// [showFolder]). This is the only way a screen shapes the song modal.
 ///
@@ -19,7 +19,7 @@ class SongModalExtras {
 
   final List<ContextModalAction> actions;
 
-  /// One short line under the album (for example the listen count); null
+  /// One short chip under the album (for example the listen count); null
   /// leaves the header at three lines.
   final String? headerNote;
 
@@ -40,5 +40,5 @@ class SongModalExtras {
 /// before the modal opens, never while the row builds: capture everything the
 /// actions need (messenger, l10n, database, router, ids) inside it, and not
 /// the row's own context later, since the row may be gone by the time an
-/// action runs. Every action closes the modal first (`songModalCloseThen`).
+/// action runs. Every action closes the modal first (`contextModalCloseThen`).
 typedef SongModalExtrasBuilder = SongModalExtras Function();

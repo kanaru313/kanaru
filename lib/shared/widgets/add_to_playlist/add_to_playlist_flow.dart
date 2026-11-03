@@ -50,7 +50,8 @@ Future<void> addTracksToPlaylist(
 /// [addTracksToPlaylist] with everything it needs from the widget tree
 /// already captured, for a caller whose row may be gone by the time the
 /// picker answers (the queue menu). [dialogContext] is the root navigator's
-/// context.
+/// context. [suggestedName] prefills the name of the first "New playlist"
+/// (null keeps the default name).
 Future<void> addTracksToPlaylistWith({
   required LibraryDatabase db,
   required ScaffoldMessengerState? messenger,
@@ -59,6 +60,7 @@ Future<void> addTracksToPlaylistWith({
   required Future<List<String>> Function() readPaths,
   required String label,
   int? excludePlaylistId,
+  String? suggestedName,
 }) async {
   if (!dialogContext.mounted) return;
   // Read while the picker is open, for its hints. A failure surfaces when
@@ -75,6 +77,7 @@ Future<void> addTracksToPlaylistWith({
       paths: paths,
       label: label,
       excludePlaylistId: excludePlaylistId,
+      suggestedName: suggestedName,
     );
     // Dismissed, or the album or artist vanished in a rescan: nothing to add.
     if (plan == null) return;

@@ -1,9 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/history_queries.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/most_played_list.dart';
 import 'package:kanaru/features/history/most_played_row_tile.dart';
+import 'package:kanaru/features/history/most_played_view.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/features/history/most_played_side_pane.dart';
 import 'package:kanaru/shared/widgets/detail_page/tracks_toolbar.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
@@ -13,6 +16,7 @@ import 'package:kanaru/shared/widgets/in_page_search_field.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
+import '../../support/settle_modal.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int month, int day, [int hour = 9]) =>
@@ -87,6 +91,37 @@ void main() {
       expect(inPane(find.text('5 songs · 14 listens')), findsOneWidget);
     });
 
+    historyTestWidgets(
+      'the range survives unmounting and remounting the view',
+      (tester) async {
+        await open(tester);
+        await tester.tap(find.widgetWithText(ChoiceChip, '7 days'));
+        await settleHistory(tester);
+
+        Widget tree(Widget child) => UncontrolledProviderScope(
+          container: h.container,
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: child),
+          ),
+        );
+        await tester.pumpWidget(tree(const SizedBox()));
+        expect(find.byType(MostPlayedView), findsNothing);
+        await tester.pumpWidget(tree(const MostPlayedView()));
+        await settleHistory(tester);
+
+        expect(
+          tester
+              .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '7 days'))
+              .selected,
+          isTrue,
+        );
+        expect(inPane(find.text('2 songs · 4 listens')), findsOneWidget);
+      },
+    );
+
     historyTestWidgets('Today and Custom name their days', (tester) async {
       await open(tester);
 
@@ -159,21 +194,22 @@ void main() {
       expect(_queue(h).toSet(), {'/m/A.flac', '/m/B.flac', '/m/C.flac'});
     });
 
-    historyTestWidgets('the more menu is vertical and queues the songs', (
-      tester,
-    ) async {
-      await open(tester);
+    historyTestWidgets(
+      'the more button is vertical and opens the modal that queues the songs',
+      (tester) async {
+        await open(tester);
 
-      expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
-      await tester.tap(inPane(find.byTooltip('More options')));
-      await tester.pumpAndSettle();
-      expect(find.text('Create playlist'), findsOneWidget);
-      expect(find.text('Play next'), findsOneWidget);
+        expect(inPane(find.byIcon(AppIcons.more)), findsOneWidget);
+        await tester.tap(inPane(find.byTooltip('More options')));
+        await settleModal(tester);
+        expect(find.text('Add to playlist…'), findsOneWidget);
+        expect(find.text('Play next'), findsOneWidget);
 
-      await tester.tap(find.text('Add to queue'));
-      await settleHistory(tester);
-      expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
-    });
+        await tester.tap(find.text('Add to queue'));
+        await settleHistory(tester);
+        expect(_queue(h), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
+      },
+    );
 
     historyTestWidgets('a narrow window shows the header above the list', (
       tester,

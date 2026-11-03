@@ -6,9 +6,10 @@ import 'package:kanaru/core/database/library_rows.dart';
 import 'package:kanaru/core/player/playing_track_path.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
-import 'package:kanaru/shared/song_modal/song_modal_data.dart';
 import 'package:kanaru/shared/song_modal/song_modal_extras.dart';
+import 'package:kanaru/shared/widgets/context_modal/context_modal_header.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_route.dart';
+import 'package:kanaru/shared/widgets/context_modal/context_modal_spec.dart';
 import 'package:kanaru/shared/widgets/song_row_view.dart';
 import 'package:kanaru/shared/widgets/song_tile.dart';
 import 'package:material_ui/material_ui.dart';
@@ -54,7 +55,7 @@ Future<void> _pump(WidgetTester tester, _Probe probe) {
                         icon: AppIcons.remove,
                         label: 'Extra action',
                         destructive: probe.destructive,
-                        onTap: songModalCloseThen(() => probe.ran++),
+                        onTap: contextModalCloseThen(() => probe.ran++),
                       ),
                     ],
                   );
@@ -186,6 +187,13 @@ void main() {
     await _pump(tester, probe);
     await openSongModal(tester, find.byType(SongTile));
     expect(find.text('12 listens'), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: find.text('12 listens'),
+        matching: find.byType(ContextModalHeaderChip),
+      ),
+      findsOneWidget,
+    );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await settleModal(tester);

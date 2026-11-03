@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../core/database/search_playlist_queries.dart';
-import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../shared/in_page_filter.dart';
 import '../../shared/in_page_filter_host.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
@@ -37,9 +36,7 @@ class PlaylistEntriesView extends StatefulWidget {
     this.onMove,
     this.onRemove,
     this.onSettled,
-    this.onQueueAction,
     this.onEntryQueueAction,
-    this.onExport,
     this.savedQueue = false,
     this.loadMatches,
     this.onPlayRows,
@@ -87,19 +84,12 @@ class PlaylistEntriesView extends StatefulWidget {
   /// the rows back when a write failed.
   final int Function()? onSettled;
 
-  /// Queue menu of the header, for the whole playlist; called after the
-  /// writes under way have ended.
-  final void Function(QueueAction action)? onQueueAction;
-
   /// Queue menu of one row.
   final void Function(PlaylistEntryRow entry, QueueAction action)?
   onEntryQueueAction;
 
-  /// Export items of the saved-queue menu; null leaves them out.
-  final ValueChanged<M3uPathStyle>? onExport;
-
-  /// A saved queue: its header keeps the popup menu; any other playlist
-  /// opens the playlist modal from the header.
+  /// A saved queue: the header's ⋮ button opens the Queue modal; any other
+  /// playlist opens the playlist modal.
   final bool savedQueue;
 
   /// Reads the entries whose song matches the filter terms. Null: the page
@@ -307,13 +297,6 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
     }
   }
 
-  Future<void> _queueAll(QueueAction action) async {
-    final onQueueAction = widget.onQueueAction;
-    if (onQueueAction == null) return;
-    await _writes.afterWrites();
-    if (mounted) onQueueAction(action);
-  }
-
   Widget _row(BuildContext context, int index) {
     final entry = _cache.rowAt(index);
     // Different key types, so a slot and a row never share an element.
@@ -345,7 +328,6 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
   Widget build(BuildContext context) {
     final head = widget.head;
     final count = _cache.count;
-    final onQueueAction = widget.onQueueAction;
     final canFilter = filterAvailable;
     if (!canFilter && _filter.isOpen) {
       // The last entry went away: the box is gone, and so is its filter.
@@ -372,11 +354,7 @@ class _PlaylistEntriesViewState extends State<PlaylistEntriesView>
         onShuffle: head.hasPlayable && widget.onShuffle != null
             ? () => unawaited(_shuffle())
             : null,
-        onQueueAction: !head.hasPlayable || onQueueAction == null
-            ? null
-            : (action) => unawaited(_queueAll(action)),
         onEntryQueueAction: widget.onEntryQueueAction,
-        onExport: widget.onExport,
         savedQueue: widget.savedQueue,
         beforeRead: _writes.afterWrites,
       ),

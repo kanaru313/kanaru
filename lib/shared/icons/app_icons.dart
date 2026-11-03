@@ -51,6 +51,7 @@ abstract final class AppIcons {
       FluentIcons.text_bullet_list_tree_24_regular;
   static const IconData folderFlat = FluentIcons.text_bullet_list_24_regular;
   static const IconData folderOff = FluentIcons.folder_prohibited_24_regular;
+  static const IconData folderLink = FluentIcons.folder_link_24_regular;
   static const IconData folderSpecial = FluentIcons.folder_lightning_24_regular;
   static const IconData addFolder = FluentIcons.folder_add_24_regular;
   static const IconData library = FluentIcons.library_24_regular;

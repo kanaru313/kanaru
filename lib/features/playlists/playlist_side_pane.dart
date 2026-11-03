@@ -1,10 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
-import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../shared/widgets/detail_page/collage_hero_cover.dart';
 import '../../shared/widgets/detail_page/detail_side_pane.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_details.dart';
 
 /// Left column of a playlist page in a wide window: a hero card (the cover
@@ -18,8 +16,6 @@ class PlaylistSidePane extends StatelessWidget {
     required this.count,
     this.onPlay,
     this.onShuffle,
-    this.onQueueAction,
-    this.onExport,
     this.savedQueue = false,
     this.beforeRead,
   });
@@ -30,8 +26,6 @@ class PlaylistSidePane extends StatelessWidget {
   final int count;
   final VoidCallback? onPlay;
   final VoidCallback? onShuffle;
-  final ValueChanged<QueueAction>? onQueueAction;
-  final ValueChanged<M3uPathStyle>? onExport;
 
   /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
   final bool savedQueue;
@@ -50,8 +44,6 @@ class PlaylistSidePane extends StatelessWidget {
         actionsAtEnd: true,
         onPlay: onPlay,
         onShuffle: onShuffle,
-        onQueueAction: onQueueAction,
-        onExport: onExport,
         savedQueue: savedQueue,
         beforeRead: beforeRead,
       ),

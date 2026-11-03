@@ -64,8 +64,10 @@ class HistoryTimelineView extends StatelessWidget {
   /// Extras of the song modal of a row, built when it opens.
   final SongModalExtras Function(HistoryPlayRow row) playExtras;
 
-  /// The menu button of a day's bar was pressed at the given global position.
-  final void Function(HistoryDayCount day, Offset position) onDayMenu;
+  /// The Day modal of a day's bar was asked for, from the keyboard when
+  /// [viaKeyboard].
+  final void Function(HistoryDayCount day, {required bool viaKeyboard})
+  onDayMenu;
 
   /// The next older year with plays, offered at the end of the list.
   final int? olderYear;
@@ -77,7 +79,8 @@ class HistoryTimelineView extends StatelessWidget {
       day: DateTime.fromMillisecondsSinceEpoch(d.dayStart),
       tracks: d.tracks,
       height: height,
-      onMenu: (position) => onDayMenu(d, position),
+      onOpen: ({required viaKeyboard, required at}) =>
+          onDayMenu(d, viaKeyboard: viaKeyboard),
     );
   }
 

@@ -562,24 +562,17 @@
   "@historyDayMenu": {
     "description": "Tooltip of the menu button on a History day bar"
   },
-  "historyDayCreatePlaylist": "Tạo playlist từ ngày này",
-  "@historyDayCreatePlaylist": {
-    "description": "Menu item that saves the songs of a History day as a playlist"
-  },
-  "historyDayDelete": "Xoá lượt nghe của ngày",
+  "historyDayDelete": "Xoá ngày khỏi lịch sử",
   "@historyDayDelete": {
-    "description": "Menu item that removes every listen shown for a History day"
+    "description": "Day modal row and confirm button that remove every listen shown for a History day"
   },
-  "historyDayPlaylistName": "Lịch sử · {date}",
-  "@historyDayPlaylistName": {
-    "description": "Suggested name of a playlist made from a History day",
-    "placeholders": {
-      "date": {
-        "type": "DateTime",
-        "format": "yMMMd"
-      }
-    }
-  },
+  "historyDayYesterday": "Hôm qua",
+  "historyOrderLastPlayedFirst": "{count, plural, other{{count} bài, nghe gần nhất trước}}",
+  "historyDayRemoveHint": "{count, plural, other{{count} lượt nghe · bài hát vẫn ở trong thư viện}}",
+  "historyDayRemoveTitle": "Xoá ngày này?",
+  "historyDayRemoveBody": "{count, plural, other{Cả {count} lượt nghe của {date} sẽ bị xoá khỏi Lịch sử và Phát nhiều nhất. Các bài hát vẫn ở trong thư viện.}}",
+  "historyOpenInMostPlayed": "Mở trong Phát nhiều nhất",
+  "historyNewPlaylistSuggests": "Playlist mới gợi ý tên “{name}”",
   "historyListenCount": "{count, plural, other{{count} lượt nghe}}",
   "@historyListenCount": {
     "description": "How many plays a History day holds",
@@ -744,6 +737,19 @@
       }
     }
   },
+  "historyTopRankChip": "#{rank} · {listens}",
+  "@historyTopRankChip": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "listens": {
+        "type": "String"
+      }
+    }
+  },
+  "historyMissingPlayModalLabel": "Tùy chọn lượt nghe",
+  "@historyMissingPlayModalLabel": {},
   "historyTopCapped": "Hiện {count} bài đầu",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",
@@ -757,24 +763,11 @@
   "@historyPlayAll": {
     "description": "Button that plays the Most played list from the top"
   },
-  "historyCreatePlaylist": "Tạo playlist",
-  "@historyCreatePlaylist": {
-    "description": "Button that saves the Most played list as a playlist"
-  },
   "historyTopPlaylistName": "Nghe nhiều nhất · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
     "placeholders": {
       "range": {
-        "type": "String"
-      }
-    }
-  },
-  "historyPlaylistCreated": "Đã tạo playlist {name}",
-  "@historyPlaylistCreated": {
-    "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -960,14 +953,6 @@
   "@playlistM3uImportFailed": {
     "description": "Snackbar when the picked M3U file cannot be read"
   },
-  "playlistM3uExportAbsolute": "Xuất M3U (đường dẫn đầy đủ)…",
-  "@playlistM3uExportAbsolute": {
-    "description": "Playlist menu item: save as M3U with absolute paths"
-  },
-  "playlistM3uExportRelative": "Xuất M3U (đường dẫn tương đối)…",
-  "@playlistM3uExportRelative": {
-    "description": "Playlist menu item: save as M3U with paths relative to the file"
-  },
   "playlistM3uExported": "Đã lưu {count} bài vào {file}",
   "@playlistM3uExported": {
     "description": "Snackbar after exporting a playlist",
@@ -1056,18 +1041,22 @@
   "queueHistoryEmptyMessage": "Khi bạn phát thứ khác, hàng đợi bị thay sẽ được giữ ở đây.",
   "queueHistorySavedAt": "{date} · {time}",
   "queueHistoryPlay": "Phát",
-  "queueHistoryShuffle": "Phát ngẫu nhiên",
-  "queueHistorySaveAsPlaylist": "Lưu thành playlist",
-  "queueHistorySavedAsPlaylist": "Đã lưu thành {name}",
   "queueHistoryDelete": "Xoá",
   "queueHistoryDeleteTitle": "Xoá hàng đợi này?",
   "queueHistoryDeleteMessage": "Hàng đợi bị xoá khỏi lịch sử. Các bài vẫn còn trong thư viện.",
   "queueHistoryDeleted": "Đã xoá hàng đợi",
   "queueHistoryNothingToPlay": "Không bài nào trong đây có trong thư viện",
   "queueHistoryEntriesEmptyTitle": "Hàng đợi này trống",
-  "queueHistoryEntriesEmptyMessage": "Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở trang Các hàng đợi.",
+  "queueHistoryEntriesEmptyMessage": "Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở menu ⋮.",
   "queueHistorySaveFailed": "Không lưu được hàng đợi. Xem log để biết chi tiết.",
   "queueHistoryNotFound": "Không tìm thấy hàng đợi",
+  "queueModalLabel": "Tùy chọn hàng đợi",
+  "queueModalGoTo": "Đến hàng đợi",
+  "queueModalDelete": "Xoá hàng đợi",
+  "queueModalDeleteHint": "Các bài vẫn còn trong thư viện",
+  "queueModalMissingCount": "{count} bài không còn",
+  "queueModalRemoveMissingTitle": "Bỏ các bài không còn?",
+  "queueModalRemoveMissingBody": "Các bài không có trong thư viện sẽ bị bỏ khỏi hàng đợi này. Hàng đợi đã lưu không thể điền lại bằng tay.",
   "queueHistoryNotFoundMessage": "Có thể hàng đợi đã bị xoá.",
   "lyricsNone": "Bài này chưa có lời",
   "@lyricsNone": {
@@ -1900,11 +1889,51 @@
   "playlistDuplicated": "Đã tạo “{name}”",
   "playlistExportM3u": "Xuất ra M3U",
   "playlistExportAbsoluteHint": "Đường dẫn tuyệt đối",
-  "playlistExportRelativeHint": "Đường dẫn tương đối (cạnh nhạc)",
+  "m3uExportRelativeTooltip": "Xuất với đường dẫn tương đối",
   "playlistRemoveDuplicates": "Xoá bài trùng",
   "playlistRemoveDuplicatesHint": "{count, plural, other{{count} bài lặp · giữ lại bài đầu}}",
   "playlistDuplicatesRemoved": "{count, plural, other{Đã xoá {count} bài trùng}}",
   "playlistRemoveMissing": "Xoá bài không còn",
   "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
-  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}"
+  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}",
+  "mostPlayedModalLabel": "Tuỳ chọn nghe nhiều nhất",
+  "@mostPlayedModalLabel": {
+    "description": "Semantic label of the Most played modal"
+  },
+  "historyOrderRank": "{count, plural, other{{count} bài, theo thứ hạng}}",
+  "@historyOrderRank": {
+    "description": "Second line of the Most played modal rows that use the ranking: how many songs, and in what order",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyModalLabel": "Tuỳ chọn lịch sử",
+  "@historyModalLabel": {
+    "description": "Semantic label of the History modal and its more button on the History page"
+  },
+  "historyMostPlayedHint": "Những bài bạn nghe nhiều nhất",
+  "@historyMostPlayedHint": {
+    "description": "Subtitle of the Most played row in the History modal"
+  },
+  "historyNothingInLibrary": "Không có bài nào đã nghe còn trong thư viện",
+  "@historyNothingInLibrary": {
+    "description": "Snackbar when no played song is in the library any more (History modal)"
+  },
+  "historyLastPlayedFirst": "Nghe gần nhất trước",
+  "@historyLastPlayedFirst": {
+    "description": "Subtitle of the History modal export rows: the order of the exported songs"
+  },
+  "historyClear": "Xoá lịch sử…",
+  "historyClearHint": "Giờ qua, hôm nay, 7 ngày hoặc toàn bộ",
+  "historyClearTitle": "Xoá lịch sử?",
+  "historyClearBody": "Các lượt nghe bị xoá khỏi Lịch sử và Phát nhiều nhất. Bài hát vẫn còn trong thư viện. Không thể hoàn tác.",
+  "historyClearLastHour": "Giờ qua",
+  "historyClearToday": "Hôm nay",
+  "historyClearDays7": "7 ngày qua",
+  "historyClearEverything": "Toàn bộ",
+  "historyClearCountFailed": "Không đếm được lượt nghe",
+  "historyClearRetry": "Thử lại",
+  "historyCleared": "{count, plural, =0{Không có gì để xoá} other{Đã xoá {count} lượt nghe khỏi lịch sử}}"
 }

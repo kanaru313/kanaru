@@ -25,12 +25,16 @@ class PlaylistPickerDialog extends ConsumerStatefulWidget {
     required this.paths,
     required this.label,
     this.excludePlaylistId,
+    this.suggestedName,
   });
 
   final LibraryDatabase db;
   final Future<List<String>> paths;
   final String label;
   final int? excludePlaylistId;
+
+  /// Name offered by the first "New playlist"; null offers the default.
+  final String? suggestedName;
 
   @override
   ConsumerState<PlaylistPickerDialog> createState() =>
@@ -105,7 +109,9 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
       context,
       title: l10n.playlistCreateTitle,
       confirmLabel: l10n.playlistCreateConfirm,
-      initialName: '${l10n.playlistDefaultName}$suffix',
+      initialName: _pending.isEmpty && widget.suggestedName != null
+          ? widget.suggestedName!
+          : '${l10n.playlistDefaultName}$suffix',
       message: l10n.playlistPickerNameMessage,
     );
     _naming = false;

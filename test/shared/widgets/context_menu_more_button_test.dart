@@ -7,7 +7,11 @@ import 'package:material_ui/material_ui.dart';
 
 typedef _Call = ({bool viaKeyboard, Offset at});
 
-Future<void> _pump(WidgetTester tester, List<_Call> calls) async {
+Future<void> _pump(
+  WidgetTester tester,
+  List<_Call> calls, {
+  bool enabled = true,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -15,6 +19,7 @@ Future<void> _pump(WidgetTester tester, List<_Call> calls) async {
       home: Scaffold(
         body: Center(
           child: ContextMenuMoreButton(
+            enabled: enabled,
             onOpen: ({required viaKeyboard, required at}) =>
                 calls.add((viaKeyboard: viaKeyboard, at: at)),
           ),
@@ -67,4 +72,23 @@ void main() {
       },
     );
   }
+
+  testWidgets('a disabled button opens nothing by click or key', (
+    tester,
+  ) async {
+    final calls = <_Call>[];
+    await _pump(tester, calls, enabled: false);
+    Focus.of(tester.element(find.byIcon(AppIcons.more))).requestFocus();
+    await tester.pump();
+
+    await tester.tap(find.byType(ContextMenuMoreButton), warnIfMissed: false);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+
+    expect(calls, isEmpty);
+    expect(
+      tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+      isNull,
+    );
+  });
 }

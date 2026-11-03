@@ -1872,17 +1872,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyDayMenu => 'Day options';
 
   @override
-  String get historyDayCreatePlaylist => 'Create playlist from this day';
+  String get historyDayDelete => 'Remove day from history';
 
   @override
-  String get historyDayDelete => 'Remove this day\'s listens';
+  String get historyDayYesterday => 'Yesterday';
 
   @override
-  String historyDayPlaylistName(DateTime date) {
-    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
-    final String dateString = dateDateFormat.format(date);
+  String historyOrderLastPlayedFirst(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs, last played first',
+      one: '1 song, last played first',
+    );
+    return '$_temp0';
+  }
 
-    return 'History · $dateString';
+  @override
+  String historyDayRemoveHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listens · songs stay in your library',
+      one: '1 listen · the song stays in your library',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyDayRemoveTitle => 'Remove this day?';
+
+  @override
+  String historyDayRemoveBody(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'All $count listens of $date are removed from History and Most played. The songs stay in your library.',
+      one:
+          'The listen of $date is removed from History and Most played. The song stays in your library.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyOpenInMostPlayed => 'Open in Most played';
+
+  @override
+  String historyNewPlaylistSuggests(String name) {
+    return 'New playlist suggests “$name”';
   }
 
   @override
@@ -2022,6 +2060,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String historyTopRankChip(int rank, String listens) {
+    return '#$rank · $listens';
+  }
+
+  @override
+  String get historyMissingPlayModalLabel => 'Listen options';
+
+  @override
   String historyTopCapped(int count) {
     return 'Showing first $count';
   }
@@ -2030,16 +2076,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyPlayAll => 'Play all';
 
   @override
-  String get historyCreatePlaylist => 'Create playlist';
-
-  @override
   String historyTopPlaylistName(String range) {
     return 'Most played · $range';
-  }
-
-  @override
-  String historyPlaylistCreated(String name) {
-    return 'Created playlist $name';
   }
 
   @override
@@ -2191,12 +2229,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t read that playlist file. See the log for details.';
 
   @override
-  String get playlistM3uExportAbsolute => 'Export M3U (full paths)…';
-
-  @override
-  String get playlistM3uExportRelative => 'Export M3U (relative paths)…';
-
-  @override
   String playlistM3uExported(int count, String file) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2296,17 +2328,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueHistoryPlay => 'Play';
 
   @override
-  String get queueHistoryShuffle => 'Shuffle';
-
-  @override
-  String get queueHistorySaveAsPlaylist => 'Save as playlist';
-
-  @override
-  String queueHistorySavedAsPlaylist(String name) {
-    return 'Saved as $name';
-  }
-
-  @override
   String get queueHistoryDelete => 'Delete';
 
   @override
@@ -2328,7 +2349,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueHistoryEntriesEmptyMessage =>
-      'All its songs were removed. You can delete it from Queues.';
+      'All its songs were removed. You can delete it from the ⋮ menu.';
 
   @override
   String get queueHistorySaveFailed =>
@@ -2339,6 +2360,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueHistoryNotFoundMessage => 'It may have been deleted.';
+
+  @override
+  String get queueModalLabel => 'Queue options';
+
+  @override
+  String get queueModalGoTo => 'Go to queue';
+
+  @override
+  String get queueModalDelete => 'Delete queue';
+
+  @override
+  String get queueModalDeleteHint => 'The songs stay in your library';
+
+  @override
+  String queueModalMissingCount(int count) {
+    return '$count missing';
+  }
+
+  @override
+  String get queueModalRemoveMissingTitle => 'Remove missing songs?';
+
+  @override
+  String get queueModalRemoveMissingBody =>
+      'Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.';
 
   @override
   String get lyricsNone => 'No lyrics for this song';
@@ -5100,7 +5145,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistExportAbsoluteHint => 'Absolute paths';
 
   @override
-  String get playlistExportRelativeHint => 'Relative paths (next to the music)';
+  String get m3uExportRelativeTooltip => 'Export with relative paths';
 
   @override
   String get playlistRemoveDuplicates => 'Remove duplicates';
@@ -5148,6 +5193,76 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count missing songs removed',
       one: '1 missing song removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostPlayedModalLabel => 'Most played options';
+
+  @override
+  String historyOrderRank(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs, in rank order',
+      one: '1 song, in rank order',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyModalLabel => 'History options';
+
+  @override
+  String get historyMostPlayedHint => 'Songs you play the most';
+
+  @override
+  String get historyNothingInLibrary =>
+      'None of the songs you played are in your library';
+
+  @override
+  String get historyLastPlayedFirst => 'Last played first';
+
+  @override
+  String get historyClear => 'Clear history…';
+
+  @override
+  String get historyClearHint => 'Last hour, today, 7 days or everything';
+
+  @override
+  String get historyClearTitle => 'Clear history?';
+
+  @override
+  String get historyClearBody =>
+      'Listens are removed from History and Most played. The songs stay in your library. This can\'t be undone.';
+
+  @override
+  String get historyClearLastHour => 'Last hour';
+
+  @override
+  String get historyClearToday => 'Today';
+
+  @override
+  String get historyClearDays7 => 'Last 7 days';
+
+  @override
+  String get historyClearEverything => 'Everything';
+
+  @override
+  String get historyClearCountFailed => 'Couldn\'t count the listens';
+
+  @override
+  String get historyClearRetry => 'Retry';
+
+  @override
+  String historyCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count listens from history',
+      one: 'Cleared 1 listen from history',
+      zero: 'Nothing to clear',
     );
     return '$_temp0';
   }

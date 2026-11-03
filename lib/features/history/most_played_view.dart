@@ -18,6 +18,7 @@ import 'history_range_span.dart';
 import 'history_two_column_layout.dart';
 import 'most_played_actions.dart';
 import 'most_played_body.dart';
+import 'most_played_range.dart';
 import 'most_played_range_picker.dart';
 import 'most_played_side_pane.dart';
 import 'most_played_totals.dart';
@@ -25,8 +26,9 @@ import 'most_played_totals.dart';
 /// The Most played page: the songs played most in a range of days, ranked,
 /// in the History page's two columns. The pane (a header in a narrow window)
 /// names the range and its totals and plays the ranking; the right column has
-/// the filter, the range bar and the list. Its range lives in this widget's
-/// state, so it survives a switch to another page.
+/// the filter, the range bar and the list. Its range lives in
+/// [mostPlayedRangeProvider], so it survives a switch to another page and a
+/// remount of this view.
 ///
 /// While a new range or a change to the plays is read, the list on show
 /// stays and a thin bar runs over it, so the list never flashes empty.
@@ -39,7 +41,6 @@ class MostPlayedView extends ConsumerStatefulWidget {
 
 class _MostPlayedViewState extends ConsumerState<MostPlayedView>
     with InPageFilterHost<MostPlayedView> {
-  var _range = const HistoryRangeState();
   final _filter = InPageFilterController();
   final _filterView = InPageFilterView<HistoryTopRow>((row) {
     final track = row.track;
@@ -65,15 +66,11 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
     super.dispose();
   }
 
-  Future<void> _pickCustom(DateTime now) async {
-    final next = await pickMostPlayedCustom(context, ref, _range, now);
-    if (next == null || !mounted) return;
-    setState(() => _range = next);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final range = ref.watch(mostPlayedRangeProvider);
+    final rangeNotifier = ref.read(mostPlayedRangeProvider.notifier);
     final now = ref.watch(historyNowProvider)();
     final played = ref.watch(historyPlayedRangeProvider);
     final playedRange = played.value;
@@ -83,7 +80,7 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
     if (played.hasValue && playedRange == null) {
       _shown.keep(const []);
     } else if (playedRange != null) {
-      window = _range.window(now);
+      window = range.window(now);
       if (window != null && windowCoversPlays(window, playedRange)) {
         window = null;
       }
@@ -105,7 +102,7 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
       playedKnown: played.hasValue,
       anyPlayed: playedRange != null,
     );
-    final rangeText = historyRangeText(context, _range, now);
+    final rangeText = historyRangeText(context, range, now);
     final playable = rows?.any((r) => r.track != null) ?? false;
 
     final actions = PlayShuffleActions(
@@ -113,10 +110,15 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
       onPlay: playable ? () => playMostPlayed(ref, rows!) : null,
       onShuffle: playable ? () => shuffleMostPlayed(ref, rows!) : null,
       onQueueAction: null,
-      menu: MostPlayedMenuButton(
-        enabled: playable,
-        onSelected: (choice) =>
-            runMostPlayedChoice(ref, context, choice, rows!, rangeText),
+      menu: mostPlayedMoreButton(
+        ref,
+        context,
+        rows: rows,
+        rangeText: rangeText,
+        totals: totals,
+        // `rows` still belong to the last range while the next one loads
+        // or after its read failed.
+        stale: loading || failed,
       ),
     );
     final summary = totals == null
@@ -125,7 +127,7 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
             l10n.albumsSongCount(totals.tracks),
             l10n.historyListenCount(totals.plays),
           ].join(' · ');
-    final rangeLine = mostPlayedRangeLine(context, _range, now);
+    final rangeLine = mostPlayedRangeLine(context, range, now);
     final coverKeys = pickCollageKeys([
       for (final row in rows ?? const <HistoryTopRow>[]) row.track?.coverKey,
     ]);
@@ -164,15 +166,14 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
                   filter: _filter,
                 ),
                 HistoryRangeBar(
-                  state: _range,
+                  state: range,
                   now: now,
                   canPickCustom: playedRange != null,
-                  onPreset: (p) =>
-                      setState(() => _range = _range.withPreset(p)),
-                  onCustom: () => unawaited(_pickCustom(now)),
-                  onShift: (d) => setState(
-                    () => _range = d < 0 ? _range.previous() : _range.next(),
-                  ),
+                  onPreset: rangeNotifier.withPreset,
+                  onCustom: () =>
+                      unawaited(pickMostPlayedCustom(context, ref, now)),
+                  onShift: (d) =>
+                      d < 0 ? rangeNotifier.previous() : rangeNotifier.next(),
                 ),
                 SizedBox(
                   height: 2,

@@ -10,6 +10,7 @@ import '../../core/database/playlist_library_paths.dart';
 import '../../core/database/playlist_writes.dart';
 import '../../core/m3u/m3u_import.dart';
 import '../../core/m3u/m3u_read.dart';
+import '../../core/m3u/m3u_text.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'm3u_file_pickers.dart';

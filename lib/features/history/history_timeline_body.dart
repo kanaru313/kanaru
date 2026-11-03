@@ -202,7 +202,8 @@ class _HistoryTimelineBodyState extends ConsumerState<HistoryTimelineBody>
       index: index,
       rowsOf: _cache.rowsOf,
       onTap: playFromRow,
-      onMenu: openPlayMenu,
+      onMenu: (row, _, {required viaKeyboard}) =>
+          openMissingPlayModal(row, viaKeyboard: viaKeyboard),
       onQueueAction: playQueueAction,
       playExtras: playExtras,
       onDayMenu: openDayMenu,

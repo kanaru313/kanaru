@@ -4,7 +4,7 @@ import '../../core/database/library_rows.dart';
 import '../../core/database/playlist_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/song_modal/song_modal_data.dart';
+import '../../shared/widgets/context_modal/context_modal_spec.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/context_modal/context_modal_route.dart';
 import '../../shared/widgets/hover_reveal_action.dart';
@@ -95,7 +95,7 @@ class PlaylistEntryTile extends StatelessWidget {
                       ? context.l10n.queueRemove
                       : context.l10n.playlistRemoveEntry,
                   destructive: true,
-                  onTap: songModalCloseThen(remove),
+                  onTap: contextModalCloseThen(remove),
                 ),
               ],
             ),

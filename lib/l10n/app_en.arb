@@ -1263,23 +1263,60 @@
   },
   "historyDayMenu": "Day options",
   "@historyDayMenu": {
-    "description": "Tooltip of the menu button on a History day bar"
+    "description": "Tooltip of the menu button on a History day bar, semantics label of the bar button, and semantic label of the Day modal"
   },
-  "historyDayCreatePlaylist": "Create playlist from this day",
-  "@historyDayCreatePlaylist": {
-    "description": "Menu item that saves the songs of a History day as a playlist"
-  },
-  "historyDayDelete": "Remove this day's listens",
+  "historyDayDelete": "Remove day from history",
   "@historyDayDelete": {
-    "description": "Menu item that removes every listen shown for a History day"
+    "description": "Day modal row and confirm button that remove every listen shown for a History day"
   },
-  "historyDayPlaylistName": "History · {date}",
-  "@historyDayPlaylistName": {
-    "description": "Suggested name of a playlist made from a History day",
+  "historyDayYesterday": "Yesterday",
+  "@historyDayYesterday": {
+    "description": "Title of the Day modal for the day before today"
+  },
+  "historyOrderLastPlayedFirst": "{count, plural, =1{1 song, last played first} other{{count} songs, last played first}}",
+  "@historyOrderLastPlayedFirst": {
+    "description": "Second line of the Day modal rows that use the songs of a day: how many, and in what order",
     "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyDayRemoveHint": "{count, plural, =1{1 listen · the song stays in your library} other{{count} listens · songs stay in your library}}",
+  "@historyDayRemoveHint": {
+    "description": "Second line of the Day modal row that removes the day's listens",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyDayRemoveTitle": "Remove this day?",
+  "@historyDayRemoveTitle": {
+    "description": "Title of the question asked before the listens of a History day are removed"
+  },
+  "historyDayRemoveBody": "{count, plural, =1{The listen of {date} is removed from History and Most played. The song stays in your library.} other{All {count} listens of {date} are removed from History and Most played. The songs stay in your library.}}",
+  "@historyDayRemoveBody": {
+    "description": "Body of the question asked before the listens of a History day are removed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
       "date": {
-        "type": "DateTime",
-        "format": "yMMMd"
+        "type": "String"
+      }
+    }
+  },
+  "historyOpenInMostPlayed": "Open in Most played",
+  "@historyOpenInMostPlayed": {
+    "description": "Day modal row that shows the ranking of the day on the Most played page"
+  },
+  "historyNewPlaylistSuggests": "New playlist suggests “{name}”",
+  "@historyNewPlaylistSuggests": {
+    "description": "Second line of the Add to playlist row of the Day modal: the name the New playlist option starts with",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
     }
   },
@@ -1450,6 +1487,22 @@
       }
     }
   },
+  "historyTopRankChip": "#{rank} · {listens}",
+  "@historyTopRankChip": {
+    "description": "Chip in the modal of a Most played row: its place and listen count",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "listens": {
+        "type": "String"
+      }
+    }
+  },
+  "historyMissingPlayModalLabel": "Listen options",
+  "@historyMissingPlayModalLabel": {
+    "description": "Screen reader name of the modal of a played file that is not in the library"
+  },
   "historyTopCapped": "Showing first {count}",
   "@historyTopCapped": {
     "description": "Note under the Most played list when it was cut at its limit",
@@ -1463,24 +1516,11 @@
   "@historyPlayAll": {
     "description": "Button that plays the Most played list from the top"
   },
-  "historyCreatePlaylist": "Create playlist",
-  "@historyCreatePlaylist": {
-    "description": "Button that saves the Most played list as a playlist"
-  },
   "historyTopPlaylistName": "Most played · {range}",
   "@historyTopPlaylistName": {
     "description": "Suggested name of a playlist made from the Most played list",
     "placeholders": {
       "range": {
-        "type": "String"
-      }
-    }
-  },
-  "historyPlaylistCreated": "Created playlist {name}",
-  "@historyPlaylistCreated": {
-    "description": "Snackbar after a playlist was made from the Most played list",
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -1666,14 +1706,6 @@
   "@playlistM3uImportFailed": {
     "description": "Snackbar when the picked M3U file cannot be read"
   },
-  "playlistM3uExportAbsolute": "Export M3U (full paths)…",
-  "@playlistM3uExportAbsolute": {
-    "description": "Playlist menu item: save as M3U with absolute paths"
-  },
-  "playlistM3uExportRelative": "Export M3U (relative paths)…",
-  "@playlistM3uExportRelative": {
-    "description": "Playlist menu item: save as M3U with paths relative to the file"
-  },
   "playlistM3uExported": "{count, plural, =1{Saved 1 song to {file}} other{Saved {count} songs to {file}}}",
   "@playlistM3uExported": {
     "description": "Snackbar after exporting a playlist",
@@ -1787,26 +1819,9 @@
   "@queueHistoryPlay": {
     "description": "Menu row and button that play a saved queue"
   },
-  "queueHistoryShuffle": "Shuffle",
-  "@queueHistoryShuffle": {
-    "description": "Menu row that plays a saved queue shuffled"
-  },
-  "queueHistorySaveAsPlaylist": "Save as playlist",
-  "@queueHistorySaveAsPlaylist": {
-    "description": "Menu row that copies a saved queue into a new playlist"
-  },
-  "queueHistorySavedAsPlaylist": "Saved as {name}",
-  "@queueHistorySavedAsPlaylist": {
-    "description": "Snackbar after a saved queue was copied into a new playlist",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "queueHistoryDelete": "Delete",
   "@queueHistoryDelete": {
-    "description": "Menu row and dialog button that delete a saved queue"
+    "description": "Button of the dialog that confirms deleting a saved queue"
   },
   "queueHistoryDeleteTitle": "Delete this queue?",
   "@queueHistoryDeleteTitle": {
@@ -1828,7 +1843,7 @@
   "@queueHistoryEntriesEmptyTitle": {
     "description": "Empty state title of a saved queue whose songs were all removed"
   },
-  "queueHistoryEntriesEmptyMessage": "All its songs were removed. You can delete it from Queues.",
+  "queueHistoryEntriesEmptyMessage": "All its songs were removed. You can delete it from the ⋮ menu.",
   "@queueHistoryEntriesEmptyMessage": {
     "description": "Empty state message of a saved queue whose songs were all removed"
   },
@@ -1843,6 +1858,39 @@
   "queueHistoryNotFoundMessage": "It may have been deleted.",
   "@queueHistoryNotFoundMessage": {
     "description": "Message under the saved queue not-found title"
+  },
+  "queueModalLabel": "Queue options",
+  "@queueModalLabel": {
+    "description": "Semantic label of the saved queue context modal"
+  },
+  "queueModalGoTo": "Go to queue",
+  "@queueModalGoTo": {
+    "description": "Queue modal row and header tap hint that open the saved queue page"
+  },
+  "queueModalDelete": "Delete queue",
+  "@queueModalDelete": {
+    "description": "Queue modal row that deletes the saved queue"
+  },
+  "queueModalDeleteHint": "The songs stay in your library",
+  "@queueModalDeleteHint": {
+    "description": "Subtitle of the Delete queue row"
+  },
+  "queueModalMissingCount": "{count} missing",
+  "@queueModalMissingCount": {
+    "description": "Queue modal header part: songs of the queue not in the library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueModalRemoveMissingTitle": "Remove missing songs?",
+  "@queueModalRemoveMissingTitle": {
+    "description": "Title of the dialog confirming that missing songs leave a saved queue"
+  },
+  "queueModalRemoveMissingBody": "Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.",
+  "@queueModalRemoveMissingBody": {
+    "description": "Body of the dialog confirming that missing songs leave a saved queue"
   },
   "lyricsNone": "No lyrics for this song",
   "@lyricsNone": {
@@ -5093,15 +5141,15 @@
   },
   "playlistExportM3u": "Export as M3U",
   "@playlistExportM3u": {
-    "description": "Label of the two M3U export rows of the playlist modal"
+    "description": "Label of the M3U export row of the context modals"
   },
   "playlistExportAbsoluteHint": "Absolute paths",
   "@playlistExportAbsoluteHint": {
     "description": "Second line of the M3U export row that writes full paths"
   },
-  "playlistExportRelativeHint": "Relative paths (next to the music)",
-  "@playlistExportRelativeHint": {
-    "description": "Second line of the M3U export row that writes relative paths"
+  "m3uExportRelativeTooltip": "Export with relative paths",
+  "@m3uExportRelativeTooltip": {
+    "description": "Tooltip of the button on the Export as M3U row that writes relative paths"
   },
   "playlistRemoveDuplicates": "Remove duplicates",
   "@playlistRemoveDuplicates": {
@@ -5141,6 +5189,84 @@
   "playlistMissingRemoved": "{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}",
   "@playlistMissingRemoved": {
     "description": "Snackbar after missing songs were removed from a playlist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mostPlayedModalLabel": "Most played options",
+  "@mostPlayedModalLabel": {
+    "description": "Semantic label of the Most played modal"
+  },
+  "historyOrderRank": "{count, plural, =1{1 song, in rank order} other{{count} songs, in rank order}}",
+  "@historyOrderRank": {
+    "description": "Second line of the Most played modal rows that use the ranking: how many songs, and in what order",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyModalLabel": "History options",
+  "@historyModalLabel": {
+    "description": "Semantic label of the History modal and its more button on the History page"
+  },
+  "historyMostPlayedHint": "Songs you play the most",
+  "@historyMostPlayedHint": {
+    "description": "Subtitle of the Most played row in the History modal"
+  },
+  "historyNothingInLibrary": "None of the songs you played are in your library",
+  "@historyNothingInLibrary": {
+    "description": "Snackbar when no played song is in the library any more (History modal)"
+  },
+  "historyLastPlayedFirst": "Last played first",
+  "@historyLastPlayedFirst": {
+    "description": "Subtitle of the History modal export rows: the order of the exported songs"
+  },
+  "historyClear": "Clear history…",
+  "@historyClear": {
+    "description": "History modal Advanced row that opens the clear dialog"
+  },
+  "historyClearHint": "Last hour, today, 7 days or everything",
+  "@historyClearHint": {
+    "description": "Subtitle of the Clear history row"
+  },
+  "historyClearTitle": "Clear history?",
+  "@historyClearTitle": {
+    "description": "Title of the clear history dialog"
+  },
+  "historyClearBody": "Listens are removed from History and Most played. The songs stay in your library. This can't be undone.",
+  "@historyClearBody": {
+    "description": "Body of the clear history dialog"
+  },
+  "historyClearLastHour": "Last hour",
+  "@historyClearLastHour": {
+    "description": "Clear history dialog option"
+  },
+  "historyClearToday": "Today",
+  "@historyClearToday": {
+    "description": "Clear history dialog option: since local midnight"
+  },
+  "historyClearDays7": "Last 7 days",
+  "@historyClearDays7": {
+    "description": "Clear history dialog option: today and the 6 days before"
+  },
+  "historyClearEverything": "Everything",
+  "@historyClearEverything": {
+    "description": "Clear history dialog option: the whole history"
+  },
+  "historyClearCountFailed": "Couldn't count the listens",
+  "@historyClearCountFailed": {
+    "description": "Clear history dialog: shown under an option whose listen count could not be read"
+  },
+  "historyClearRetry": "Retry",
+  "@historyClearRetry": {
+    "description": "Clear history dialog: button that reads the failed listen counts again"
+  },
+  "historyCleared": "{count, plural, =0{Nothing to clear} =1{Cleared 1 listen from history} other{Cleared {count} listens from history}}",
+  "@historyCleared": {
+    "description": "Snackbar after the History was cleared for a range",
     "placeholders": {
       "count": {
         "type": "int"

@@ -10,12 +10,28 @@ import 'context_menu_region.dart';
 /// opens below it. Always visible, so the menu is reachable without a right
 /// click or a long press.
 class ContextMenuMoreButton extends StatelessWidget {
-  const ContextMenuMoreButton({super.key, required this.onOpen, this.color});
+  const ContextMenuMoreButton({
+    super.key,
+    required this.onOpen,
+    this.color,
+    this.icon = AppIcons.more,
+    this.tooltip,
+    this.enabled = true,
+  });
 
   final ContextMenuOpen onOpen;
 
   /// Icon color; null keeps the theme's.
   final Color? color;
+
+  /// The glyph: vertical dots by default, horizontal ones for a day bar.
+  final IconData icon;
+
+  /// Tooltip text; null keeps "More options".
+  final String? tooltip;
+
+  /// False greys the button out: no click and no key opens anything.
+  final bool enabled;
 
   /// The button's bottom-left in global coordinates, or null while it is not
   /// laid out.
@@ -30,6 +46,7 @@ class ContextMenuMoreButton extends StatelessWidget {
     return Builder(
       builder: (context) {
         void open({required bool viaKeyboard}) {
+          if (!enabled) return;
           final at = _anchorOf(context);
           if (at != null) onOpen(viaKeyboard: viaKeyboard, at: at);
         }
@@ -46,13 +63,13 @@ class ContextMenuMoreButton extends StatelessWidget {
               SingleActivator(key): () => open(viaKeyboard: true),
           },
           child: IconButton(
-            tooltip: context.l10n.songModalMoreOptions,
-            icon: const Icon(AppIcons.more),
+            tooltip: tooltip ?? context.l10n.songModalMoreOptions,
+            icon: Icon(icon),
             iconSize: 20,
             color: color,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-            onPressed: () => open(viaKeyboard: false),
+            onPressed: enabled ? () => open(viaKeyboard: false) : null,
           ),
         );
       },

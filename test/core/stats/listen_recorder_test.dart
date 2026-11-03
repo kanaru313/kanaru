@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/stats/listen_clear_scope.dart';
 import 'package:kanaru/core/stats/listen_recorder.dart';
 import 'package:logging/logging.dart';
 
@@ -713,6 +714,237 @@ void main() {
     );
   });
 
+  group('clearing a range', () {
+    late int t0;
+    int at(num secondsAfterStart) => t0 + (secondsAfterStart * 1000).round();
+
+    setUp(() => t0 = time.now.millisecondsSinceEpoch);
+
+    Future<List<Map<String, Object?>>> statsRows() async => [
+      for (final r
+          in await db
+              .customSelect(
+                'SELECT path, play_count FROM play_stats ORDER BY path',
+              )
+              .get())
+        r.data,
+    ];
+
+    test('a play begun before the range keeps its row and goes on', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      final id = (await plays()).single.id;
+
+      // The range starts after the open play's start.
+      expect(await recorder.clearHistory(from: at(50), to: at(7200)), 0);
+      sim.listen(20);
+      recorder.dispose();
+
+      final row = (await plays()).single;
+      expect(row.id, id);
+      expect(row.listenedMs, 120000);
+      expect(gate.count(_insert), 1);
+    });
+
+    test('a play begun inside the range is dropped and counted anew', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      final oldId = (await plays()).single.id;
+
+      expect(await recorder.clearHistory(from: at(-3600), to: at(3600)), 1);
+      expect(await plays(), isEmpty);
+      sim.listen(89);
+      expect(await plays(), isEmpty);
+      sim.listen(1);
+
+      final row = (await plays()).single;
+      expect(row.id, isNot(oldId));
+      expect(row.playedAt, greaterThanOrEqualTo(at(100)));
+      expect(await statsRows(), [
+        {'path': trackA.uri, 'play_count': 1},
+      ]);
+    });
+
+    test('plays on both sides of the range: stats follow the rest', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      sim.open(trackA);
+      sim.listen(100);
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+      expect(await plays(), hasLength(3));
+
+      // Only the second play (begun at 100 s) lies inside.
+      expect(await recorder.clearHistory(from: at(50), to: at(150)), 1);
+
+      expect(await plays(), hasLength(2));
+      expect(await statsRows(), [
+        {'path': trackA.uri, 'play_count': 2},
+      ]);
+    });
+
+    test('a skipped playthrough outside the range stays skipped', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+
+      expect(await recorder.clearHistory(from: at(100), to: at(7200)), 0);
+      sim.listen(300);
+
+      expect(await plays(), hasLength(1));
+      expect(gate.count(_insert), 1);
+    });
+
+    test('a skipped playthrough inside the range counts anew', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+      recorder.setEnabled(true);
+
+      expect(await recorder.clearHistory(from: at(-3600), to: at(3600)), 1);
+      sim.listen(239);
+      expect(await plays(), isEmpty);
+      sim.listen(1);
+
+      expect(await plays(), hasLength(1));
+    });
+
+    test(
+      'a switched-off playthrough outside the range stays counted',
+      () async {
+        sim.open(trackB);
+        sim.listen(240);
+        recorder.setEnabled(false);
+
+        expect(await recorder.clearHistory(from: at(100), to: at(7200)), 0);
+        recorder.setEnabled(true);
+        sim.listen(300);
+
+        expect(await plays(), hasLength(1));
+      },
+    );
+
+    test('a switched-off playthrough inside the range counts anew', () async {
+      sim.open(trackB);
+      sim.listen(240);
+      recorder.setEnabled(false);
+
+      expect(await recorder.clearHistory(from: at(-3600), to: at(3600)), 1);
+      recorder.setEnabled(true);
+      sim.listen(239);
+      expect(await plays(), isEmpty);
+      sim.listen(1);
+
+      expect(await plays(), hasLength(1));
+    });
+
+    test('clears queue: each has its own result and range', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+      final events = <ClearBounds>[];
+      final sub = recorder.cleared.listen(events.add);
+      addTearDown(sub.cancel);
+      final states = <bool>[];
+      recorder.clearing.addListener(() => states.add(recorder.clearing.value));
+
+      final release = gate.holdNext('DELETE FROM');
+      final lastHour = recorder.clearHistory(from: at(50), to: at(3600));
+      final everything = recorder.clearHistory();
+      expect(recorder.clearing.value, isTrue);
+      sim.listen(10);
+      release();
+
+      expect(await lastHour, 0);
+      expect(await everything, 1);
+      await Future<void>.delayed(Duration.zero);
+      expect(recorder.clearing.value, isFalse);
+      expect(states, [true, false]);
+      expect(events, [(from: at(50), to: at(3600)), (from: null, to: null)]);
+      expect(await plays(), isEmpty);
+
+      // The open play was affected by the second clear: counted anew.
+      sim.listen(89);
+      expect(await plays(), isEmpty);
+      sim.listen(1);
+      expect(await plays(), hasLength(1));
+    });
+
+    test('the unaffected play survives a clear queued behind it', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      final release = gate.holdNext('DELETE FROM');
+      final first = recorder.clearHistory(from: at(50), to: at(3600));
+      final second = recorder.clearHistory(from: at(60), to: at(3600));
+      release();
+      expect(await first, 0);
+      expect(await second, 0);
+      sim.listen(20);
+      recorder.dispose();
+
+      expect((await plays()).single.listenedMs, 120000);
+      expect(gate.count(_insert), 1);
+    });
+
+    test('an insert still queued is decided on by its start', () async {
+      late Future<int?> cleared;
+      final release = gate.holdNext(_insert);
+      sim.open(trackA);
+      sim.listen(100);
+      cleared = recorder.clearHistory(from: at(50), to: at(3600));
+      release();
+
+      expect(await cleared, 0);
+      sim.listen(20);
+      recorder.dispose();
+      final row = (await plays()).single;
+      expect(row.listenedMs, 120000);
+      expect(gate.count(_insert), 1);
+    });
+
+    test(
+      'a failing delete reports null, emits nothing, keeps the play',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+        final events = <ClearBounds>[];
+        final sub = recorder.cleared.listen(events.add);
+        addTearDown(sub.cancel);
+
+        gate.failNext('DELETE FROM');
+        expect(await recorder.clearHistory(from: at(50), to: at(3600)), isNull);
+        sim.listen(20);
+        recorder.dispose();
+
+        expect(events, isEmpty);
+        expect((await plays()).single.listenedMs, 120000);
+        expect(gate.count(_insert), 1);
+      },
+    );
+
+    test(
+      'a failure in the first of two queued clears does not stop the second',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+
+        gate.failNext('DELETE FROM');
+        final first = recorder.clearHistory(from: at(-3600), to: at(3600));
+        final second = recorder.clearHistory(from: at(-3600), to: at(3600));
+
+        expect(await first, isNull);
+        expect(await second, 1);
+        expect(await plays(), isEmpty);
+      },
+    );
+  });
+
   group('failures', () {
     late List<LogRecord> logs;
     late StreamSubscription<LogRecord> subscription;
@@ -758,6 +990,103 @@ void main() {
         expect(text, isNot(contains(trackA.uri)));
         expect(text, isNot(contains('$playedAt')));
       }
+    });
+  });
+
+  group('clear lifecycle', () {
+    test('dispose closes the cleared stream', () async {
+      var done = false;
+      recorder.cleared.listen((_) {}, onDone: () => done = true);
+
+      recorder.dispose();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(done, isTrue);
+    });
+
+    test('a clear queued before dispose still returns its count', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      final cleared = recorder.clearHistory();
+      recorder.dispose();
+
+      expect(await cleared, 1);
+      expect(await plays(), isEmpty);
+    });
+
+    test(
+      'flush during a failing delete completes and writes the open play',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+        sim.listen(20);
+
+        gate.failNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        await recorder.flush();
+
+        expect(await cleared, isNull);
+        expect((await plays()).single.listenedMs, 120000);
+      },
+    );
+
+    test('flush waits for two clears queued back to back', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      final first = recorder.clearHistory();
+      final second = recorder.clearHistory();
+      var flushed = false;
+      final flush = recorder.flush().then((_) => flushed = true);
+      await first;
+      expect(recorder.clearing.value, isTrue);
+      expect(flushed, isFalse);
+      await second;
+      await flush;
+
+      expect(recorder.clearing.value, isFalse);
+      expect(await plays(), isEmpty);
+    });
+
+    test('clearing returns to false after a failing delete', () async {
+      gate.failNext('DELETE FROM');
+      expect(await recorder.clearHistory(), isNull);
+
+      expect(recorder.clearing.value, isFalse);
+    });
+
+    test('flush waits for a clear started by a clearing listener', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+      sim.listen(20);
+      var again = true;
+      Future<int?>? second;
+      recorder.clearing.addListener(() {
+        if (!recorder.clearing.value && again) {
+          again = false;
+          second = recorder.clearHistory(from: 0, to: 1);
+        }
+      });
+
+      final first = recorder.clearHistory(from: 0, to: 1);
+      var secondDone = false;
+      var secondDoneAtFlush = false;
+      final flush = recorder.flush().then(
+        (_) => secondDoneAtFlush = secondDone,
+      );
+      await first;
+      await second!.then((_) => secondDone = true);
+      await flush.timeout(const Duration(seconds: 5));
+
+      expect(secondDoneAtFlush, isTrue);
+
+      expect(recorder.clearing.value, isFalse);
+      expect((await plays()).single.listenedMs, 120000);
     });
   });
 }

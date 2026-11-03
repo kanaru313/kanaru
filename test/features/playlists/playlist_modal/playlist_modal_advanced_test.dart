@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
-import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
+import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../library/browse_test_data.dart';
@@ -182,7 +182,17 @@ void main() {
 
   group('Export as M3U', () {
     Future<String> exportVia(WidgetTester tester, String row) async {
-      await tapModalAction(tester, row);
+      if (row == 'export-relative') {
+        await tester.tap(
+          find.descendant(
+            of: modalAction('export-m3u'),
+            matching: find.byTooltip('Export with relative paths'),
+          ),
+        );
+        await settleModal(tester);
+      } else {
+        await tapModalAction(tester, row);
+      }
       for (
         var i = 0;
         i < 40 && find.textContaining('Saved').evaluate().isEmpty;
@@ -200,7 +210,7 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      final absolute = await exportVia(tester, 'export-absolute');
+      final absolute = await exportVia(tester, 'export-m3u');
       expect(suggested, ['Mix.m3u8']);
       expect(
         absolute.split('\n').where((l) => l.startsWith('/m/')),

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart' show QueryExecutor, QueryInterceptor;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
-import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
+import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../library/browse_test_data.dart';
@@ -114,7 +114,7 @@ void main() {
     await tapModalAction(tester, 'advanced');
     await tester.tap(modalAction('duplicate'));
     await settleModal(tester);
-    await tester.tap(modalAction('export-absolute'));
+    await tester.tap(modalAction('export-m3u'));
     await settleModal(tester);
 
     expect(queueTitles(h), isEmpty);

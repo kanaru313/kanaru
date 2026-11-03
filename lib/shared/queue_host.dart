@@ -53,29 +53,52 @@ class QueueHost {
     runZoned(action, zoneValues: {_hostKey: host});
   }
 
+  /// Copies the local file paths [readPaths] returns (it gets the open
+  /// library) into a playlist the user picks, and says how many went in,
+  /// naming [label]. [excludePlaylistId] hides a playlist in the picker;
+  /// [suggestedName] prefills the first new playlist. Does nothing when no
+  /// library is open.
+  void addToPlaylist(
+    Future<List<String>> Function(LibraryDatabase db) readPaths,
+    String label, {
+    int? excludePlaylistId,
+    String? suggestedName,
+  }) {
+    final db = _db;
+    if (db == null) return;
+    unawaited(
+      addTracksToPlaylistWith(
+        db: db,
+        messenger: _messenger,
+        l10n: _l10n,
+        dialogContext: _dialogContext,
+        readPaths: () => readPaths(db),
+        label: label,
+        excludePlaylistId: excludePlaylistId,
+        suggestedName: suggestedName,
+      ),
+    );
+  }
+
   /// `enqueueFromDatabase` without the row's `WidgetRef` and `BuildContext`:
   /// [read] gets the open library and the cover cache directory. Does nothing
   /// when no library is open.
   void enqueueFromDatabase(
     QueueAction action,
     String label,
-    Future<List<Track>> Function(LibraryDatabase db, String? covers) read,
-  ) {
+    Future<List<Track>> Function(LibraryDatabase db, String? covers) read, {
+    String? suggestedName,
+  }) {
     final db = _db;
     if (db == null) return;
     final covers = _container.read(coverCacheDirectoryProvider);
     if (action == QueueAction.addToPlaylist) {
-      unawaited(
-        addTracksToPlaylistWith(
-          db: db,
-          messenger: _messenger,
-          l10n: _l10n,
-          dialogContext: _dialogContext,
-          readPaths: () async => [
-            for (final t in await read(db, covers)) ?localPathOf(t.uri),
-          ],
-          label: label,
-        ),
+      addToPlaylist(
+        (db) async => [
+          for (final t in await read(db, covers)) ?localPathOf(t.uri),
+        ],
+        label,
+        suggestedName: suggestedName,
       );
       return;
     }
@@ -93,27 +116,21 @@ class QueueHost {
 
   /// [enqueueLoaded] without the row's `WidgetRef` and `BuildContext`.
   /// [excludePlaylistId] hides the playlist the tracks come from in the
-  /// "Add to playlist" picker.
+  /// "Add to playlist" picker; [suggestedName] prefills the first new one.
   void enqueueLoaded(
     QueueAction action,
     List<Track> tracks,
     String label, {
     int? excludePlaylistId,
+    String? suggestedName,
   }) {
     if (action == QueueAction.addToPlaylist) {
-      final db = _db;
-      if (db == null) return;
-      unawaited(
-        addTracksToPlaylistWith(
-          db: db,
-          messenger: _messenger,
-          l10n: _l10n,
-          dialogContext: _dialogContext,
-          // Library tracks carry their file path as uri.
-          readPaths: () async => [for (final t in tracks) ?localPathOf(t.uri)],
-          label: label,
-          excludePlaylistId: excludePlaylistId,
-        ),
+      addToPlaylist(
+        // Library tracks carry their file path as uri.
+        (_) async => [for (final t in tracks) ?localPathOf(t.uri)],
+        label,
+        excludePlaylistId: excludePlaylistId,
+        suggestedName: suggestedName,
       );
       return;
     }

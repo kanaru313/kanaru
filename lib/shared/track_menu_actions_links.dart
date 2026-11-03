@@ -25,6 +25,15 @@ extension TrackMenuRunnerLinks on TrackMenuRunner {
   /// The localizations captured when the runner was made.
   AppLocalizations get l10n => _l10n;
 
+  /// The open library captured when the runner was made; null without one.
+  LibraryDatabase? get db => _db;
+
+  /// The messenger captured when the runner was made; null without one.
+  ScaffoldMessengerState? get messenger => _messenger;
+
+  /// The root navigator captured when the runner was made; null without one.
+  NavigatorState? get rootNavigator => _navigator;
+
   /// Puts the local songs of album [key], in the order of its page, in
   /// Favorites and says how many went in, naming [title]. Uses only what the
   /// runner captured, so it works once the row is gone.

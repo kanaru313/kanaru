@@ -4,6 +4,44 @@ import 'package:material_ui/material_ui.dart';
 Widget contextModalHeaderLine(String text, TextStyle? style) =>
     Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
 
+/// A small rounded note under a header's text lines (the play time of a
+/// history row, a rank): one ellipsized line on a `secondaryContainer` pill.
+class ContextModalHeaderChip extends StatelessWidget {
+  const ContextModalHeaderChip(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.secondaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.onSecondaryContainer,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Top of an item modal: [leading] (cover or avatar), the text [lines], an
 /// optional [trailing] widget and an optional [below] block.
 ///

@@ -3,14 +3,13 @@ import 'package:flutter/gestures.dart'
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
-import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
+import 'package:kanaru/features/playlists/saved_queue_modal/saved_queue_more_button.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/menu_keyboard_region.dart';
 import 'package:kanaru/shared/widgets/missing_song_row.dart';
-import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../shared/song_modal/song_modal_test_support.dart';
@@ -232,7 +231,6 @@ void main() {
           [available(1), missing(2)],
           name: 'A very long playlist name that needs two lines at least',
           width: width,
-          onQueueAction: (_) {},
         );
 
         expect(tester.takeException(), isNull);
@@ -342,11 +340,10 @@ void main() {
     });
 
     testWidgets('one more button opens the playlist modal', (tester) async {
-      await view.pump(tester, [available(1)], onQueueAction: (_) {});
+      await view.pump(tester, [available(1)]);
 
       expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byTooltip('More options'), findsOneWidget);
-      expect(find.byType(PlaylistActionsMenu), findsNothing);
       await openPageModal(tester);
       expect(modalAction('play-all'), findsOneWidget);
       // The page is the playlist itself: no Go to playlist.
@@ -354,39 +351,22 @@ void main() {
     });
 
     testWidgets('the button stays when nothing can play', (tester) async {
-      await view.pump(tester, [missing(1)], onQueueAction: (_) {});
+      await view.pump(tester, [missing(1)]);
 
       expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byIcon(AppIcons.edit), findsNothing);
     });
 
-    testWidgets('a saved queue keeps the popup menu of queue rows', (
+    testWidgets('a saved queue opens the Queue modal from its button', (
       tester,
     ) async {
-      QueueAction? received;
-      await view.pump(
-        tester,
-        [available(1), available(2)],
-        savedQueue: true,
-        onQueueAction: (action) => received = action,
-      );
+      await view.pump(tester, [available(1), available(2)], savedQueue: true);
 
-      expect(find.byType(PlaylistActionsMenu), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(PlaylistActionsMenu),
-          matching: find.byTooltip('More options'),
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.byType(PlaylistActionsMenu));
-      await tester.pumpAndSettle();
-      expect(find.text('Rename'), findsNothing);
-      expect(find.text('Delete playlist'), findsNothing);
-      await tester.tap(find.text('Add to queue'));
-      await tester.pumpAndSettle();
-
-      expect(received, QueueAction.addToQueue);
+      await tester.tap(find.byType(SavedQueueMoreButton));
+      await settleModal(tester);
+      expect(modalAction('delete'), findsOneWidget);
+      expect(modalAction('edit'), findsNothing);
+      expect(modalAction('go-to-playlist'), findsNothing);
     });
   });
 }

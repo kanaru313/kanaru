@@ -1777,17 +1777,51 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyDayMenu => 'Tuỳ chọn ngày';
 
   @override
-  String get historyDayCreatePlaylist => 'Tạo playlist từ ngày này';
+  String get historyDayDelete => 'Xoá ngày khỏi lịch sử';
 
   @override
-  String get historyDayDelete => 'Xoá lượt nghe của ngày';
+  String get historyDayYesterday => 'Hôm qua';
 
   @override
-  String historyDayPlaylistName(DateTime date) {
-    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
-    final String dateString = dateDateFormat.format(date);
+  String historyOrderLastPlayedFirst(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài, nghe gần nhất trước',
+    );
+    return '$_temp0';
+  }
 
-    return 'Lịch sử · $dateString';
+  @override
+  String historyDayRemoveHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lượt nghe · bài hát vẫn ở trong thư viện',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyDayRemoveTitle => 'Xoá ngày này?';
+
+  @override
+  String historyDayRemoveBody(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Cả $count lượt nghe của $date sẽ bị xoá khỏi Lịch sử và Phát nhiều nhất. Các bài hát vẫn ở trong thư viện.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyOpenInMostPlayed => 'Mở trong Phát nhiều nhất';
+
+  @override
+  String historyNewPlaylistSuggests(String name) {
+    return 'Playlist mới gợi ý tên “$name”';
   }
 
   @override
@@ -1924,6 +1958,14 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String historyTopRankChip(int rank, String listens) {
+    return '#$rank · $listens';
+  }
+
+  @override
+  String get historyMissingPlayModalLabel => 'Tùy chọn lượt nghe';
+
+  @override
   String historyTopCapped(int count) {
     return 'Hiện $count bài đầu';
   }
@@ -1932,16 +1974,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyPlayAll => 'Phát tất cả';
 
   @override
-  String get historyCreatePlaylist => 'Tạo playlist';
-
-  @override
   String historyTopPlaylistName(String range) {
     return 'Nghe nhiều nhất · $range';
-  }
-
-  @override
-  String historyPlaylistCreated(String name) {
-    return 'Đã tạo playlist $name';
   }
 
   @override
@@ -2060,12 +2094,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không đọc được tệp playlist. Xem log để biết chi tiết.';
 
   @override
-  String get playlistM3uExportAbsolute => 'Xuất M3U (đường dẫn đầy đủ)…';
-
-  @override
-  String get playlistM3uExportRelative => 'Xuất M3U (đường dẫn tương đối)…';
-
-  @override
   String playlistM3uExported(int count, String file) {
     return 'Đã lưu $count bài vào $file';
   }
@@ -2136,17 +2164,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueHistoryPlay => 'Phát';
 
   @override
-  String get queueHistoryShuffle => 'Phát ngẫu nhiên';
-
-  @override
-  String get queueHistorySaveAsPlaylist => 'Lưu thành playlist';
-
-  @override
-  String queueHistorySavedAsPlaylist(String name) {
-    return 'Đã lưu thành $name';
-  }
-
-  @override
   String get queueHistoryDelete => 'Xoá';
 
   @override
@@ -2168,7 +2185,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueHistoryEntriesEmptyMessage =>
-      'Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở trang Các hàng đợi.';
+      'Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở menu ⋮.';
 
   @override
   String get queueHistorySaveFailed =>
@@ -2179,6 +2196,30 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueHistoryNotFoundMessage => 'Có thể hàng đợi đã bị xoá.';
+
+  @override
+  String get queueModalLabel => 'Tùy chọn hàng đợi';
+
+  @override
+  String get queueModalGoTo => 'Đến hàng đợi';
+
+  @override
+  String get queueModalDelete => 'Xoá hàng đợi';
+
+  @override
+  String get queueModalDeleteHint => 'Các bài vẫn còn trong thư viện';
+
+  @override
+  String queueModalMissingCount(int count) {
+    return '$count bài không còn';
+  }
+
+  @override
+  String get queueModalRemoveMissingTitle => 'Bỏ các bài không còn?';
+
+  @override
+  String get queueModalRemoveMissingBody =>
+      'Các bài không có trong thư viện sẽ bị bỏ khỏi hàng đợi này. Hàng đợi đã lưu không thể điền lại bằng tay.';
 
   @override
   String get lyricsNone => 'Bài này chưa có lời';
@@ -4798,7 +4839,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistExportAbsoluteHint => 'Đường dẫn tuyệt đối';
 
   @override
-  String get playlistExportRelativeHint => 'Đường dẫn tương đối (cạnh nhạc)';
+  String get m3uExportRelativeTooltip => 'Xuất với đường dẫn tương đối';
 
   @override
   String get playlistRemoveDuplicates => 'Xoá bài trùng';
@@ -4842,6 +4883,74 @@ class AppLocalizationsVi extends AppLocalizations {
       count,
       locale: localeName,
       other: 'Đã xoá $count bài không còn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mostPlayedModalLabel => 'Tuỳ chọn nghe nhiều nhất';
+
+  @override
+  String historyOrderRank(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài, theo thứ hạng',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get historyModalLabel => 'Tuỳ chọn lịch sử';
+
+  @override
+  String get historyMostPlayedHint => 'Những bài bạn nghe nhiều nhất';
+
+  @override
+  String get historyNothingInLibrary =>
+      'Không có bài nào đã nghe còn trong thư viện';
+
+  @override
+  String get historyLastPlayedFirst => 'Nghe gần nhất trước';
+
+  @override
+  String get historyClear => 'Xoá lịch sử…';
+
+  @override
+  String get historyClearHint => 'Giờ qua, hôm nay, 7 ngày hoặc toàn bộ';
+
+  @override
+  String get historyClearTitle => 'Xoá lịch sử?';
+
+  @override
+  String get historyClearBody =>
+      'Các lượt nghe bị xoá khỏi Lịch sử và Phát nhiều nhất. Bài hát vẫn còn trong thư viện. Không thể hoàn tác.';
+
+  @override
+  String get historyClearLastHour => 'Giờ qua';
+
+  @override
+  String get historyClearToday => 'Hôm nay';
+
+  @override
+  String get historyClearDays7 => '7 ngày qua';
+
+  @override
+  String get historyClearEverything => 'Toàn bộ';
+
+  @override
+  String get historyClearCountFailed => 'Không đếm được lượt nghe';
+
+  @override
+  String get historyClearRetry => 'Thử lại';
+
+  @override
+  String historyCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count lượt nghe khỏi lịch sử',
+      zero: 'Không có gì để xoá',
     );
     return '$_temp0';
   }

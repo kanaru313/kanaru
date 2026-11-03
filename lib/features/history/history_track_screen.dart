@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -9,12 +7,12 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
+import '../../shared/song_modal/open_song_modal.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/library_loading.dart';
 import '../../shared/widgets/page_scaffold.dart';
-import 'history_delete_undo.dart';
-import 'history_play_menu.dart';
-import 'history_plays_version.dart';
+import 'history_missing_play_modal.dart';
+import 'history_song_modal_extras.dart';
 import 'history_providers.dart';
 import 'history_screen_states.dart';
 import 'history_track_header.dart';
@@ -22,7 +20,7 @@ import 'history_track_play_tile.dart';
 
 /// The history page of one song, reached from the menu of a History row:
 /// totals, then every play newest first. A play is removed through its row
-/// menu, with Undo. The page stays when the last play goes.
+/// modal, with Undo. The page stays when the last play goes.
 ///
 /// [path] comes from the address and is only used to look the song up. The
 /// player gets the path of the `tracks` row that matches it, so an address
@@ -45,44 +43,43 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     ], 0);
   }
 
-  /// Opens the menu of [row]. The play is the one the menu was opened on:
-  /// the list may move before a choice is made.
-  Future<void> _openMenu(
+  /// Opens the modal of [row]: the song modal when the song is in the
+  /// library, the Missing-play modal otherwise. The play is the one the modal
+  /// was opened on: the list may move before a choice is made.
+  void _openModal(
     HistoryTrackSummary summary,
-    HistoryPlayRow row,
-    Offset position, {
+    HistoryPlayRow row, {
     required bool viaKeyboard,
-  }) async {
-    final choice = await showHistoryPlayMenu(
-      context,
-      position,
-      canQueue: summary.track != null,
-      canShowTrackHistory: false,
-      viaKeyboard: viaKeyboard,
+  }) {
+    final extras = historyPlayExtras(
+      context: context,
+      ref: ref,
+      path: row.path,
+      location: null,
+      playId: row.id,
     );
-    if (choice == null || !mounted) return;
-    final action = historyQueueActionOf(choice);
     final item = summary.track;
-    if (action != null) {
-      if (item == null) return;
-      enqueueLoaded(ref, context, action, [
-        trackFromRow(item, ref.read(coverCacheDirectoryProvider)),
-      ], item.title);
+    if (item == null) {
+      openHistoryMissingPlayModal(
+        context,
+        path: row.path,
+        extras: extras,
+        viaKeyboard: viaKeyboard,
+      );
       return;
     }
-    if (choice != HistoryPlayChoice.delete) return;
-    final db = ref.read(libraryDatabaseProvider);
-    if (db == null) return;
-    unawaited(
-      ref
-          .read(historyDeleteUndoProvider)
-          .delete(
-            db: db,
-            messenger: ScaffoldMessenger.of(context),
-            l10n: context.l10n,
-            version: ref.read(historyPlaysVersionProvider.notifier),
-            playId: row.id,
-          ),
+    openSongModal(
+      context,
+      ref,
+      song: item,
+      viaKeyboard: viaKeyboard,
+      extras: extras,
+      onQueueAction: (action) {
+        if (!mounted) return;
+        enqueueLoaded(ref, context, action, [
+          trackFromRow(item, ref.read(coverCacheDirectoryProvider)),
+        ], item.title);
+      },
     );
   }
 
@@ -142,13 +139,10 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
                     itemBuilder: (context, i) => HistoryTrackPlayTile(
                       row: data.plays[i],
                       onMenu: ({required viaKeyboard, required at}) =>
-                          unawaited(
-                            _openMenu(
-                              summary,
-                              data.plays[i],
-                              at,
-                              viaKeyboard: viaKeyboard,
-                            ),
+                          _openModal(
+                            summary,
+                            data.plays[i],
+                            viaKeyboard: viaKeyboard,
                           ),
                     ),
                   ),

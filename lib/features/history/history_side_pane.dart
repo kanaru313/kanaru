@@ -3,21 +3,22 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/history_rows.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/widgets/context_menu_more_button.dart';
+import '../../shared/widgets/context_menu_region.dart' show ContextMenuOpen;
 import '../../shared/widgets/detail_page/collage_hero_cover.dart';
 import '../../shared/widgets/detail_page/detail_side_pane.dart';
 import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
 import '../../shared/widgets/playlist_cover.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 
 /// Seed of the collage: the same arrangement in the pane, the header and the
 /// backdrop.
-const _collageSeed = 'history';
+const historyCollageSeed = 'history';
 
-/// The Play / Shuffle / queue menu callbacks of the History page.
+/// The Play / Shuffle / ⋮ callbacks of the History page.
 typedef HistoryPageCallbacks = ({
   VoidCallback onPlay,
   VoidCallback onShuffle,
-  ValueChanged<QueueAction> onQueueAction,
+  ContextMenuOpen onOpenModal,
 });
 
 /// Title, "N listens · since date" and the buttons, shared by the header
@@ -81,7 +82,14 @@ class HistoryDetails extends StatelessWidget {
             playLabel: l10n.albumsPlay,
             onPlay: callbacks.onPlay,
             onShuffle: callbacks.onShuffle,
-            onQueueAction: callbacks.onQueueAction,
+            onQueueAction: null,
+            menu: Semantics(
+              label: l10n.historyModalLabel,
+              child: ContextMenuMoreButton(
+                tooltip: l10n.historyModalLabel,
+                onOpen: callbacks.onOpenModal,
+              ),
+            ),
           ),
         ),
       ],
@@ -108,12 +116,12 @@ class HistorySidePane extends StatelessWidget {
     return DetailSidePane(
       cover: CollageHeroBackdrop(
         coverKeys: overview?.coverKeys ?? const [],
-        seed: _collageSeed,
+        seed: historyCollageSeed,
         icon: AppIcons.history,
       ),
       coverOverlay: CollageHeroCard(
         coverKeys: overview?.coverKeys ?? const [],
-        seed: _collageSeed,
+        seed: historyCollageSeed,
         icon: AppIcons.history,
       ),
       details: HistoryDetails(
@@ -148,7 +156,7 @@ class HistoryHeader extends StatelessWidget {
           PlaylistCover(
             coverKeys: overview?.coverKeys ?? const [],
             size: 120,
-            seed: _collageSeed,
+            seed: historyCollageSeed,
             icon: AppIcons.history,
           ),
           const SizedBox(width: 24),

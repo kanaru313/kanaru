@@ -5,15 +5,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_database.dart' show LibraryDatabase;
 import '../../core/database/library_startup.dart';
 import '../../core/database/playlist_page_queries.dart';
-import '../../core/database/playlist_rows.dart';
 import '../../core/player/track.dart' as player;
 import '../../l10n/l10n.dart';
 import '../../shared/enqueue_from_database.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
 import '../../shared/widgets/app_snack_bar.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
-import 'playlist_display_name.dart';
 import 'playlist_page_actions.dart' show playableStartIndex;
 
 final _log = Logger('playlists');
@@ -115,21 +112,4 @@ Future<void> shufflePlaylist(
       );
     }
   }
-}
-
-/// A queue menu pick for every playable song of [playlist], read when the
-/// pick's turn comes.
-void queuePlaylist(
-  WidgetRef ref,
-  BuildContext context,
-  QueueAction action,
-  PlaylistSummary playlist,
-) {
-  enqueueFromDatabase(
-    ref,
-    context,
-    action,
-    playlistDisplayName(playlist, context.l10n),
-    (db, covers) => readPlaylistQueue(db, playlist.id, covers),
-  );
 }

@@ -1,5 +1,6 @@
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/m3u/m3u_export_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
 import '../playlist_display_name.dart';
 import 'playlist_modal_data.dart';
@@ -114,21 +115,11 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
       ),
     ],
     [
-      ContextModalAction(
-        id: 'export-absolute',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: l10n.playlistExportAbsoluteHint,
+      m3uExportAction(
+        l10n,
         enabled: data.hasEntries,
-        onTap: contextModalCloseThen(h.exportAbsolute),
-      ),
-      ContextModalAction(
-        id: 'export-relative',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: l10n.playlistExportRelativeHint,
-        enabled: data.hasEntries,
-        onTap: contextModalCloseThen(h.exportRelative),
+        exportAbsolute: h.exportAbsolute,
+        exportRelative: h.exportRelative,
       ),
     ],
     [

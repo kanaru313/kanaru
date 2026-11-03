@@ -9,7 +9,6 @@ import '../../core/database/playlist_rows.dart';
 import '../../core/database/search_playlist_queries.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/play_tracks.dart';
-import 'm3u_export_flow.dart';
 import 'playlist_entries_view.dart';
 import 'playlist_page_actions.dart';
 import 'playlist_page_data.dart';
@@ -31,8 +30,8 @@ class PlaylistPageBody extends ConsumerStatefulWidget {
 
   final PlaylistPageHead head;
 
-  /// A saved queue: the header keeps a popup menu (export and queue rows)
-  /// instead of the playlist modal.
+  /// A saved queue: the ⋮ button opens the Queue modal instead of the
+  /// playlist modal.
   final bool savedQueue;
 
   /// `PlaylistHeadLoad.seq` of [head].
@@ -119,7 +118,6 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
       onShuffle: () => shufflePlaylist(ref, context, () => mounted, _id),
       loadMatches: _loadMatches,
       onPlayRows: (rows, index) async => _playRows(rows, index),
-      onQueueAction: (action) => queuePlaylist(ref, context, action, playlist),
       onEntryQueueAction: (entry, action) {
         final track = entry.track;
         if (track == null) return;
@@ -132,8 +130,6 @@ class _PlaylistPageBodyState extends ConsumerState<PlaylistPageBody> {
           excludePlaylistId: playlist.id,
         );
       },
-      onExport: (style) =>
-          exportPlaylistInteractively(ref, context, playlist, style),
       savedQueue: widget.savedQueue,
     );
   }

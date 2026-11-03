@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -111,7 +109,7 @@ class _HistoryFilterResultsState extends ConsumerState<HistoryFilterResults>
             row: row,
             onTap: () => _play(rows, row),
             onMenu: ({required viaKeyboard, required at}) =>
-                unawaited(openPlayMenu(row, at, viaKeyboard: viaKeyboard)),
+                openMissingPlayModal(row, viaKeyboard: viaKeyboard),
             onQueueAction: (action) => playQueueAction(row, action),
             modalExtras: () => playExtras(row),
           );

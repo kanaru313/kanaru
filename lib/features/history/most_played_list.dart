@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/history_rows.dart';
@@ -12,7 +9,7 @@ import '../../shared/play_tracks.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_card.dart';
-import 'history_play_menu.dart';
+import 'history_missing_play_modal.dart';
 import 'history_range.dart';
 import 'history_routes.dart';
 import 'history_song_modal_extras.dart';
@@ -62,37 +59,29 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
     enqueueLoaded(ref, context, action, [track], row.track!.title);
   }
 
-  /// Song history for the modal of [row]; built when the modal opens. Plays
-  /// are not removed from here.
-  SongModalExtras _extras(HistoryTopRow row) => historyPlayExtras(
+  /// Song history and the rank chip for the modal of [row] at place [rank];
+  /// built when the modal opens. Plays are not removed from here.
+  SongModalExtras _extras(HistoryTopRow row, int rank) => historyPlayExtras(
     context: context,
     ref: ref,
     path: row.path,
     location: mostPlayedTrackLocation,
+    headerNote: context.l10n.historyTopRankChip(
+      rank,
+      context.l10n.historyTopPlayCount(row.count),
+    ),
   );
 
-  /// The small menu of a row with no song in the library.
-  Future<void> _openMenu(
-    HistoryTopRow row,
-    Offset position, {
-    required bool viaKeyboard,
-  }) async {
-    final choice = await showHistoryPlayMenu(
+  /// The Missing-play modal of a row with no song in the library.
+  void _openMissing(HistoryTopRow row, int rank, {required bool viaKeyboard}) {
+    final extras = _extras(row, rank);
+    openHistoryMissingPlayModal(
       context,
-      position,
-      canQueue: row.track != null,
-      canDelete: false,
+      path: row.path,
+      chip: extras.headerNote!,
+      extras: extras,
       viaKeyboard: viaKeyboard,
     );
-    if (choice == null || !mounted) return;
-    if (choice == HistoryPlayChoice.trackHistory) {
-      context.go(mostPlayedTrackLocation(row.path));
-      return;
-    }
-    final action = historyQueueActionOf(choice);
-    final track = historyTopTrackOf(row, ref.read(coverCacheDirectoryProvider));
-    if (action == null || track == null) return;
-    enqueueLoaded(ref, context, action, [track], row.track!.title);
   }
 
   @override
@@ -121,9 +110,9 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
           row: rows[i],
           onTap: () => _play(i),
           onMenu: ({required viaKeyboard, required at}) =>
-              unawaited(_openMenu(rows[i], at, viaKeyboard: viaKeyboard)),
+              _openMissing(rows[i], widget.ranks[i], viaKeyboard: viaKeyboard),
           onQueueAction: (action) => _queue(rows[i], action),
-          modalExtras: () => _extras(rows[i]),
+          modalExtras: () => _extras(rows[i], widget.ranks[i]),
         );
       },
     );

@@ -9,10 +9,11 @@ import 'package:kanaru/features/history/history_side_pane.dart';
 import 'package:kanaru/features/history/history_timeline_view.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/detail_page/tracks_toolbar.dart';
-import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
+import 'package:kanaru/shared/widgets/queue_actions_menu.dart' show QueueAction;
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
+import '../../support/settle_modal.dart';
 import 'history_test_harness.dart';
 
 DateTime _at(int year, int month, int day, [int hour = 9]) =>
@@ -245,20 +246,34 @@ void main() {
     expect(find.text('1 listen · 1 song'), findsOneWidget);
   });
 
-  historyTestWidgets('the queue menu adds the songs with Add to queue', (
+  historyTestWidgets('the ⋮ button opens the History modal, not a queue menu', (
     tester,
   ) async {
     await open(tester);
-    await tester.tap(
+    final pane = find.byType(HistorySidePane);
+    expect(
       find.descendant(
-        of: find.byType(HistorySidePane),
+        of: pane,
         matching: find.byType(PopupMenuButton<QueueAction>),
       ),
+      findsNothing,
     );
-    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: pane, matching: find.byTooltip('History options')),
+    );
+    await settleModal(tester);
     await tester.tap(find.text('Add to queue'));
     await settleHistory(tester);
 
     expect(_queue(h), ['/m/Z.flac', '/m/A.flac', '/m/B.flac']);
+  });
+
+  historyTestWidgets('a narrow header has the same ⋮ button', (tester) async {
+    await open(tester);
+    await resize(tester, const Size(600, 800));
+    expect(find.byType(HistorySidePane), findsNothing);
+    await tester.tap(find.byTooltip('History options'));
+    await settleModal(tester);
+    expect(find.text('Most played'), findsOneWidget);
   });
 }

@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/gestures.dart' show kSecondaryButton;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
@@ -6,9 +5,9 @@ import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/features/history/history_calendar_style.dart';
 import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/history_range_bar.dart';
-import 'package:kanaru/features/history/most_played_actions.dart';
 import 'package:kanaru/features/history/most_played_list.dart';
 import 'package:kanaru/features/history/most_played_row_tile.dart';
+import 'package:kanaru/shared/widgets/context_menu_more_button.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/stats/gated_query_interceptor.dart';
@@ -83,23 +82,17 @@ bool _enabled(WidgetTester tester, Finder button) {
 
 Finder get _playAll => find.widgetWithText(FilledButton, 'Play');
 
-/// The page's more menu (next to Play and Shuffle), opened.
-Future<void> _openMenu(WidgetTester tester) async {
-  await tester.tap(
-    find.descendant(
-      of: find.byType(MostPlayedMenuButton),
-      matching: find.byTooltip('More options'),
-    ),
-  );
-  await tester.pumpAndSettle();
-}
-
-Finder get _create =>
-    find.widgetWithText(PopupMenuItem<MostPlayedChoice>, 'Create playlist');
-
-/// Whether the menu item behind [item] can be picked.
-bool _itemEnabled(WidgetTester tester, Finder item) =>
-    tester.widget<PopupMenuItem<MostPlayedChoice>>(item).enabled;
+/// Whether the ⋮ next to Play and Shuffle can be pressed.
+bool _moreEnabled(WidgetTester tester) =>
+    tester
+        .widget<IconButton>(
+          find.descendant(
+            of: find.byType(ContextMenuMoreButton).first,
+            matching: find.byType(IconButton),
+          ),
+        )
+        .onPressed !=
+    null;
 
 /// Opens the menu of a row the way a pointer does: a long press on it.
 Future<void> _rowMenu(WidgetTester tester, int index) async {
@@ -184,10 +177,7 @@ void main() {
       expect(_names(tester), isEmpty);
       expect(find.text('No listens in this range'), findsOneWidget);
       expect(_enabled(tester, _playAll), isFalse);
-      await _openMenu(tester);
-      expect(_itemEnabled(tester, _create), isFalse);
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
+      expect(_moreEnabled(tester), isFalse);
     });
 
     historyTestWidgets(
@@ -383,10 +373,7 @@ void main() {
 
       expect(_names(tester), ['Ghost']);
       expect(_enabled(tester, _playAll), isFalse);
-      await _openMenu(tester);
-      expect(_itemEnabled(tester, _create), isFalse);
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
+      expect(_moreEnabled(tester), isFalse);
     });
 
     historyTestWidgets('the row modal has Song history and no remove item', (
@@ -500,95 +487,28 @@ void main() {
       expect(_queue(h), ['/m/B.flac']);
     });
 
-    historyTestWidgets('a song gone from the library keeps the small menu', (
-      tester,
-    ) async {
-      await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
+    historyTestWidgets(
+      'a song gone from the library opens the Missing-play modal',
+      (tester) async {
+        await _openTop(tester, h, plays: [('Ghost', _at(10, 15))]);
 
-      expect(
-        find.descendant(
-          of: find.byType(MostPlayedRowTile),
-          matching: find.byTooltip('More options'),
-        ),
-        findsNothing,
-      );
-      await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: find.byType(MostPlayedRowTile),
+            matching: find.byTooltip('More options'),
+          ),
+          findsNothing,
+        );
+        await tester.tap(find.text('Ghost.flac'), buttons: kSecondaryButton);
+        await settleModal(tester);
 
-      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
-      expect(find.bySemanticsLabel('Song options'), findsNothing);
-      expect(find.text('Remove from history'), findsNothing);
-    });
-  });
-
-  group('create playlist', () {
-    Future<List<String>> entries(WidgetTester tester) async {
-      final rows = await tester.runAsync(() async {
-        return (h.db.select(
-          h.db.playlistEntries,
-        )..orderBy([(e) => OrderingTerm.asc(e.position)])).get();
-      });
-      return [for (final e in rows!) e.path];
-    }
-
-    historyTestWidgets('names it after the range and keeps the rank order', (
-      tester,
-    ) async {
-      await _openTop(tester, h);
-      await _chip(tester, '7 days');
-      await tester.tap(find.byTooltip('Previous period'));
-      await settleHistory(tester);
-
-      await _openMenu(tester);
-      await tester.tap(_create);
-      await tester.pumpAndSettle();
-      final field = tester.widget<TextField>(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
-        ),
-      );
-      expect(field.controller!.text, startsWith('Most played · '));
-      final name = field.controller!.text;
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
-      await settleHistory(tester);
-
-      // B and the Ghost: only the library song goes in.
-      expect(await entries(tester), ['/m/B.flac']);
-      expect(find.text('Created playlist $name'), findsOneWidget);
-    });
-
-    historyTestWidgets('keeps every playable song in rank order', (
-      tester,
-    ) async {
-      await _openTop(tester, h);
-
-      await _openMenu(tester);
-      await tester.tap(_create);
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
-      await settleHistory(tester);
-
-      expect(await entries(tester), ['/m/B.flac', '/m/A.flac', '/m/C.flac']);
-    });
-
-    historyTestWidgets('cancelling writes nothing', (tester) async {
-      await _openTop(tester, h);
-
-      await _openMenu(tester);
-      await tester.tap(_create);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await settleHistory(tester);
-
-      expect(await entries(tester), isEmpty);
-      final playlists = await tester.runAsync(
-        () => h.db.select(h.db.playlists).get(),
-      );
-      expect(playlists, isEmpty);
-      expect(find.textContaining('Created playlist'), findsNothing);
-    });
+        expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+        expect(find.text('Not in library'), findsWidgets);
+        expect(find.text('#1 · 1 listen'), findsOneWidget);
+        expect(find.text('Song history'), findsOneWidget);
+        expect(find.text('Remove from history'), findsNothing);
+      },
+    );
   });
 
   group('page and reloading', () {

@@ -430,8 +430,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    historyTestWidgets('a row gone from the library keeps the small menu and '
-        'no more button', (tester) async {
+    historyTestWidgets('a row gone from the library opens the Missing-play '
+        'modal, with no more button', (tester) async {
       await openHistory(tester, h, plays: [('gone', _at(23, 9))]);
 
       expect(
@@ -441,11 +441,23 @@ void main() {
         ),
         findsNothing,
       );
+      final rowText = tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byType(HistoryPlayRowTile),
+              matching: find.textContaining(' - '),
+            ),
+          )
+          .data!;
       await tester.tap(find.text('gone.flac'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
+      await settleModal(tester);
 
-      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
-      expect(find.bySemanticsLabel('Song options'), findsNothing);
+      expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+      expect(find.text('Not in library'), findsWidgets);
+      expect(find.text('Played $rowText'), findsNothing);
+      expect(find.text('Song history'), findsOneWidget);
+      expect(find.text('Remove from history'), findsOneWidget);
+      expect(find.text('Play next'), findsNothing);
     });
 
     historyTestWidgets('Remove takes the play the modal was opened on, even '
@@ -483,28 +495,8 @@ void main() {
       expect(plays, hasLength(2));
     });
 
-    historyTestWidgets('a song gone from the library cannot be queued', (
-      tester,
-    ) async {
-      await openHistory(tester, h, plays: [('gone', _at(23, 9))]);
-
-      await tester.tap(find.text('gone.flac'), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
-
-      for (final label in ['Play next', 'Add to queue', 'Add to playlist…']) {
-        final item = tester.widget<PopupMenuItem<Object?>>(
-          find.ancestor(
-            of: find.text(label),
-            matching: find.byWidgetPredicate((w) => w is PopupMenuItem),
-          ),
-        );
-        expect(item.enabled, isFalse, reason: label);
-      }
-      expect(find.text('Remove from history'), findsOneWidget);
-    });
-
     historyTestWidgets('the Menu key on a song gone from the library opens '
-        'its menu', (tester) async {
+        'its modal', (tester) async {
       await openHistory(tester, h, plays: [('gone', _at(23, 9))]);
 
       // The row content is the focus stop: the nearest Focus above the row
@@ -512,9 +504,10 @@ void main() {
       Focus.of(tester.element(find.byType(SongRowView))).requestFocus();
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
-      await tester.pumpAndSettle();
+      await settleModal(tester);
 
       expect(find.text('Remove from history'), findsOneWidget);
+      expect(find.text('Not in library'), findsWidgets);
     });
   });
 

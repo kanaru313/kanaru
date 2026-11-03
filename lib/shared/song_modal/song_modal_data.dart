@@ -70,10 +70,3 @@ class SongModalHandlers {
   final VoidCallback findLyrics;
   final void Function(ContextModalNav nav)? openAdvanced;
 }
-
-/// Closes the modal, then calls [then]: every action that leaves the modal
-/// (navigates, opens a dialog) goes through here.
-void Function(ContextModalNav) songModalCloseThen(VoidCallback then) => (nav) {
-  nav.close();
-  then();
-};

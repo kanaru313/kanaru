@@ -38,7 +38,7 @@ ContextModalAction _artistsAction(
       icon: single,
       label: label,
       subtitle: artist.name,
-      onTap: songModalCloseThen(() => open(artist.key)),
+      onTap: contextModalCloseThen(() => open(artist.key)),
     );
   }
   return ContextModalAction(
@@ -52,7 +52,7 @@ ContextModalAction _artistsAction(
         for (final artist in artists)
           ContextModalChip(
             label: artist.name,
-            onTap: songModalCloseThen(() => open(artist.key)),
+            onTap: contextModalCloseThen(() => open(artist.key)),
           ),
       ],
     ),
@@ -86,7 +86,7 @@ List<List<ContextModalAction>> songModalSections(
           label: l10n.songModalGoToAlbum,
           subtitle: albumTitle ?? l10n.songModalNoAlbum,
           enabled: links?.album != null,
-          onTap: songModalCloseThen(h.goToAlbum),
+          onTap: contextModalCloseThen(h.goToAlbum),
         ),
       if (allArtists.isNotEmpty)
         _artistsAction(
@@ -129,7 +129,7 @@ List<List<ContextModalAction>> songModalSections(
           id: 'show-in-file-manager',
           icon: AppIcons.folderOpen,
           label: l10n.libraryShowInFileManager,
-          onTap: songModalCloseThen(h.showInFileManager),
+          onTap: contextModalCloseThen(h.showInFileManager),
         )
       else if (data.hasLocalPath)
         ContextModalAction(
@@ -137,12 +137,12 @@ List<List<ContextModalAction>> songModalSections(
           icon: AppIcons.folderOutlined,
           label: l10n.songModalGoToFolder,
           subtitle: songFolderName(song.path),
-          onTap: songModalCloseThen(h.goToFolder),
+          onTap: contextModalCloseThen(h.goToFolder),
           trailing: [
             ContextModalTrailing(
               icon: AppIcons.openExternal,
               tooltip: l10n.libraryShowInFileManager,
-              onTap: songModalCloseThen(h.showInFileManager),
+              onTap: contextModalCloseThen(h.showInFileManager),
             ),
           ],
         ),
@@ -152,7 +152,7 @@ List<List<ContextModalAction>> songModalSections(
         id: 'add-to-playlist',
         icon: AppIcons.addToPlaylist,
         label: l10n.playlistAddTo,
-        onTap: songModalCloseThen(h.addToPlaylist),
+        onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       if (data.hasLibrary)
         ContextModalAction(
@@ -166,7 +166,7 @@ List<List<ContextModalAction>> songModalSections(
           enabled: isFavorite != null,
           onTap: isFavorite == null
               ? null
-              : songModalCloseThen(() => h.setFavorite(!isFavorite)),
+              : contextModalCloseThen(() => h.setFavorite(!isFavorite)),
         ),
       ContextModalAction(
         id: 'edit-tags',

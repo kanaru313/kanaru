@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/library_startup.dart';
+import '../../core/database/playlist_rows.dart';
 import '../../core/database/queue_history_queries.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
@@ -15,11 +18,14 @@ import 'playlist_screen_states.dart';
 import 'queue_history_actions.dart';
 import 'queue_history_providers.dart';
 import 'queue_history_routes.dart';
+import 'saved_queue_modal/open_saved_queue_modal.dart';
+import 'saved_queue_modal/saved_queue_more_button.dart';
 
 final _log = Logger('queue_history');
 
 /// `/queue-history`: the queues the user replaced, newest first. A row opens
-/// the saved queue; its menu plays, shuffles, queues, saves or deletes it.
+/// the saved queue; its modal plays, shuffles, queues, copies, exports or
+/// deletes it.
 class QueueHistoryScreen extends ConsumerWidget {
   const QueueHistoryScreen({super.key});
 
@@ -73,8 +79,8 @@ class QueueHistoryScreen extends ConsumerWidget {
 }
 
 /// One saved queue: collage, when it was saved and its song count, a play
-/// button and the menu (also on a right click, a long press or the menu
-/// key). Tapping opens its page.
+/// button and the Queue modal (also on a right click, a long press or the
+/// menu key). Tapping opens its page.
 class QueueSnapshotRow extends ConsumerWidget {
   const QueueSnapshotRow({super.key, required this.snapshot});
 
@@ -83,24 +89,33 @@ class QueueSnapshotRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    void run(QueueSnapshotAction action) => runQueueSnapshotAction(
-      ref,
-      context,
-      action,
+    // The modal names the queue itself; the stored name is only a placeholder.
+    final summary = PlaylistSummary(
       id: snapshot.id,
-      savedAt: snapshot.savedAt,
+      name: queueSnapshotName(l10n, snapshot.savedAt),
+      createdAt: snapshot.savedAt,
+      entryCount: snapshot.trackCount,
     );
 
-    return CollageListRow<QueueSnapshotAction>(
+    return CollageListRow<void>(
       coverKeys: snapshot.coverKeys,
       seed: 'queue:${snapshot.id}',
-      title: queueSnapshotName(l10n, snapshot.savedAt),
+      title: summary.name,
       subtitle: l10n.playlistTrackCount(snapshot.trackCount),
       onTap: () => context.go(queueHistoryLocation(snapshot.id)),
-      onPlay: () => run(QueueSnapshotAction.play),
+      onPlay: () => unawaited(playQueueSnapshot(ref, context, snapshot.id)),
       playTooltip: l10n.queueHistoryPlay,
-      menuItems: queueSnapshotMenuItems,
-      onMenuSelected: run,
+      onOpenModal: ({required viaKeyboard}) => openSavedQueueModal(
+        context,
+        ref,
+        playlist: summary,
+        coverKeys: snapshot.coverKeys,
+        viaKeyboard: viaKeyboard,
+      ),
+      trailing: SavedQueueMoreButton(
+        playlist: summary,
+        coverKeys: snapshot.coverKeys,
+      ),
     );
   }
 }

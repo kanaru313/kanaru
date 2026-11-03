@@ -199,6 +199,26 @@ void main() {
       expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
     });
 
+    testWidgets('a clear started elsewhere turns the button off', (
+      tester,
+    ) async {
+      final h = harness();
+      await openSettings(tester, h);
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
+      final recorder = h.container.read(listenRecorderProvider)!;
+      final release = gate.holdNext('DELETE FROM');
+
+      // The History modal clears a range; Settings did not start it.
+      final cleared = recorder.clearHistory(from: 0, to: 1000);
+      await tester.pump();
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
+
+      release();
+      await tester.runAsync(() => cleared);
+      await tester.pump();
+      expect(tester.widget<FilledButton>(clearButton).onPressed, isNotNull);
+    });
+
     testWidgets('leaving Settings mid-clear still reports the result', (
       tester,
     ) async {
