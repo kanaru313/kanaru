@@ -9,6 +9,7 @@ import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
+import 'package:kanaru/shared/widgets/app_snack_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _id = 'plugin-abc123def456';
@@ -21,6 +22,7 @@ class _OpenNowPlaying extends NowPlayingOpen {
 void main() {
   late ProviderContainer container;
   late GoRouter router;
+  var clock = DateTime(2026);
 
   Future<void> pump(WidgetTester tester, {Locale? locale}) async {
     container = ProviderContainer(
@@ -31,8 +33,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, _) => const PluginNeedsConfigNoticeHost(
-            child: Scaffold(body: Text('home')),
+          builder: (_, _) => PluginNeedsConfigNoticeHost(
+            now: () => clock,
+            child: const Scaffold(body: Text('home')),
           ),
         ),
         GoRoute(
@@ -74,6 +77,10 @@ void main() {
   void report(PluginKind kind, {String name = 'Demo'}) => container
       .read(pluginNeedsConfigNoticesProvider.notifier)
       .report(_id, name, kind);
+
+  void reportFor(String id, String name) => container
+      .read(pluginNeedsConfigNoticesProvider.notifier)
+      .report(id, name, PluginKind.lyrics);
 
   String location() =>
       router.routerDelegate.currentConfiguration.uri.toString();
@@ -208,6 +215,30 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
+  testWidgets('a queued notice dropped by another message is shown again', (
+    tester,
+  ) async {
+    await pump(tester);
+    final messenger = ScaffoldMessenger.of(tester.element(find.text('home')));
+    showForeign(tester);
+    await tester.pumpAndSettle();
+
+    reportOne('a', 'Alpha', PluginKind.lyrics);
+    await tester.pump();
+    // Clears the queue: our bar never appears and never reports closing.
+    messenger.showAppSnackBar(AppSnackBarKind.success, 'other done');
+    await tester.pump(const Duration(seconds: 20));
+    await tester.pumpAndSettle();
+    messenger.hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+
+    clock = clock.add(const Duration(seconds: 31));
+    reportOne('b', 'Beta', PluginKind.lyrics);
+    await tester.pumpAndSettle();
+    expect(find.text('Alpha and Beta need configuration'), findsOneWidget);
+  });
+
   testWidgets('a report while ours slides in joins the same notice', (
     tester,
   ) async {
@@ -322,5 +353,43 @@ void main() {
       ('b', PluginKind.translate),
     ]);
     expect(location(), lyricsSourcesRoute);
+  });
+
+  testWidgets('a bar dropped as lost that surfaces later closes itself', (
+    tester,
+  ) async {
+    await pump(tester);
+    final messenger = ScaffoldMessenger.of(tester.element(find.text('home')));
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text('foreign'),
+        action: SnackBarAction(label: 'Undo', onPressed: () {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    reportFor('a', 'Alpha');
+    await tester.pump(const Duration(seconds: 40));
+    await tester.pumpAndSettle();
+    expect(find.text('foreign'), findsOneWidget);
+
+    clock = clock.add(const Duration(seconds: 31));
+    reportFor('b', 'Beta');
+    await tester.pump();
+    messenger.hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Alpha and Beta need configuration'), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
+  });
+
+  testWidgets('the notice hides itself after 8 seconds', (tester) async {
+    await pump(tester);
+    report(PluginKind.lyrics);
+    await tester.pumpAndSettle();
+    expect(find.text('Demo needs configuration'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 9));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
   });
 }

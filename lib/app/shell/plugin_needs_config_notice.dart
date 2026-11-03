@@ -24,9 +24,17 @@ typedef _Entry = ({String installId, String name, PluginKind? kind});
 /// and opens the plugin's page, or the lyrics sources / translation settings
 /// when several plugins are listed.
 class PluginNeedsConfigNoticeHost extends ConsumerStatefulWidget {
-  const PluginNeedsConfigNoticeHost({super.key, required this.child});
+  const PluginNeedsConfigNoticeHost({
+    super.key,
+    required this.child,
+    this.now = DateTime.now,
+  });
 
   final Widget child;
+
+  /// The clock; tests replace it (the test binding does not move
+  /// `DateTime.now`).
+  final DateTime Function() now;
 
   @override
   ConsumerState<PluginNeedsConfigNoticeHost> createState() =>
@@ -50,13 +58,30 @@ class _PluginNeedsConfigNoticeHostState
   /// so a report that arrives meanwhile updates this and the bar reads it.
   ValueNotifier<List<_Entry>>? _live;
 
+  /// When [_shown] was queued.
+  DateTime _queuedAt = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// A queued bar that is still not visible after this long is taken as lost.
+  static const _lostAfter = Duration(seconds: 30);
+
   void _show(PluginNeedsConfigNotice notice) {
     _entries[notice.installId] = (
       installId: notice.installId,
       name: notice.name,
       kind: notice.kind,
     );
-    final shown = _shown;
+    var shown = _shown;
+    if (shown != null &&
+        !_visible &&
+        widget.now().difference(_queuedAt) > _lostAfter) {
+      // A messenger clear drops a queued bar without closing it, so `closed`
+      // never fires: forget it (the bar owns its notifier and disposes it when
+      // it closes, if it ever appears) and show a fresh bar with the merged
+      // list.
+      _live = null;
+      _shown = null;
+      shown = null;
+    }
     if (shown != null) {
       if (!_visible) {
         // Pending (behind another message or sliding in): its content
@@ -74,6 +99,7 @@ class _PluginNeedsConfigNoticeHostState
     final messenger = ScaffoldMessenger.of(context);
     final live = ValueNotifier<List<_Entry>>(List.of(_entries.values));
     _live = live;
+    _queuedAt = widget.now();
     _visible = false;
     late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
     controller;
@@ -87,8 +113,16 @@ class _PluginNeedsConfigNoticeHostState
           ),
         ),
         duration: const Duration(seconds: 8),
+        // An action makes a snack bar persistent by default.
+        persist: false,
         onVisible: () {
-          if (identical(_shown, controller)) _visible = true;
+          if (identical(_shown, controller)) {
+            _visible = true;
+          } else {
+            // A forgotten bar that surfaced late: it is the current bar now,
+            // so close it instead of leaving it next to the fresh one.
+            controller.close();
+          }
         },
         action: SnackBarAction(
           label: l10n.pluginOpenConfig,
@@ -101,6 +135,8 @@ class _PluginNeedsConfigNoticeHostState
     );
     _shown = controller;
     controller.closed.then((_) {
+      // Each bar owns its notifier.
+      live.dispose();
       if (identical(_shown, controller)) {
         _shown = null;
         _visible = false;
@@ -108,6 +144,13 @@ class _PluginNeedsConfigNoticeHostState
         _entries.clear();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // The bar disposes its own notifier when it closes.
+    _live = null;
+    super.dispose();
   }
 
   @override
