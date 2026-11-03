@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:logging/logging.dart';
-import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/history_queries.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
@@ -11,12 +10,10 @@ import '../../../core/player/player_service.dart';
 import '../../../core/player/track.dart';
 import '../../../core/stats/listen_clear_scope.dart';
 import '../../../core/stats/listen_recorder.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../shared/m3u/m3u_export_flow.dart';
 import '../../../shared/m3u/m3u_save_picker.dart';
 import '../../../shared/play_tracks.dart';
 import '../../../shared/track_menu_actions.dart';
-import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -36,23 +33,13 @@ Future<List<Track>> _readPlayed(LibraryDatabase db, String? covers) async => [
 class HistoryPageModalSession {
   HistoryPageModalSession({
     required this.runner,
-    required this.db,
     required this.covers,
-    required this.l10n,
-    required this.messenger,
-    required this.rootNavigator,
-    required this.save,
     required this.now,
     this.recorder,
   });
 
   final TrackMenuRunner runner;
-  final LibraryDatabase db;
   final String? covers;
-  final AppLocalizations l10n;
-  final ScaffoldMessengerState messenger;
-  final NavigatorState? rootNavigator;
-  final M3uSavePicker save;
 
   /// The page's clock; the Clear dialog reads it once, when it opens.
   final DateTime Function() now;
@@ -69,24 +56,30 @@ class HistoryPageModalSession {
   static final _idle = ValueNotifier<bool>(false);
 
   /// Names the songs in snackbars, the picker and the export file.
-  String get label => l10n.navHistory;
+  String get label => runner.l10n.navHistory;
 
   /// Every played song still in the library, last played first.
-  Future<List<Track>> _read() => _readPlayed(db, covers);
+  Future<List<Track>> _read() {
+    final db = runner.db;
+    if (db == null) throw StateError('No library is open');
+    return _readPlayed(db, covers);
+  }
 
   /// The songs, or null after saying why there is nothing to act on: none is
   /// in the library, or the read failed.
   Future<List<Track>?> _readOrSay() async {
+    final messenger = runner.messenger;
+    final l10n = runner.l10n;
     try {
       final tracks = await _read();
       if (tracks.isNotEmpty) return tracks;
-      messenger.showAppSnackBar(
+      messenger?.showAppSnackBar(
         AppSnackBarKind.info,
         l10n.historyNothingInLibrary,
       );
     } on Object catch (error, stack) {
       _log.severe('Reading the played songs failed', error, stack);
-      messenger.showAppSnackBar(
+      messenger?.showAppSnackBar(
         AppSnackBarKind.error,
         l10n.libraryUnexpectedError,
       );
@@ -108,31 +101,30 @@ class HistoryPageModalSession {
   }
 
   Future<void> addToPlaylist() async {
-    final navigator = rootNavigator;
-    if (navigator == null || !navigator.mounted) return;
+    final host = runner.queueHost;
+    if (host == null) return;
+    // Read first: with no song in the library no picker opens.
     final tracks = await _readOrSay();
-    if (tracks == null || !navigator.mounted) return;
-    await addTracksToPlaylistWith(
-      db: db,
-      messenger: messenger,
-      l10n: l10n,
-      dialogContext: navigator.context,
-      // Library songs carry their file path as uri.
-      readPaths: () async => [for (final t in tracks) t.uri],
-      label: label,
+    if (tracks == null) return;
+    host.enqueueLoaded(
+      QueueAction.addToPlaylist,
+      tracks,
+      label,
       suggestedName: label,
     );
   }
 
   Future<void> export(M3uPathStyle style) async {
+    final messenger = runner.messenger;
+    if (messenger == null) return;
     // Read first: with no song in the library no picker opens.
     final tracks = await _readOrSay();
     if (tracks == null) return;
     await exportM3uWith(
-      save: save,
+      save: runner.container.read(m3uSavePickerProvider),
       messenger: messenger,
-      l10n: l10n,
-      navigator: rootNavigator,
+      l10n: runner.l10n,
+      navigator: runner.rootNavigator,
       name: label,
       style: style,
       readEntries: () async => [
@@ -151,9 +143,11 @@ class HistoryPageModalSession {
   /// closes the modal, clears, and says how many listens went. [plays] is
   /// the size of the whole history, for the Everything option.
   Future<void> clear(ContextModalNav nav, int plays) async {
-    final navigator = rootNavigator;
+    final navigator = runner.rootNavigator;
+    final db = runner.db;
     final clearer = recorder;
     if (clearer == null ||
+        db == null ||
         navigator == null ||
         !navigator.mounted ||
         _dialogOpen ||
@@ -178,7 +172,9 @@ class HistoryPageModalSession {
       from: bounds.from,
       to: bounds.to,
     );
-    if (!messenger.mounted) return;
+    final messenger = runner.messenger;
+    if (messenger == null || !messenger.mounted) return;
+    final l10n = runner.l10n;
     messenger.showAppSnackBar(
       removed == null ? AppSnackBarKind.error : AppSnackBarKind.success,
       removed == null

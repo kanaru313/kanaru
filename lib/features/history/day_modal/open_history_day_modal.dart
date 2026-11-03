@@ -6,12 +6,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/history_rows.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../l10n/l10n.dart';
-import '../../../shared/m3u/m3u_save_picker.dart';
 import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/context_modal/context_modal_route.dart';
 import '../history_clock.dart';
-import '../history_delete_undo.dart';
 import '../history_error_log.dart';
 import '../history_plays_version.dart';
 import 'history_day_modal_data.dart';
@@ -44,10 +42,7 @@ Future<void> openHistoryDayModal(
   final covers = ref.read(coverCacheDirectoryProvider);
   final now = ref.read(historyNowProvider)();
   final runner = TrackMenuRunner(ref, context);
-  final save = ref.read(m3uSavePickerProvider);
   final version = ref.read(historyPlaysVersionProvider.notifier);
-  final undo = ref.read(historyDeleteUndoProvider);
-  final rootNavigator = Navigator.maybeOf(context, rootNavigator: true);
   final List<HistoryPlayRow> rows;
   try {
     rows = await readDay();
@@ -68,13 +63,7 @@ Future<void> openHistoryDayModal(
     data: HistoryDayModalData(day: day, rows: rows, covers: covers),
     now: now,
     runner: runner,
-    db: db,
-    l10n: l10n,
-    messenger: messenger,
-    rootNavigator: rootNavigator,
-    save: save,
     version: version,
-    undo: undo,
   );
   unawaited(
     showContextModal<void>(

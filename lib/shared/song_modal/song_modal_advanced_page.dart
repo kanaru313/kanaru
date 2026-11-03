@@ -47,7 +47,7 @@ List<List<ContextModalAction>> songModalAdvancedSections(
         id: 'find-lyrics',
         icon: AppIcons.lyrics,
         label: l10n.lyricsFindOnline,
-        onTap: songModalCloseThen(h.findLyrics),
+        onTap: contextModalCloseThen(h.findLyrics),
       ),
   ],
   [

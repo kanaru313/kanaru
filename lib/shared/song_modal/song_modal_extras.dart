@@ -40,5 +40,5 @@ class SongModalExtras {
 /// before the modal opens, never while the row builds: capture everything the
 /// actions need (messenger, l10n, database, router, ids) inside it, and not
 /// the row's own context later, since the row may be gone by the time an
-/// action runs. Every action closes the modal first (`songModalCloseThen`).
+/// action runs. Every action closes the modal first (`contextModalCloseThen`).
 typedef SongModalExtrasBuilder = SongModalExtras Function();

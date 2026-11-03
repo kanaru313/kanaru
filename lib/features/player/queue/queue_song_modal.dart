@@ -7,7 +7,7 @@ import '../../../core/database/library_rows.dart';
 import '../../../shared/icons/app_icons.dart';
 import '../../../shared/enqueue_chain.dart';
 import '../../../shared/song_modal/open_song_modal.dart';
-import '../../../shared/song_modal/song_modal_data.dart';
+import '../../../shared/widgets/context_modal/context_modal_spec.dart';
 import '../../../shared/song_modal/song_modal_extras.dart';
 import '../../../shared/widgets/context_modal/context_modal_route.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -43,7 +43,7 @@ void openQueueSongModal(
           icon: AppIcons.playlistRemove,
           label: l10n.queueRemove,
           destructive: true,
-          onTap: songModalCloseThen(
+          onTap: contextModalCloseThen(
             () => unawaited(target.run(QueueRowChoice.remove)),
           ),
         ),

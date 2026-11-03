@@ -1,15 +1,10 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
-
-import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../../core/player/player_service.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../shared/m3u/m3u_export_flow.dart';
 import '../../../shared/m3u/m3u_save_picker.dart';
 import '../../../shared/track_menu_actions.dart';
-import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
@@ -31,13 +26,7 @@ class HistoryDayModalSession {
     required this.data,
     required this.now,
     required this.runner,
-    required this.db,
-    required this.l10n,
-    required this.messenger,
-    required this.rootNavigator,
-    required this.save,
     required this.version,
-    required this.undo,
   });
 
   final HistoryDayModalData data;
@@ -45,13 +34,10 @@ class HistoryDayModalSession {
   /// "Now" on the page's clock, for Today and Yesterday.
   final DateTime now;
   final TrackMenuRunner runner;
-  final LibraryDatabase db;
-  final AppLocalizations l10n;
-  final ScaffoldMessengerState messenger;
-  final NavigatorState? rootNavigator;
-  final M3uSavePicker save;
+
+  /// Captured while the day bar was on screen: the notifier is auto-dispose,
+  /// so it cannot be read again after the page is left.
   final HistoryPlaysVersion version;
-  final HistoryDeleteUndo undo;
 
   /// True while the Remove confirm is open above the modal: a second tap
   /// meanwhile must not stack another one.
@@ -59,7 +45,7 @@ class HistoryDayModalSession {
 
   /// The full date, which names the day in snackbars, the picker and the
   /// export file.
-  String get label => l10n.historyDayDate(data.day);
+  String get label => runner.l10n.historyDayDate(data.day);
 
   /// Runs a queue action of the footer on the snapshot's songs.
   void queue(QueueAction action) =>
@@ -74,30 +60,26 @@ class HistoryDayModalSession {
     );
   }
 
-  Future<void> addToPlaylist() async {
-    final navigator = rootNavigator;
-    if (navigator == null || !navigator.mounted) return;
-    await addTracksToPlaylistWith(
-      db: db,
+  void addToPlaylist() => runner.queueHost?.enqueueLoaded(
+    QueueAction.addToPlaylist,
+    data.tracks,
+    label,
+    suggestedName: label,
+  );
+
+  Future<void> export(M3uPathStyle style) {
+    final messenger = runner.messenger;
+    if (messenger == null) return Future.value();
+    return exportM3uWith(
+      save: runner.container.read(m3uSavePickerProvider),
       messenger: messenger,
-      l10n: l10n,
-      dialogContext: navigator.context,
-      // Library songs carry their file path as uri.
-      readPaths: () async => [for (final t in data.tracks) t.uri],
-      label: label,
-      suggestedName: label,
+      l10n: runner.l10n,
+      navigator: runner.rootNavigator,
+      name: label,
+      style: style,
+      readEntries: () async => data.exportEntries,
     );
   }
-
-  Future<void> export(M3uPathStyle style) => exportM3uWith(
-    save: save,
-    messenger: messenger,
-    l10n: l10n,
-    navigator: rootNavigator,
-    name: label,
-    style: style,
-    readEntries: () async => data.exportEntries,
-  );
 
   /// Shows the day's ranking: Most played on a one-day custom range.
   void openInMostPlayed() {
@@ -117,8 +99,17 @@ class HistoryDayModalSession {
   /// Confirms above the modal (cancel comes back to it), closes the modal and
   /// deletes exactly the snapshot's plays, with the Undo snackbar.
   Future<void> remove(ContextModalNav nav) async {
-    final navigator = rootNavigator;
-    if (navigator == null || !navigator.mounted || dialogOpen) return;
+    final navigator = runner.rootNavigator;
+    final db = runner.db;
+    final messenger = runner.messenger;
+    if (navigator == null ||
+        !navigator.mounted ||
+        db == null ||
+        messenger == null ||
+        dialogOpen) {
+      return;
+    }
+    final l10n = runner.l10n;
     dialogOpen = true;
     final bool confirmed;
     try {
@@ -133,13 +124,15 @@ class HistoryDayModalSession {
     }
     if (!confirmed) return;
     nav.close();
-    await undo.deleteMany(
-      db: db,
-      messenger: messenger,
-      l10n: l10n,
-      version: version,
-      playIds: data.playIds,
-    );
+    await runner.container
+        .read(historyDeleteUndoProvider)
+        .deleteMany(
+          db: db,
+          messenger: messenger,
+          l10n: l10n,
+          version: version,
+          playIds: data.playIds,
+        );
   }
 
   /// The callbacks the rows call.
@@ -149,7 +142,7 @@ class HistoryDayModalSession {
     openAdvanced: openAdvanced,
     playAll: play,
     shuffle: () => play(shuffle: true),
-    addToPlaylist: () => unawaited(addToPlaylist()),
+    addToPlaylist: addToPlaylist,
     openInMostPlayed: openInMostPlayed,
     exportAbsolute: () => unawaited(export(M3uPathStyle.absolute)),
     exportRelative: () => unawaited(export(M3uPathStyle.relative)),

@@ -6,7 +6,7 @@ import '../../../core/settings/settings_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../icons/app_icons.dart';
 import '../../widgets/context_modal/context_modal_nav.dart';
-import '../song_modal_data.dart';
+import '../../widgets/context_modal/context_modal_spec.dart';
 import '../song_modal_session.dart';
 import 'lyrics_preview.dart';
 import 'lyrics_skeleton.dart';
@@ -55,7 +55,7 @@ class SongLyricsCard extends ConsumerWidget {
         child: _NoLyrics(
           onFind: session.lyricsTarget == null
               ? null
-              : () => songModalCloseThen(session.handlers().findLyrics)(nav),
+              : () => contextModalCloseThen(session.handlers().findLyrics)(nav),
         ),
       );
     } else {

@@ -7,9 +7,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/database/library_startup.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import '../../shared/song_modal/song_modal_data.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/context_modal/context_modal_route.dart';
+import '../../shared/widgets/context_modal/context_modal_spec.dart';
 import 'history_delete_undo.dart';
 import 'history_plays_version.dart';
 
@@ -45,7 +45,7 @@ SongModalExtras historyPlayExtras({
           id: 'song-history',
           icon: AppIcons.history,
           label: l10n.historyShowTrackHistory,
-          onTap: songModalCloseThen(() => router.go(location(path))),
+          onTap: contextModalCloseThen(() => router.go(location(path))),
         ),
       if (playId != null && db != null)
         ContextModalAction(
@@ -53,7 +53,7 @@ SongModalExtras historyPlayExtras({
           icon: AppIcons.deleteOutline,
           label: l10n.historyDeletePlay,
           destructive: true,
-          onTap: songModalCloseThen(
+          onTap: contextModalCloseThen(
             () => unawaited(
               undo.delete(
                 db: db,

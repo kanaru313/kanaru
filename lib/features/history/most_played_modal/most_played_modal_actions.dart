@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart' show VoidCallback;
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/m3u/m3u_export_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
-import '../../../shared/widgets/library_row.dart' show joinRowDetails;
 
 /// What the Most played modal's rows do. Each runs after the modal closed.
 class MostPlayedModalHandlers {
@@ -74,21 +74,12 @@ List<List<ContextModalAction>> mostPlayedModalSections(
       ),
     ],
     [
-      ContextModalAction(
-        id: 'export-absolute',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: joinRowDetails([l10n.playlistExportAbsoluteHint, order]),
+      ...m3uExportActions(
+        l10n,
         enabled: enabled,
-        onTap: contextModalCloseThen(h.exportAbsolute),
-      ),
-      ContextModalAction(
-        id: 'export-relative',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: joinRowDetails([l10n.playlistExportRelativeHint, order]),
-        enabled: enabled,
-        onTap: contextModalCloseThen(h.exportRelative),
+        detail: order,
+        exportAbsolute: h.exportAbsolute,
+        exportRelative: h.exportRelative,
       ),
     ],
   ];

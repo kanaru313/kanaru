@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart' show VoidCallback;
 import '../../../core/database/history_rows.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/m3u/m3u_export_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
-import '../../../shared/widgets/library_row.dart' show joinRowDetails;
 
 /// What the History modal's rows do. Each runs after the modal has closed
 /// except [openAdvanced], which pushes the page.
@@ -97,21 +97,12 @@ List<List<ContextModalAction>> historyPageModalAdvancedSections(
   final order = l10n.historyLastPlayedFirst;
   return [
     [
-      ContextModalAction(
-        id: 'export-absolute',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: joinRowDetails([l10n.playlistExportAbsoluteHint, order]),
+      ...m3uExportActions(
+        l10n,
         enabled: _hasPlays(overview),
-        onTap: contextModalCloseThen(h.exportAbsolute),
-      ),
-      ContextModalAction(
-        id: 'export-relative',
-        icon: AppIcons.exportFile,
-        label: l10n.playlistExportM3u,
-        subtitle: joinRowDetails([l10n.playlistExportRelativeHint, order]),
-        enabled: _hasPlays(overview),
-        onTap: contextModalCloseThen(h.exportRelative),
+        detail: order,
+        exportAbsolute: h.exportAbsolute,
+        exportRelative: h.exportRelative,
       ),
     ],
     [

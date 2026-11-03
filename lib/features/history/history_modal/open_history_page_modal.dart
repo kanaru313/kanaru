@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/library_startup.dart';
 import '../../../core/stats/listen_recorder_provider.dart';
 import '../../../l10n/l10n.dart';
-import '../../../shared/m3u/m3u_save_picker.dart';
 import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_route.dart';
 import '../history_clock.dart';
@@ -26,12 +25,7 @@ void openHistoryPageModal(
   final l10n = context.l10n;
   final session = HistoryPageModalSession(
     runner: TrackMenuRunner(ref, context),
-    db: db,
     covers: ref.read(coverCacheDirectoryProvider),
-    l10n: l10n,
-    messenger: ScaffoldMessenger.of(context),
-    rootNavigator: Navigator.maybeOf(context, rootNavigator: true),
-    save: ref.read(m3uSavePickerProvider),
     now: ref.read(historyNowProvider),
     recorder: ref.read(listenRecorderProvider),
   );
