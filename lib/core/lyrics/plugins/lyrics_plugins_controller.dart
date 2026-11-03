@@ -17,6 +17,8 @@ import 'store/lyrics_plugin_dirs.dart';
 import 'store/lyrics_plugin_installer.dart';
 import 'store/lyrics_plugin_sweep.dart';
 import 'store/lyrics_plugin_uninstaller.dart';
+import 'store/plugin_config_required.dart';
+import 'store/plugin_config_schema_codec.dart';
 import 'store/plugin_file_reader.dart';
 import 'store/plugin_install_outcome.dart';
 import 'store/serial_queue.dart';
@@ -197,6 +199,17 @@ class LyricsPluginsController {
   /// What a script run reads as `localConfig`, secrets included.
   Future<PluginConfigMap> configForRun(String installId) =>
       _config.configForRun(installId);
+
+  /// Whether a required field of [installId] has no value, so a run would be
+  /// blocked. False for a missing or removed plugin.
+  Future<bool> needsConfig(String installId) async {
+    final row = await _db.lyricsPluginById(installId);
+    if (row == null || row.removedAt != null) return false;
+    return missingRequiredConfig(
+      decodePluginConfigSchema(row.configSchema),
+      await configForRun(installId),
+    ).isNotEmpty;
+  }
 
   /// The non-secret values as stored, for the config form.
   Future<Map<String, Object?>> storedConfig(String installId) =>

@@ -23,4 +23,5 @@ String translationFailureMessage(
     l10n.lyricsTranslationFailKeyStoreLocked,
   TranslationFailureKind.keyStoreUnavailable =>
     l10n.lyricsTranslationFailKeyStoreUnavailable,
+  TranslationFailureKind.needsConfig => l10n.lyricsTranslationFailNeedsConfig,
 };

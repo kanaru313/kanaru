@@ -24,14 +24,18 @@ bool _isKeyError(TranslationFailureKind kind) =>
     kind == TranslationFailureKind.badKey;
 
 /// Whether the plugin's settings page can fix the failure: its key is
-/// missing, rejected, or cannot be read from a locked key store.
+/// missing, rejected, or cannot be read from a locked key store, or a
+/// required setting is empty.
 bool _isPluginKeyIssue(TranslationFailureKind kind) =>
-    _isKeyError(kind) || kind == TranslationFailureKind.keyStoreLocked;
+    _isKeyError(kind) ||
+    kind == TranslationFailureKind.keyStoreLocked ||
+    kind == TranslationFailureKind.needsConfig;
 
 /// Whether trying again may help. Too-long lyrics and an unsupported
 /// language fail the same way every time.
 bool _canRetry(TranslationFailureKind kind) =>
     !_isKeyError(kind) &&
+    kind != TranslationFailureKind.needsConfig &&
     kind != TranslationFailureKind.tooLong &&
     kind != TranslationFailureKind.unsupportedLanguage;
 
@@ -118,7 +122,9 @@ class LyricsTranslationBanner extends ConsumerWidget {
                           TextButton(
                             onPressed: () => _openKeySettings(context, ref),
                             child: Text(
-                              isPlugin
+                              kind == TranslationFailureKind.needsConfig
+                                  ? l10n.pluginOpenConfig
+                                  : isPlugin
                                   ? l10n.lyricsTranslationBannerOpenPlugin
                                   : l10n.lyricsTranslationBannerOpenKey,
                             ),

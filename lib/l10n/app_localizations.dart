@@ -7621,6 +7621,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 missing song removed} other{{count} missing songs removed}}'**
   String playlistMissingRemoved(int count);
+
+  /// Snack bar: a plugin has an empty required setting and was not run
+  ///
+  /// In en, this message translates to:
+  /// **'{name} needs configuration'**
+  String pluginNeedsConfigTitle(String name);
+
+  /// Snack bar action: open the plugin's settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Open config'**
+  String get pluginOpenConfig;
+
+  /// Why a translation failed: a required plugin setting is empty
+  ///
+  /// In en, this message translates to:
+  /// **'This translation plugin needs configuration before it can run.'**
+  String get lyricsTranslationFailNeedsConfig;
 }
 
 class _AppLocalizationsDelegate

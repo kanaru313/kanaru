@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
@@ -14,6 +15,15 @@ import 'fake_translation_controller.dart';
 const _google = TranslationServiceId.google;
 const _id = 'plugin-abc123def456';
 
+class _NeedsConfig extends Fake implements LyricsPluginsController {
+  _NeedsConfig(this.answer);
+
+  final bool answer;
+
+  @override
+  Future<bool> needsConfig(String installId) async => answer;
+}
+
 void main() {
   final plugin = TranslationServiceId.tryParse(_id)!;
   late ProviderContainer container;
@@ -26,6 +36,7 @@ void main() {
     String pluginName = 'Gemini',
     AsyncValue<List<LyricsPluginRecord>>? recordsState,
     bool openService = true,
+    bool needsConfig = false,
   }) async {
     tester.view.physicalSize = const Size(800, 900);
     tester.view.devicePixelRatio = 1;
@@ -40,6 +51,9 @@ void main() {
           AppSettings(translation: settings),
         ),
         lyricsPluginRecordsProvider.overrideWithValue([...live]),
+        lyricsPluginsControllerProvider.overrideWithValue(
+          _NeedsConfig(needsConfig),
+        ),
         translatePluginRecordsProvider.overrideWithValue(
           recordsState ?? AsyncValue.data([...live]),
         ),
@@ -149,6 +163,40 @@ void main() {
 
     expect(prefs().service, _google);
     expect(prefs().noticeAcknowledged, {_google});
+  });
+
+  testWidgets('picking a plugin that needs config reports it', (tester) async {
+    await pump(
+      tester,
+      settings: TranslationPrefs(noticeAcknowledged: {_google, plugin}),
+      needsConfig: true,
+    );
+
+    await tester.tap(radio('Gemini'));
+    await tester.pumpAndSettle();
+
+    expect(prefs().service, plugin);
+    final notice = container.read(pluginNeedsConfigNoticesProvider);
+    expect(notice?.installId, _id);
+    expect(notice?.name, 'Gemini');
+  });
+
+  testWidgets('Cancel on the notice reports nothing', (tester) async {
+    await pump(
+      tester,
+      settings: const TranslationPrefs(
+        show: true,
+        noticeAcknowledged: {_google},
+      ),
+      needsConfig: true,
+    );
+
+    await tester.tap(radio('Gemini'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
   });
 
   testWidgets('a plugin named Google shows as Google (plugin)', (tester) async {

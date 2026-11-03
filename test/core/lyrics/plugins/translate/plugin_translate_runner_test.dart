@@ -69,6 +69,7 @@ void main() {
   late PluginTranslateGate gate;
   late CountingHttpClient client;
   late LyricsPluginRecord record;
+  final blocked = <String>[];
 
   PluginTranslateRunner makeRunner({
     Duration queueAllowance = pluginRunQueueAllowance,
@@ -79,6 +80,7 @@ void main() {
       runs: store.runs,
       dirs: LyricsPluginDirs(store.dataDir.path),
       loadConfig: store.controller.configForRun,
+      onNeedsConfig: (row) => blocked.add(row.installId),
     ),
     runLog: PluginRunLog(store.logs),
     client: () => client,
@@ -111,6 +113,7 @@ void main() {
   );
 
   setUp(() async {
+    blocked.clear();
     store = await StoreEnv.create();
     runtime = ScriptedRuntime();
     client = CountingHttpClient();
@@ -136,6 +139,36 @@ void main() {
     song,
     allowed: allowed ?? () => true,
     stillWanted: stillWanted,
+  );
+
+  test(
+    'an empty required field fails needsConfig, no script, no log',
+    () async {
+      final needy = await install(
+        config: const [
+          PluginConfigField(
+            key: 'apiKey',
+            title: 'Key',
+            mode: PluginConfigMode.input,
+            inputFormat: PluginInputFormat.secret,
+            required: true,
+          ),
+        ],
+      );
+      expect(
+        await _error(translate(id: needy.installId)),
+        _failure(TranslationFailureKind.needsConfig),
+      );
+      expect(runtime.requests, isEmpty);
+      expect(blocked, [needy.installId]);
+      await PluginRunLog.idle();
+      expect(
+        Directory(store.logs.path).existsSync()
+            ? Directory(store.logs.path).listSync()
+            : [],
+        isEmpty,
+      );
+    },
   );
 
   test('the script gets lines, to and song, and its lines come back', () async {

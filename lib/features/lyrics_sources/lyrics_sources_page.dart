@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_needs_config_request.dart';
 import '../../shared/lyrics_source_routes.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'get_more_plugins_row.dart';
@@ -33,6 +34,22 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
   /// The order just chosen, shown until the database answers with it, so a
   /// dropped row does not jump back for a moment.
   List<String>? _chosen;
+
+  /// Switches a source; a plugin switched on that lacks a required setting
+  /// stays on and the shell offers its config page.
+  Future<void> _toggle(
+    LyricsPluginsController controller,
+    LyricsSourceEntry entry,
+    bool on,
+  ) async {
+    // Taken before the await: the page may be left meanwhile.
+    final container = ProviderScope.containerOf(context);
+    final saved = await setLyricsSourceOn(controller, entry.id, on);
+    final record = entry.record;
+    if (saved && on && record != null) {
+      await reportIfNeedsConfig(container, record);
+    }
+  }
 
   List<String> _ids(List<LyricsSourceEntry> entries) => [
     for (final e in entries) e.id,
@@ -153,9 +170,7 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
                     ? null
                     // A plugin removed meanwhile answers skipped; the row is
                     // already gone from the list, so nothing is shown.
-                    : (on) => unawaited(
-                        setLyricsSourceOn(controller, entry.id, on),
-                      ),
+                    : (on) => unawaited(_toggle(controller, entry, on)),
                 onMove: (delta) => _move(shown, index, delta),
                 onOpen: entry.record == null
                     ? null

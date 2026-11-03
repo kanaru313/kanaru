@@ -94,14 +94,17 @@ Future<PluginConfigSaveResult> savePluginConfigValueWith({
 
 /// Switches a source on or off; a failure is logged. A plugin removed
 /// meanwhile answers skipped, and its row is already gone, so nothing is shown.
-Future<void> setLyricsSourceOn(
+/// Returns whether the switch was saved.
+Future<bool> setLyricsSourceOn(
   LyricsPluginsController controller,
   String id,
   bool on,
 ) async {
   try {
     await controller.setEnabled(id, on);
+    return true;
   } catch (error, stackTrace) {
     _log.warning('Switching a lyrics source failed', error, stackTrace);
+    return false;
   }
 }

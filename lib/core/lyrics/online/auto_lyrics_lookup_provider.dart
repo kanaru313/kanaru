@@ -65,11 +65,22 @@ final autoLyricsLookupProvider = FutureProvider.autoDispose
       });
       // Only a source with no row at all was dropped; a stale or unparsable
       // row is a stored answer and must not restart the lookup.
+      // A source skipped for an empty required setting is not unanswered:
+      // asking it again changes nothing until the lookup runs again (a track
+      // change, or Now Playing shown again).
+      final blocked = lookups.blockedByConfig(target.cacheKey);
       final unanswered = ref
           .read(lyricsProvidersProvider)
-          .any((r) => !stored.any((row) => row.providerId == r.id));
+          .any(
+            (r) =>
+                !blocked.contains(r.id) &&
+                !stored.any((row) => row.providerId == r.id),
+          );
       if (hasLyrics || !unanswered) return;
-      if (!lookups.leftSourceUnasked(target.cacheKey)) {
+      // With a blocked source around, an immediate re-run would ask it (and
+      // report it) again at every debounce while another source is paused:
+      // wait for the timer instead.
+      if (blocked.isEmpty && !lookups.leftSourceUnasked(target.cacheKey)) {
         ref.invalidateSelf();
         return;
       }

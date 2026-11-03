@@ -64,6 +64,7 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   PluginConfigWrite configResult = PluginConfigWrite.written;
   LyricsPluginWrite storageResult = LyricsPluginWrite.written;
   Object? reorderError;
+  Object? enableError;
   Object? uninstallError;
   Object? storedError;
 
@@ -75,6 +76,13 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   Map<String, Object?> stored = {};
   Set<String> secrets = {};
   bool fallback = false;
+
+  /// Plugins whose `needsConfig` answers true.
+  final needsConfigIds = <String>{};
+
+  @override
+  Future<bool> needsConfig(String installId) async =>
+      needsConfigIds.contains(installId);
 
   @override
   Future<({List<String> written, List<String> skipped})> reorder(
@@ -88,6 +96,7 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   @override
   Future<LyricsPluginWrite> setEnabled(String installId, bool on) async {
     enabled.add((installId, on));
+    if (enableError != null) throw enableError!;
     return LyricsPluginWrite.written;
   }
 

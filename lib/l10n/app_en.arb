@@ -5215,5 +5215,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pluginNeedsConfigTitle": "{name} needs configuration",
+  "@pluginNeedsConfigTitle": {"description": "Snack bar: a plugin has an empty required setting and was not run", "placeholders": {"name": {"type": "String"}}},
+  "pluginOpenConfig": "Open config",
+  "@pluginOpenConfig": {"description": "Snack bar action: open the plugin's settings page"},
+  "lyricsTranslationFailNeedsConfig": "This translation plugin needs configuration before it can run.",
+  "@lyricsTranslationFailNeedsConfig": {"description": "Why a translation failed: a required plugin setting is empty"}
 }

@@ -42,6 +42,11 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
   /// decides when to try again.
   final _unasked = <String>{};
 
+  /// By key, the sources the last lookup skipped because a required setting
+  /// is empty. Asking them again changes nothing until the lookup runs
+  /// again (a track change, or Now Playing shown again).
+  final _blockedByConfig = <String, Set<String>>{};
+
   /// Bumped by [forgetFailures]; a lookup started before the bump records no
   /// failure and starts no pause.
   int _generation = 0;
@@ -114,6 +119,12 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
   /// retries such a song, so a busy runtime is not asked again every second.
   bool leftSourceUnasked(String key) => _unasked.contains(key);
 
+  /// The sources the last lookup of [key] skipped because a required
+  /// setting is empty. The automatic lookup does not count them as
+  /// unanswered, so they alone never arm a retry.
+  Set<String> blockedByConfig(String key) =>
+      Set.unmodifiable(_blockedByConfig[key] ?? const <String>{});
+
   void _set(String key, LookupState? value) {
     if (!ref.mounted) return;
     final next = {...state};
@@ -131,6 +142,7 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
     if (db == null || !target.isAutoSearchable) return;
     final generation = _generation;
     _unasked.remove(key);
+    _blockedByConfig.remove(key);
     // The list of sources is complete before any request goes out.
     if (!ref.read(lyricsSourcesLoadedProvider)) {
       await whenLyricsSourcesLoaded(ref);
@@ -196,9 +208,13 @@ class OnlineLyricsLookups extends Notifier<Map<String, LookupState>> {
       } on LyricsRequestAbandoned {
         _set(key, null);
         return;
-      } on LyricsSourceSkipped {
+      } on LyricsSourceSkipped catch (e) {
         // Not run this time: no failure, no pause, nothing stored.
-        _unasked.add(key);
+        if (e.needsConfig) {
+          (_blockedByConfig[key] ??= {}).add(registration.id);
+        } else {
+          _unasked.add(key);
+        }
         continue;
       } on LyricsFetchException catch (e) {
         if (e.kind != LyricsFetchKind.notConsented) {

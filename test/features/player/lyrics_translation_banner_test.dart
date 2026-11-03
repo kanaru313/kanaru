@@ -115,6 +115,25 @@ void main() {
     });
   }
 
+  testWidgets('plugin needsConfig: opens the plugin page, no Retry', (
+    tester,
+  ) async {
+    await pump(tester, plugin, TranslationFailureKind.needsConfig);
+
+    expect(
+      find.text(
+        'This translation plugin needs configuration before it can run.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Retry'), findsNothing);
+    await tester.tap(find.text('Open config'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(nowPlayingOpenProvider), isFalse);
+    expect(location(), translationPluginRoute(_id));
+  });
+
   testWidgets('a plugin failure offers Translate with Google', (tester) async {
     await pump(tester, plugin, TranslationFailureKind.server);
 

@@ -199,6 +199,10 @@ class PluginTranslateRunner {
     if (row == null) {
       throw const TranslationException(TranslationFailureKind.server);
     }
+    // A required field is empty: nothing ran, nothing is logged.
+    if (outcome.state == PluginRunState.needsConfig) {
+      throw const TranslationException(TranslationFailureKind.needsConfig);
+    }
     if (outcome.state == PluginRunState.setupFailed) {
       final kind = translateSetupFailureKind(
         timedOut: outcome.timedOut,

@@ -5241,4 +5241,16 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String pluginNeedsConfigTitle(String name) {
+    return '$name needs configuration';
+  }
+
+  @override
+  String get pluginOpenConfig => 'Open config';
+
+  @override
+  String get lyricsTranslationFailNeedsConfig =>
+      'This translation plugin needs configuration before it can run.';
 }

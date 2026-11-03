@@ -47,6 +47,7 @@ class PluginScriptRunner {
     PluginPackageLoader? packages,
     Duration outerDeadline = pluginRunOuterDeadline,
     DateTime Function()? clock,
+    void Function(LyricsPluginRow row)? onNeedsConfig,
   }) : _core = PluginRunCore(
          db: db,
          runtime: runtime,
@@ -55,6 +56,7 @@ class PluginScriptRunner {
          loadConfig: loadConfig,
          packages: packages,
          outerDeadline: outerDeadline,
+         onNeedsConfig: onNeedsConfig,
        ),
        _clock = clock ?? DateTime.now;
 
@@ -90,6 +92,10 @@ class PluginScriptRunner {
     );
     final row = outcome.row;
     if (row == null) throw const LyricsSourceSkipped();
+    // A required field is empty: not a failure, nothing is logged.
+    if (outcome.state == PluginRunState.needsConfig) {
+      throw const LyricsSourceSkipped(needsConfig: true);
+    }
     final scriptName = script == PluginScript.search
         ? 'search.js'
         : 'lyrics.js';

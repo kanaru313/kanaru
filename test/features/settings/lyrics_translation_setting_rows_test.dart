@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/features/settings/lyrics_translation_setting_rows.dart';
@@ -12,6 +13,15 @@ import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import 'translation_settings_harness.dart';
 
 const _google = TranslationServiceId.google;
+
+class _NeedsConfig extends Fake implements LyricsPluginsController {
+  _NeedsConfig(this.answer);
+
+  final bool answer;
+
+  @override
+  Future<bool> needsConfig(String installId) async => answer;
+}
 
 void main() {
   const rows = LyricsTranslationSettingRows();
@@ -138,6 +148,75 @@ void main() {
       );
       expect(picker.selected, {TranslationServiceId.google});
       expect(h.prefs.service, plugin);
+    });
+
+    for (final needs in [true, false]) {
+      testWidgets(
+        'picking a plugin ${needs ? 'that needs' : 'that does not need'} '
+        'config ${needs ? 'reports it, and keeps it selected' : 'reports nothing'}',
+        (tester) async {
+          final h = TranslationSettingsHarness();
+          await h.pump(
+            tester,
+            rows,
+            overrides: [
+              ...withPlugins([translateRecord(id, name: 'Gemini')]),
+              lyricsPluginsControllerProvider.overrideWithValue(
+                _NeedsConfig(needs),
+              ),
+            ],
+          );
+
+          await tester.tap(
+            find.descendant(
+              of: find.byType(SegmentedButton<TranslationServiceId>),
+              matching: find.text('Gemini'),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final notice = h.container.read(pluginNeedsConfigNoticesProvider);
+          expect(h.prefs.service, plugin);
+          if (needs) {
+            expect(notice?.installId, id);
+            expect(notice?.name, 'Gemini');
+          } else {
+            expect(notice, isNull);
+          }
+        },
+      );
+    }
+
+    testWidgets('Cancel on the notice reports nothing', (tester) async {
+      final h = TranslationSettingsHarness(
+        settings: const AppSettings(
+          translation: TranslationPrefs(
+            show: true,
+            noticeAcknowledged: {_google},
+          ),
+        ),
+      );
+      await h.pump(
+        tester,
+        rows,
+        overrides: [
+          ...withPlugins([translateRecord(id, name: 'Gemini')]),
+          lyricsPluginsControllerProvider.overrideWithValue(_NeedsConfig(true)),
+        ],
+      );
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(SegmentedButton<TranslationServiceId>),
+          matching: find.text('Gemini'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(h.prefs.service, _google);
+      expect(h.container.read(pluginNeedsConfigNoticesProvider), isNull);
     });
 
     testWidgets('picking a plugin while translation is on asks first', (

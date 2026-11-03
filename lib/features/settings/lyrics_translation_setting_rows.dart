@@ -8,6 +8,7 @@ import '../../core/lyrics_translation/translation_service_names.dart';
 import '../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_needs_config_request.dart';
 import '../../shared/translation_language_name.dart';
 import '../../shared/translation_notice_dialog.dart';
 import '../../shared/translation_service_name.dart';
@@ -33,6 +34,8 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     WidgetRef ref,
     TranslationServiceId service,
   ) async {
+    // Taken before any await: the page may be gone when the dialog closes.
+    final container = ProviderScope.containerOf(context);
     final prefs = ref.read(settingsProvider).translation;
     // While translation is on, a service never agreed to needs the notice
     // first; Cancel keeps the old service.
@@ -43,6 +46,9 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
           .read(settingsProvider.notifier)
           .setTranslation(prefs.copyWith(service: service));
     }
+    // Not reported when the notice dialog was cancelled: the service did
+    // not change.
+    await reportPickedServiceNeedsConfig(container, service);
   }
 
   @override

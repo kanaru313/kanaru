@@ -4931,4 +4931,16 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String pluginNeedsConfigTitle(String name) {
+    return '$name cần được cấu hình';
+  }
+
+  @override
+  String get pluginOpenConfig => 'Mở cấu hình';
+
+  @override
+  String get lyricsTranslationFailNeedsConfig =>
+      'Plugin dịch này cần được cấu hình trước khi chạy.';
 }

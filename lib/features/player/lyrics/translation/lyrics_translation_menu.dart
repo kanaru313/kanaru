@@ -12,6 +12,7 @@ import '../../../../core/lyrics_translation/translation_service_resolution.dart'
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/icons/app_icons.dart';
+import '../../../../shared/lyrics_plugins/plugin_needs_config_request.dart';
 import '../../../../shared/settings_routes.dart';
 import '../../../../shared/translation_language_name.dart';
 import '../../../../shared/translation_notice_dialog.dart';
@@ -76,19 +77,22 @@ List<Widget> lyricsTranslationMenuItems(
   final services = choices.services;
   final shown = choices.selected;
 
+  // The router and container are taken now: Now Playing closes, and with it
+  // the tree this menu hangs from.
+  final router = GoRouter.maybeOf(context);
+  // Read on press only: building it starts the player service.
+  final container = ProviderScope.containerOf(context);
+
   Future<void> pickService(TranslationServiceId service) async {
     if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
     }
+    // Only when the pick took effect (the notice may have been cancelled).
+    await reportPickedServiceNeedsConfig(container, service);
   }
 
-  // The router and container are taken now: Now Playing closes, and with it
-  // the tree this menu hangs from.
-  final router = GoRouter.maybeOf(context);
-  // Read on press only: building it starts the player service.
-  final container = ProviderScope.containerOf(context);
   void openSettings() {
     container.read(nowPlayingOpenProvider.notifier).close();
     router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));

@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_log_paths.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_menu.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_open_url.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -107,6 +109,60 @@ void main() {
     await tester.tap(find.byType(Switch).first);
     await tester.pump();
     expect(plugins.enabled.last, ('lrclib', false));
+  });
+
+  testWidgets('switching on a plugin that needs config reports it', (
+    tester,
+  ) async {
+    final plugins = FakePlugins()..needsConfigIds.add(idA);
+    await pumpSources(
+      tester,
+      records: two,
+      plugins: plugins,
+      prefs: const [
+        LyricsSourcePrefRow(providerId: idA, enabled: false, position: 1),
+      ],
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Switch).first),
+    );
+
+    // Off: nothing to report. On: the plugin stays on and is reported.
+    await tester.tap(find.byType(Switch).at(1));
+    await tester.pumpAndSettle();
+    expect(plugins.enabled, [(idA, true)]);
+    final notice = container.read(pluginNeedsConfigNoticesProvider);
+    expect(notice?.installId, idA);
+    expect(notice?.name, 'Alpha');
+
+    // Switching off reports nothing.
+    await tester.tap(find.byType(Switch).at(2));
+    await tester.pumpAndSettle();
+    expect(container.read(pluginNeedsConfigNoticesProvider)?.seq, 1);
+  });
+
+  testWidgets('a switch that could not be saved reports nothing', (
+    tester,
+  ) async {
+    final plugins = FakePlugins()
+      ..needsConfigIds.add(idA)
+      ..enableError = StateError('db');
+    await pumpSources(
+      tester,
+      records: two,
+      plugins: plugins,
+      prefs: const [
+        LyricsSourcePrefRow(providerId: idA, enabled: false, position: 1),
+      ],
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Switch).first),
+    );
+
+    await tester.tap(find.byType(Switch).at(1));
+    await tester.pumpAndSettle();
+
+    expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
   });
 
   testWidgets('a disabled source shows its switch off', (tester) async {

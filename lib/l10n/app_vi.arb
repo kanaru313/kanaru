@@ -1975,5 +1975,8 @@
   "playlistDuplicatesRemoved": "{count, plural, other{Đã xoá {count} bài trùng}}",
   "playlistRemoveMissing": "Xoá bài không còn",
   "playlistRemoveMissingHint": "{count, plural, other{{count} bài không có trong thư viện}}",
-  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}"
+  "playlistMissingRemoved": "{count, plural, other{Đã xoá {count} bài không còn}}",
+  "pluginNeedsConfigTitle": "{name} cần được cấu hình",
+  "pluginOpenConfig": "Mở cấu hình",
+  "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy."
 }
