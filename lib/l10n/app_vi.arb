@@ -960,14 +960,6 @@
   "@playlistM3uImportFailed": {
     "description": "Snackbar when the picked M3U file cannot be read"
   },
-  "playlistM3uExportAbsolute": "Xuất M3U (đường dẫn đầy đủ)…",
-  "@playlistM3uExportAbsolute": {
-    "description": "Playlist menu item: save as M3U with absolute paths"
-  },
-  "playlistM3uExportRelative": "Xuất M3U (đường dẫn tương đối)…",
-  "@playlistM3uExportRelative": {
-    "description": "Playlist menu item: save as M3U with paths relative to the file"
-  },
   "playlistM3uExported": "Đã lưu {count} bài vào {file}",
   "@playlistM3uExported": {
     "description": "Snackbar after exporting a playlist",

@@ -246,7 +246,7 @@ void main() {
       tester,
     ) async {
       final view = EntriesViewHarness()..reset();
-      await view.pump(tester, [missing(1), missing(2)], onQueueAction: (_) {});
+      await view.pump(tester, [missing(1), missing(2)]);
 
       expect(_playButton(tester).onPressed, isNull);
       expect(_shuffleButton(tester).onPressed, isNull);
@@ -256,10 +256,7 @@ void main() {
 
     testWidgets('they are enabled when a song can play', (tester) async {
       final view = EntriesViewHarness()..reset();
-      await view.pump(tester, [
-        missing(1),
-        available(2),
-      ], onQueueAction: (_) {});
+      await view.pump(tester, [missing(1), available(2)]);
 
       expect(_shuffleButton(tester).onPressed, isNotNull);
       expect(find.byIcon(AppIcons.more), findsOneWidget);

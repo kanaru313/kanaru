@@ -3200,18 +3200,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t read that playlist file. See the log for details.'**
   String get playlistM3uImportFailed;
 
-  /// Playlist menu item: save as M3U with absolute paths
-  ///
-  /// In en, this message translates to:
-  /// **'Export M3U (full paths)…'**
-  String get playlistM3uExportAbsolute;
-
-  /// Playlist menu item: save as M3U with paths relative to the file
-  ///
-  /// In en, this message translates to:
-  /// **'Export M3U (relative paths)…'**
-  String get playlistM3uExportRelative;
-
   /// Snackbar after exporting a playlist
   ///
   /// In en, this message translates to:

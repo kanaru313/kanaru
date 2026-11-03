@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
 import '../../core/database/search_playlist_queries.dart';
-import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../shared/in_page_filter.dart';
 import '../../shared/widgets/detail_page/cover_tint_page_background.dart';
 import '../../shared/widgets/detail_page/detail_side_pane.dart';
@@ -36,9 +35,7 @@ class PlaylistPageLayout extends StatelessWidget {
     required this.onPlayRows,
     this.onPlay,
     this.onShuffle,
-    this.onQueueAction,
     this.onEntryQueueAction,
-    this.onExport,
     this.savedQueue = false,
     this.beforeRead,
   });
@@ -70,10 +67,8 @@ class PlaylistPageLayout extends StatelessWidget {
 
   /// Null while nothing in the playlist can play: Shuffle is disabled.
   final VoidCallback? onShuffle;
-  final void Function(QueueAction action)? onQueueAction;
   final void Function(PlaylistEntryRow entry, QueueAction action)?
   onEntryQueueAction;
-  final ValueChanged<M3uPathStyle>? onExport;
 
   /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
   final bool savedQueue;
@@ -96,8 +91,6 @@ class PlaylistPageLayout extends StatelessWidget {
                 count: count,
                 onPlay: onPlay,
                 onShuffle: onShuffle,
-                onQueueAction: onQueueAction,
-                onExport: onExport,
                 savedQueue: savedQueue,
                 beforeRead: beforeRead,
               ),
@@ -125,8 +118,6 @@ class PlaylistPageLayout extends StatelessWidget {
                 count: count,
                 onPlay: onPlay,
                 onShuffle: onShuffle,
-                onQueueAction: onQueueAction,
-                onExport: onExport,
                 savedQueue: savedQueue,
                 beforeRead: beforeRead,
               ),

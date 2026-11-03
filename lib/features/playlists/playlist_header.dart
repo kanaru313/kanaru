@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
-import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../shared/widgets/playlist_cover.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_details.dart';
 
 /// Header of a playlist page in a narrow window: collage beside the name,
@@ -16,8 +14,6 @@ class PlaylistHeader extends StatelessWidget {
     required this.count,
     this.onPlay,
     this.onShuffle,
-    this.onQueueAction,
-    this.onExport,
     this.savedQueue = false,
     this.beforeRead,
   });
@@ -33,12 +29,6 @@ class PlaylistHeader extends StatelessWidget {
 
   /// Null disables Shuffle.
   final VoidCallback? onShuffle;
-
-  /// Null hides the queue menu (nothing to enqueue).
-  final ValueChanged<QueueAction>? onQueueAction;
-
-  /// Null leaves the two export items out.
-  final ValueChanged<M3uPathStyle>? onExport;
 
   /// See `PlaylistDetails.savedQueue` and `PlaylistDetails.beforeRead`.
   final bool savedQueue;
@@ -63,8 +53,6 @@ class PlaylistHeader extends StatelessWidget {
               titleStyle: Theme.of(context).textTheme.headlineMedium,
               onPlay: onPlay,
               onShuffle: onShuffle,
-              onQueueAction: onQueueAction,
-              onExport: onExport,
               savedQueue: savedQueue,
               beforeRead: beforeRead,
             ),

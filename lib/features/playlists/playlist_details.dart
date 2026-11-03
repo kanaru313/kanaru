@@ -1,10 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/playlist_rows.dart';
-import '../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/detail_page/play_shuffle_actions.dart';
-import '../../shared/widgets/queue_actions_menu.dart';
 import 'playlist_display_name.dart';
 import 'playlist_modal/playlist_description_box.dart';
 import 'playlist_modal/playlist_more_button.dart';
@@ -22,8 +20,6 @@ class PlaylistDetails extends StatelessWidget {
     this.actionsAtEnd = false,
     this.onPlay,
     this.onShuffle,
-    this.onQueueAction,
-    this.onExport,
     this.savedQueue = false,
     this.beforeRead,
   });
@@ -43,13 +39,6 @@ class PlaylistDetails extends StatelessWidget {
 
   /// Null disables Shuffle.
   final VoidCallback? onShuffle;
-
-  /// Null hides the queue menu (nothing to enqueue).
-  final ValueChanged<QueueAction>? onQueueAction;
-
-  /// Saves the playlist as an M3U file with paths of the given style; null
-  /// leaves the two export items out.
-  final ValueChanged<M3uPathStyle>? onExport;
 
   /// A saved queue: the ⋮ button opens the Queue modal; any other playlist
   /// gets the playlist modal.

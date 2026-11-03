@@ -91,7 +91,6 @@ class EntriesViewHarness {
   bool _readOnly = false;
   bool _savedQueue = false;
   Locale? _locale;
-  void Function(QueueAction)? _onQueueAction;
   void Function(PlaylistEntryRow, QueueAction)? _onEntryQueueAction;
 
   /// Clears what was recorded; call from `setUp`.
@@ -161,10 +160,8 @@ class EntriesViewHarness {
                 },
           onPlayFrom: (id, hint) async => played.add((id, hint)),
           onShuffle: () async => shuffled++,
-          onQueueAction: _onQueueAction,
           onEntryQueueAction: _onEntryQueueAction,
           savedQueue: _savedQueue,
-          onExport: _savedQueue ? (_) {} : null,
         ),
       ),
     ),
@@ -180,14 +177,12 @@ class EntriesViewHarness {
     bool savedQueue = false,
     String name = 'Mix',
     Locale? locale,
-    void Function(QueueAction)? onQueueAction,
     void Function(PlaylistEntryRow, QueueAction)? onEntryQueueAction,
   }) async {
     store = [...entries];
     _readOnly = readOnly;
     _savedQueue = savedQueue;
     _locale = locale;
-    _onQueueAction = onQueueAction;
     // A row opens its song modal only with a queue handler; the real screens
     // always give one.
     _onEntryQueueAction = onEntryQueueAction ?? (rowModals ? (_, _) {} : null);

@@ -2191,12 +2191,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t read that playlist file. See the log for details.';
 
   @override
-  String get playlistM3uExportAbsolute => 'Export M3U (full paths)…';
-
-  @override
-  String get playlistM3uExportRelative => 'Export M3U (relative paths)…';
-
-  @override
   String playlistM3uExported(int count, String file) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

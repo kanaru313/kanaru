@@ -2060,12 +2060,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không đọc được tệp playlist. Xem log để biết chi tiết.';
 
   @override
-  String get playlistM3uExportAbsolute => 'Xuất M3U (đường dẫn đầy đủ)…';
-
-  @override
-  String get playlistM3uExportRelative => 'Xuất M3U (đường dẫn tương đối)…';
-
-  @override
   String playlistM3uExported(int count, String file) {
     return 'Đã lưu $count bài vào $file';
   }

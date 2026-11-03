@@ -3,7 +3,6 @@ import 'package:flutter/gestures.dart'
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
-import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
 import 'package:kanaru/features/playlists/playlist_entry_placeholder.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -231,7 +230,6 @@ void main() {
           [available(1), missing(2)],
           name: 'A very long playlist name that needs two lines at least',
           width: width,
-          onQueueAction: (_) {},
         );
 
         expect(tester.takeException(), isNull);
@@ -341,11 +339,10 @@ void main() {
     });
 
     testWidgets('one more button opens the playlist modal', (tester) async {
-      await view.pump(tester, [available(1)], onQueueAction: (_) {});
+      await view.pump(tester, [available(1)]);
 
       expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byTooltip('More options'), findsOneWidget);
-      expect(find.byType(PlaylistActionsMenu), findsNothing);
       await openPageModal(tester);
       expect(modalAction('play-all'), findsOneWidget);
       // The page is the playlist itself: no Go to playlist.
@@ -353,7 +350,7 @@ void main() {
     });
 
     testWidgets('the button stays when nothing can play', (tester) async {
-      await view.pump(tester, [missing(1)], onQueueAction: (_) {});
+      await view.pump(tester, [missing(1)]);
 
       expect(find.byIcon(AppIcons.more), findsOneWidget);
       expect(find.byIcon(AppIcons.edit), findsNothing);
@@ -362,14 +359,8 @@ void main() {
     testWidgets('a saved queue opens the Queue modal from its button', (
       tester,
     ) async {
-      await view.pump(
-        tester,
-        [available(1), available(2)],
-        savedQueue: true,
-        onQueueAction: (_) {},
-      );
+      await view.pump(tester, [available(1), available(2)], savedQueue: true);
 
-      expect(find.byType(PlaylistActionsMenu), findsNothing);
       await openPageModal(tester);
       expect(modalAction('delete'), findsOneWidget);
       expect(modalAction('edit'), findsNothing);
