@@ -291,6 +291,7 @@ class PluginTranslateRunner {
       requests: requests,
     ),
     config,
+    schema: decodePluginConfigSchema(row.configSchema),
     failed: failed && failure != null,
     appLogLabel: 'Translate plugin',
   );

@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 
 import '../../plugin_runtime/plugin_runtime.dart';
 import '../online/lyrics_fetch_exception.dart';
+import 'package/plugin_config_field.dart';
 import 'plugin_run_log.dart';
 
 final _log = Logger('lyrics_plugin');
@@ -53,10 +54,12 @@ void recordPluginRun(
   PluginRunLog log,
   PluginRunLogEvent event,
   PluginConfigMap config, {
+  List<PluginConfigField> schema = const [],
   required bool failed,
   String appLogLabel = 'Lyrics plugin',
 }) {
-  unawaited(log.write(event, config: config));
+  final typed = userEnteredConfig(schema, config);
+  unawaited(log.write(event, config: typed));
   if (!failed) return;
   // Lyrics name this kind `blockedHost`, translate `blocked`.
   final blocked =
@@ -69,7 +72,7 @@ void recordPluginRun(
     installId: event.installId,
     script: event.script,
     kind: event.kind,
-    blockedHost: blocked == null ? null : configValueHider(config)(blocked),
+    blockedHost: blocked == null ? null : configValueHider(typed)(blocked),
     label: appLogLabel,
   );
 }

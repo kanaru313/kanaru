@@ -14,6 +14,7 @@ import 'plugin_run_errors.dart';
 import 'plugin_run_log.dart';
 import 'plugin_run_registry.dart';
 import 'store/lyrics_plugin_dirs.dart';
+import 'store/plugin_config_schema_codec.dart';
 
 /// Which script of the package to run.
 enum PluginScript { search, lyrics }
@@ -170,6 +171,7 @@ class PluginScriptRunner {
           requests: outcome.requests,
         ),
         config,
+        schema: decodePluginConfigSchema(row.configSchema),
         failed: !ok,
       );
     }

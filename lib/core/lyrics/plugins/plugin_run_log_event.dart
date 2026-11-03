@@ -1,4 +1,5 @@
 import '../../plugin_runtime/plugin_runtime.dart';
+import 'package/plugin_config_field.dart';
 import 'plugin_fetch_bridge.dart';
 
 /// The `kind` of a run that did not fail but printed to the console.
@@ -75,9 +76,36 @@ class PluginRunLogEvent {
   }
 }
 
+/// The part of [config] the user typed: input text, multiline, secret and
+/// url values, string list items, map keys and values. Select values (public
+/// in the manifest), numbers and toggles are left out, so a select value such
+/// as `default` does not hide that word in the logs. A key that is not in
+/// [schema] (stale) stays in: hiding too much is the safe side.
+PluginConfigMap userEnteredConfig(
+  List<PluginConfigField> schema,
+  PluginConfigMap config,
+) {
+  final fields = {for (final f in schema) f.key: f};
+  return {
+    for (final e in config.entries)
+      if (_isUserEntered(fields[e.key])) e.key: e.value,
+  };
+}
+
+bool _isUserEntered(PluginConfigField? field) =>
+    field == null ||
+    switch (field.mode) {
+      PluginConfigMode.input =>
+        field.inputFormat != PluginInputFormat.number &&
+            field.inputFormat != PluginInputFormat.integer,
+      PluginConfigMode.list || PluginConfigMode.map => true,
+      PluginConfigMode.select || PluginConfigMode.toggle => false,
+    };
+
 /// A function that replaces every string of a [config] value (a text value,
 /// a list item, a map key or value) of at least four characters in a text
-/// with `***`; numbers and bools are not hidden. A value is also hidden in the forms a script or a
+/// with `***`; numbers and bools are not hidden. Pass the result of
+/// [userEnteredConfig] to leave select values readable. A value is also hidden in the forms a script or a
 /// URL gives it: the percent-encoded component and the percent-encoded whole
 /// address. A value that lists several secrets (keys split by spaces, commas
 /// or semicolons) also hides each token of at least eight characters, so a

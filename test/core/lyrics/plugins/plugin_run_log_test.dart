@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_config_field.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_failure_log.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_fetch_bridge.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_run_log.dart';
@@ -188,6 +189,76 @@ void main() {
     test('short tokens of a list stay readable', () {
       final hide = configValueHider({'k': 'shorty,longerkey99'});
       expect(hide('shorty longerkey99'), 'shorty ***');
+    });
+  });
+
+  group('user-entered scope', () {
+    PluginConfigField f(
+      String key,
+      PluginConfigMode mode, {
+      PluginInputFormat? input,
+      PluginSelectFormat? select,
+      PluginListFormat? list,
+    }) => PluginConfigField(
+      key: key,
+      title: key,
+      mode: mode,
+      inputFormat: input,
+      selectFormat: select,
+      listFormat: list,
+    );
+
+    final schema = [
+      f('mode', PluginConfigMode.select, select: PluginSelectFormat.single),
+      f('tags', PluginConfigMode.select, select: PluginSelectFormat.multiple),
+      f('name', PluginConfigMode.input, input: PluginInputFormat.text),
+      f('key', PluginConfigMode.input, input: PluginInputFormat.secret),
+      f('site', PluginConfigMode.input, input: PluginInputFormat.url),
+      f('n', PluginConfigMode.input, input: PluginInputFormat.number),
+      f('on', PluginConfigMode.toggle),
+      f('words', PluginConfigMode.list, list: PluginListFormat.text),
+      f('nums', PluginConfigMode.list, list: PluginListFormat.number),
+      f('hdr', PluginConfigMode.map),
+    ];
+    final config = <String, Object>{
+      'mode': 'default',
+      'tags': ['alphabet', 'betagamma'],
+      'name': 'textvalue1',
+      'key': 'sec ret/key&1',
+      'site': 'https://example.org/x',
+      'n': 12345678,
+      'on': true,
+      'words': ['listitem1'],
+      'nums': [11112222],
+      'hdr': {'mapkeyname': 'mapvalue22'},
+      'stale': 'staleval99',
+    };
+    String Function(String) hider() =>
+        configValueHider(userEnteredConfig(schema, config));
+
+    test('select values stay readable', () {
+      expect(
+        hider()('default alphabet betagamma'),
+        'default alphabet betagamma',
+      );
+    });
+
+    test('typed values are hidden', () {
+      expect(
+        hider()(
+          'textvalue1 sec ret/key&1 https://example.org/x listitem1 '
+          'mapkeyname mapvalue22 staleval99',
+        ),
+        '*** *** *** *** *** *** ***',
+      );
+    });
+
+    test('percent-encoded secret is hidden', () {
+      expect(hider()('k=${Uri.encodeComponent('sec ret/key&1')}'), 'k=***');
+    });
+
+    test('numbers and toggles are left alone', () {
+      expect(hider()('12345678 11112222 true'), '12345678 11112222 true');
     });
   });
 
