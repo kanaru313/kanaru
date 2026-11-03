@@ -16,9 +16,10 @@ const _minMaskedTokenLength = 8;
 
 /// One line of a plugin's log file. `query` is the run input (song data
 /// included; the file stays on this device and is never attached to a bug
-/// report by itself). Config values must not be in any field except through
-/// [PluginRunLog.write], which hides them in [message], [stack], [console]
-/// and the request paths.
+/// report by itself). Config values reach the file only through [toJson]
+/// (called by [PluginRunLog.write]), which hides every string of them (a text
+/// value, each list item, each map key and value) in [query], [message],
+/// [stack], [console] and the request hosts and paths.
 class PluginRunLogEvent {
   const PluginRunLogEvent({
     required this.time,
@@ -74,8 +75,9 @@ class PluginRunLogEvent {
   }
 }
 
-/// A function that replaces every [config] value of at least four characters
-/// in a text with `***`. A value is also hidden in the forms a script or a
+/// A function that replaces every string of a [config] value (a text value,
+/// a list item, a map key or value) of at least four characters in a text
+/// with `***`; numbers and bools are not hidden. A value is also hidden in the forms a script or a
 /// URL gives it: the percent-encoded component and the percent-encoded whole
 /// address. A value that lists several secrets (keys split by spaces, commas
 /// or semicolons) also hides each token of at least eight characters, so a
@@ -110,8 +112,8 @@ Object? _hideDeep(Object? value, String Function(String) hide) =>
       _ => value,
     };
 
-// The strings of a config value: itself, list items, map keys and values. Numbers
-// and bools hold nothing to hide.
+// The strings of a config value: itself, list items, map keys and values.
+// Numbers and bools hold nothing to hide.
 Iterable<String> _stringLeaves(Object? value) => switch (value) {
   String() => [value],
   List() => value.expand(_stringLeaves),
