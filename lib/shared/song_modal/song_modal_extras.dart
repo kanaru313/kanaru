@@ -1,7 +1,7 @@
 import '../widgets/context_modal/context_modal_route.dart';
 
 /// What a screen adds to the song modal of one of its rows: [actions] shown
-/// before the links, a quiet [headerNote] line under the album, and which
+/// before the links, a [headerNote] chip under the album, and which
 /// links point back at the page itself ([showAlbum], [pageArtistKey],
 /// [showFolder]). This is the only way a screen shapes the song modal.
 ///
@@ -19,7 +19,7 @@ class SongModalExtras {
 
   final List<ContextModalAction> actions;
 
-  /// One short line under the album (for example the listen count); null
+  /// One short chip under the album (for example the listen count); null
   /// leaves the header at three lines.
   final String? headerNote;
 

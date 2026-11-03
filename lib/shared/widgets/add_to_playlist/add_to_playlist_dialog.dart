@@ -50,13 +50,15 @@ class PlaylistAddPlan {
 /// starts being read by the caller; the picker shows how many of them each
 /// playlist already holds. Completes with the plan once Add is pressed and
 /// the paths are read, or null when dismissed or when there is nothing to
-/// add. Throws what [paths] threw. Nothing is written or created here.
+/// add. [suggestedName] prefills the first "New playlist" name dialog.
+/// Throws what [paths] threw. Nothing is written or created here.
 Future<PlaylistAddPlan?> showPlaylistPicker(
   BuildContext context, {
   required LibraryDatabase db,
   required Future<List<String>> paths,
   required String label,
   int? excludePlaylistId,
+  String? suggestedName,
 }) async {
   final plan = await showDialog<PlaylistAddPlan>(
     context: context,
@@ -65,6 +67,7 @@ Future<PlaylistAddPlan?> showPlaylistPicker(
       paths: paths,
       label: label,
       excludePlaylistId: excludePlaylistId,
+      suggestedName: suggestedName,
     ),
   );
   if (plan == null) return null;

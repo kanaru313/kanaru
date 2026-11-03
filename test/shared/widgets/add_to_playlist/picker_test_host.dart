@@ -26,6 +26,7 @@ class PickerHost {
 
   Future<List<String>> Function() readPaths = () async => ['/m/1', '/m/2'];
   int? excludePlaylistId;
+  String? suggestedName;
 
   Future<int> idOf(WidgetTester tester, String name) async {
     final rows = await tester.runAsync(() => db.watchPlaylistSummaries().first);
@@ -89,6 +90,7 @@ Future<PickerHost> pumpPickerHost(
                 readPaths: () => host.readPaths(),
                 label: 'Road album',
                 excludePlaylistId: host.excludePlaylistId,
+                suggestedName: host.suggestedName,
               ),
               child: const Text('Open'),
             ),

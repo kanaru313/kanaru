@@ -60,7 +60,7 @@ class SongModalSession {
   /// shown before the links.
   final List<ContextModalAction> extraActions;
 
-  /// Quiet line the screen adds under the album in the header; null for none.
+  /// Chip the screen adds under the album in the header; null for none.
   final String? headerNote;
 
   /// The artist of the page the row is on, left out of the artist links;

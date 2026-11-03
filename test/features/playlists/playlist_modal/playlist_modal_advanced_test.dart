@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/playlist_favorites.dart';
 import 'package:kanaru/core/database/playlist_queries.dart';
-import 'package:kanaru/features/playlists/m3u_file_pickers.dart';
+import 'package:kanaru/shared/m3u/m3u_save_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../library/browse_test_data.dart';

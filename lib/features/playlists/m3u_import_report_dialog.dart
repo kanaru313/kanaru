@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/m3u/m3u_import.dart';
 import '../../core/m3u/m3u_parse.dart' show m3uMaxPathLines;
+import '../../core/m3u/m3u_text.dart';
 import '../../l10n/l10n.dart';
 
 /// Unresolved lines listed by name; the rest is counted.
@@ -70,12 +71,6 @@ Future<void> showM3uImportReport(
     ),
   );
 }
-
-/// Control characters and bidi overrides or isolates: text from a file is
-/// shown with them as spaces, so it cannot hide or reorder what it says.
-final m3uUnsafeTextChars = RegExp(
-  r'[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]',
-);
 
 /// [text] cut to [m3uReportMaxLineLength] characters (whole graphemes), with
 /// [m3uUnsafeTextChars] as spaces.

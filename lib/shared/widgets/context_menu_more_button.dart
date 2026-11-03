@@ -10,12 +10,20 @@ import 'context_menu_region.dart';
 /// opens below it. Always visible, so the menu is reachable without a right
 /// click or a long press.
 class ContextMenuMoreButton extends StatelessWidget {
-  const ContextMenuMoreButton({super.key, required this.onOpen, this.color});
+  const ContextMenuMoreButton({
+    super.key,
+    required this.onOpen,
+    this.color,
+    this.icon = AppIcons.more,
+  });
 
   final ContextMenuOpen onOpen;
 
   /// Icon color; null keeps the theme's.
   final Color? color;
+
+  /// The glyph: vertical dots by default, horizontal ones for a day bar.
+  final IconData icon;
 
   /// The button's bottom-left in global coordinates, or null while it is not
   /// laid out.
@@ -47,7 +55,7 @@ class ContextMenuMoreButton extends StatelessWidget {
           },
           child: IconButton(
             tooltip: context.l10n.songModalMoreOptions,
-            icon: const Icon(AppIcons.more),
+            icon: Icon(icon),
             iconSize: 20,
             color: color,
             padding: EdgeInsets.zero,

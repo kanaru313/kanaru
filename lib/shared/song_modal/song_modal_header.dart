@@ -12,15 +12,15 @@ import '../widgets/cover_art.dart';
 const double _coverSize = 64;
 
 /// Top of the song modal: the cover, then the artists line, the title and
-/// the album, and the screen's [note] when it has one. With [onTap] the
-/// header opens the song's details and shows a chevron.
+/// the album, and the screen's [note] as a chip when it has one. With [onTap]
+/// the header opens the song's details and shows a chevron.
 class SongModalHeader extends ConsumerWidget {
   const SongModalHeader({super.key, required this.song, this.onTap, this.note});
 
   final SongRow song;
   final VoidCallback? onTap;
 
-  /// Extra quiet fourth line (set by the screen); null leaves three lines.
+  /// Chip under the album (set by the screen); null leaves three lines.
   final String? note;
 
   @override
@@ -51,7 +51,7 @@ class SongModalHeader extends ConsumerWidget {
               : album,
           quiet,
         ),
-        if (note != null) contextModalHeaderLine(note!, quiet),
+        if (note != null) ContextModalHeaderChip(note!),
       ],
       trailing: onTap == null ? null : const Icon(AppIcons.chevronRight),
       onTap: onTap,
