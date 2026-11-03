@@ -454,7 +454,7 @@ void main() {
 
       expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
       expect(find.text('Not in library'), findsWidgets);
-      expect(find.text('Played $rowText'), findsOneWidget);
+      expect(find.text('Played $rowText'), findsNothing);
       expect(find.text('Song history'), findsOneWidget);
       expect(find.text('Remove from history'), findsOneWidget);
       expect(find.text('Play next'), findsNothing);
