@@ -30,6 +30,11 @@ class _MutablePalette extends AppCoverPaletteNotifier {
   void show(CoverPalette? palette) => state = palette;
 }
 
+/// [scheme] without its error color: a dark scheme near a red primary gets a
+/// distinct error (see theme_error_color_test.dart), the rest must match.
+ColorScheme _sansError(ColorScheme scheme) =>
+    scheme.copyWith(error: const Color(0xFF000000));
+
 /// [buildTheme] with the app's default font.
 ThemeData _build(
   ColorScheme? dynamicScheme,
@@ -112,8 +117,10 @@ void main() {
     for (final brightness in Brightness.values) {
       test('a cover seed sets the $brightness scheme', () {
         expect(
-          _build(null, brightness, coverSeed: _red).colorScheme,
-          ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+          _sansError(_build(null, brightness, coverSeed: _red).colorScheme),
+          _sansError(
+            ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+          ),
         );
       });
 
@@ -123,8 +130,10 @@ void main() {
           brightness: brightness,
         );
         expect(
-          _build(platform, brightness, coverSeed: _red).colorScheme,
-          ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+          _sansError(_build(platform, brightness, coverSeed: _red).colorScheme),
+          _sansError(
+            ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+          ),
         );
       });
 
@@ -135,10 +144,12 @@ void main() {
         );
         expect(_build(platform, brightness).colorScheme, platform.harmonized());
         expect(
-          _build(null, brightness).colorScheme,
-          ColorScheme.fromSeed(
-            seedColor: kanaruSeedColor,
-            brightness: brightness,
+          _sansError(_build(null, brightness).colorScheme),
+          _sansError(
+            ColorScheme.fromSeed(
+              seedColor: kanaruSeedColor,
+              brightness: brightness,
+            ),
           ),
         );
       });
@@ -206,8 +217,12 @@ void main() {
       await tester.pump();
       final brightness = before.brightness;
       expect(
-        Theme.of(tester.element(find.byType(Navigator).first)).colorScheme,
-        ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+        _sansError(
+          Theme.of(tester.element(find.byType(Navigator).first)).colorScheme,
+        ),
+        _sansError(
+          ColorScheme.fromSeed(seedColor: _red, brightness: brightness),
+        ),
       );
       expect(
         Theme.of(tester.element(find.byType(Navigator).first)).colorScheme,
@@ -225,8 +240,10 @@ void main() {
         ColorScheme.fromSeed(seedColor: _red, brightness: Brightness.light),
       );
       expect(
-        app.darkTheme!.colorScheme,
-        ColorScheme.fromSeed(seedColor: _red, brightness: Brightness.dark),
+        _sansError(app.darkTheme!.colorScheme),
+        _sansError(
+          ColorScheme.fromSeed(seedColor: _red, brightness: Brightness.dark),
+        ),
       );
     });
 
