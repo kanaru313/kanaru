@@ -10,7 +10,6 @@ import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/widgets/favorite_button.dart';
 import 'package:kanaru/shared/widgets/menu_keyboard_region.dart';
 import 'package:kanaru/shared/widgets/missing_song_row.dart';
-import 'package:kanaru/shared/widgets/queue_actions_menu.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../shared/song_modal/song_modal_test_support.dart';
@@ -360,33 +359,21 @@ void main() {
       expect(find.byIcon(AppIcons.edit), findsNothing);
     });
 
-    testWidgets('a saved queue keeps the popup menu of queue rows', (
+    testWidgets('a saved queue opens the Queue modal from its button', (
       tester,
     ) async {
-      QueueAction? received;
       await view.pump(
         tester,
         [available(1), available(2)],
         savedQueue: true,
-        onQueueAction: (action) => received = action,
+        onQueueAction: (_) {},
       );
 
-      expect(find.byType(PlaylistActionsMenu), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(PlaylistActionsMenu),
-          matching: find.byTooltip('More options'),
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.byType(PlaylistActionsMenu));
-      await tester.pumpAndSettle();
-      expect(find.text('Rename'), findsNothing);
-      expect(find.text('Delete playlist'), findsNothing);
-      await tester.tap(find.text('Add to queue'));
-      await tester.pumpAndSettle();
-
-      expect(received, QueueAction.addToQueue);
+      expect(find.byType(PlaylistActionsMenu), findsNothing);
+      await openPageModal(tester);
+      expect(modalAction('delete'), findsOneWidget);
+      expect(modalAction('edit'), findsNothing);
+      expect(modalAction('go-to-playlist'), findsNothing);
     });
   });
 }

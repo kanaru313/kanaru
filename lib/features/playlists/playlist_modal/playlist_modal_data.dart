@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/playlist_modal_queries.dart';
 import '../../../core/database/playlist_rows.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../playlist_page_data.dart';
+import '../queue_history_actions.dart';
 import 'playlist_modal_stats_provider.dart';
 
 /// What the actions page needs to know about the playlist, to decide which
@@ -16,6 +18,8 @@ class PlaylistModalData {
     this.load,
     this.stats,
     this.showGoTo = true,
+    this.savedQueue = false,
+    this.queueL10n,
   });
 
   /// The summary the modal was opened with; text only until [load] arrives.
@@ -31,14 +35,30 @@ class PlaylistModalData {
   /// False on the page of the playlist itself.
   final bool showGoTo;
 
+  /// The modal is of a saved queue: no Edit, no Duplicate, no repeats clean-up,
+  /// and the name is the time it was saved.
+  final bool savedQueue;
+
+  /// Texts that name a saved queue; without them the stored name shows.
+  final AppLocalizations? queueL10n;
+
   PlaylistPageHead? get head => load?.head;
 
   /// The playlist does not exist any more (deleted elsewhere): the header
   /// keeps the snapshot and every acting row is greyed out.
   bool get gone => load != null && load!.head == null;
 
-  /// The latest summary: the loaded head's, else the snapshot.
-  PlaylistSummary get playlist => head?.playlist ?? snapshot;
+  /// The latest summary: the loaded head's, else the snapshot. A saved queue
+  /// is renamed here once, so labels, file names and messages never show the
+  /// stored placeholder.
+  PlaylistSummary get playlist {
+    final latest = head?.playlist ?? snapshot;
+    final l10n = queueL10n;
+    return savedQueue && l10n != null
+        ? namedQueueSummary(latest, l10n)
+        : latest;
+  }
+
   List<String> get coverKeys => head?.coverKeys ?? snapshotCoverKeys;
   bool get isFavorites => playlist.isFavorites;
 
@@ -60,12 +80,16 @@ PlaylistModalData watchPlaylistModalData(
   required PlaylistSummary snapshot,
   required List<String> snapshotCoverKeys,
   required bool showGoTo,
+  bool savedQueue = false,
+  AppLocalizations? queueL10n,
 }) => PlaylistModalData(
   snapshot: snapshot,
   snapshotCoverKeys: snapshotCoverKeys,
   load: ref.watch(playlistPageHeadProvider(snapshot.id)).value,
   stats: ref.watch(playlistModalStatsProvider(snapshot.id)).value,
   showGoTo: showGoTo,
+  savedQueue: savedQueue,
+  queueL10n: queueL10n,
 );
 
 /// What the actions do. Each one runs after the modal has closed, except
@@ -101,6 +125,6 @@ class PlaylistModalHandlers {
   final VoidCallback exportAbsolute;
   final VoidCallback exportRelative;
   final VoidCallback removeDuplicates;
-  final VoidCallback removeMissing;
+  final void Function(ContextModalNav nav) removeMissing;
   final void Function(ContextModalNav nav)? openAdvanced;
 }

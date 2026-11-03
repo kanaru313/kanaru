@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -30,10 +31,26 @@ void main() {
     expect(stats.repeats, 3);
   });
 
+  test('stats sum the length of the entries that are in the library', () async {
+    await db.upsertTracks([
+      track(root, '/a').copyWith(durationMs: const Value(1000)),
+      track(root, '/b').copyWith(durationMs: const Value(2500)),
+      track(root, '/c'),
+    ]);
+    final id = await db.createPlaylist(
+      'A',
+      now: 1,
+      paths: ['/a', '/b', '/c', '/gone'],
+    );
+    final stats = await db.playlistModalStats(id);
+    expect(stats.durationMs, 3500);
+    expect(stats.missing, 1);
+  });
+
   test('stats of an empty playlist are zeros', () async {
     final id = await db.createPlaylist('A', now: 1);
     final stats = await db.playlistModalStats(id);
-    expect((stats.missing, stats.repeats), (0, 0));
+    expect((stats.missing, stats.repeats, stats.durationMs), (0, 0, 0));
   });
 
   test('missing ids delete only what was captured', () async {

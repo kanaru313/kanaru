@@ -13,10 +13,13 @@ import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
+import '../../../shared/widgets/context_modal/context_modal_spec.dart'
+    show contextModalCloseThen;
 import '../favorites_routes.dart';
 import '../playlist_display_name.dart';
 import '../playlist_play_actions.dart';
 import '../playlist_routes.dart';
+import '../queue_history_routes.dart';
 import 'playlist_modal_data.dart';
 import 'playlist_modal_session_actions.dart';
 import 'playlist_modal_session_writes.dart';
@@ -40,6 +43,7 @@ class PlaylistModalSession {
     required this.router,
     required this.save,
     this.showGoTo = true,
+    this.savedQueue = false,
     this.beforeRead,
   });
 
@@ -59,6 +63,10 @@ class PlaylistModalSession {
 
   /// False on the page of the playlist itself.
   final bool showGoTo;
+
+  /// The modal is of a saved queue: it goes to the queue page, deletes the
+  /// queue, and confirms before removing missing songs.
+  final bool savedQueue;
 
   /// Completes when the opener has no write in flight (a drag or a remove
   /// on the playlist page). Awaited before anything reads the entries.
@@ -113,19 +121,27 @@ class PlaylistModalSession {
     return PlaylistModalHandlers(
       openAdvanced: openAdvanced,
       goToPlaylist: () => runner.goTo(
-        latest.isFavorites ? favoritesPath : playlistLocation(id),
+        savedQueue
+            ? queueHistoryLocation(id)
+            : latest.isFavorites
+            ? favoritesPath
+            : playlistLocation(id),
       ),
       play: () => unawaited(play(id)),
       shuffle: () => unawaited(play(id, shuffle: true)),
       addToPlaylist: () => unawaited(addToPlaylist(latest)),
       edit: () => unawaited(edit(latest, latestCoverKeys, modalMessenger)),
-      delete: (nav) => unawaited(delete(nav, latest)),
+      delete: (nav) => unawaited(
+        savedQueue ? deleteQueue(nav, latest) : delete(nav, latest),
+      ),
       addAllToFavorites: () => unawaited(addAllToFavorites(latest)),
       duplicate: () => unawaited(duplicate(latest)),
       exportAbsolute: () => unawaited(export(latest, M3uPathStyle.absolute)),
       exportRelative: () => unawaited(export(latest, M3uPathStyle.relative)),
       removeDuplicates: () => unawaited(removeRepeated(latest)),
-      removeMissing: () => unawaited(removeMissing(latest)),
+      removeMissing: savedQueue
+          ? (nav) => unawaited(confirmRemoveMissing(nav, latest))
+          : contextModalCloseThen(() => unawaited(removeMissing(latest))),
     );
   }
 }

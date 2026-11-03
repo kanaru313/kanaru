@@ -7,7 +7,8 @@ import 'playlist_modal_data.dart';
 /// The rows of the actions page in three groups (Go to playlist; play and
 /// copy actions; Edit and Delete); the footer's queue buttons are not here.
 /// While the head loads, or when the playlist is gone, the rows that act are
-/// greyed out; Favorites has no Edit and no Delete.
+/// greyed out; Favorites has no Edit and no Delete. A saved queue has Go to
+/// queue and Delete queue, no Edit, and tells when nothing in it can play.
 List<List<ContextModalAction>> playlistModalSections(
   AppLocalizations l10n,
   PlaylistModalData data,
@@ -15,13 +16,14 @@ List<List<ContextModalAction>> playlistModalSections(
 ) {
   final name = playlistDisplayName(data.playlist, l10n);
   final playable = data.hasPlayable;
+  final queue = data.savedQueue;
   return [
     [
       if (data.showGoTo)
         ContextModalAction(
           id: 'go-to-playlist',
           icon: AppIcons.playlistOutlined,
-          label: l10n.playlistGoTo,
+          label: queue ? l10n.queueModalGoTo : l10n.playlistGoTo,
           subtitle: name,
           enabled: !data.gone,
           onTap: contextModalCloseThen(h.goToPlaylist),
@@ -32,6 +34,9 @@ List<List<ContextModalAction>> playlistModalSections(
         id: 'play-all',
         icon: AppIcons.play,
         label: l10n.albumModalPlayAll,
+        subtitle: queue && !playable && !data.gone && data.load != null
+            ? l10n.queueHistoryNothingToPlay
+            : null,
         enabled: playable,
         onTap: contextModalCloseThen(h.play),
       ),
@@ -47,7 +52,8 @@ List<List<ContextModalAction>> playlistModalSections(
         icon: AppIcons.addToPlaylist,
         label: l10n.playlistAddTo,
         subtitle: l10n.playlistCopyHint(data.playlist.entryCount),
-        enabled: data.hasEntries,
+        // A saved queue copies every entry, but only when something can play.
+        enabled: queue ? playable : data.hasEntries,
         onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       ContextModalAction(
@@ -59,7 +65,17 @@ List<List<ContextModalAction>> playlistModalSections(
       ),
     ],
     [
-      if (!data.isFavorites) ...[
+      if (queue)
+        ContextModalAction(
+          id: 'delete',
+          icon: AppIcons.deleteOutline,
+          label: l10n.queueModalDelete,
+          subtitle: l10n.queueModalDeleteHint,
+          destructive: true,
+          enabled: !data.gone,
+          onTap: h.delete,
+        )
+      else if (!data.isFavorites) ...[
         ContextModalAction(
           id: 'edit',
           icon: AppIcons.edit,
@@ -92,7 +108,8 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
 ) {
   final name = playlistDisplayName(data.playlist, l10n);
   final stats = data.stats;
-  final repeats = data.isFavorites ? 0 : stats?.repeats ?? 0;
+  final queue = data.savedQueue;
+  final repeats = data.isFavorites || queue ? 0 : stats?.repeats ?? 0;
   final missing = stats?.missing ?? 0;
   return [
     [
@@ -104,14 +121,15 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
           enabled: data.hasPlayable,
           onTap: contextModalCloseThen(h.addAllToFavorites),
         ),
-      ContextModalAction(
-        id: 'duplicate',
-        icon: AppIcons.duplicatePlaylist,
-        label: l10n.playlistDuplicate,
-        subtitle: l10n.playlistCopyName(name),
-        enabled: !data.gone,
-        onTap: contextModalCloseThen(h.duplicate),
-      ),
+      if (!queue)
+        ContextModalAction(
+          id: 'duplicate',
+          icon: AppIcons.duplicatePlaylist,
+          label: l10n.playlistDuplicate,
+          subtitle: l10n.playlistCopyName(name),
+          enabled: !data.gone,
+          onTap: contextModalCloseThen(h.duplicate),
+        ),
     ],
     [
       ContextModalAction(
@@ -148,7 +166,7 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
           label: l10n.playlistRemoveMissing,
           subtitle: l10n.playlistRemoveMissingHint(missing),
           enabled: !data.gone,
-          onTap: contextModalCloseThen(h.removeMissing),
+          onTap: h.removeMissing,
         ),
     ],
   ];

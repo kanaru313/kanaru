@@ -19,8 +19,8 @@ final _log = Logger('queue_history');
 
 /// One saved queue at `/queue-history/:id`, shown with the playlist entries
 /// view and named by when it was saved. Play, queue, export and editing the
-/// entries work as on a playlist page; shuffle, save as playlist and delete
-/// are in the menu of its row on the queue history page. An id that is not
+/// entries work as on a playlist page; the ⋮ of its header opens the Queue
+/// modal (shuffle, add to playlist, export, delete). An id that is not
 /// a saved queue (an ordinary playlist, or gone) shows "not found".
 class QueueHistorySnapshotScreen extends ConsumerStatefulWidget {
   const QueueHistorySnapshotScreen({super.key, required this.routeId});
@@ -40,18 +40,13 @@ class _QueueHistorySnapshotScreenState
   String? _sourceName;
   PlaylistPageHead? _renamed;
 
-  PlaylistPageHead _named(PlaylistPageHead head, String name) {
+  PlaylistPageHead _named(PlaylistPageHead head, AppLocalizations l10n) {
+    final name = queueSnapshotName(l10n, head.playlist.createdAt);
     if (identical(head, _source) && name == _sourceName) return _renamed!;
-    final playlist = head.playlist;
     _source = head;
     _sourceName = name;
     return _renamed = PlaylistPageHead(
-      playlist: PlaylistSummary(
-        id: playlist.id,
-        name: name,
-        createdAt: playlist.createdAt,
-        entryCount: playlist.entryCount,
-      ),
+      playlist: namedQueueSummary(head.playlist, l10n),
       coverKeys: head.coverKeys,
       hasPlayable: head.hasPlayable,
     );
@@ -103,10 +98,10 @@ class _QueueHistorySnapshotScreenState
         message: context.l10n.queueHistoryNotFoundMessage,
       );
     }
-    // Play, queue, export and editing the entries as on a playlist page;
-    // the playlist modal is not offered (see the class comment).
+    // Play, queue, export and editing the entries as on a playlist page; the
+    // header's ⋮ opens the Queue modal.
     return PlaylistPageBody(
-      _named(head, queueSnapshotName(context.l10n, when)),
+      _named(head, context.l10n),
       headSeq: load.value!.seq,
       savedQueue: true,
     );

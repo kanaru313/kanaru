@@ -1,10 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/database/playlist_queries.dart';
 import 'package:kanaru/core/database/queue_history_queries.dart';
 import 'package:kanaru/core/database/queue_history_writes.dart';
 import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/features/playlists/playlist_actions_menu.dart';
+import 'package:kanaru/features/playlists/playlist_modal/playlist_more_button.dart';
 import 'package:kanaru/features/playlists/playlist_entry_tile.dart';
 import 'package:kanaru/features/playlists/queue_history_screen.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -87,73 +86,25 @@ void main() {
     expect(queueTitles(), ['c', 'a']);
   });
 
-  testWidgets('a right click opens the popup menu, not the playlist modal', (
-    tester,
-  ) async {
+  testWidgets('a right click opens the Queue modal', (tester) async {
     await openApp(tester, h, ['a', 'b', 'c']);
     await seedQueue(tester, ['a', 'b', 'c']);
     goTo(tester, h, '/queue-history');
     await settleDb(tester);
 
     await tester.tap(row(), buttons: kSecondaryButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Shuffle'), findsOneWidget);
+    await settleModal(tester);
     expect(
       find.byKey(const ValueKey('context-modal-action-play-all')),
-      findsNothing,
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('context-modal-action-delete')),
+      findsOneWidget,
     );
   });
 
-  testWidgets('the menu shuffles, queues, saves and deletes', (tester) async {
-    await openApp(tester, h, ['a', 'b', 'c']);
-    final id = await seedQueue(tester, ['a', 'b', 'c']);
-    goTo(tester, h, '/queue-history');
-    await settleDb(tester);
-
-    Future<void> pick(String label) async {
-      await tester.tap(row(), buttons: kSecondaryButton);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(label));
-      await settleDb(tester);
-    }
-
-    await pick('Shuffle');
-    expect(h.container.read(playerServiceProvider).queue.shuffled, isTrue);
-    expect(queueTitles()..sort(), ['a', 'b', 'c']);
-
-    await pick('Add to queue');
-    expect(queueTitles(), hasLength(6));
-
-    await pick('Save as playlist');
-    final field = find.descendant(
-      of: find.byType(AlertDialog),
-      matching: find.byType(TextField),
-    );
-    await tester.enterText(field, 'Kept');
-    await tester.tap(find.text('Create'));
-    await settleDb(tester);
-    final playlists = await tester.runAsync(
-      () => h.db.watchPlaylistSummaries().first,
-    );
-    final kept = playlists!.firstWhere((p) => p.name == 'Kept');
-    expect(await storedPaths(tester, h, kept.id), [
-      for (final t in ['a', 'b', 'c']) (await trackPaths(tester, h))[t],
-    ]);
-
-    await pick('Delete');
-    expect(find.text('Delete this queue?'), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Delete'),
-      ),
-    );
-    await settleDb(tester);
-    expect(await tester.runAsync(() => h.db.queueSnapshotPaths(id)), isEmpty);
-    expect(find.text('No queue history yet'), findsOneWidget);
-  });
-
-  testWidgets('a saved queue page keeps the popup menu in its header', (
+  testWidgets('a saved queue page opens the Queue modal from its button', (
     tester,
   ) async {
     await openApp(tester, h, ['a', 'b']);
@@ -161,17 +112,14 @@ void main() {
     goTo(tester, h, '/queue-history/$id');
     await settleDb(tester);
 
-    final menuButton = find.descendant(
-      of: find.byType(PlaylistActionsMenu),
-      matching: find.byTooltip('More options'),
-    );
-    expect(menuButton, findsOneWidget);
+    expect(find.byType(PlaylistMoreButton), findsOneWidget);
     expect(find.byTooltip('Playlist actions'), findsNothing);
-    await tester.tap(menuButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Export M3U (full paths)…'), findsOneWidget);
-    expect(find.text('Add to queue'), findsOneWidget);
-    expect(find.text('Delete playlist'), findsNothing);
+    await tester.tap(find.byType(PlaylistMoreButton));
+    await settleModal(tester);
+    expect(
+      find.byKey(const ValueKey('context-modal-action-play-all')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey('context-modal-action-edit')),
       findsNothing,
@@ -283,7 +231,9 @@ void main() {
 
     expect(find.text('This queue is empty'), findsOneWidget);
     expect(
-      find.text('All its songs were removed. You can delete it from Queues.'),
+      find.text(
+        'All its songs were removed. You can delete it from the ⋮ menu.',
+      ),
       findsOneWidget,
     );
     expect(find.text('This playlist is empty'), findsNothing);

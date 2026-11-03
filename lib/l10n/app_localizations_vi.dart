@@ -2136,17 +2136,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get queueHistoryPlay => 'Phát';
 
   @override
-  String get queueHistoryShuffle => 'Phát ngẫu nhiên';
-
-  @override
-  String get queueHistorySaveAsPlaylist => 'Lưu thành playlist';
-
-  @override
-  String queueHistorySavedAsPlaylist(String name) {
-    return 'Đã lưu thành $name';
-  }
-
-  @override
   String get queueHistoryDelete => 'Xoá';
 
   @override
@@ -2168,7 +2157,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueHistoryEntriesEmptyMessage =>
-      'Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở trang Các hàng đợi.';
+      'Mọi bài trong hàng đợi này đã bị bỏ. Bạn có thể xoá nó ở menu ⋮.';
 
   @override
   String get queueHistorySaveFailed =>
@@ -2179,6 +2168,30 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get queueHistoryNotFoundMessage => 'Có thể hàng đợi đã bị xoá.';
+
+  @override
+  String get queueModalLabel => 'Tùy chọn hàng đợi';
+
+  @override
+  String get queueModalGoTo => 'Đến hàng đợi';
+
+  @override
+  String get queueModalDelete => 'Xoá hàng đợi';
+
+  @override
+  String get queueModalDeleteHint => 'Các bài vẫn còn trong thư viện';
+
+  @override
+  String queueModalMissingCount(int count) {
+    return '$count bài không còn';
+  }
+
+  @override
+  String get queueModalRemoveMissingTitle => 'Bỏ các bài không còn?';
+
+  @override
+  String get queueModalRemoveMissingBody =>
+      'Các bài không có trong thư viện sẽ bị bỏ khỏi hàng đợi này. Hàng đợi đã lưu không thể điền lại bằng tay.';
 
   @override
   String get lyricsNone => 'Bài này chưa có lời';

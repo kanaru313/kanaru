@@ -5,6 +5,8 @@ import '../../../core/database/playlist_modal_queries.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../core/database/playlist_writes.dart';
 import '../../../shared/widgets/app_snack_bar.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../playlist_display_name.dart';
 import 'playlist_modal_session.dart';
 
@@ -51,6 +53,28 @@ extension PlaylistModalSessionWrites on PlaylistModalSession {
       _log.severe('Removing repeats of ${latest.id} failed', error, stack);
       say(AppSnackBarKind.error, l10n.playlistSaveFailed);
     }
+  }
+
+  /// Remove missing songs on a saved queue, which cannot be refilled by
+  /// hand: confirms above the modal (cancel comes back to it), then closes
+  /// the modal and removes.
+  Future<void> confirmRemoveMissing(
+    ContextModalNav nav,
+    PlaylistSummary latest,
+  ) async {
+    final navigator = rootNavigator;
+    if (navigator == null || !navigator.mounted) return;
+    if (dialogOpen) return;
+    dialogOpen = true;
+    final confirmed = await confirmAction(
+      navigator.context,
+      title: l10n.queueModalRemoveMissingTitle,
+      body: l10n.queueModalRemoveMissingBody,
+      confirmLabel: l10n.playlistRemoveMissing,
+    ).whenComplete(() => dialogOpen = false);
+    if (!confirmed) return;
+    nav.close();
+    await removeMissing(latest);
   }
 
   /// Deletes the entries whose file is not in the library. The ids are read

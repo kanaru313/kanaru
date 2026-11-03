@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/playlist_modal_queries.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
@@ -27,6 +28,8 @@ class PlaylistModalHeader extends StatelessWidget {
     required this.coverKeys,
     this.onTap,
     this.showCoverButton = false,
+    this.savedQueue = false,
+    this.stats,
   });
 
   final PlaylistSummary playlist;
@@ -37,6 +40,13 @@ class PlaylistModalHeader extends StatelessWidget {
   /// leaves it out for Favorites and a playlist that is gone.
   final bool showCoverButton;
 
+  /// A saved queue: "N songs • length • K missing" instead of the creation
+  /// date, collage seed `queue:<id>`, no description.
+  final bool savedQueue;
+
+  /// Length and missing count of a saved queue; null until read.
+  final PlaylistModalStats? stats;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -45,9 +55,14 @@ class PlaylistModalHeader extends StatelessWidget {
     final quiet = theme.textTheme.bodySmall?.copyWith(
       color: colors.onSurfaceVariant,
     );
+    final length = stats?.durationMs ?? 0;
+    final missing = stats?.missing ?? 0;
     final meta = joinRowDetails([
       l10n.albumsSongCount(playlist.entryCount),
-      if (!playlist.isFavorites)
+      if (savedQueue) ...[
+        if (length > 0) rowLength(l10n, length),
+        if (missing > 0) l10n.queueModalMissingCount(missing),
+      ] else if (!playlist.isFavorites)
         l10n.playlistCreatedOn(
           DateTime.fromMillisecondsSinceEpoch(playlist.createdAt),
         ),
@@ -57,7 +72,7 @@ class PlaylistModalHeader extends StatelessWidget {
       leading: PlaylistCover(
         coverKeys: coverKeys,
         size: _coverSize,
-        seed: 'playlist:${playlist.id}',
+        seed: '${savedQueue ? 'queue' : 'playlist'}:${playlist.id}',
       ),
       lines: [
         contextModalHeaderLine(
@@ -76,7 +91,7 @@ class PlaylistModalHeader extends StatelessWidget {
           ? null
           : PlaylistDescriptionBox(text: description, style: quiet),
       onTap: onTap,
-      tapHint: l10n.playlistGoTo,
+      tapHint: savedQueue ? l10n.queueModalGoTo : l10n.playlistGoTo,
     );
   }
 }

@@ -3302,25 +3302,7 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get queueHistoryPlay;
 
-  /// Menu row that plays a saved queue shuffled
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle'**
-  String get queueHistoryShuffle;
-
-  /// Menu row that copies a saved queue into a new playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Save as playlist'**
-  String get queueHistorySaveAsPlaylist;
-
-  /// Snackbar after a saved queue was copied into a new playlist
-  ///
-  /// In en, this message translates to:
-  /// **'Saved as {name}'**
-  String queueHistorySavedAsPlaylist(String name);
-
-  /// Menu row and dialog button that delete a saved queue
+  /// Button of the dialog that confirms deleting a saved queue
   ///
   /// In en, this message translates to:
   /// **'Delete'**
@@ -3359,7 +3341,7 @@ abstract class AppLocalizations {
   /// Empty state message of a saved queue whose songs were all removed
   ///
   /// In en, this message translates to:
-  /// **'All its songs were removed. You can delete it from Queues.'**
+  /// **'All its songs were removed. You can delete it from the ⋮ menu.'**
   String get queueHistoryEntriesEmptyMessage;
 
   /// Snackbar when moving or removing a song of a saved queue fails
@@ -3379,6 +3361,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It may have been deleted.'**
   String get queueHistoryNotFoundMessage;
+
+  /// Semantic label of the saved queue context modal
+  ///
+  /// In en, this message translates to:
+  /// **'Queue options'**
+  String get queueModalLabel;
+
+  /// Queue modal row and header tap hint that open the saved queue page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to queue'**
+  String get queueModalGoTo;
+
+  /// Queue modal row that deletes the saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Delete queue'**
+  String get queueModalDelete;
+
+  /// Subtitle of the Delete queue row
+  ///
+  /// In en, this message translates to:
+  /// **'The songs stay in your library'**
+  String get queueModalDeleteHint;
+
+  /// Queue modal header part: songs of the queue not in the library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missing'**
+  String queueModalMissingCount(int count);
+
+  /// Title of the dialog confirming that missing songs leave a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Remove missing songs?'**
+  String get queueModalRemoveMissingTitle;
+
+  /// Body of the dialog confirming that missing songs leave a saved queue
+  ///
+  /// In en, this message translates to:
+  /// **'Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.'**
+  String get queueModalRemoveMissingBody;
 
   /// Shown in the lyrics slot of Now Playing when the song has no lyrics
   ///

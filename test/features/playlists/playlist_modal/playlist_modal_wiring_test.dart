@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/database/playlist_page_queries.dart';
 import 'package:kanaru/core/database/playlist_rows.dart';
-import 'package:kanaru/features/playlists/collage_list_row.dart';
 import 'package:kanaru/features/playlists/playlists_grid.dart';
 import 'package:kanaru/features/playlists/playlists_list.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -122,23 +121,5 @@ void main() {
     await pumpScreen(tester, list);
     await tester.tap(find.text('Mix'));
     expect(opened, hasLength(1));
-  });
-
-  testWidgets('a row with both a popup menu and a modal is rejected', (
-    tester,
-  ) async {
-    expect(
-      () => CollageListRow<int>(
-        coverKeys: const [],
-        seed: 's',
-        title: 't',
-        subtitle: 'u',
-        onTap: () {},
-        menuItems: (_) => const [],
-        onMenuSelected: (_) {},
-        onOpenModal: ({required bool viaKeyboard}) {},
-      ),
-      throwsAssertionError,
-    );
   });
 }

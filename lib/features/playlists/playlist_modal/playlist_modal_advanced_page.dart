@@ -17,6 +17,8 @@ ContextModalPage playlistModalAdvancedPage(PlaylistModalSession session) {
     snapshot: session.playlist,
     snapshotCoverKeys: session.coverKeys,
     showGoTo: session.showGoTo,
+    savedQueue: session.savedQueue,
+    queueL10n: session.l10n,
   );
   return ContextModalPage(
     key: 'playlist-advanced',

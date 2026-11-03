@@ -20,8 +20,9 @@ import 'playlist_modal_session.dart';
 /// arrives.
 ///
 /// [showGoTo] false leaves out Go to playlist, on the page of the playlist
-/// itself. [beforeRead] completes when the opener has no write in flight; it
-/// is awaited before any action reads the entries. [viaKeyboard] focuses the
+/// itself. [savedQueue] opens the Queue modal: [playlist] is the saved queue
+/// (any name; it is shown as the time it was saved). [beforeRead] completes
+/// when the opener has no write in flight; it is awaited before any action reads the entries. [viaKeyboard] focuses the
 /// first row.
 void openPlaylistModal(
   BuildContext context,
@@ -29,6 +30,7 @@ void openPlaylistModal(
   required PlaylistSummary playlist,
   required List<String> coverKeys,
   bool showGoTo = true,
+  bool savedQueue = false,
   bool viaKeyboard = false,
   Future<void> Function()? beforeRead,
 }) {
@@ -43,13 +45,16 @@ void openPlaylistModal(
     router: GoRouter.maybeOf(context),
     save: ref.read(m3uSavePickerProvider),
     showGoTo: showGoTo,
+    savedQueue: savedQueue,
     beforeRead: beforeRead,
   );
   unawaited(
     showContextModal<void>(
       context,
       root: playlistModalActionsPage(session),
-      semanticLabel: context.l10n.playlistModalLabel,
+      semanticLabel: savedQueue
+          ? context.l10n.queueModalLabel
+          : context.l10n.playlistModalLabel,
       viaKeyboard: viaKeyboard,
     ),
   );

@@ -1787,26 +1787,9 @@
   "@queueHistoryPlay": {
     "description": "Menu row and button that play a saved queue"
   },
-  "queueHistoryShuffle": "Shuffle",
-  "@queueHistoryShuffle": {
-    "description": "Menu row that plays a saved queue shuffled"
-  },
-  "queueHistorySaveAsPlaylist": "Save as playlist",
-  "@queueHistorySaveAsPlaylist": {
-    "description": "Menu row that copies a saved queue into a new playlist"
-  },
-  "queueHistorySavedAsPlaylist": "Saved as {name}",
-  "@queueHistorySavedAsPlaylist": {
-    "description": "Snackbar after a saved queue was copied into a new playlist",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "queueHistoryDelete": "Delete",
   "@queueHistoryDelete": {
-    "description": "Menu row and dialog button that delete a saved queue"
+    "description": "Button of the dialog that confirms deleting a saved queue"
   },
   "queueHistoryDeleteTitle": "Delete this queue?",
   "@queueHistoryDeleteTitle": {
@@ -1828,7 +1811,7 @@
   "@queueHistoryEntriesEmptyTitle": {
     "description": "Empty state title of a saved queue whose songs were all removed"
   },
-  "queueHistoryEntriesEmptyMessage": "All its songs were removed. You can delete it from Queues.",
+  "queueHistoryEntriesEmptyMessage": "All its songs were removed. You can delete it from the ⋮ menu.",
   "@queueHistoryEntriesEmptyMessage": {
     "description": "Empty state message of a saved queue whose songs were all removed"
   },
@@ -1843,6 +1826,39 @@
   "queueHistoryNotFoundMessage": "It may have been deleted.",
   "@queueHistoryNotFoundMessage": {
     "description": "Message under the saved queue not-found title"
+  },
+  "queueModalLabel": "Queue options",
+  "@queueModalLabel": {
+    "description": "Semantic label of the saved queue context modal"
+  },
+  "queueModalGoTo": "Go to queue",
+  "@queueModalGoTo": {
+    "description": "Queue modal row and header tap hint that open the saved queue page"
+  },
+  "queueModalDelete": "Delete queue",
+  "@queueModalDelete": {
+    "description": "Queue modal row that deletes the saved queue"
+  },
+  "queueModalDeleteHint": "The songs stay in your library",
+  "@queueModalDeleteHint": {
+    "description": "Subtitle of the Delete queue row"
+  },
+  "queueModalMissingCount": "{count} missing",
+  "@queueModalMissingCount": {
+    "description": "Queue modal header part: songs of the queue not in the library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueModalRemoveMissingTitle": "Remove missing songs?",
+  "@queueModalRemoveMissingTitle": {
+    "description": "Title of the dialog confirming that missing songs leave a saved queue"
+  },
+  "queueModalRemoveMissingBody": "Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.",
+  "@queueModalRemoveMissingBody": {
+    "description": "Body of the dialog confirming that missing songs leave a saved queue"
   },
   "lyricsNone": "No lyrics for this song",
   "@lyricsNone": {

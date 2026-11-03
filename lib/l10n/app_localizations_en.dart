@@ -2296,17 +2296,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get queueHistoryPlay => 'Play';
 
   @override
-  String get queueHistoryShuffle => 'Shuffle';
-
-  @override
-  String get queueHistorySaveAsPlaylist => 'Save as playlist';
-
-  @override
-  String queueHistorySavedAsPlaylist(String name) {
-    return 'Saved as $name';
-  }
-
-  @override
   String get queueHistoryDelete => 'Delete';
 
   @override
@@ -2328,7 +2317,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueHistoryEntriesEmptyMessage =>
-      'All its songs were removed. You can delete it from Queues.';
+      'All its songs were removed. You can delete it from the ⋮ menu.';
 
   @override
   String get queueHistorySaveFailed =>
@@ -2339,6 +2328,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get queueHistoryNotFoundMessage => 'It may have been deleted.';
+
+  @override
+  String get queueModalLabel => 'Queue options';
+
+  @override
+  String get queueModalGoTo => 'Go to queue';
+
+  @override
+  String get queueModalDelete => 'Delete queue';
+
+  @override
+  String get queueModalDeleteHint => 'The songs stay in your library';
+
+  @override
+  String queueModalMissingCount(int count) {
+    return '$count missing';
+  }
+
+  @override
+  String get queueModalRemoveMissingTitle => 'Remove missing songs?';
+
+  @override
+  String get queueModalRemoveMissingBody =>
+      'Songs that are not in your library are removed from this queue. A saved queue cannot be refilled by hand.';
 
   @override
   String get lyricsNone => 'No lyrics for this song';

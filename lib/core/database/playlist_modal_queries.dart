@@ -4,7 +4,11 @@ import 'library_database.dart';
 
 /// What the playlist modal counts beyond the page head.
 class PlaylistModalStats {
-  const PlaylistModalStats({required this.missing, required this.repeats});
+  const PlaylistModalStats({
+    required this.missing,
+    required this.repeats,
+    this.durationMs = 0,
+  });
 
   /// Entries whose file is not in the library.
   final int missing;
@@ -12,25 +16,31 @@ class PlaylistModalStats {
   /// Entries that repeat an earlier path of the same playlist.
   final int repeats;
 
+  /// Total length of the entries whose file is in the library, in
+  /// milliseconds (missing files and files without a known length add 0).
+  final int durationMs;
+
   @override
   bool operator ==(Object other) =>
       other is PlaylistModalStats &&
       other.missing == missing &&
-      other.repeats == repeats;
+      other.repeats == repeats &&
+      other.durationMs == durationMs;
 
   @override
-  int get hashCode => Object.hash(missing, repeats);
+  int get hashCode => Object.hash(missing, repeats, durationMs);
 }
 
 /// One-shot reads for the playlist modal.
 extension PlaylistModalQueries on LibraryDatabase {
-  /// Missing and repeated entry counts of playlist [id] (zeros when empty or
-  /// gone). One aggregate, not a transaction; read when the modal opens.
+  /// Missing and repeated entry counts and total length of playlist [id]
+  /// (zeros when empty or gone). One aggregate, not a transaction; read when the modal opens.
   Future<PlaylistModalStats> playlistModalStats(int id) async {
     final row = await customSelect(
       '''
 SELECT COALESCE(SUM(t.id IS NULL), 0) AS missing,
-       COUNT(*) - COUNT(DISTINCT e.path) AS repeats
+       COUNT(*) - COUNT(DISTINCT e.path) AS repeats,
+       COALESCE(SUM(t.duration_ms), 0) AS duration_ms
 FROM playlist_entries e LEFT JOIN tracks t ON t.path = e.path
 WHERE e.playlist_id = ?1''',
       variables: [Variable.withInt(id)],
@@ -39,6 +49,7 @@ WHERE e.playlist_id = ?1''',
     return PlaylistModalStats(
       missing: row.read<int>('missing'),
       repeats: row.read<int>('repeats'),
+      durationMs: row.read<int>('duration_ms'),
     );
   }
 
