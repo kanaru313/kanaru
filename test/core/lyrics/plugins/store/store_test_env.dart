@@ -153,7 +153,11 @@ class StoreEnv {
   }
 
   /// A fresh controller on the same folder and database (a new "session").
-  LyricsPluginsController newController() => LyricsPluginsController(
+  LyricsPluginsController newController({
+    void Function(String installId, String name, PluginKind? kind)?
+    onNeedsConfig,
+  }) => LyricsPluginsController(
+    onNeedsConfig: onNeedsConfig,
     db: db,
     dataDirectory: dataDir.path,
     secretStore: () async =>

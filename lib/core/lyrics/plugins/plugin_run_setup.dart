@@ -1,5 +1,6 @@
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_queries.dart';
+import '../../plugin_runtime/plugin_runtime.dart';
 import '../../secrets/secret_store.dart';
 import 'plugin_package_loader.dart';
 import 'store/lyrics_plugin_dirs.dart';
@@ -25,7 +26,7 @@ class PluginRunSetup {
   const PluginRunSetup(this.package, this.config, this.storageJson);
 
   final LoadedPluginPackage package;
-  final Map<String, String> config;
+  final PluginConfigMap config;
   final String storageJson;
 }
 
@@ -36,7 +37,7 @@ Future<PluginRunSetup> loadPluginRunSetup({
   required LibraryDatabase db,
   required PluginPackageLoader packages,
   required LyricsPluginDirs dirs,
-  required Future<Map<String, String>> Function(String installId) loadConfig,
+  required Future<PluginConfigMap> Function(String installId) loadConfig,
   required LyricsPluginRow record,
 }) async {
   final LoadedPluginPackage package;

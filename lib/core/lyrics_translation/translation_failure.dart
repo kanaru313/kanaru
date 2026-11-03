@@ -13,6 +13,9 @@ enum TranslationFailureKind {
   emptyResult,
   keyStoreLocked,
   keyStoreUnavailable,
+
+  /// A plugin service has an empty required config field.
+  needsConfig,
 }
 
 /// A failed translation request. Carries only the [kind] and the HTTP

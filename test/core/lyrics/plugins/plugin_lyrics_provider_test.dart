@@ -11,6 +11,7 @@ import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_run_deadline.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_config_field.dart';
 import 'package:kanaru/core/plugin_runtime/plugin_runtime.dart';
 
 import '../online/counting_http_client.dart';
@@ -52,6 +53,56 @@ void main() {
           .lookup(tagQuery, countingHttp());
       expect(answer, isNull);
       expect(env.runtime.requests, isEmpty);
+    });
+  });
+
+  group('required config', () {
+    const required = PluginConfigField(
+      key: 'apiKey',
+      title: 'Key',
+      mode: PluginConfigMode.input,
+      inputFormat: PluginInputFormat.secret,
+      required: true,
+    );
+    final blocked = <String>[];
+
+    Future<void> setUpRequired() async {
+      blocked.clear();
+      env = await PluginProviderEnv.create(
+        onNeedsConfig: (row) => blocked.add(row.installId),
+      );
+      addTearDown(env.dispose);
+      record = await env.install(config: const [required]);
+    }
+
+    setUp(setUpRequired);
+
+    test(
+      'an empty required field skips the run, with no script and no log',
+      () async {
+        for (var i = 0; i < 2; i++) {
+          await expectLater(
+            env.providerFor(record).search(tagQuery, countingHttp()),
+            throwsA(isA<LyricsSourceSkipped>()),
+          );
+        }
+        await expectLater(
+          env.providerFor(record).fetch('x', countingHttp()),
+          throwsA(isA<LyricsSourceSkipped>()),
+        );
+        expect(env.runtime.requests, isEmpty);
+        // Every blocked run reports.
+        expect(blocked, List.filled(3, record.installId));
+        await pumpLog();
+        expect(env.events(record.installId), isEmpty);
+      },
+    );
+
+    test('a filled field lets the run start', () async {
+      await env.controller.setConfigValue(record.installId, 'apiKey', 'k');
+      await env.providerFor(record).search(tagQuery, countingHttp());
+      expect(env.runtime.requests, hasLength(1));
+      expect(blocked, isEmpty);
     });
   });
 

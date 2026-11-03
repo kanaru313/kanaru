@@ -4954,4 +4954,117 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get pluginConfigRequired => 'Cài đặt này là bắt buộc';
+
+  @override
+  String get pluginConfigIntegerInvalid => 'Nhập một số nguyên';
+
+  @override
+  String pluginConfigBelowMin(String min) {
+    return 'Phải từ $min trở lên';
+  }
+
+  @override
+  String pluginConfigAboveMax(String max) {
+    return 'Phải từ $max trở xuống';
+  }
+
+  @override
+  String pluginConfigTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Nhập ít nhất $count ký tự',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pluginConfigTooLong(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Nhập tối đa $count ký tự',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pluginConfigUrlInvalid => 'Nhập địa chỉ https';
+
+  @override
+  String pluginConfigTooFewItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Chọn hoặc thêm ít nhất $count mục',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pluginConfigTooManyItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Chỉ được tối đa $count mục',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pluginConfigItemInvalid => 'Một trong các mục không hợp lệ';
+
+  @override
+  String get pluginConfigKeyInvalid =>
+      'Nhập tên dài 1 đến 100 ký tự, không có khoảng trắng ở hai đầu';
+
+  @override
+  String get pluginConfigKeyDuplicate => 'Một dòng khác đã dùng tên này';
+
+  @override
+  String pluginConfigListRowLabel(String title, int index) {
+    return '$title $index';
+  }
+
+  @override
+  String get pluginConfigAddItem => 'Thêm';
+
+  @override
+  String get pluginConfigRemoveItem => 'Xóa';
+
+  @override
+  String get pluginConfigMapKeyLabel => 'Tên';
+
+  @override
+  String get pluginConfigMapValueLabel => 'Giá trị';
+
+  @override
+  String pluginNeedsConfigTitle(String name) {
+    return '$name cần được cấu hình';
+  }
+
+  @override
+  String pluginsNeedConfigTitleTwo(String first, String second) {
+    return '$first và $second cần được cấu hình';
+  }
+
+  @override
+  String pluginsNeedConfigTitleMany(String first, String second, int more) {
+    String _temp0 = intl.Intl.pluralLogic(
+      more,
+      locale: localeName,
+      other: '$more plugin khác',
+    );
+    return '$first, $second và $_temp0 cần được cấu hình';
+  }
+
+  @override
+  String get pluginOpenConfig => 'Mở cấu hình';
+
+  @override
+  String get lyricsTranslationFailNeedsConfig =>
+      'Plugin dịch này cần được cấu hình trước khi chạy.';
 }

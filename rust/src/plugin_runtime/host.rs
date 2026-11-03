@@ -40,7 +40,7 @@ pub struct HostEnv {
     pub budget: ByteBudget,
     pub collector: Collector,
     pub answerer: Answerer,
-    /// Read-only `localConfig`.
+    /// Read-only `localConfig`; values are JSON texts.
     pub config: HashMap<String, String>,
     /// The plugin's stored map as JSON (empty text: nothing stored).
     pub storage_json: String,

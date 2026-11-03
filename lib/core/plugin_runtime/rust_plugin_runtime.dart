@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -103,7 +104,8 @@ native.PluginScriptRequest nativeRequestFrom(
       ? 0
       : _clamp(max(1, request.timeout!.inMilliseconds), _maxU32),
   config: [
-    for (final entry in request.config.entries) (entry.key, entry.value),
+    for (final entry in request.config.entries)
+      (entry.key, jsonEncode(entry.value)),
   ],
   storageJson: request.storageJson,
 );

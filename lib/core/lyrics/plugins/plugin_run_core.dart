@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:logging/logging.dart';
+
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_queries.dart';
 import '../../plugin_runtime/plugin_runtime.dart';
@@ -13,6 +15,10 @@ import 'plugin_run_registry.dart';
 import 'plugin_run_setup.dart';
 import 'plugin_storage_writeback.dart';
 import 'store/lyrics_plugin_dirs.dart';
+import 'store/plugin_config_required.dart';
+import 'store/plugin_config_schema_codec.dart';
+
+final _log = Logger('lyrics_plugins');
 
 /// How far a run of [PluginRunCore] got.
 enum PluginRunState {
@@ -24,6 +30,10 @@ enum PluginRunState {
   /// The package or the settings could not be loaded, or loading took too
   /// long.
   setupFailed,
+
+  /// A required config field is empty: the script did not run and nothing
+  /// is to be logged. [PluginRunOutcome.row] is the plugin.
+  needsConfig,
 
   /// The script ran (or was cut short); see [PluginRunOutcome.result].
   finished,
@@ -53,6 +63,16 @@ class PluginRunOutcome {
        stopped = false,
        requests = const [],
        config = const {};
+
+  const PluginRunOutcome.needsConfig({required LyricsPluginRow this.row})
+    : state = PluginRunState.needsConfig,
+      reason = '',
+      timedOut = false,
+      secret = null,
+      result = null,
+      stopped = false,
+      requests = const [],
+      config = const {};
 
   const PluginRunOutcome.finished({
     required LyricsPluginRow this.row,
@@ -90,7 +110,7 @@ class PluginRunOutcome {
 
   /// The config the run saw (secrets included): only for hiding values in
   /// the log.
-  final Map<String, String> config;
+  final PluginConfigMap config;
 }
 
 /// The part of a script run that does not depend on what the script is for:
@@ -107,19 +127,24 @@ class PluginRunCore {
     required this._loadConfig,
     PluginPackageLoader? packages,
     this.outerDeadline = pluginRunOuterDeadline,
+    this.onNeedsConfig,
   }) : packages = packages ?? PluginPackageLoader();
 
   final LibraryDatabase db;
   final PluginRuntime _runtime;
   final PluginRunRegistry _runs;
   final LyricsPluginDirs _dirs;
-  final Future<Map<String, String>> Function(String installId) _loadConfig;
+  final Future<PluginConfigMap> Function(String installId) _loadConfig;
 
   /// The package cache every front shares.
   final PluginPackageLoader packages;
 
   /// Default outer deadline, covering loading and running.
   final Duration outerDeadline;
+
+  /// Called for every run blocked by an empty required field, before the
+  /// outcome is returned.
+  final void Function(LyricsPluginRow row)? onNeedsConfig;
 
   /// The package of [row] from the shared cache. Throws
   /// [PluginPackageUnreadable], also for a malformed folder name.
@@ -219,6 +244,20 @@ class PluginRunCore {
     final entryName = entry(setup.package);
     // A package without this script is not a plugin of this front.
     if (entryName == null) return const PluginRunOutcome.skipped();
+    // Before the script starts: no fetch, no log line.
+    if (missingRequiredConfig(
+      decodePluginConfigSchema(row.configSchema),
+      config,
+    ).isNotEmpty) {
+      try {
+        onNeedsConfig?.call(row);
+      } on Object catch (error) {
+        // The notice is a courtesy; it never turns a blocked run into a
+        // failure.
+        _log.warning('Needs-config report failed: ${error.runtimeType}');
+      }
+      return PluginRunOutcome.needsConfig(row: row);
+    }
     final bridge = PluginFetchBridge(makeHttp(row));
     final left = outer - clock.elapsed;
     final (:result, :timedOut) = await runWithDeadline(

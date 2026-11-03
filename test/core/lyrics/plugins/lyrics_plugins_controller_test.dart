@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_queries.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_controller.dart';
+import 'package:kanaru/core/lyrics/plugins/package/plugin_config_field.dart';
 import 'package:kanaru/core/plugin_runtime/plugin_runtime.dart';
 
 import '../../database/lyrics_plugin_test_helpers.dart';
@@ -149,5 +150,82 @@ void main() {
     await controller.uninstall(a.installId);
     final records = await controller.watchRecords().first;
     expect(records.single.isRemoved, isTrue);
+  });
+
+  group('needs-config report on switch on', () {
+    const apiKey = PluginConfigField(
+      key: 'apiKey',
+      title: 'Key',
+      mode: PluginConfigMode.input,
+      required: true,
+    );
+    late List<(String, String, PluginKind?)> reports;
+    late LyricsPluginsController reporting;
+
+    setUp(() {
+      reports = [];
+      reporting = env.newController(
+        onNeedsConfig: (id, name, kind) => reports.add((id, name, kind)),
+      );
+    });
+
+    test('on with a required value empty reports name and kind', () async {
+      final r = await reporting.installPackage(
+        testPackage(name: 'Needy', config: const [apiKey]),
+        file,
+      );
+      expect(
+        await reporting.setEnabled(r.installId, true),
+        LyricsPluginWrite.written,
+      );
+      await pumpEventQueue();
+      expect(reports, [(r.installId, 'Needy', PluginKind.lyrics)]);
+    });
+
+    test('off never reports', () async {
+      final r = await reporting.installPackage(
+        testPackage(config: const [apiKey]),
+        file,
+      );
+      await reporting.setEnabled(r.installId, false);
+      expect(reports, isEmpty);
+    });
+
+    test('a filled required value reports nothing', () async {
+      final r = await reporting.installPackage(
+        testPackage(config: const [apiKey]),
+        file,
+      );
+      await reporting.setConfigValue(r.installId, 'apiKey', 'k');
+      await reporting.setEnabled(r.installId, true);
+      await pumpEventQueue();
+      expect(reports, isEmpty);
+    });
+
+    test('switched on then off at once reports nothing', () async {
+      final r = await reporting.installPackage(
+        testPackage(config: const [apiKey]),
+        file,
+      );
+      final on = reporting.setEnabled(r.installId, true);
+      final off = reporting.setEnabled(r.installId, false);
+      await Future.wait([on, off]);
+      await pumpEventQueue();
+      expect(reports, isEmpty);
+    });
+
+    test('a removed plugin reports nothing', () async {
+      final r = await reporting.installPackage(
+        testPackage(config: const [apiKey]),
+        file,
+      );
+      await reporting.uninstall(r.installId);
+      expect(
+        await reporting.setEnabled(r.installId, true),
+        LyricsPluginWrite.skipped,
+      );
+      await pumpEventQueue();
+      expect(reports, isEmpty);
+    });
   });
 }

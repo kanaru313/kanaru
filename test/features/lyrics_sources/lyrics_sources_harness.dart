@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
@@ -64,6 +65,7 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   PluginConfigWrite configResult = PluginConfigWrite.written;
   LyricsPluginWrite storageResult = LyricsPluginWrite.written;
   Object? reorderError;
+  Object? enableError;
   Object? uninstallError;
   Object? storedError;
 
@@ -75,6 +77,17 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   Map<String, Object?> stored = {};
   Set<String> secrets = {};
   bool fallback = false;
+
+  /// Stands for the controller's callback (wired like the real provider);
+  /// called after `setEnabled(id, true)` for a plugin in [needsConfigIds].
+  void Function(String installId)? reportNeedsConfig;
+
+  /// Plugins whose `needsConfig` answers true.
+  final needsConfigIds = <String>{};
+
+  @override
+  Future<bool> needsConfig(String installId) async =>
+      needsConfigIds.contains(installId);
 
   @override
   Future<({List<String> written, List<String> skipped})> reorder(
@@ -88,6 +101,10 @@ class FakePlugins extends Fake implements LyricsPluginsController {
   @override
   Future<LyricsPluginWrite> setEnabled(String installId, bool on) async {
     enabled.add((installId, on));
+    if (enableError != null) throw enableError!;
+    if (on && needsConfigIds.contains(installId)) {
+      reportNeedsConfig?.call(installId);
+    }
     return LyricsPluginWrite.written;
   }
 
@@ -190,7 +207,16 @@ Future<GoRouter> pumpSources(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        lyricsPluginsControllerProvider.overrideWithValue(plugins),
+        lyricsPluginsControllerProvider.overrideWith((ref) {
+          // The production wiring: the controller reports to the notices.
+          plugins?.reportNeedsConfig = (id) {
+            final record = records.firstWhere((r) => r.installId == id);
+            ref
+                .read(pluginNeedsConfigNoticesProvider.notifier)
+                .report(id, record.name, record.kind);
+          };
+          return plugins;
+        }),
         lyricsSourcesInputProvider.overrideWith(
           (ref) => input ?? Stream.value(LyricsSourcesInput(records, prefs)),
         ),

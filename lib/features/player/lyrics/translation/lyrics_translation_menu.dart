@@ -76,6 +76,12 @@ List<Widget> lyricsTranslationMenuItems(
   final services = choices.services;
   final shown = choices.selected;
 
+  // The router and container are taken now: Now Playing closes, and with it
+  // the tree this menu hangs from.
+  final router = GoRouter.maybeOf(context);
+  // Read on press only: building it starts the player service.
+  final container = ProviderScope.containerOf(context);
+
   Future<void> pickService(TranslationServiceId service) async {
     if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
@@ -84,11 +90,6 @@ List<Widget> lyricsTranslationMenuItems(
     }
   }
 
-  // The router and container are taken now: Now Playing closes, and with it
-  // the tree this menu hangs from.
-  final router = GoRouter.maybeOf(context);
-  // Read on press only: building it starts the player service.
-  final container = ProviderScope.containerOf(context);
   void openSettings() {
     container.read(nowPlayingOpenProvider.notifier).close();
     router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));

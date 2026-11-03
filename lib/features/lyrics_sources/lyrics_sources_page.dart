@@ -34,6 +34,16 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
   /// dropped row does not jump back for a moment.
   List<String>? _chosen;
 
+  /// Switches a source; the controller reports a plugin switched on that
+  /// lacks a required setting (it stays on).
+  Future<void> _toggle(
+    LyricsPluginsController controller,
+    LyricsSourceEntry entry,
+    bool on,
+  ) async {
+    await setLyricsSourceOn(controller, entry.id, on);
+  }
+
   List<String> _ids(List<LyricsSourceEntry> entries) => [
     for (final e in entries) e.id,
   ];
@@ -153,9 +163,7 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
                     ? null
                     // A plugin removed meanwhile answers skipped; the row is
                     // already gone from the list, so nothing is shown.
-                    : (on) => unawaited(
-                        setLyricsSourceOn(controller, entry.id, on),
-                      ),
+                    : (on) => unawaited(_toggle(controller, entry, on)),
                 onMove: (delta) => _move(shown, index, delta),
                 onOpen: entry.record == null
                     ? null

@@ -12,19 +12,34 @@ import '../package/plugin_translate_spec.dart';
 String encodePluginConfigSchema(List<PluginConfigField> fields) =>
     jsonEncode(pluginConfigToJson(fields));
 
-/// The manifest-shaped map of [fields].
+/// The manifest-shaped map of [fields]. An attribute is written only when
+/// set, so the text parses back to equal fields.
 Map<String, Object?> pluginConfigToJson(List<PluginConfigField> fields) => {
   for (final field in fields)
     field.key: {
       'title': field.title,
       'mode': field.mode.name,
       if (field.subtitle != null) 'subtitle': field.subtitle,
-      if (field.mode == PluginConfigMode.input)
-        'format': (field.inputFormat ?? PluginInputFormat.text).name,
+      if (field.required) 'required': true,
+      if (field.formatName.isNotEmpty) 'format': field.formatName,
       if (field.mode == PluginConfigMode.select)
         'options': [
-          for (final o in field.options) {'value': o.value, 'title': o.title},
+          for (final o in field.options)
+            {
+              'value': o.value,
+              'title': o.title,
+              if (o.subtitle != null) 'subtitle': o.subtitle,
+            },
         ],
+      if (field.placeholder != null) 'placeholder': field.placeholder,
+      if (field.minLength != null) 'minLength': field.minLength,
+      if (field.maxLength != null) 'maxLength': field.maxLength,
+      if (field.rows != null) 'rows': field.rows,
+      if (field.min != null) 'min': field.min,
+      if (field.max != null) 'max': field.max,
+      if (field.step != null) 'step': field.step,
+      if (field.minItems != null) 'minItems': field.minItems,
+      if (field.maxItems != null) 'maxItems': field.maxItems,
       if (field.defaultValue != null) 'default': field.defaultValue,
     },
 };

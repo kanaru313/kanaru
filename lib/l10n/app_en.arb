@@ -5272,5 +5272,118 @@
         "type": "int"
       }
     }
+  },
+  "pluginConfigRequired": "This setting is required",
+  "pluginConfigIntegerInvalid": "Enter a whole number",
+  "pluginConfigBelowMin": "Must be at least {min}",
+  "@pluginConfigBelowMin": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginConfigAboveMax": "Must be at most {max}",
+  "@pluginConfigAboveMax": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginConfigTooShort": "{count, plural, =1{Enter at least 1 character} other{Enter at least {count} characters}}",
+  "@pluginConfigTooShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigTooLong": "{count, plural, =1{Enter at most 1 character} other{Enter at most {count} characters}}",
+  "@pluginConfigTooLong": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigUrlInvalid": "Enter an https address",
+  "pluginConfigTooFewItems": "{count, plural, =1{Pick or add at least 1 item} other{Pick or add at least {count} items}}",
+  "@pluginConfigTooFewItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigTooManyItems": "{count, plural, =1{At most 1 item is allowed} other{At most {count} items are allowed}}",
+  "@pluginConfigTooManyItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigItemInvalid": "One of the entries is not valid",
+  "pluginConfigKeyInvalid": "Enter a name of 1 to 100 characters, with no space at either end",
+  "pluginConfigKeyDuplicate": "Another row already uses this name",
+  "pluginConfigListRowLabel": "{title} {index}",
+  "@pluginConfigListRowLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginConfigAddItem": "Add",
+  "pluginConfigRemoveItem": "Remove",
+  "pluginConfigMapKeyLabel": "Name",
+  "pluginConfigMapValueLabel": "Value",
+  "pluginNeedsConfigTitle": "{name} needs configuration",
+  "@pluginNeedsConfigTitle": {
+    "description": "Snack bar: a plugin has an empty required setting and was not run",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginsNeedConfigTitleTwo": "{first} and {second} need configuration",
+  "@pluginsNeedConfigTitleTwo": {
+    "description": "Snack bar: two plugins have an empty required setting and were not run",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginsNeedConfigTitleMany": "{first}, {second} and {more, plural, =1{1 more} other{{more} more}} need configuration",
+  "@pluginsNeedConfigTitleMany": {
+    "description": "Snack bar: three or more plugins have an empty required setting and were not run; two are named, more is how many are left",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "more": {
+        "type": "int"
+      }
+    }
+  },
+  "pluginOpenConfig": "Open config",
+  "@pluginOpenConfig": {
+    "description": "Snack bar action: open the plugin's settings page"
+  },
+  "lyricsTranslationFailNeedsConfig": "This translation plugin needs configuration before it can run.",
+  "@lyricsTranslationFailNeedsConfig": {
+    "description": "Why a translation failed: a required plugin setting is empty"
   }
 }

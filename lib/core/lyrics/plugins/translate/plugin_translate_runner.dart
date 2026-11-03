@@ -199,6 +199,10 @@ class PluginTranslateRunner {
     if (row == null) {
       throw const TranslationException(TranslationFailureKind.server);
     }
+    // A required field is empty: nothing ran, nothing is logged.
+    if (outcome.state == PluginRunState.needsConfig) {
+      throw const TranslationException(TranslationFailureKind.needsConfig);
+    }
     if (outcome.state == PluginRunState.setupFailed) {
       final kind = translateSetupFailureKind(
         timedOut: outcome.timedOut,
@@ -252,16 +256,18 @@ class PluginTranslateRunner {
 
   // True when a secret field of the plugin has no value in [config]: a
   // refused key is then "no key" rather than "wrong key".
-  bool _hasEmptySecret(LyricsPluginRow row, Map<String, String> config) =>
+  bool _hasEmptySecret(LyricsPluginRow row, PluginConfigMap config) =>
       decodePluginConfigSchema(row.configSchema).any(
         (field) =>
-            isSecretField(field) && (config[field.key] ?? '').trim().isEmpty,
+            isSecretField(field) &&
+            (config[field.key] is! String ||
+                (config[field.key]! as String).trim().isEmpty),
       );
 
   // Writes the run to the plugin's log (and, for a failure, the app log).
   void _record(
     LyricsPluginRow row,
-    Map<String, String> config,
+    PluginConfigMap config,
     TranslationFailureKind? failure,
     String message, {
     Map<String, Object?> query = const {},
@@ -285,6 +291,7 @@ class PluginTranslateRunner {
       requests: requests,
     ),
     config,
+    schema: decodePluginConfigSchema(row.configSchema),
     failed: failed && failure != null,
     appLogLabel: 'Translate plugin',
   );

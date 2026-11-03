@@ -5266,4 +5266,122 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get pluginConfigRequired => 'This setting is required';
+
+  @override
+  String get pluginConfigIntegerInvalid => 'Enter a whole number';
+
+  @override
+  String pluginConfigBelowMin(String min) {
+    return 'Must be at least $min';
+  }
+
+  @override
+  String pluginConfigAboveMax(String max) {
+    return 'Must be at most $max';
+  }
+
+  @override
+  String pluginConfigTooShort(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Enter at least $count characters',
+      one: 'Enter at least 1 character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pluginConfigTooLong(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Enter at most $count characters',
+      one: 'Enter at most 1 character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pluginConfigUrlInvalid => 'Enter an https address';
+
+  @override
+  String pluginConfigTooFewItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pick or add at least $count items',
+      one: 'Pick or add at least 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pluginConfigTooManyItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'At most $count items are allowed',
+      one: 'At most 1 item is allowed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pluginConfigItemInvalid => 'One of the entries is not valid';
+
+  @override
+  String get pluginConfigKeyInvalid =>
+      'Enter a name of 1 to 100 characters, with no space at either end';
+
+  @override
+  String get pluginConfigKeyDuplicate => 'Another row already uses this name';
+
+  @override
+  String pluginConfigListRowLabel(String title, int index) {
+    return '$title $index';
+  }
+
+  @override
+  String get pluginConfigAddItem => 'Add';
+
+  @override
+  String get pluginConfigRemoveItem => 'Remove';
+
+  @override
+  String get pluginConfigMapKeyLabel => 'Name';
+
+  @override
+  String get pluginConfigMapValueLabel => 'Value';
+
+  @override
+  String pluginNeedsConfigTitle(String name) {
+    return '$name needs configuration';
+  }
+
+  @override
+  String pluginsNeedConfigTitleTwo(String first, String second) {
+    return '$first and $second need configuration';
+  }
+
+  @override
+  String pluginsNeedConfigTitleMany(String first, String second, int more) {
+    String _temp0 = intl.Intl.pluralLogic(
+      more,
+      locale: localeName,
+      other: '$more more',
+      one: '1 more',
+    );
+    return '$first, $second and $_temp0 need configuration';
+  }
+
+  @override
+  String get pluginOpenConfig => 'Open config';
+
+  @override
+  String get lyricsTranslationFailNeedsConfig =>
+      'This translation plugin needs configuration before it can run.';
 }

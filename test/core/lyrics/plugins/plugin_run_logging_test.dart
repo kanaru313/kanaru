@@ -287,7 +287,7 @@ void main() {
 
   group('setup failures', () {
     test('a run stopped while loading logs nothing and is skipped', () async {
-      final loading = Completer<Map<String, String>>();
+      final loading = Completer<PluginConfigMap>();
       final started = Completer<void>();
       env = await PluginProviderEnv.create(
         loadConfig: (_) {
@@ -347,7 +347,7 @@ void main() {
     test('loading counts inside the outer deadline', () async {
       env = await PluginProviderEnv.create(
         outerDeadline: const Duration(milliseconds: 60),
-        loadConfig: (_) => Completer<Map<String, String>>().future,
+        loadConfig: (_) => Completer<PluginConfigMap>().future,
       );
       addTearDown(env.dispose);
       record = await env.install();

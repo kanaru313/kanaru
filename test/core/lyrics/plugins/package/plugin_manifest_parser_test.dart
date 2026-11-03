@@ -302,7 +302,7 @@ void main() {
       );
       expect(m.config.map((f) => f.key), ['name', 'limit', 'region', 'strict']);
       expect(m.config[0].inputFormat, PluginInputFormat.text);
-      expect(m.config[1].defaultValue, '5');
+      expect(m.config[1].defaultValue, 5);
       expect(m.config[2].options.map((o) => o.value), ['us', 'vn']);
       expect(m.config[2].defaultValue, 'vn');
       expect(m.config[3].defaultValue, true);
@@ -498,7 +498,7 @@ void main() {
             },
           }),
         );
-        expect(m.config.single.defaultValue, good);
+        expect(m.config.single.defaultValue, num.parse(good));
       }
     });
   });

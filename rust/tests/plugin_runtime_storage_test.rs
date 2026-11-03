@@ -29,7 +29,7 @@ fn local_config_returns_the_string_or_null() {
            return Response.success([localConfig.getItem('a'), localConfig.getItem('missing'),
              localConfig.getItem('empty'), localConfig.getItem(5)]);
          }",
-        &[("a", "1"), ("empty", ""), ("5", "five")],
+        &[("a", r#""1""#), ("empty", r#""""#), ("5", r#""five""#)],
         "",
     );
     assert_eq!(r.status, S::Ok, "{r:?}");
@@ -45,10 +45,79 @@ fn local_config_is_read_only() {
            try { localConfig.getItem = function () { return 'x'; }; } catch (e) {}
            return Response.success(localConfig.getItem('a'));
          }",
-        &[("a", "1")],
+        &[("a", r#""1""#)],
         "",
     );
     assert_eq!(r.output_json, r#""1""#);
+}
+
+#[test]
+fn local_config_returns_typed_values() {
+    let r = run(
+        "function execute() {
+           var l = localConfig.getItem('l');
+           return Response.success([localConfig.getItem('n'), localConfig.getItem('b'),
+             l, localConfig.getItem('m'), typeof localConfig.getItem('n'),
+             Array.isArray(l), localConfig.getItem('f')]);
+         }",
+        &[
+            ("n", "5"),
+            ("b", "true"),
+            ("l", r#"["a"]"#),
+            ("m", r#"{"k":"v"}"#),
+            ("f", "1.5"),
+        ],
+        "",
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert_eq!(
+        r.output_json,
+        r#"[5,true,["a"],{"k":"v"},"number",true,1.5]"#
+    );
+}
+
+#[test]
+fn local_config_returns_a_fresh_copy_per_read() {
+    let r = run(
+        "function execute() {
+           localConfig.getItem('l').push(1);
+           localConfig.getItem('m').k = 'changed';
+           return Response.success([localConfig.getItem('l'), localConfig.getItem('m')]);
+         }",
+        &[("l", r#"["a"]"#), ("m", r#"{"k":"v"}"#)],
+        "",
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert_eq!(r.output_json, r#"[["a"],{"k":"v"}]"#);
+}
+
+#[test]
+fn local_config_with_invalid_json_fails_without_echoing_the_text() {
+    const SECRET: &str = "s3cr3t-unquoted";
+    let r = run(
+        "function execute() {
+           try { localConfig.getItem('k'); } catch (e) { return Response.success(e.name + ': ' + e.message); }
+           return Response.success('no error');
+         }",
+        &[("k", SECRET)],
+        "",
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert!(!format!("{r:?}").contains(SECRET), "{r:?}");
+    assert!(r.output_json.contains("TypeError"), "{r:?}");
+}
+
+#[test]
+fn local_config_ignores_script_changes_to_json_parse_and_object_prototype() {
+    let r = run(
+        "JSON.parse = function () { return 'hijacked'; };
+         Object.defineProperty(Object.prototype, 'k', { set: function () { throw new Error('setter'); }, configurable: true });
+         function execute() { return Response.success(localConfig.getItem('m')); }",
+        &[("m", r#"{"k":"v"}"#)],
+        "",
+    );
+    assert_eq!(r.status, S::Ok, "{r:?}");
+    assert_eq!(r.output_json, r#"{"k":"v"}"#);
 }
 
 #[test]

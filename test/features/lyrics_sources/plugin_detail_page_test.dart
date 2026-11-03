@@ -1,10 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
@@ -22,7 +25,7 @@ const _number = PluginConfigField(
   title: 'Limit',
   mode: PluginConfigMode.input,
   inputFormat: PluginInputFormat.number,
-  defaultValue: '10',
+  defaultValue: 10,
 );
 const _text = PluginConfigField(
   key: 'name',
@@ -232,6 +235,46 @@ void main() {
     expect(plugins.enabled, [(idA, false)]);
   });
 
+  testWidgets('switching on a plugin that needs config reports it', (
+    tester,
+  ) async {
+    final fake = FakePlugins()..needsConfigIds.add(idA);
+    await pumpSources(
+      tester,
+      records: [testRecord(idA, name: 'Alpha')],
+      plugins: fake,
+      prefs: const [
+        LyricsSourcePrefRow(providerId: idA, enabled: false, position: 1),
+      ],
+      location: lyricsPluginRoute(idA),
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Switch).first),
+    );
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
+
+    expect(fake.enabled, [(idA, true)]);
+    final notice = container.read(pluginNeedsConfigNoticesProvider);
+    expect(notice?.installId, idA);
+    expect(notice?.name, 'Alpha');
+  });
+
+  testWidgets('switching off on the plugin page reports nothing', (
+    tester,
+  ) async {
+    final fake = FakePlugins()..needsConfigIds.add(idA);
+    await open(tester, plain, plugins: fake);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(Switch).first),
+    );
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
+
+    expect(fake.enabled, [(idA, false)]);
+    expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
+  });
+
   group('settings form', () {
     testWidgets('a secret is hidden, can be revealed, and saves on submit', (
       tester,
@@ -339,7 +382,7 @@ void main() {
       await tester.enterText(field, '25.5');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      expect(plugins.configWrites, [(idA, 'limit', '25.5')]);
+      expect(plugins.configWrites, [(idA, 'limit', 25.5)]);
       expect(find.text(en.pluginConfigNumberInvalid), findsNothing);
     });
 

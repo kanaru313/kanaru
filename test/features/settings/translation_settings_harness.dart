@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service_needs_config_watch.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -63,6 +64,8 @@ class TranslationSettingsHarness {
         ),
       ],
     );
+    // The shell keeps this watcher alive in the app.
+    container.read(translationServiceNeedsConfigWatchProvider);
     addTearDown(() async {
       tester.view.reset();
       container.dispose();

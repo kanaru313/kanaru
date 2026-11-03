@@ -47,8 +47,14 @@ class LyricsFetchException implements Exception {
 /// answer: the lookup skips the source, records no failure, starts no pause
 /// and stores no "not found" row, so the source is asked again next time. A
 /// manual search shows that source with no results and no error.
+///
+/// [needsConfig] tells that the plugin did not run because a required
+/// setting is empty: that will not change by asking again, so the automatic
+/// lookup does not retry the same song on a timer.
 class LyricsSourceSkipped implements Exception {
-  const LyricsSourceSkipped();
+  const LyricsSourceSkipped({this.needsConfig = false});
+
+  final bool needsConfig;
 
   @override
   String toString() => 'LyricsSourceSkipped';

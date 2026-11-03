@@ -23,7 +23,7 @@ PluginRunRequest _request(
   String code, {
   Duration? timeout,
   String storageJson = '',
-  Map<String, String> config = const {},
+  PluginConfigMap config = const {},
 }) => PluginRunRequest(
   files: [PluginSourceFile(name: 'search.js', code: code)],
   entry: 'search.js',
@@ -88,6 +88,50 @@ void main() {
               '(expected at $_libraryPath)'
         : null,
     () {
+      nativeTest('config values reach the script as typed values', () async {
+        final result = await _runtime.run(
+          _request(
+            'function execute() {'
+            '  return Response.success(['
+            '    localConfig.getItem("s"), localConfig.getItem("n"),'
+            '    localConfig.getItem("b"), localConfig.getItem("l"),'
+            '    localConfig.getItem("m"), localConfig.getItem("none")]);'
+            '}',
+            config: {
+              's': 'x',
+              'n': 5,
+              'b': true,
+              'l': ['a'],
+              'm': {'k': 'v'},
+            },
+          ),
+          fetch: _noFetch,
+        );
+        expect(result.status, PluginRunStatus.ok);
+        expect(jsonDecode(result.outputJson), [
+          'x',
+          5,
+          true,
+          ['a'],
+          {'k': 'v'},
+          null,
+        ]);
+      });
+
+      nativeTest(
+        'a config value JSON cannot encode fails the run safely',
+        () async {
+          final result = await _runtime.run(
+            _request(
+              'function execute() { return Response.success(1); }',
+              config: {'x': double.nan},
+            ),
+            fetch: _noFetch,
+          );
+          expect(result.status, PluginRunStatus.internal);
+        },
+      );
+
       nativeTest('a script runs and returns its data', () async {
         final result = await _runtime.run(
           _request(

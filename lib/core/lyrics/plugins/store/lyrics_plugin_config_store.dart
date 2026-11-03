@@ -4,9 +4,11 @@ import 'package:logging/logging.dart';
 
 import '../../../database/library_database.dart';
 import '../../../database/lyrics_plugin_queries.dart';
+import '../../../plugin_runtime/plugin_runtime.dart';
 import '../../../secrets/secret_store.dart';
 import '../lyrics_plugin_record.dart';
 import '../package/plugin_manifest.dart';
+import 'plugin_config_migration.dart';
 import 'plugin_config_schema_codec.dart';
 import 'plugin_config_values.dart';
 import 'plugin_secret_cache.dart';
@@ -27,8 +29,9 @@ class LyricsPluginConfigStore {
   final LibraryDatabase _db;
   final PluginSecretCache _secrets;
 
-  /// Sets [key] to [value] (a `String`, or a `bool` for a toggle). A null or
-  /// empty string removes the value, so the field's default applies again.
+  /// Sets [key] to [value] (a string, number, bool, list or map, as the
+  /// field's mode asks). A null or empty string removes the value, so the
+  /// field's default applies again; an empty list or map is a value.
   Future<PluginConfigWrite> setValue(
     String installId,
     String key,
@@ -58,37 +61,51 @@ class LyricsPluginConfigStore {
     return _save(installId, values);
   }
 
-  /// Everything a script may read, as strings: stored values, then the
-  /// form's defaults for the rest, then secrets. A toggle reads `true` or
-  /// `false`. Never throws for an unusable secret store (those read empty).
-  Future<Map<String, String>> configForRun(String installId) async {
+  /// Everything a script may read, typed: stored values, then the form's
+  /// defaults for the rest, then secrets. A toggle reads a bool, a number a
+  /// num, a list or multi-select a list, a map a map. A value that does not
+  /// fit its field is left out. Never throws for an unusable secret store
+  /// (those read absent).
+  Future<PluginConfigMap> configForRun(String installId) async {
     final record = await _live(installId);
     if (record == null) return const {};
     final stored = await _stored(installId);
-    final out = <String, String>{};
+    final out = <String, Object>{};
     for (final field in record.config) {
       if (isSecretField(field)) {
         final secret = await _secrets.read(
           lyricsPluginSecretName(installId, field.key),
         );
-        if (secret != null) out[field.key] = secret;
+        if (secret != null && pluginValueFits(field, secret)) {
+          out[field.key] = secret;
+        }
         continue;
       }
       final value = stored[field.key] ?? field.defaultValue;
       if (value != null && pluginValueFits(field, value)) {
-        out[field.key] = '$value';
+        out[field.key] = _typed(value);
       }
     }
     return out;
   }
+
+  // A fitting value as the script reads it: collections are copied.
+  Object _typed(Object value) => switch (value) {
+    List() => [...value],
+    Map() => {...value},
+    _ => value,
+  };
 
   /// The non-secret values as stored (what a form shows), by key.
   Future<Map<String, Object?>> storedValues(String installId) =>
       _stored(installId);
 
   /// Whether the secret of [key] has a value (for the form: filled or not).
-  Future<bool> hasSecret(String installId, String key) async =>
-      await _secrets.read(lyricsPluginSecretName(installId, key)) != null;
+  /// A stored secret over the length cap counts as none, as in a run.
+  Future<bool> hasSecret(String installId, String key) async {
+    final value = await _secrets.read(lyricsPluginSecretName(installId, key));
+    return value != null && value.runes.length <= pluginConfigMaxText;
+  }
 
   /// Removes the secret of every secret field of [schema]. Failures are
   /// logged (error type only) and do not stop the rest.
@@ -99,12 +116,12 @@ class LyricsPluginConfigStore {
   ) async {
     var all = true;
     for (final field in schema.where(isSecretField)) {
-      all &= await deleteSecret(installId, field.key);
+      all &= await _deleteSecret(installId, field.key);
     }
     return all;
   }
 
-  Future<bool> deleteSecret(String installId, String key) async {
+  Future<bool> _deleteSecret(String installId, String key) async {
     try {
       await _secrets.delete(lyricsPluginSecretName(installId, key));
       return true;
@@ -117,7 +134,8 @@ class LyricsPluginConfigStore {
   /// Moves values to follow a form change from [before] to [after]: a key
   /// that became secret moves from the database to the secret store, one that
   /// stopped being secret loses its store entry, a removed secret key loses
-  /// its entry, and a stored value that no longer fits its field is dropped.
+  /// its entry, a stored value whose field changed mode or format is dropped,
+  /// and so is one that no longer fits its field.
   Future<void> adaptToForm(
     String installId,
     List<PluginConfigField> before,
@@ -128,11 +146,11 @@ class LyricsPluginConfigStore {
     for (final old in before) {
       final now = after.where((f) => f.key == old.key).firstOrNull;
       if (isSecretField(old) && (now == null || !isSecretField(now))) {
-        await deleteSecret(installId, old.key);
+        await _deleteSecret(installId, old.key);
       }
       if (now != null && !isSecretField(old) && isSecretField(now)) {
         final value = values[old.key];
-        if (value is String && value.isNotEmpty) {
+        if (movesIntoSecret(old, now) && value is String && value.isNotEmpty) {
           try {
             await _secrets.write(
               lyricsPluginSecretName(installId, old.key),
@@ -147,10 +165,7 @@ class LyricsPluginConfigStore {
       }
     }
     for (final key in values.keys.toList()) {
-      final field = after.where((f) => f.key == key).firstOrNull;
-      if (field == null ||
-          isSecretField(field) ||
-          !pluginValueFits(field, values[key])) {
+      if (!keepsStoredValue(before, after, key, values[key])) {
         values.remove(key);
         changed = true;
       }

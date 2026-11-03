@@ -1,3 +1,5 @@
+import '../../plugin_runtime/plugin_runtime.dart';
+import 'package/plugin_config_field.dart';
 import 'plugin_fetch_bridge.dart';
 
 /// The `kind` of a run that did not fail but printed to the console.
@@ -15,9 +17,10 @@ const _minMaskedTokenLength = 8;
 
 /// One line of a plugin's log file. `query` is the run input (song data
 /// included; the file stays on this device and is never attached to a bug
-/// report by itself). Config values must not be in any field except through
-/// [PluginRunLog.write], which hides them in [message], [stack], [console]
-/// and the request paths.
+/// report by itself). Config values reach the file only through [toJson]
+/// (called by [PluginRunLog.write]), which hides every string of them (a text
+/// value, each list item, each map key and value) in [query], [message],
+/// [stack], [console] and the request hosts and paths.
 class PluginRunLogEvent {
   const PluginRunLogEvent({
     required this.time,
@@ -52,7 +55,7 @@ class PluginRunLogEvent {
   final List<PluginRequestRecord> requests;
 
   /// The JSON object of the log line, with every [config] value hidden.
-  Map<String, Object?> toJson(Map<String, String> config) {
+  Map<String, Object?> toJson(PluginConfigMap config) {
     final hide = configValueHider(config);
     return {
       'ts': time.toUtc().toIso8601String(),
@@ -73,18 +76,47 @@ class PluginRunLogEvent {
   }
 }
 
-/// A function that replaces every [config] value of at least four characters
-/// in a text with `***`. A value is also hidden in the forms a script or a
+/// The part of [config] the user typed: input text, multiline, secret and
+/// url values, string list items, map keys and values. Select values (public
+/// in the manifest), numbers and toggles are left out, so a select value such
+/// as `default` does not hide that word in the logs. A key that is not in
+/// [schema] (stale) stays in: hiding too much is the safe side.
+PluginConfigMap userEnteredConfig(
+  List<PluginConfigField> schema,
+  PluginConfigMap config,
+) {
+  final fields = {for (final f in schema) f.key: f};
+  return {
+    for (final e in config.entries)
+      if (_isUserEntered(fields[e.key])) e.key: e.value,
+  };
+}
+
+bool _isUserEntered(PluginConfigField? field) =>
+    field == null ||
+    switch (field.mode) {
+      PluginConfigMode.input =>
+        field.inputFormat != PluginInputFormat.number &&
+            field.inputFormat != PluginInputFormat.integer,
+      PluginConfigMode.list || PluginConfigMode.map => true,
+      PluginConfigMode.select || PluginConfigMode.toggle => false,
+    };
+
+/// A function that replaces every string of a [config] value (a text value,
+/// a list item, a map key or value) of at least four characters in a text
+/// with `***`; numbers and bools are not hidden. Pass the result of
+/// [userEnteredConfig] to leave select values readable. A value is also hidden in the forms a script or a
 /// URL gives it: the percent-encoded component and the percent-encoded whole
 /// address. A value that lists several secrets (keys split by spaces, commas
 /// or semicolons) also hides each token of at least eight characters, so a
 /// line naming one key does not leak it. Longer values go first, so
 /// overlapping secrets are hidden whole.
-String Function(String) configValueHider(Map<String, String> config) {
+String Function(String) configValueHider(PluginConfigMap config) {
+  final leaves = [for (final value in config.values) ..._stringLeaves(value)];
   final values = <String>{
-    for (final value in config.values)
+    for (final value in leaves)
       if (value.length >= _minMaskedLength) value,
-    for (final value in config.values)
+    for (final value in leaves)
       for (final token in value.split(RegExp(r'[\s,;]+')))
         if (token.length >= _minMaskedTokenLength) token,
   };
@@ -107,3 +139,15 @@ Object? _hideDeep(Object? value, String Function(String) hide) =>
       Map() => {for (final e in value.entries) e.key: _hideDeep(e.value, hide)},
       _ => value,
     };
+
+// The strings of a config value: itself, list items, map keys and values.
+// Numbers and bools hold nothing to hide.
+Iterable<String> _stringLeaves(Object? value) => switch (value) {
+  String() => [value],
+  List() => value.expand(_stringLeaves),
+  Map() => [
+    ...value.keys.expand(_stringLeaves),
+    ...value.values.expand(_stringLeaves),
+  ],
+  _ => const [],
+};

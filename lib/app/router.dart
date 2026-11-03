@@ -36,6 +36,7 @@ import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
 import 'shell/branch_transition_container.dart';
 import 'shell/missing_roots_notice.dart';
+import 'shell/plugin_needs_config_notice.dart';
 
 /// First-run source picker, outside the shell (no sidebar or player bar).
 const _welcomePath = '/welcome';
@@ -65,7 +66,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       StatefulShellRoute(
         builder: (context, state, navigationShell) => MissingRootsNotice(
-          child: AppShell(navigationShell: navigationShell),
+          child: PluginNeedsConfigNoticeHost(
+            child: AppShell(navigationShell: navigationShell),
+          ),
         ),
         navigatorContainerBuilder: (context, navigationShell, children) =>
             BranchTransitionContainer(

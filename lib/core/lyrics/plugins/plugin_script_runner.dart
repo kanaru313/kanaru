@@ -14,6 +14,7 @@ import 'plugin_run_errors.dart';
 import 'plugin_run_log.dart';
 import 'plugin_run_registry.dart';
 import 'store/lyrics_plugin_dirs.dart';
+import 'store/plugin_config_schema_codec.dart';
 
 /// Which script of the package to run.
 enum PluginScript { search, lyrics }
@@ -43,10 +44,11 @@ class PluginScriptRunner {
     required PluginRunRegistry runs,
     required this._runLog,
     required LyricsPluginDirs dirs,
-    required Future<Map<String, String>> Function(String installId) loadConfig,
+    required Future<PluginConfigMap> Function(String installId) loadConfig,
     PluginPackageLoader? packages,
     Duration outerDeadline = pluginRunOuterDeadline,
     DateTime Function()? clock,
+    void Function(LyricsPluginRow row)? onNeedsConfig,
   }) : _core = PluginRunCore(
          db: db,
          runtime: runtime,
@@ -55,6 +57,7 @@ class PluginScriptRunner {
          loadConfig: loadConfig,
          packages: packages,
          outerDeadline: outerDeadline,
+         onNeedsConfig: onNeedsConfig,
        ),
        _clock = clock ?? DateTime.now;
 
@@ -90,6 +93,10 @@ class PluginScriptRunner {
     );
     final row = outcome.row;
     if (row == null) throw const LyricsSourceSkipped();
+    // A required field is empty: not a failure, nothing is logged.
+    if (outcome.state == PluginRunState.needsConfig) {
+      throw const LyricsSourceSkipped(needsConfig: true);
+    }
     final scriptName = script == PluginScript.search
         ? 'search.js'
         : 'lyrics.js';
@@ -164,6 +171,7 @@ class PluginScriptRunner {
           requests: outcome.requests,
         ),
         config,
+        schema: decodePluginConfigSchema(row.configSchema),
         failed: !ok,
       );
     }

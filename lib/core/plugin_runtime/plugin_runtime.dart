@@ -4,6 +4,10 @@ import 'plugin_run_result.dart';
 export 'plugin_fetch_types.dart';
 export 'plugin_run_result.dart';
 
+/// Config values handed to a script: each is JSON-encodable (string, finite
+/// number, bool, list or map of those).
+typedef PluginConfigMap = Map<String, Object>;
+
 /// One file of a plugin's `src/` folder, already read and size-checked.
 class PluginSourceFile {
   const PluginSourceFile({required this.name, required this.code});
@@ -38,8 +42,9 @@ class PluginRunRequest {
   /// the caller keeps its own outer deadline.
   final Duration? timeout;
 
-  /// The plugin's configuration (secrets included), readable by the script.
-  final Map<String, String> config;
+  /// The plugin's configuration (secrets included), readable by the script as
+  /// typed values: strings, finite numbers, booleans, lists and maps of them.
+  final PluginConfigMap config;
 
   /// The plugin's stored map as a JSON object of strings; empty for none.
   final String storageJson;

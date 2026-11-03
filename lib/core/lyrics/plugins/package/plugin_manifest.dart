@@ -1,50 +1,8 @@
 import '../../../database/lyrics_plugin_spec.dart';
+import 'plugin_config_field.dart';
 import 'plugin_translate_spec.dart';
 
-/// How a config field is edited.
-enum PluginConfigMode { input, select, toggle }
-
-/// Text entry kind of an `input` field.
-enum PluginInputFormat { text, number, secret }
-
-/// One choice of a `select` field.
-class PluginConfigOption {
-  const PluginConfigOption({required this.value, required this.title});
-
-  final String value;
-  final String title;
-}
-
-/// One setting a plugin asks the user for.
-class PluginConfigField {
-  const PluginConfigField({
-    required this.key,
-    required this.title,
-    required this.mode,
-    this.subtitle,
-    this.inputFormat,
-    this.options = const [],
-    this.defaultValue,
-  });
-
-  /// Name the script reads with `localConfig.getItem(key)`.
-  final String key;
-  final String title;
-  final PluginConfigMode mode;
-
-  /// Optional help text under the title; may hold newlines.
-  final String? subtitle;
-
-  /// Set for `input` fields only.
-  final PluginInputFormat? inputFormat;
-
-  /// Set for `select` fields only.
-  final List<PluginConfigOption> options;
-
-  /// Initial value: a `String` for `input` (numbers as text) and `select`, a
-  /// `bool` for `toggle`; null when the manifest gives none.
-  final Object? defaultValue;
-}
+export 'plugin_config_field.dart';
 
 /// A checked `plugin.json`.
 class PluginManifest {
