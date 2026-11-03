@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart'
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart' show ScaffoldMessengerState;
 
-import '../../../../core/database/library_startup.dart';
 import '../../../../core/indexer/excluded_folders_controller.dart';
 import '../../../../shared/enqueue_from_database.dart';
 import '../../../../shared/library_route_keys.dart';
@@ -14,7 +13,6 @@ import '../../../../shared/play_tracks.dart';
 import '../../../../shared/queue_host.dart';
 import '../../../../shared/root_rejection_message.dart';
 import '../../../../shared/track_menu_actions.dart';
-import '../../../../shared/widgets/add_to_playlist/create_playlist_prompt.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../../shared/widgets/queue_actions_menu.dart';
@@ -65,51 +63,6 @@ class FolderModalSession {
         );
         return [for (final s in songs) trackFromRow(s, covers)];
       }, shuffle: shuffle);
-
-  /// Prompts for a playlist name and creates a playlist from the folder's songs.
-  Future<void> createPlaylist() async {
-    final db = runner.container.read(libraryDatabaseProvider);
-    if (db == null) return;
-    final ctx = dialogContext;
-    final msg = messenger;
-    final l10n = runner.l10n;
-    if (ctx == null || !ctx.mounted) return;
-    try {
-      final paths = [
-        for (final t in await readFolderSongs(
-          db,
-          folder.path,
-          recursive: !direct,
-        ))
-          t.path,
-      ];
-      if (paths.isEmpty) {
-        msg?.showAppSnackBar(AppSnackBarKind.info, l10n.foldersEmptyFolder);
-        return;
-      }
-      if (!ctx.mounted) return;
-      final created = await promptAndCreatePlaylist(
-        ctx,
-        db,
-        msg,
-        l10n,
-        paths: paths,
-        initialName: folder.name,
-      );
-      if (created == null) return;
-      msg?.showAppSnackBar(
-        AppSnackBarKind.success,
-        l10n.playlistAdded(folder.name, created.name),
-      );
-    } catch (error, stackTrace) {
-      _log.severe(
-        'Creating a playlist from a folder failed',
-        error,
-        stackTrace,
-      );
-      msg?.showAppSnackBar(AppSnackBarKind.error, l10n.libraryUnexpectedError);
-    }
-  }
 
   /// Copies the folder path to clipboard and reports in a snackbar.
   Future<void> copyPath() async {
@@ -173,7 +126,6 @@ class FolderModalSession {
         ? () => unawaited(play(recursive: true))
         : null,
     addToPlaylist: () => queue(QueueAction.addToPlaylist),
-    createPlaylist: () => unawaited(createPlaylist()),
     showInFileManager: (sample) =>
         unawaited(runner.showInFileManagerAt(sample ?? folder.path)),
     copyPath: () => unawaited(copyPath()),
@@ -190,7 +142,6 @@ class FolderModalHandlers {
     required this.shuffle,
     this.playAllBelow,
     required this.addToPlaylist,
-    required this.createPlaylist,
     required this.showInFileManager,
     required this.copyPath,
     required this.excludeFromLibrary,
@@ -205,7 +156,6 @@ class FolderModalHandlers {
   final VoidCallback? playAllBelow;
 
   final VoidCallback addToPlaylist;
-  final VoidCallback createPlaylist;
 
   /// Shows the folder (or sample file) in the native file manager.
   final ValueChanged<String?> showInFileManager;

@@ -254,7 +254,6 @@ void main() {
       'Play next',
       'Add to queue',
       'Add to playlist…',
-      'Create playlist',
       'Advanced',
     ]) {
       expect(find.text(item), findsOneWidget, reason: item);

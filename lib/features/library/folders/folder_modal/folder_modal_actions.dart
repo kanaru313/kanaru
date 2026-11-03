@@ -66,13 +66,6 @@ List<List<ContextModalAction>> folderModalSections(
         onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       ContextModalAction(
-        id: 'create-playlist',
-        icon: AppIcons.newPlaylist,
-        label: l10n.foldersCreatePlaylist,
-        enabled: !data.gone,
-        onTap: contextModalCloseThen(h.createPlaylist),
-      ),
-      ContextModalAction(
         id: 'edit-tags',
         icon: AppIcons.editTags,
         label: l10n.songModalEditTags,

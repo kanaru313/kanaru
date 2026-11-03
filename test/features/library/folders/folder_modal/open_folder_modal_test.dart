@@ -44,7 +44,6 @@ void main() {
       'Play all',
       'Shuffle',
       'Add to playlist…',
-      'Create playlist',
       'Edit tags',
       'Advanced',
       'Play next',

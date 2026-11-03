@@ -18,7 +18,6 @@ class _CallTracker {
   int shuffle = 0;
   int playAllBelow = 0;
   int addToPlaylist = 0;
-  int createPlaylist = 0;
   int openAdvanced = 0;
   final showInFileManager = <String?>[];
 }
@@ -32,7 +31,6 @@ FolderModalHandlers _handlersOf(
   shuffle: () => tracker.shuffle++,
   playAllBelow: withPlayAllBelow ? () => tracker.playAllBelow++ : null,
   addToPlaylist: () => tracker.addToPlaylist++,
-  createPlaylist: () => tracker.createPlaylist++,
   showInFileManager: tracker.showInFileManager.add,
   copyPath: () {},
   excludeFromLibrary: () {},
@@ -83,7 +81,6 @@ void main() {
       'play-all',
       'shuffle',
       'add-to-playlist',
-      'create-playlist',
       'edit-tags',
       'advanced',
     ]);
@@ -95,7 +92,6 @@ void main() {
       'play-all',
       'shuffle',
       'add-to-playlist',
-      'create-playlist',
       'edit-tags',
       'advanced',
     ]);
@@ -130,7 +126,6 @@ void main() {
         'shuffle',
         'play-all-below',
         'add-to-playlist',
-        'create-playlist',
         'edit-tags',
         'advanced',
       ]);
@@ -180,7 +175,6 @@ void main() {
       expect(byId['shuffle']!.enabled, isFalse);
       expect(byId['play-all-below']!.enabled, isFalse);
       expect(byId['add-to-playlist']!.enabled, isFalse);
-      expect(byId['create-playlist']!.enabled, isFalse);
 
       // Navigation and advanced remain enabled
       expect(byId['folder']!.enabled, isTrue);
@@ -194,7 +188,6 @@ void main() {
       expect(byId['play-all']!.enabled, isTrue);
       expect(byId['shuffle']!.enabled, isTrue);
       expect(byId['add-to-playlist']!.enabled, isTrue);
-      expect(byId['create-playlist']!.enabled, isTrue);
     });
   });
 
@@ -258,13 +251,9 @@ void main() {
     expect(tracker.addToPlaylist, 1);
     expect(closed, 6);
 
-    byId['create-playlist']!.onTap!(nav);
-    expect(tracker.createPlaylist, 1);
-    expect(closed, 7);
-
     byId['advanced']!.onTap!(nav);
     expect(advancedOpened, 1);
     // advanced opens a page, so it does not close the modal
-    expect(closed, 7);
+    expect(closed, 6);
   });
 }

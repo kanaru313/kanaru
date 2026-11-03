@@ -252,57 +252,7 @@ void main() {
     expect(queued(h), ['c']);
   });
 
-  Future<List<String>> playlistPaths(LibraryHarness h, String name) async {
-    final cards = await h.db.playlistCards();
-    final card = cards.singleWhere((c) => c.playlist.name == name);
-    final page = await h.db.playlistPage(card.playlist.id);
-    return [for (final e in page!.entries) e.path];
-  }
-
-  testWidgets(
-    'Create playlist asks with the folder name and saves the subtree',
-    (tester) async {
-      final h = LibraryHarness();
-      await openWithTracks(tester, h, _tracks, location: _rock);
-
-      await openMore(tester);
-      await tester.tap(find.text('Create playlist'));
-      await tester.pumpAndSettle();
-      final field = tester.widget<TextField>(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
-        ),
-      );
-      expect(field.controller!.text, 'Rock');
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
-      await settleIo(tester, h);
-
-      final paths = await tester.runAsync(() => playlistPaths(h, 'Rock'));
-      expect(paths, [
-        '/m/Rock/b2.flac',
-        '/m/Rock/b10.flac',
-        '/m/Rock/CD 2/c.flac',
-        '/m/Rock/CD 10/d.flac',
-      ]);
-      expect(find.text('Added to Rock: Rock'), findsOneWidget);
-    },
-  );
-
-  testWidgets('cancelling the name dialog creates nothing', (tester) async {
-    final h = LibraryHarness();
-    await openWithTracks(tester, h, _tracks, location: _rock);
-
-    await openMore(tester);
-    await tester.tap(find.text('Create playlist'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-
-    expect(await tester.runAsync(h.db.playlistCards), isEmpty);
-  });
-
-  testWidgets('Create playlist on a folder without songs is disabled', (
+  testWidgets('Add to playlist on a folder without songs is disabled', (
     tester,
   ) async {
     final h = LibraryHarness(overrides: [listViewModesOverride]);
@@ -318,7 +268,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final action = tester.widget<InkWell>(
-      find.widgetWithText(InkWell, 'Create playlist'),
+      find.widgetWithText(InkWell, 'Add to playlist…'),
     );
     expect(action.onTap, isNull);
     expect(find.byType(AlertDialog), findsNothing);
@@ -592,25 +542,6 @@ void main() {
       expect(queued(h), unorderedEquals(['b2', 'b10']));
     });
 
-    testWidgets('Create playlist saves the songs in the folder only', (
-      tester,
-    ) async {
-      final h = LibraryHarness();
-      await openWithTracks(tester, h, _tracks, location: '/folders');
-      await flatMode(tester);
-      goTo(tester, h, _rock);
-      await tester.pumpAndSettle();
-
-      await openMore(tester);
-      await tester.tap(find.text('Create playlist'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
-      await settleIo(tester, h);
-
-      final paths = await tester.runAsync(() => playlistPaths(h, 'Rock'));
-      expect(paths, ['/m/Rock/b2.flac', '/m/Rock/b10.flac']);
-    });
-
     testWidgets('Play all below plays the whole subtree', (tester) async {
       final h = LibraryHarness();
       await openWithTracks(tester, h, _tracks, location: '/folders');
@@ -668,7 +599,7 @@ void main() {
       );
       expect(
         tester
-            .widget<InkWell>(find.widgetWithText(InkWell, 'Create playlist'))
+            .widget<InkWell>(find.widgetWithText(InkWell, 'Add to playlist…'))
             .onTap,
         isNull,
       );
