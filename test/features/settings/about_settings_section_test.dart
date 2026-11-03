@@ -70,8 +70,30 @@ void main() {
   testWidgets('screen readers get one merged node', (tester) async {
     final handle = tester.ensureSemantics();
     await _pump(tester);
-    expect(find.bySemanticsLabel(RegExp('Kanaru\\nVersion')), findsOneWidget);
+    // Match regardless of the separator used to join the merged labels.
+    final merged = find.bySemanticsLabel(RegExp('Kanaru[\\s\\S]*Version'));
+    expect(merged, findsOneWidget);
+    expect(
+      tester.getSemantics(merged),
+      matchesSemantics(isHeader: true, label: 'Kanaru\nVersion $kanaruVersion'),
+    );
     handle.dispose();
+  });
+
+  testWidgets('does not overflow with large text on a narrow width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(280, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearAllTestValues);
+    await _pump(tester);
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getBottomLeft(version).dy,
+      lessThan(tester.getTopLeft(find.text('License')).dy),
+    );
   });
 
   testWidgets('does not overflow on a narrow width', (tester) async {
