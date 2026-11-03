@@ -1958,11 +1958,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String historyPlayedChip(String when) {
-    return 'Đã nghe $when';
-  }
-
-  @override
   String historyTopRankChip(int rank, String listens) {
     return '#$rank · $listens';
   }

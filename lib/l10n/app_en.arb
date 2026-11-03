@@ -1487,15 +1487,6 @@
       }
     }
   },
-  "historyPlayedChip": "Played {when}",
-  "@historyPlayedChip": {
-    "description": "Chip in the modal of a History row: when it was played, the row's own text",
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
   "historyTopRankChip": "#{rank} · {listens}",
   "@historyTopRankChip": {
     "description": "Chip in the modal of a Most played row: its place and listen count",

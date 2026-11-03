@@ -737,14 +737,6 @@
       }
     }
   },
-  "historyPlayedChip": "Đã nghe {when}",
-  "@historyPlayedChip": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
   "historyTopRankChip": "#{rank} · {listens}",
   "@historyTopRankChip": {
     "placeholders": {

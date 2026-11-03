@@ -33,7 +33,7 @@ void main() {
   setUp(() => h = historyHarness());
 
   group('journal row', () {
-    historyTestWidgets('header names the file and repeats the row text', (
+    historyTestWidgets('header names the file and has no played chip', (
       tester,
     ) async {
       await openHistory(tester, h, plays: [('gone', _at(23))]);
@@ -45,7 +45,7 @@ void main() {
       expect(find.byIcon(AppIcons.musicOff), findsWidgets);
       expect(find.text('gone.flac'), findsWidgets);
       expect(find.text('Not in library'), findsWidgets);
-      expect(find.text('Played $rowText'), findsOneWidget);
+      expect(find.text('Played $rowText'), findsNothing);
     });
 
     historyTestWidgets('Song history opens the journal song page', (
@@ -133,7 +133,7 @@ void main() {
     });
   });
 
-  historyTestWidgets('the song modal of a library journal row shows the '
+  historyTestWidgets('the song modal of a library journal row has no '
       'played chip', (tester) async {
     await openHistory(tester, h, tracks: [song('A')], plays: [('A', _at(23))]);
     final rowText = _rowText(tester);
@@ -141,6 +141,6 @@ void main() {
     await tester.tap(find.text('A').first, buttons: kSecondaryButton);
     await settleModal(tester);
 
-    expect(find.text('Played $rowText'), findsOneWidget);
+    expect(find.text('Played $rowText'), findsNothing);
   });
 }

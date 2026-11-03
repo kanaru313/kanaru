@@ -2,13 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/history_rows.dart';
 import '../../core/database/library_startup.dart';
-import '../../l10n/l10n.dart';
 import '../../shared/enqueue_tracks.dart';
 import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import 'history_day_queue.dart';
 import 'history_missing_play_modal.dart';
-import 'history_play_row_tile.dart';
 import 'history_routes.dart';
 import 'history_song_modal_extras.dart';
 
@@ -27,7 +25,7 @@ mixin HistoryPlayMenuActions<T extends ConsumerStatefulWidget>
     ], row.track!.title);
   }
 
-  /// Song history, Remove from history and the played chip for the modal of
+  /// Song history and Remove from history for the modal of
   /// [row], built when the modal opens.
   SongModalExtras playExtras(HistoryPlayRow row) => historyPlayExtras(
     context: context,
@@ -35,22 +33,15 @@ mixin HistoryPlayMenuActions<T extends ConsumerStatefulWidget>
     path: row.path,
     location: historyTrackLocation,
     playId: row.id,
-    headerNote: context.l10n.historyPlayedChip(
-      historyPlayedText(context, row.playedAt),
-    ),
   );
 
   /// Opens the Missing-play modal of [row], a play with no song in the
   /// library. The play is the one the modal was opened on: the list may move
   /// before a choice is made.
   void openMissingPlayModal(HistoryPlayRow row, {required bool viaKeyboard}) {
-    final chip = context.l10n.historyPlayedChip(
-      historyPlayedText(context, row.playedAt),
-    );
     openHistoryMissingPlayModal(
       context,
       path: row.path,
-      chip: chip,
       extras: playExtras(row),
       viaKeyboard: viaKeyboard,
     );

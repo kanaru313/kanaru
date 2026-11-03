@@ -3032,12 +3032,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 listen} other{{count} listens}}'**
   String historyTopPlayCount(int count);
 
-  /// Chip in the modal of a History row: when it was played, the row's own text
-  ///
-  /// In en, this message translates to:
-  /// **'Played {when}'**
-  String historyPlayedChip(String when);
-
   /// Chip in the modal of a Most played row: its place and listen count
   ///
   /// In en, this message translates to:
