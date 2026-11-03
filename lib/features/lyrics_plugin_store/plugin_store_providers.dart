@@ -44,6 +44,21 @@ final pluginStoreFiltersProvider = NotifierProvider.autoDispose
       PluginStoreFiltersNotifier.new,
     );
 
+/// How many times "Clear all" was pressed in the open filter modal. The
+/// groups are keyed with it, so Clear all also resets their own state (the
+/// author search text). Reset when the modal closes.
+class PluginStoreFilterClears extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final pluginStoreFilterClearsProvider =
+    NotifierProvider.autoDispose<PluginStoreFilterClears, int>(
+      PluginStoreFilterClears.new,
+    );
+
 /// The store list: records and repositories with the search text and the
 /// picked filters applied. The argument is the kind the page starts on.
 final pluginStoreViewProvider = Provider.autoDispose

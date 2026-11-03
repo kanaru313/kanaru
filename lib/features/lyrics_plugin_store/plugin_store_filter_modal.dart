@@ -56,6 +56,7 @@ class _FilterGroups extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(pluginStoreViewProvider(initialKind)).value;
     final filters = ref.read(pluginStoreFiltersProvider(initialKind).notifier);
+    final clears = ref.watch(pluginStoreFilterClearsProvider);
     if (view == null) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -63,7 +64,7 @@ class _FilterGroups extends ConsumerWidget {
         for (final group in view.facets)
           if (group.visible)
             PluginStoreFilterGroup(
-              key: ValueKey(group.facet),
+              key: ValueKey((group.facet, clears)),
               group: group,
               onToggle: (key) => filters.toggle(group.facet, key),
               onClear: () => filters.clear(group.facet),
@@ -101,9 +102,12 @@ class _FilterFooter extends ConsumerWidget {
           TextButton(
             onPressed: active == 0
                 ? null
-                : ref
-                      .read(pluginStoreFiltersProvider(initialKind).notifier)
-                      .clearAll,
+                : () {
+                    ref
+                        .read(pluginStoreFiltersProvider(initialKind).notifier)
+                        .clearAll();
+                    ref.read(pluginStoreFilterClearsProvider.notifier).bump();
+                  },
             child: Text(l10n.lyricsStoreFilterClearAll),
           ),
           const SizedBox(width: 8),

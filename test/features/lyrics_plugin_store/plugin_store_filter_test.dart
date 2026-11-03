@@ -291,6 +291,28 @@ void main() {
       expect(_chip('jp-fans'), findsNothing);
     });
 
+    testWidgets('Clear all also clears the author search', (tester) async {
+      await pump(tester);
+      await _openModal(tester);
+      final search = find.byWidgetPredicate(
+        (w) => w is TextField && w.decoration?.hintText == 'Search authors',
+      );
+      await tester.enterText(search, 'oss');
+      await tester.pumpAndSettle();
+      expect(_chip('kanaru313'), findsNothing);
+      await _tap(tester, _chip('Lyrics'));
+      await _tap(tester, find.text('Clear all'));
+      final field = find.descendant(
+        of: search,
+        matching: find.byType(EditableText),
+      );
+      expect(tester.widget<EditableText>(field).controller.text, '');
+      expect(_chip('kanaru313'), findsOneWidget);
+      expect(_chip('jp-fans'), findsOneWidget);
+      expect(_chip('oss'), findsOneWidget);
+      expectRows(all);
+    });
+
     testWidgets('no author search below four authors', (tester) async {
       await pumpTwoKinds(tester, second: 'other');
       await _openModal(tester);
