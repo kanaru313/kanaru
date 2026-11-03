@@ -101,6 +101,10 @@ String artistAppearsOnLocation(String artistKey) =>
 String genreLocation(String genreKey) =>
     '$genresPath/${encodeGenreRouteKey(genreKey)}';
 
+/// An album opened from a genre page, staying in the Genres branch.
+String genreAlbumLocation(String genreKey, AlbumKey albumKey) =>
+    albumUnderLocation(genreLocation(genreKey), albumKey);
+
 /// The full list of the albums of a genre.
 String genreAlbumsLocation(String genreKey) =>
     '${genreLocation(genreKey)}/albums';

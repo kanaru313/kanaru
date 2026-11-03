@@ -4270,6 +4270,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get songModalGoToFolder => 'Đi tới thư mục';
 
   @override
+  String get songModalGoToGenre => 'Đi tới thể loại';
+
+  @override
   String get songModalNoAlbum => 'Không có album';
 
   @override
@@ -4625,6 +4628,37 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết';
+
+  @override
+  String get genreModalLabel => 'Tùy chọn thể loại';
+
+  @override
+  String genreModalAlbumsTitle(String name) {
+    return 'Album · $name';
+  }
+
+  @override
+  String genreModalFoldersTitle(String name) {
+    return 'Thư mục · $name';
+  }
+
+  @override
+  String genreModalFoldersIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Các bài hát thuộc thể loại này được lưu trong $count thư mục. Chọn một thư mục để mở trong Thư mục.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreModalSplitMerge => 'Tách hoặc gộp thể loại';
+
+  @override
+  String get genreModalSplitMergeHint =>
+      'Tách các thể loại được gắn thẻ hoặc gộp các cách viết khác nhau';
 
   @override
   String translationNoticePluginTitle(String service) {

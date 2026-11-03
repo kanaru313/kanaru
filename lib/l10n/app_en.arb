@@ -4400,6 +4400,10 @@
   "@songModalGoToFolder": {
     "description": "Song options row that opens the folder page of the song"
   },
+  "songModalGoToGenre": "Go to genre",
+  "@songModalGoToGenre": {
+    "description": "Song options row that opens the genre page of the song"
+  },
   "songModalNoAlbum": "No album",
   "@songModalNoAlbum": {
     "description": "Quiet line under a disabled Go to album row"
@@ -4868,6 +4872,45 @@
   "artistModalSplitMergeHint": "Treat a name as two artists, or join spellings",
   "@artistModalSplitMergeHint": {
     "description": "Quiet line under Split or merge artist"
+  },
+  "genreModalLabel": "Genre options",
+  "@genreModalLabel": {
+    "description": "Semantics label for the genre options modal sheet"
+  },
+  "genreModalAlbumsTitle": "Albums · {name}",
+  "@genreModalAlbumsTitle": {
+    "description": "Title of the genre options page that lists the genre's albums",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "genreModalFoldersTitle": "Folders · {name}",
+  "@genreModalFoldersTitle": {
+    "description": "Title of the genre options page that lists the folders of the genre's songs",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "genreModalFoldersIntro": "{count, plural, other{The songs of this genre are saved in {count} folders. Pick one to open it in Folders.}}",
+  "@genreModalFoldersIntro": {
+    "description": "Sentence at the top of the genre options page that lists the genre's folders",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "genreModalSplitMerge": "Split or merge genre",
+  "@genreModalSplitMerge": {
+    "description": "Advanced genre option (not available yet) that changes how tags are grouped into genres"
+  },
+  "genreModalSplitMergeHint": "Split tagged genres or combine different spellings",
+  "@genreModalSplitMergeHint": {
+    "description": "Quiet line under Split or merge genre"
   },
   "translationNoticePluginTitle": "Lyrics will be sent to the plugin {service}",
   "@translationNoticePluginTitle": {

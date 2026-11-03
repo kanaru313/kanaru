@@ -164,5 +164,9 @@ void main() {
       artistAlbumLocation('a', key),
       albumUnderLocation(artistLocation('a'), key),
     );
+    expect(
+      genreAlbumLocation('rock', key),
+      albumUnderLocation(genreLocation('rock'), key),
+    );
   });
 }

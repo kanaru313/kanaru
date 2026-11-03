@@ -6704,6 +6704,12 @@ abstract class AppLocalizations {
   /// **'Go to folder'**
   String get songModalGoToFolder;
 
+  /// Song options row that opens the genre page of the song
+  ///
+  /// In en, this message translates to:
+  /// **'Go to genre'**
+  String get songModalGoToGenre;
+
   /// Quiet line under a disabled Go to album row
   ///
   /// In en, this message translates to:
@@ -7219,6 +7225,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Treat a name as two artists, or join spellings'**
   String get artistModalSplitMergeHint;
+
+  /// Semantics label for the genre options modal sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Genre options'**
+  String get genreModalLabel;
+
+  /// Title of the genre options page that lists the genre's albums
+  ///
+  /// In en, this message translates to:
+  /// **'Albums · {name}'**
+  String genreModalAlbumsTitle(String name);
+
+  /// Title of the genre options page that lists the folders of the genre's songs
+  ///
+  /// In en, this message translates to:
+  /// **'Folders · {name}'**
+  String genreModalFoldersTitle(String name);
+
+  /// Sentence at the top of the genre options page that lists the genre's folders
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{The songs of this genre are saved in {count} folders. Pick one to open it in Folders.}}'**
+  String genreModalFoldersIntro(int count);
+
+  /// Advanced genre option (not available yet) that changes how tags are grouped into genres
+  ///
+  /// In en, this message translates to:
+  /// **'Split or merge genre'**
+  String get genreModalSplitMerge;
+
+  /// Quiet line under Split or merge genre
+  ///
+  /// In en, this message translates to:
+  /// **'Split tagged genres or combine different spellings'**
+  String get genreModalSplitMergeHint;
 
   /// Title of the dialog asking to send lyrics to a translation plugin; service is the plugin's name
   ///

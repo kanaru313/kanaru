@@ -4559,6 +4559,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songModalGoToFolder => 'Go to folder';
 
   @override
+  String get songModalGoToGenre => 'Go to genre';
+
+  @override
   String get songModalNoAlbum => 'No album';
 
   @override
@@ -4920,6 +4923,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get artistModalSplitMergeHint =>
       'Treat a name as two artists, or join spellings';
+
+  @override
+  String get genreModalLabel => 'Genre options';
+
+  @override
+  String genreModalAlbumsTitle(String name) {
+    return 'Albums · $name';
+  }
+
+  @override
+  String genreModalFoldersTitle(String name) {
+    return 'Folders · $name';
+  }
+
+  @override
+  String genreModalFoldersIntro(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The songs of this genre are saved in $count folders. Pick one to open it in Folders.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreModalSplitMerge => 'Split or merge genre';
+
+  @override
+  String get genreModalSplitMergeHint =>
+      'Split tagged genres or combine different spellings';
 
   @override
   String translationNoticePluginTitle(String service) {
