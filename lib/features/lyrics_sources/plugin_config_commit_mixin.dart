@@ -178,8 +178,11 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
     if (!mounted) return;
     final message = result.message;
     // A refusal that may pass later is not remembered: the same value can be
-    // sent again.
-    _refused = message == null || result.retryable ? null : sig;
+    // sent again. Choice editors never remember one: a queued pick of the
+    // same value must be sent again so its own refusal reverts the display.
+    _refused = message == null || result.retryable || commitRevertsOnRefusal
+        ? null
+        : sig;
     _refusedMessage = message;
     _failedSig = message == null ? null : sig;
     if (message == null) {

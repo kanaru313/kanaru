@@ -113,6 +113,25 @@ void main() {
       expect(switchValue(tester), isFalse);
     });
 
+    testWidgets('toggle: a refused pick queued again never stays shown', (
+      tester,
+    ) async {
+      final plugins = FakePlugins()
+        ..configResult = PluginConfigWrite.tooLarge
+        ..configGate = Completer<void>();
+      await open(tester, _toggle, plugins);
+      final tile = find.widgetWithText(SwitchListTile, 'Switch');
+      // On is in flight, off and on again are queued.
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(tile);
+        await tester.pump();
+      }
+      plugins.configGate!.complete();
+      await tester.pumpAndSettle();
+      // Nothing was saved, so the switch shows the saved (off) value.
+      expect(switchValue(tester), isFalse);
+    });
+
     testWidgets('select: the last pick is saved after the one in flight', (
       tester,
     ) async {
