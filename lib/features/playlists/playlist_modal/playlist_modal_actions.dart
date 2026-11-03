@@ -115,7 +115,7 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
       ),
     ],
     [
-      ...m3uExportActions(
+      m3uExportAction(
         l10n,
         enabled: data.hasEntries,
         exportAbsolute: h.exportAbsolute,

@@ -5,15 +5,18 @@ import '../../../shared/m3u/m3u_export_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
 import 'history_page_modal_data.dart';
 
-/// The rows of the first page: Play all and Shuffle; Add to playlist, Most played, Advanced. The
-/// footer's queue buttons are not here. The song actions are enabled by the
-/// number of listens, not songs: the songs still in the library are only
-/// known when a row is tapped, which then says so when there are none.
+/// The rows of the page in three groups: Play all and Shuffle; Add to
+/// playlist, Most played and Export as M3U (last played first); Clear history.
+/// The footer's queue buttons are not here. The song actions are enabled by
+/// the number of listens, not songs: the songs still in the library are only
+/// known when a row is tapped, which then says so when there are none. Clear
+/// needs a recorder, a listen, and no clear [clearing] already.
 List<List<ContextModalAction>> historyPageModalSections(
   AppLocalizations l10n,
   HistoryOverview? overview,
-  HistoryPageModalHandlers h,
-) => [
+  HistoryPageModalHandlers h, {
+  bool clearing = false,
+}) => [
   [
     ContextModalAction(
       id: 'play-all',
@@ -46,49 +49,26 @@ List<List<ContextModalAction>> historyPageModalSections(
       subtitle: l10n.historyMostPlayedHint,
       onTap: contextModalCloseThen(h.openMostPlayed),
     ),
+    m3uExportAction(
+      l10n,
+      enabled: _hasPlays(overview),
+      detail: l10n.historyLastPlayedFirst,
+      exportAbsolute: h.exportAbsolute,
+      exportRelative: h.exportRelative,
+    ),
+  ],
+  [
     ContextModalAction(
-      id: 'advanced',
-      icon: AppIcons.advanced,
-      label: l10n.songModalAdvanced,
-      opensPage: true,
-      onTap: h.openAdvanced,
+      id: 'clear',
+      icon: AppIcons.clearAll,
+      label: l10n.historyClear,
+      subtitle: l10n.historyClearHint,
+      destructive: true,
+      enabled: h.clear != null && !clearing && _hasPlays(overview),
+      onTap: h.clear,
     ),
   ],
 ];
-
-/// The rows of the Advanced page in two groups: the two M3U exports
-/// (absolute and relative paths, last played first); Clear history. Clear
-/// needs a recorder, a listen, and no clear [clearing] already.
-List<List<ContextModalAction>> historyPageModalAdvancedSections(
-  AppLocalizations l10n,
-  HistoryOverview? overview,
-  HistoryPageModalHandlers h, {
-  bool clearing = false,
-}) {
-  final order = l10n.historyLastPlayedFirst;
-  return [
-    [
-      ...m3uExportActions(
-        l10n,
-        enabled: _hasPlays(overview),
-        detail: order,
-        exportAbsolute: h.exportAbsolute,
-        exportRelative: h.exportRelative,
-      ),
-    ],
-    [
-      ContextModalAction(
-        id: 'clear',
-        icon: AppIcons.clearAll,
-        label: l10n.historyClear,
-        subtitle: l10n.historyClearHint,
-        destructive: true,
-        enabled: h.clear != null && !clearing && _hasPlays(overview),
-        onTap: h.clear,
-      ),
-    ],
-  ];
-}
 
 bool _hasPlays(HistoryOverview? overview) =>
     overview != null && overview.plays > 0;

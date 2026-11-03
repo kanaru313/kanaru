@@ -1889,7 +1889,7 @@
   "playlistDuplicated": "Đã tạo “{name}”",
   "playlistExportM3u": "Xuất ra M3U",
   "playlistExportAbsoluteHint": "Đường dẫn tuyệt đối",
-  "playlistExportRelativeHint": "Đường dẫn tương đối (cạnh nhạc)",
+  "m3uExportRelativeTooltip": "Xuất với đường dẫn tương đối",
   "playlistRemoveDuplicates": "Xoá bài trùng",
   "playlistRemoveDuplicatesHint": "{count, plural, other{{count} bài lặp · giữ lại bài đầu}}",
   "playlistDuplicatesRemoved": "{count, plural, other{Đã xoá {count} bài trùng}}",

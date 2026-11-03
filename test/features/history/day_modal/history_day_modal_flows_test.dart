@@ -121,14 +121,13 @@ void main() {
     });
   });
 
-  group('Advanced', () {
+  group('Open in Most played and export', () {
     historyTestWidgets('Open in Most played shows that day as a custom range', (
       tester,
     ) async {
       await open(tester);
       await openDayModal(tester);
-      await tapRow(tester, 'advanced');
-      expect(find.text('Oct 23, 2026'), findsOneWidget);
+      expect(find.text('Oct 23, 2026'), findsNWidgets(2));
       await tapRow(tester, 'open-in-most-played');
       await settleHistory(tester);
 
@@ -143,21 +142,16 @@ void main() {
       expect(listText('B'), findsOneWidget);
     });
 
-    historyTestWidgets('Back returns to the first page', (tester) async {
-      await open(tester);
-      await openDayModal(tester);
-      await tapRow(tester, 'advanced');
-      expect(find.text('Play all'), findsNothing);
-
-      await tester.tap(find.byTooltip('Back').last);
-      await settleModal(tester);
-      expect(find.text('Play all'), findsOneWidget);
-    });
-
     Future<String> export(WidgetTester tester, String row) async {
       await openDayModal(tester);
-      await tapRow(tester, 'advanced');
-      await tester.tap(modalRow(row));
+      await tester.tap(
+        row == 'export-relative'
+            ? find.descendant(
+                of: modalRow('export-m3u'),
+                matching: find.byTooltip('Export with relative paths'),
+              )
+            : modalRow(row),
+      );
       for (
         var i = 0;
         i < 40 && find.textContaining('Saved').evaluate().isEmpty;
@@ -175,7 +169,7 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      final absolute = await export(tester, 'export-absolute');
+      final absolute = await export(tester, 'export-m3u');
       expect(suggested, ['Oct 23, 2026.m3u8']);
       final paths = absolute.split('\n').where((l) => l.startsWith('/m/'));
       expect(paths, ['/m/A.flac', '/m/B.flac']);

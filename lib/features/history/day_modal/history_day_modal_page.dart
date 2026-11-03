@@ -7,8 +7,8 @@ import 'history_day_modal_actions.dart';
 import 'history_day_modal_header.dart';
 import 'history_day_modal_session.dart';
 
-/// The first page of the Day modal: header, the play and copy actions,
-/// Remove, and the queue buttons in the footer. The snapshot is fixed, so
+/// The first page of the Day modal: header, the play, copy and export
+/// actions, Remove, and the queue buttons in the footer. The snapshot is fixed, so
 /// nothing here loads or watches.
 ContextModalPage historyDayModalActionsPage(HistoryDayModalSession session) =>
     ContextModalPage(
@@ -23,10 +23,7 @@ ContextModalPage historyDayModalActionsPage(HistoryDayModalSession session) =>
             historyDayModalSections(
               context.l10n,
               session.data,
-              session.handlers(
-                openAdvanced: (nav) =>
-                    nav.push(historyDayModalAdvancedPage(session)),
-              ),
+              session.handlers(),
             ),
           ),
         ),
@@ -37,27 +34,4 @@ ContextModalPage historyDayModalActionsPage(HistoryDayModalSession session) =>
         keyPrefix: 'history-day-modal',
         enabled: session.data.canQueue,
       ),
-    );
-
-/// The Advanced page: Open in Most played and the two M3U exports.
-ContextModalPage historyDayModalAdvancedPage(HistoryDayModalSession session) =>
-    ContextModalPage(
-      key: 'history-day-advanced',
-      headerBuilder: (context, nav) => ContextModalTopBar(
-        title: context.l10n.songModalAdvanced,
-        onBack: nav.pop,
-      ),
-      bodyBuilder: (context, nav) => [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: contextModalSections(
-            nav,
-            historyDayModalAdvancedSections(
-              context.l10n,
-              session.data,
-              session.handlers(),
-            ),
-          ),
-        ),
-      ],
     );

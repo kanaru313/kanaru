@@ -99,7 +99,8 @@ void main() {
       'Play all',
       'Shuffle',
       'Add to playlist…',
-      'Advanced',
+      'Export as M3U',
+      'Clear history…',
       'Play next',
       'Add to queue',
       'Songs you play the most',
@@ -230,9 +231,14 @@ void main() {
 
   Future<String> export(WidgetTester tester, String row) async {
     await openModal(tester);
-    await tester.tap(_row('advanced'));
-    await settleModal(tester);
-    await tester.tap(_row(row));
+    await tester.tap(
+      row == 'export-relative'
+          ? find.descendant(
+              of: _row('export-m3u'),
+              matching: find.byTooltip('Export with relative paths'),
+            )
+          : _row(row),
+    );
     for (
       var i = 0;
       i < 40 && find.textContaining('Saved').evaluate().isEmpty;
@@ -250,7 +256,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    final absolute = await export(tester, 'export-absolute');
+    final absolute = await export(tester, 'export-m3u');
     expect(pickerCalls, 1);
     expect(absolute.split('\n').where((l) => l.startsWith('/m/')), [
       '/m/B.flac',
@@ -290,9 +296,7 @@ void main() {
 
     await tester.pumpAndSettle(const Duration(seconds: 6));
     await openModal(tester);
-    await tester.tap(_row('advanced'));
-    await settleModal(tester);
-    await tester.tap(_row('export-absolute'));
+    await tester.tap(_row('export-m3u'));
     await settleModal(tester);
     expect(pickerCalls, 0);
     expect(File(savePath).existsSync(), isFalse);

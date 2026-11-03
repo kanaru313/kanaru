@@ -135,10 +135,7 @@ class HistoryDayModalSession {
   }
 
   /// The callbacks the rows call.
-  HistoryDayModalHandlers handlers({
-    void Function(ContextModalNav nav)? openAdvanced,
-  }) => HistoryDayModalHandlers(
-    openAdvanced: openAdvanced,
+  HistoryDayModalHandlers handlers() => HistoryDayModalHandlers(
     playAll: play,
     shuffle: () => play(shuffle: true),
     addToPlaylist: addToPlaylist,

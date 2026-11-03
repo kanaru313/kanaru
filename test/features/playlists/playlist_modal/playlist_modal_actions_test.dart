@@ -134,8 +134,8 @@ void main() {
       final advanced = _advanced(
         _data(playlist: _playlist(count: 0), hasPlayable: false),
       );
-      expect(advanced['export-absolute']!.enabled, isFalse);
-      expect(advanced['export-relative']!.enabled, isFalse);
+      expect(advanced['export-m3u']!.enabled, isFalse);
+      expect(advanced['export-m3u']!.trailing, isEmpty);
       expect(advanced['add-all-to-favorites']!.enabled, isFalse);
     });
 
@@ -145,7 +145,7 @@ void main() {
       expect(rows['play-all']!.enabled, isFalse);
       expect(rows['shuffle']!.enabled, isFalse);
       expect(rows['add-to-playlist']!.enabled, isTrue);
-      expect(_advanced(data)['export-absolute']!.enabled, isTrue);
+      expect(_advanced(data)['export-m3u']!.enabled, isTrue);
     });
 
     test('showGoTo false leaves Go to playlist out', () {
@@ -211,13 +211,13 @@ void main() {
       },
     );
 
-    test('Duplicate names the copy and the exports say which paths', () {
+    test('Duplicate names the copy and the export says which paths', () {
       final rows = _advanced(_data());
       expect(rows['duplicate']!.subtitle, 'Mix (copy)');
-      expect(rows['export-absolute']!.subtitle, 'Absolute paths');
+      expect(rows['export-m3u']!.subtitle, 'Absolute paths');
       expect(
-        rows['export-relative']!.subtitle,
-        'Relative paths (next to the music)',
+        rows['export-m3u']!.trailing.single.tooltip,
+        'Export with relative paths',
       );
     });
   });

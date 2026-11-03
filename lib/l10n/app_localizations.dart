@@ -7508,7 +7508,7 @@ abstract class AppLocalizations {
   /// **'Created “{name}”'**
   String playlistDuplicated(String name);
 
-  /// Label of the two M3U export rows of the playlist modal
+  /// Label of the M3U export row of the context modals
   ///
   /// In en, this message translates to:
   /// **'Export as M3U'**
@@ -7520,11 +7520,11 @@ abstract class AppLocalizations {
   /// **'Absolute paths'**
   String get playlistExportAbsoluteHint;
 
-  /// Second line of the M3U export row that writes relative paths
+  /// Tooltip of the button on the Export as M3U row that writes relative paths
   ///
   /// In en, this message translates to:
-  /// **'Relative paths (next to the music)'**
-  String get playlistExportRelativeHint;
+  /// **'Export with relative paths'**
+  String get m3uExportRelativeTooltip;
 
   /// Playlist modal row that removes repeated songs
   ///

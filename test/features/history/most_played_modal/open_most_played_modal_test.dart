@@ -127,14 +127,14 @@ void main() {
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
-    // The six actions only.
+    // The five actions only.
     expect(
       find.byWidgetPredicate((w) {
         final key = w.key;
         return key is ValueKey<String> &&
             key.value.startsWith('context-modal-action-');
       }),
-      findsNWidgets(6),
+      findsNWidgets(5),
     );
     final header = find.byType(ContextModalHeader);
     expect(
@@ -154,7 +154,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('3 songs'), findsOneWidget);
-    expect(find.textContaining('3 songs, in rank order'), findsNWidgets(2));
+    expect(find.textContaining('3 songs, in rank order'), findsOneWidget);
   });
 
   for (final key in [LogicalKeyboardKey.enter, LogicalKeyboardKey.space]) {
@@ -308,7 +308,14 @@ void main() {
 
   Future<String> export(WidgetTester tester, String row) async {
     await openModal(tester);
-    await tester.tap(_row(row));
+    await tester.tap(
+      row == 'export-relative'
+          ? find.descendant(
+              of: _row('export-m3u'),
+              matching: find.byTooltip('Export with relative paths'),
+            )
+          : _row(row),
+    );
     for (
       var i = 0;
       i < 40 && find.textContaining('Saved').evaluate().isEmpty;
@@ -326,7 +333,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    final text = await export(tester, 'export-absolute');
+    final text = await export(tester, 'export-m3u');
 
     expect(pickerCalls, 1);
     expect(text.split('\n').where((l) => l.startsWith('/m/')), [

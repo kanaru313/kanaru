@@ -8,26 +8,25 @@ import 'package:kanaru/shared/widgets/library_row.dart' show joinRowDetails;
 void main() {
   final l10n = AppLocalizationsEn();
 
-  test('builds the absolute and relative rows', () {
-    final rows = m3uExportActions(
+  test('builds one row with a relative-paths trailing button', () {
+    final row = m3uExportAction(
       l10n,
       enabled: true,
       exportAbsolute: () {},
       exportRelative: () {},
     );
 
-    expect(
-      [for (final r in rows) r.id],
-      ['export-absolute', 'export-relative'],
-    );
-    expect(rows.every((r) => r.icon == AppIcons.exportFile), isTrue);
-    expect(rows.every((r) => r.label == l10n.playlistExportM3u), isTrue);
-    expect(rows[0].subtitle, l10n.playlistExportAbsoluteHint);
-    expect(rows[1].subtitle, l10n.playlistExportRelativeHint);
+    expect(row.id, 'export-m3u');
+    expect(row.icon, AppIcons.exportFile);
+    expect(row.label, l10n.playlistExportM3u);
+    expect(row.subtitle, l10n.playlistExportAbsoluteHint);
+    expect(row.trailing, hasLength(1));
+    expect(row.trailing.single.icon, AppIcons.folderLink);
+    expect(row.trailing.single.tooltip, 'Export with relative paths');
   });
 
-  test('appends the detail to each hint', () {
-    final rows = m3uExportActions(
+  test('appends the detail to the hint', () {
+    final row = m3uExportAction(
       l10n,
       enabled: true,
       detail: 'Last played first',
@@ -36,33 +35,26 @@ void main() {
     );
 
     expect(
-      rows[0].subtitle,
-      equals(
-        joinRowDetails([l10n.playlistExportAbsoluteHint, 'Last played first']),
-      ),
-    );
-    expect(
-      rows[1].subtitle,
-      equals(
-        joinRowDetails([l10n.playlistExportRelativeHint, 'Last played first']),
-      ),
+      row.subtitle,
+      joinRowDetails([l10n.playlistExportAbsoluteHint, 'Last played first']),
     );
   });
 
-  test('both rows follow enabled', () {
-    final off = m3uExportActions(
+  test('a disabled row has no trailing button', () {
+    final off = m3uExportAction(
       l10n,
       enabled: false,
       exportAbsolute: () {},
       exportRelative: () {},
     );
 
-    expect(off.every((r) => !r.enabled), isTrue);
+    expect(off.enabled, isFalse);
+    expect(off.trailing, isEmpty);
   });
 
-  test('each row closes the modal, then exports', () {
+  test('the row and the button each close the modal, then export', () {
     final log = <String>[];
-    final rows = m3uExportActions(
+    final row = m3uExportAction(
       l10n,
       enabled: true,
       exportAbsolute: () => log.add('absolute'),
@@ -74,8 +66,8 @@ void main() {
       close: ([_]) => log.add('close'),
     );
 
-    rows[0].onTap!(nav);
-    rows[1].onTap!(nav);
+    row.onTap!(nav);
+    row.trailing.single.onTap(nav);
 
     expect(log, ['close', 'absolute', 'close', 'relative']);
   });

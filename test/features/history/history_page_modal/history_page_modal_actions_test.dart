@@ -24,7 +24,6 @@ HistoryPageModalHandlers _handlers() {
     openMostPlayed: noop,
     exportAbsolute: noop,
     exportRelative: noop,
-    openAdvanced: (_) {},
   );
 }
 
@@ -35,7 +34,7 @@ Map<String, ContextModalAction> _byId(List<List<ContextModalAction>> groups) =>
     };
 
 void main() {
-  test('the first page lists play all and shuffle, then add to playlist, most played, advanced', () {
+  test('the page lists play all and shuffle; add to playlist, most played, export; clear', () {
     final groups = historyPageModalSections(_l10n, _overview(3), _handlers());
     expect(
       [
@@ -43,7 +42,8 @@ void main() {
       ],
       [
         ['play-all', 'shuffle'],
-        ['add-to-playlist', 'most-played', 'advanced'],
+        ['add-to-playlist', 'most-played', 'export-m3u'],
+        ['clear'],
       ],
     );
     final rows = _byId(groups);
@@ -52,8 +52,7 @@ void main() {
       'New playlist suggests “History”',
     );
     expect(rows['most-played']!.subtitle, 'Songs you play the most');
-    expect(rows['advanced']!.opensPage, isTrue);
-    expect(rows['advanced']!.onTap, isNotNull);
+    expect(rows.containsKey('advanced'), isFalse);
   });
 
   test('song rows follow the listen count; Most played is always on', () {
@@ -69,29 +68,21 @@ void main() {
       expect(rows['play-all']!.enabled, enabled);
       expect(rows['shuffle']!.enabled, enabled);
       expect(rows['most-played']!.enabled, isTrue);
-      final adv = _byId(
-        historyPageModalAdvancedSections(_l10n, overview, _handlers()),
-      );
-      expect(adv['export-absolute']!.enabled, enabled);
-      expect(adv['export-relative']!.enabled, enabled);
+      expect(rows['export-m3u']!.enabled, enabled);
+      expect(rows['export-m3u']!.trailing, enabled ? hasLength(1) : isEmpty);
     }
   });
 
-  test(
-    'the advanced page exports absolute and relative, last played first',
-    () {
-      final adv = _byId(
-        historyPageModalAdvancedSections(_l10n, _overview(2), _handlers()),
-      );
-      expect(adv.keys, ['export-absolute', 'export-relative', 'clear']);
-      expect(adv['export-absolute']!.subtitle, contains('Absolute'));
-      expect(adv['export-relative']!.subtitle, contains('Relative'));
-      for (final a in [adv['export-absolute']!, adv['export-relative']!]) {
-        expect(a.label, 'Export as M3U');
-        expect(a.subtitle, contains('Last played first'));
-      }
-    },
-  );
+  test('the export row writes absolute paths, last played first', () {
+    final rows = _byId(
+      historyPageModalSections(_l10n, _overview(2), _handlers()),
+    );
+    final a = rows['export-m3u']!;
+    expect(a.label, 'Export as M3U');
+    expect(a.subtitle, contains('Absolute'));
+    expect(a.subtitle, contains('Last played first'));
+    expect(a.trailing.single.tooltip, 'Export with relative paths');
+  });
 
   group('Clear history', () {
     HistoryPageModalHandlers withClear() => HistoryPageModalHandlers(
@@ -109,16 +100,12 @@ void main() {
       HistoryPageModalHandlers h, {
       bool clearing = false,
     }) => _byId(
-      historyPageModalAdvancedSections(_l10n, overview, h, clearing: clearing),
+      historyPageModalSections(_l10n, overview, h, clearing: clearing),
     )['clear']!;
 
     test('is its own destructive group with a hint', () {
-      final groups = historyPageModalAdvancedSections(
-        _l10n,
-        _overview(2),
-        withClear(),
-      );
-      expect(groups, hasLength(2));
+      final groups = historyPageModalSections(_l10n, _overview(2), withClear());
+      expect(groups, hasLength(3));
       final row = groups.last.single;
       expect(row.label, 'Clear history…');
       expect(row.subtitle, 'Last hour, today, 7 days or everything');

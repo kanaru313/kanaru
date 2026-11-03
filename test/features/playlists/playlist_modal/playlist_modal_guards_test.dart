@@ -114,7 +114,7 @@ void main() {
     await tapModalAction(tester, 'advanced');
     await tester.tap(modalAction('duplicate'));
     await settleModal(tester);
-    await tester.tap(modalAction('export-absolute'));
+    await tester.tap(modalAction('export-m3u'));
     await settleModal(tester);
 
     expect(queueTitles(h), isEmpty);

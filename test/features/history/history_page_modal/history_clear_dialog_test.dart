@@ -52,12 +52,10 @@ void main() {
     ],
   );
 
-  /// Modal, Advanced, Clear history…: the dialog is open.
+  /// Modal, Clear history…: the dialog is open.
   Future<void> openDialog(WidgetTester tester) async {
     await open(tester);
     await tester.tap(_more);
-    await settleModal(tester);
-    await tester.tap(_row('advanced'));
     await settleModal(tester);
     await tester.tap(_row('clear'));
     await settleModal(tester);
@@ -176,8 +174,6 @@ void main() {
     await open(tester);
     await tester.tap(_more);
     await settleModal(tester);
-    await tester.tap(_row('advanced'));
-    await settleModal(tester);
     gate.failNext(historyRangeSummarySql);
     await tester.tap(_row('clear'));
     await settleModal(tester);
@@ -255,8 +251,6 @@ void main() {
   ) async {
     await open(tester);
     await tester.tap(_more);
-    await settleModal(tester);
-    await tester.tap(_row('advanced'));
     await settleModal(tester);
     final recorder = h.container.read(listenRecorderProvider)!;
     final release = gate.holdNext('DELETE FROM');

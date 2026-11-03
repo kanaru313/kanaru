@@ -96,8 +96,7 @@ class HistoryDayModalData {
 }
 
 /// What the Day modal's rows do. Each runs after the modal has closed except
-/// [openAdvanced] (pushes the page) and [remove] (confirms above the modal
-/// first, then closes it).
+/// [remove] (confirms above the modal first, then closes it).
 class HistoryDayModalHandlers {
   const HistoryDayModalHandlers({
     required this.playAll,
@@ -107,7 +106,6 @@ class HistoryDayModalHandlers {
     required this.exportAbsolute,
     required this.exportRelative,
     required this.remove,
-    this.openAdvanced,
   });
 
   final VoidCallback playAll;
@@ -117,5 +115,4 @@ class HistoryDayModalHandlers {
   final VoidCallback exportAbsolute;
   final VoidCallback exportRelative;
   final void Function(ContextModalNav nav) remove;
-  final void Function(ContextModalNav nav)? openAdvanced;
 }

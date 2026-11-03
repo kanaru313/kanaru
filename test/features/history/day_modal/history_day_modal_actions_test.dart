@@ -46,17 +46,11 @@ HistoryDayModalHandlers _handlers() {
     exportAbsolute: noop,
     exportRelative: noop,
     remove: (_) {},
-    openAdvanced: (_) {},
   );
 }
 
 Map<String, ContextModalAction> _rows(HistoryDayModalData data) => {
   for (final g in historyDayModalSections(_l10n, data, _handlers()))
-    for (final a in g) a.id: a,
-};
-
-Map<String, ContextModalAction> _advanced(HistoryDayModalData data) => {
-  for (final g in historyDayModalAdvancedSections(_l10n, data, _handlers()))
     for (final a in g) a.id: a,
 };
 
@@ -108,21 +102,22 @@ void main() {
   });
 
   group('first page', () {
-    test('two groups: play and copy, then Remove', () {
+    test('three groups: play, copy and export, then Remove', () {
       final groups = historyDayModalSections(_l10n, _data(rows), _handlers());
       expect(
         [
           for (final g in groups) [for (final a in g) a.id],
         ],
         [
-          ['play-all', 'shuffle', 'add-to-playlist', 'advanced'],
+          ['play-all', 'shuffle'],
+          ['add-to-playlist', 'open-in-most-played', 'export-m3u'],
           ['remove-day'],
         ],
       );
       final all = _rows(_data(rows));
       expect(all.values.every((a) => a.enabled), isTrue);
       expect(all['remove-day']!.destructive, isTrue);
-      expect(all['advanced']!.opensPage, isTrue);
+      expect(all.containsKey('advanced'), isFalse);
     });
 
     test('subtitles count the library songs the actions use', () {
@@ -153,36 +148,21 @@ void main() {
     });
   });
 
-  group('Advanced page', () {
-    test('Open in Most played, then both exports', () {
-      final groups = historyDayModalAdvancedSections(
-        _l10n,
-        _data(rows),
-        _handlers(),
-      );
-      expect(
-        [
-          for (final g in groups) [for (final a in g) a.id],
-        ],
-        [
-          ['open-in-most-played'],
-          ['export-absolute', 'export-relative'],
-        ],
-      );
-      final all = _advanced(_data(rows));
+  group('Open in Most played and export', () {
+    test('subtitles say the date and the order', () {
+      final all = _rows(_data(rows));
       expect(all['open-in-most-played']!.subtitle, 'Oct 23, 2026');
-      expect(all['export-absolute']!.subtitle, contains('Absolute paths'));
-      expect(all['export-relative']!.subtitle, contains('Relative paths'));
+      expect(all['export-m3u']!.subtitle, contains('Absolute paths'));
       expect(
-        all['export-absolute']!.subtitle,
+        all['export-m3u']!.subtitle,
         contains('2 songs, last played first'),
       );
     });
 
     test('exports need a library song; Open in Most played does not', () {
-      final all = _advanced(_data([_play(1, 'x', gone: true)]));
-      expect(all['export-absolute']!.enabled, isFalse);
-      expect(all['export-relative']!.enabled, isFalse);
+      final all = _rows(_data([_play(1, 'x', gone: true)]));
+      expect(all['export-m3u']!.enabled, isFalse);
+      expect(all['export-m3u']!.trailing, isEmpty);
       expect(all['open-in-most-played']!.enabled, isTrue);
     });
   });

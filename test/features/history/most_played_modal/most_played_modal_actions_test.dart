@@ -38,7 +38,7 @@ void main() {
         [
           ['play-all', 'shuffle'],
           ['add-to-playlist', 'add-all-to-favorites'],
-          ['export-absolute', 'export-relative'],
+          ['export-m3u'],
         ],
       );
     },
@@ -60,8 +60,7 @@ void main() {
       'New playlist suggests “Most played · Last 30 days”',
     );
     expect(rows['add-all-to-favorites'], '3 songs');
-    expect(rows['export-absolute'], endsWith('3 songs, in rank order'));
-    expect(rows['export-relative'], endsWith('3 songs, in rank order'));
+    expect(rows['export-m3u'], endsWith('3 songs, in rank order'));
   });
 
   test('a single song is singular', () {
@@ -73,7 +72,7 @@ void main() {
     ).expand((s) => s);
 
     expect(
-      rows.firstWhere((a) => a.id == 'export-absolute').subtitle,
+      rows.firstWhere((a) => a.id == 'export-m3u').subtitle,
       endsWith('1 song, in rank order'),
     );
   });
@@ -86,7 +85,7 @@ void main() {
       handlers(),
     ).expand((s) => s);
 
-    expect(rows, hasLength(6));
+    expect(rows, hasLength(5));
     expect(rows.every((a) => !a.enabled), isTrue);
   });
 }

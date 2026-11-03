@@ -54,7 +54,7 @@ List<List<ContextModalAction>> mostPlayedModalSections(
       ),
     ],
     [
-      ...m3uExportActions(
+      m3uExportAction(
         l10n,
         enabled: enabled,
         detail: order,

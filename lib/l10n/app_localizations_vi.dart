@@ -4839,7 +4839,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playlistExportAbsoluteHint => 'Đường dẫn tuyệt đối';
 
   @override
-  String get playlistExportRelativeHint => 'Đường dẫn tương đối (cạnh nhạc)';
+  String get m3uExportRelativeTooltip => 'Xuất với đường dẫn tương đối';
 
   @override
   String get playlistRemoveDuplicates => 'Xoá bài trùng';

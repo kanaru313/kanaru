@@ -94,12 +94,14 @@ List<List<ContextModalAction>> savedQueueModalAdvancedSections(
         onTap: contextModalCloseThen(h.addAllToFavorites),
       ),
     ],
-    m3uExportActions(
-      l10n,
-      enabled: data.hasEntries,
-      exportAbsolute: h.exportAbsolute,
-      exportRelative: h.exportRelative,
-    ),
+    [
+      m3uExportAction(
+        l10n,
+        enabled: data.hasEntries,
+        exportAbsolute: h.exportAbsolute,
+        exportRelative: h.exportRelative,
+      ),
+    ],
     [
       if (missing > 0)
         ContextModalAction(

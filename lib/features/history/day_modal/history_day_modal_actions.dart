@@ -4,8 +4,8 @@ import '../../../shared/m3u/m3u_export_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_spec.dart';
 import 'history_day_modal_data.dart';
 
-/// The rows of the first page in two groups: play and copy actions with
-/// Advanced; Remove. The footer's queue buttons are not here. Everything
+/// The rows of the page in three groups: Play all and Shuffle; Add to
+/// playlist, Open in Most played and Export as M3U; Remove. The footer's queue buttons are not here. Everything
 /// but Remove needs a library song in the snapshot; Remove needs a play.
 List<List<ContextModalAction>> historyDayModalSections(
   AppLocalizations l10n,
@@ -30,6 +30,8 @@ List<List<ContextModalAction>> historyDayModalSections(
         enabled: data.canQueue,
         onTap: contextModalCloseThen(h.shuffle),
       ),
+    ],
+    [
       ContextModalAction(
         id: 'add-to-playlist',
         icon: AppIcons.addToPlaylist,
@@ -39,11 +41,18 @@ List<List<ContextModalAction>> historyDayModalSections(
         onTap: contextModalCloseThen(h.addToPlaylist),
       ),
       ContextModalAction(
-        id: 'advanced',
-        icon: AppIcons.advanced,
-        label: l10n.songModalAdvanced,
-        opensPage: true,
-        onTap: h.openAdvanced,
+        id: 'open-in-most-played',
+        icon: AppIcons.mostPlayedOutlined,
+        label: l10n.historyOpenInMostPlayed,
+        subtitle: date,
+        onTap: contextModalCloseThen(h.openInMostPlayed),
+      ),
+      m3uExportAction(
+        l10n,
+        enabled: data.canQueue,
+        detail: l10n.historyOrderLastPlayedFirst(data.songs),
+        exportAbsolute: h.exportAbsolute,
+        exportRelative: h.exportRelative,
       ),
     ],
     [
@@ -55,36 +64,6 @@ List<List<ContextModalAction>> historyDayModalSections(
         destructive: true,
         enabled: data.canRemove,
         onTap: h.remove,
-      ),
-    ],
-  ];
-}
-
-/// The rows of the Advanced page: Open in Most played, then the two M3U
-/// exports (absolute and relative paths) of the day's songs.
-List<List<ContextModalAction>> historyDayModalAdvancedSections(
-  AppLocalizations l10n,
-  HistoryDayModalData data,
-  HistoryDayModalHandlers h,
-) {
-  final order = l10n.historyOrderLastPlayedFirst(data.songs);
-  return [
-    [
-      ContextModalAction(
-        id: 'open-in-most-played',
-        icon: AppIcons.mostPlayedOutlined,
-        label: l10n.historyOpenInMostPlayed,
-        subtitle: l10n.historyDayDate(data.day),
-        onTap: contextModalCloseThen(h.openInMostPlayed),
-      ),
-    ],
-    [
-      ...m3uExportActions(
-        l10n,
-        enabled: data.canQueue,
-        detail: order,
-        exportAbsolute: h.exportAbsolute,
-        exportRelative: h.exportRelative,
       ),
     ],
   ];

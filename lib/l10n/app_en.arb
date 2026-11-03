@@ -5141,15 +5141,15 @@
   },
   "playlistExportM3u": "Export as M3U",
   "@playlistExportM3u": {
-    "description": "Label of the two M3U export rows of the playlist modal"
+    "description": "Label of the M3U export row of the context modals"
   },
   "playlistExportAbsoluteHint": "Absolute paths",
   "@playlistExportAbsoluteHint": {
     "description": "Second line of the M3U export row that writes full paths"
   },
-  "playlistExportRelativeHint": "Relative paths (next to the music)",
-  "@playlistExportRelativeHint": {
-    "description": "Second line of the M3U export row that writes relative paths"
+  "m3uExportRelativeTooltip": "Export with relative paths",
+  "@m3uExportRelativeTooltip": {
+    "description": "Tooltip of the button on the Export as M3U row that writes relative paths"
   },
   "playlistRemoveDuplicates": "Remove duplicates",
   "@playlistRemoveDuplicates": {

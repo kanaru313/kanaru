@@ -184,17 +184,14 @@ class HistoryPageModalSession {
   }
 
   /// The callbacks the rows call. [plays] is the number of listens now.
-  HistoryPageModalHandlers handlers({
-    int plays = 0,
-    void Function(ContextModalNav nav)? openAdvanced,
-  }) => HistoryPageModalHandlers(
-    clear: recorder == null ? null : (nav) => unawaited(clear(nav, plays)),
-    openAdvanced: openAdvanced,
-    play: () => unawaited(play()),
-    shuffle: () => unawaited(play(shuffle: true)),
-    addToPlaylist: () => unawaited(addToPlaylist()),
-    openMostPlayed: () => runner.goTo(mostPlayedPath),
-    exportAbsolute: () => unawaited(export(M3uPathStyle.absolute)),
-    exportRelative: () => unawaited(export(M3uPathStyle.relative)),
-  );
+  HistoryPageModalHandlers handlers({int plays = 0}) =>
+      HistoryPageModalHandlers(
+        clear: recorder == null ? null : (nav) => unawaited(clear(nav, plays)),
+        play: () => unawaited(play()),
+        shuffle: () => unawaited(play(shuffle: true)),
+        addToPlaylist: () => unawaited(addToPlaylist()),
+        openMostPlayed: () => runner.goTo(mostPlayedPath),
+        exportAbsolute: () => unawaited(export(M3uPathStyle.absolute)),
+        exportRelative: () => unawaited(export(M3uPathStyle.relative)),
+      );
 }

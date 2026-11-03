@@ -68,7 +68,8 @@ void main() {
       'Play all',
       'Shuffle',
       'Add to playlist…',
-      'Advanced',
+      'Open in Most played',
+      'Export as M3U',
       'Remove day from history',
       'Play next',
       'Add to queue',
@@ -87,7 +88,8 @@ void main() {
     await openDayModal(tester);
 
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Oct 23, 2026'), findsOneWidget);
+    // The date is in the header and in the Open in Most played row.
+    expect(find.text('Oct 23, 2026'), findsNWidgets(2));
     expect(find.text('4 listens • 3 songs • listened 4 min'), findsOneWidget);
     expect(
       find.descendant(
@@ -102,7 +104,7 @@ void main() {
     await open(tester);
     await openDayModal(tester, 1);
     expect(find.text('Yesterday'), findsOneWidget);
-    expect(find.text('Oct 22, 2026'), findsOneWidget);
+    expect(find.text('Oct 22, 2026'), findsNWidgets(2));
     expect(find.text('1 listen • 1 song • listened 1 min'), findsOneWidget);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);

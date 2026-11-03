@@ -196,8 +196,9 @@ void main() {
       await openRowModal(tester);
       await openAdvanced(tester);
       expect(modalAction('add-all-to-favorites'), findsOneWidget);
-      expect(modalAction('export-absolute'), findsOneWidget);
-      expect(modalAction('export-relative'), findsOneWidget);
+      expect(modalAction('export-m3u'), findsOneWidget);
+      expect(modalAction('export-relative'), findsNothing);
+      expect(find.byTooltip('Export with relative paths'), findsOneWidget);
       expect(modalAction('duplicate'), findsNothing);
       expect(modalAction('remove-duplicates'), findsNothing);
       expect(modalAction('remove-missing'), findsNothing);
@@ -373,10 +374,20 @@ void main() {
       'both exports go through the save picker under the queue name',
       (tester) async {
         await seed(tester);
-        for (final id in ['export-absolute', 'export-relative']) {
+        for (final id in ['export-m3u', 'export-relative']) {
           await openRowModal(tester);
           await openAdvanced(tester);
-          await tapModalAction(tester, id);
+          if (id == 'export-relative') {
+            await tester.tap(
+              find.descendant(
+                of: modalAction('export-m3u'),
+                matching: find.byTooltip('Export with relative paths'),
+              ),
+            );
+            await settleModal(tester);
+          } else {
+            await tapModalAction(tester, id);
+          }
           await settleDb(tester);
         }
         expect(suggested, hasLength(2));

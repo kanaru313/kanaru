@@ -5145,7 +5145,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistExportAbsoluteHint => 'Absolute paths';
 
   @override
-  String get playlistExportRelativeHint => 'Relative paths (next to the music)';
+  String get m3uExportRelativeTooltip => 'Export with relative paths';
 
   @override
   String get playlistRemoveDuplicates => 'Remove duplicates';

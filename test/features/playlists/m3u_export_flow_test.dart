@@ -100,7 +100,14 @@ void main() {
 
     Future<void> export(WidgetTester tester, String item) async {
       await pickFromPageModal(tester, 'advanced');
-      await tester.tap(modalAction(item));
+      await tester.tap(
+        item == 'export-relative'
+            ? find.descendant(
+                of: modalAction('export-m3u'),
+                matching: find.byTooltip('Export with relative paths'),
+              )
+            : modalAction(item),
+      );
       await settleIoUi(tester);
     }
 
@@ -157,7 +164,7 @@ void main() {
         }
       });
 
-      await export(tester, 'export-absolute');
+      await export(tester, 'export-m3u');
       final result = await tester.runAsync(
         () => importM3uFile('$root/out/Mix.m3u'),
       );
@@ -173,7 +180,7 @@ void main() {
       whileDialogOpen = () => h.db.deletePlaylist(id);
 
       await pickFromPageModal(tester, 'advanced');
-      await tester.tap(modalAction('export-absolute'));
+      await tester.tap(modalAction('export-m3u'));
       await settleIoUi(tester, snackbarOnly: true);
 
       expect(
@@ -186,7 +193,7 @@ void main() {
     testWidgets('a cancelled save dialog writes nothing', (tester) async {
       await openMix(tester);
 
-      await export(tester, 'export-absolute');
+      await export(tester, 'export-m3u');
 
       expect(find.byType(SnackBar), findsNothing);
     });
@@ -199,19 +206,21 @@ void main() {
       await tester.runAsync(() => File(target).writeAsString('old'));
       picked = target;
 
-      await export(tester, 'export-absolute');
+      await export(tester, 'export-m3u');
       expect(find.text('Replace old.m3u8?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(await read(tester, target), 'old');
 
-      await export(tester, 'export-absolute');
+      await export(tester, 'export-m3u');
       await tester.tap(find.text('Replace'));
       await settleIoUi(tester, snackbarOnly: true);
       expect(await read(tester, target), startsWith('#EXTM3U\n'));
     });
 
-    testWidgets('Favorites offers both exports', (tester) async {
+    testWidgets('Favorites has one export row with a relative button', (
+      tester,
+    ) async {
       await insertTracks(tester, h, [TestTrack('a', path: '$root/a.flac')]);
       await openApp(tester, h, const [], location: '/favorites');
       await tester.runAsync(
@@ -221,8 +230,9 @@ void main() {
 
       await pickFromPageModal(tester, 'advanced');
 
-      expect(modalAction('export-absolute'), findsOneWidget);
-      expect(modalAction('export-relative'), findsOneWidget);
+      expect(modalAction('export-m3u'), findsOneWidget);
+      expect(modalAction('export-relative'), findsNothing);
+      expect(find.byTooltip('Export with relative paths'), findsOneWidget);
     });
 
     testWidgets('only entries in the library play', (tester) async {

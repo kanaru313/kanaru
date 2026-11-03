@@ -182,7 +182,17 @@ void main() {
 
   group('Export as M3U', () {
     Future<String> exportVia(WidgetTester tester, String row) async {
-      await tapModalAction(tester, row);
+      if (row == 'export-relative') {
+        await tester.tap(
+          find.descendant(
+            of: modalAction('export-m3u'),
+            matching: find.byTooltip('Export with relative paths'),
+          ),
+        );
+        await settleModal(tester);
+      } else {
+        await tapModalAction(tester, row);
+      }
       for (
         var i = 0;
         i < 40 && find.textContaining('Saved').evaluate().isEmpty;
@@ -200,7 +210,7 @@ void main() {
       tester,
     ) async {
       await open(tester);
-      final absolute = await exportVia(tester, 'export-absolute');
+      final absolute = await exportVia(tester, 'export-m3u');
       expect(suggested, ['Mix.m3u8']);
       expect(
         absolute.split('\n').where((l) => l.startsWith('/m/')),
