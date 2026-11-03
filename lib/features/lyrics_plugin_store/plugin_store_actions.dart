@@ -51,6 +51,8 @@ class PluginStoreActions {
 
   Future<void> refreshAll() => _maintenance.refreshAll();
 
+  Future<void> refreshStale() => _maintenance.refreshStale();
+
   Future<void> refreshOne(String url) => _maintenance.refreshOne(url);
 
   Future<void> updateAll() => _maintenance.updateAll();

@@ -302,6 +302,38 @@ void main() {
     });
   });
 
+  group('opening refresh', () {
+    Future<int> clearedAfterOpen(
+      WidgetTester tester,
+      List<RepoRefreshResult> fetched,
+    ) async {
+      final cache = _CountingIconCache();
+      final repos = FakeRepos()..refreshStaleResult = fetched;
+      await pumpStore(
+        tester,
+        _page(),
+        repos: [_repoWith(3)],
+        reposController: repos,
+        overrides: [repoIconCacheProvider.overrideWithValue(cache)],
+      );
+      await tester.pumpAndSettle();
+      return cache.cleared;
+    }
+
+    testWidgets('keeps icon failures when nothing was fetched', (tester) async {
+      expect(await clearedAfterOpen(tester, const []), 0);
+    });
+
+    testWidgets('clears icon failures when a repository was fetched', (
+      tester,
+    ) async {
+      expect(
+        await clearedAfterOpen(tester, [RepoRefreshResult('http://a/', null)]),
+        1,
+      );
+    });
+  });
+
   group('update failures', () {
     Future<FakeRepos> pumpUpdate(
       WidgetTester tester,

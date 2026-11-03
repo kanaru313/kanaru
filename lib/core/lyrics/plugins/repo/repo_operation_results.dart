@@ -3,6 +3,7 @@ import '../package/plugin_package_problem.dart';
 import '../store/plugin_install_outcome.dart';
 import 'plugin_repo.dart';
 import 'repo_address_rules.dart';
+import 'repo_fetch_exception.dart';
 
 /// Why adding a repository failed; the app shows each under the URL field.
 enum AddRepoFailure {
@@ -167,3 +168,18 @@ class RepoUpdateOutcome {
   final String name;
   final RepoPluginResult result;
 }
+
+/// The add failure that stands for a failed catalog fetch.
+AddRepoFailure addRepoFailureOf(RepoFetchException error) =>
+    switch (error.kind) {
+      RepoFetchErrorKind.network => AddRepoFailure.network,
+      RepoFetchErrorKind.notFound => AddRepoFailure.notFound,
+      RepoFetchErrorKind.tooLarge ||
+      RepoFetchErrorKind.invalidCatalog => AddRepoFailure.badFormat,
+      RepoFetchErrorKind.blockedAddress => switch (error.reason) {
+        RepoAddressProblem.publicNeedsHttps => AddRepoFailure.publicNeedsHttps,
+        RepoAddressProblem.invalidUrl ||
+        RepoAddressProblem.userInfo => AddRepoFailure.invalidUrl,
+        _ => AddRepoFailure.blockedAddress,
+      },
+    };

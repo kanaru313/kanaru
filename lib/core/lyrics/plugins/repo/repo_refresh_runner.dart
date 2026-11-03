@@ -16,6 +16,24 @@ final _log = Logger('lyrics_plugin_repos');
 /// At most this many repositories are fetched at once by a refresh.
 const repoRefreshParallelism = 4;
 
+/// Auto refresh on store open skips a repository fetched less than this ago.
+const repoRefreshMaxAge = Duration(hours: 1);
+
+/// Whether a repository must be fetched by a stale-only refresh. A failed
+/// fetch keeps `last_fetched_at`, so [failed] is tested apart from the age. A
+/// time in the future (clock set back) counts as stale; exactly [maxAge] too.
+bool repoNeedsRefresh({
+  required int? lastFetchedAt,
+  required bool failed,
+  required bool hasCatalog,
+  required int now,
+  required Duration maxAge,
+}) {
+  if (lastFetchedAt == null || failed || !hasCatalog) return true;
+  final age = now - lastFetchedAt;
+  return age < 0 || age >= maxAge.inMilliseconds;
+}
+
 /// Fetches catalogs and stores them or the error kind. A repository being
 /// fetched is fetched once: [refresh] and [refreshAll] share the running fetch
 /// of one URL. Repositories for which [isAdding] is true are left alone, so a
@@ -59,6 +77,39 @@ class RepoRefreshRunner {
         _refreshingAll = null;
       });
 
+  /// Refreshes the repositories for which [repoNeedsRefresh] is true. While a
+  /// [refreshAll] runs, returns it (it covers them). Fetches already running
+  /// for a URL are shared. A [refreshAll] started during this call may
+  /// briefly run up to twice [repoRefreshParallelism] fetches, and two calls
+  /// close together may fetch one repository twice (a harmless extra GET).
+  /// The result holds only the repositories fetched. Never throws.
+  Future<List<RepoRefreshResult>> refreshStale({
+    Duration maxAge = repoRefreshMaxAge,
+  }) async {
+    final running = _refreshingAll;
+    if (running != null) return running;
+    final List<String> urls;
+    try {
+      final now = _now();
+      urls = [
+        for (final row in await _db.watchLyricsPluginRepos().first)
+          if (!_isAdding(row.url) &&
+              repoNeedsRefresh(
+                lastFetchedAt: row.lastFetchedAt,
+                failed: row.lastError != null,
+                hasCatalog: _reader.read(row).catalog != null,
+                now: now,
+                maxAge: maxAge,
+              ))
+            row.url,
+      ];
+    } on Object catch (error) {
+      _log.warning('Listing repositories failed: ${error.runtimeType}');
+      return const [];
+    }
+    return _refreshUrls(urls);
+  }
+
   /// Refreshes the one repository at [url]. Null when it is not added any
   /// more, is being added, or was removed meanwhile. Shares the fetch already
   /// running for [url] (from [refreshAll] too). Never throws.
@@ -85,6 +136,10 @@ class RepoRefreshRunner {
       _log.warning('Listing repositories failed: ${error.runtimeType}');
       return const [];
     }
+    return _refreshUrls(urls);
+  }
+
+  Future<List<RepoRefreshResult>> _refreshUrls(List<String> urls) async {
     final results = List<RepoRefreshResult?>.filled(urls.length, null);
     var next = 0;
     Future<void> worker() async {

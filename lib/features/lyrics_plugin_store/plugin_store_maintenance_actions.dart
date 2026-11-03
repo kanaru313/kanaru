@@ -47,6 +47,21 @@ class StoreMaintenanceActions {
     }
   }
 
+  /// Fetches the stale repositories; icons that failed are tried again only
+  /// when something was fetched.
+  Future<void> refreshStale() async {
+    final repos = _repos;
+    if (repos == null) return;
+    try {
+      final results = await repos.refreshStale();
+      if (results.isNotEmpty) {
+        _container.read(repoIconCacheProvider).clearFailures();
+      }
+    } on Object catch (error, stackTrace) {
+      _log.warning('Refreshing stale repositories failed', error, stackTrace);
+    }
+  }
+
   /// Fetches one repository again; its icons that failed are tried again too.
   Future<void> refreshOne(String url) async {
     try {

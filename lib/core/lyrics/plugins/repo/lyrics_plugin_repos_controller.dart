@@ -8,7 +8,6 @@ import '../lyrics_plugins_controller.dart';
 import '../package/plugin_package_reader.dart';
 import 'plugin_repo.dart';
 import 'plugin_repo_reader.dart';
-import 'repo_address_rules.dart';
 import 'repo_fetch_exception.dart';
 import 'repo_http.dart';
 import 'repo_operation_results.dart';
@@ -18,14 +17,15 @@ import 'repo_url.dart';
 
 export 'plugin_repo.dart' show PluginRepo, RepoLoadError;
 export 'repo_operation_results.dart';
-export 'repo_refresh_runner.dart' show repoRefreshParallelism;
+export 'repo_refresh_runner.dart'
+    show repoRefreshParallelism, repoRefreshMaxAge;
 
 final _log = Logger('lyrics_plugin_repos');
 
 /// Repositories and what they offer: add, remove, refresh, and install or
-/// update a plugin from a catalog. Fetches happen only when called (the
-/// store opens, "refresh all", add, install, update); there is no timer.
-/// Nothing here sends song data and it is not gated by lyrics consent. No UI
+/// update a plugin from a catalog. Fetches happen only when called (the store
+/// opens and a repository is stale, refresh, add, install, update); no timer.
+/// Nothing here sends song data and is not gated by lyrics consent. No UI
 /// text: failures are enums.
 class LyricsPluginReposController {
   LyricsPluginReposController({
@@ -116,7 +116,10 @@ class LyricsPluginReposController {
         pluginCount: catalog.entries.length,
       );
     } on RepoFetchException catch (error) {
-      return AddRepoFailed(_failureOf(error), addressProblem: error.reason);
+      return AddRepoFailed(
+        addRepoFailureOf(error),
+        addressProblem: error.reason,
+      );
     } on Object catch (error) {
       _log.warning('Adding a repository failed: ${error.runtimeType}');
       return const AddRepoFailed(AddRepoFailure.storage);
@@ -143,6 +146,12 @@ class LyricsPluginReposController {
   /// result. A call made while another runs shares its result. Never throws:
   /// when the repositories cannot be listed the result is empty.
   Future<List<RepoRefreshResult>> refreshAll() => _refresher.refreshAll();
+
+  /// Fetches only the repositories for which `repoNeedsRefresh` is true; see
+  /// `RepoRefreshRunner.refreshStale`. Never throws.
+  Future<List<RepoRefreshResult>> refreshStale({
+    Duration maxAge = repoRefreshMaxAge,
+  }) => _refresher.refreshStale(maxAge: maxAge);
 
   /// Refreshes one repository, like [refreshAll] does for each. Shares the
   /// fetch already running for [url]. Null when [url] is not added, is being
@@ -181,16 +190,3 @@ class LyricsPluginReposController {
 
   int _now() => _clock().millisecondsSinceEpoch;
 }
-
-AddRepoFailure _failureOf(RepoFetchException error) => switch (error.kind) {
-  RepoFetchErrorKind.network => AddRepoFailure.network,
-  RepoFetchErrorKind.notFound => AddRepoFailure.notFound,
-  RepoFetchErrorKind.tooLarge ||
-  RepoFetchErrorKind.invalidCatalog => AddRepoFailure.badFormat,
-  RepoFetchErrorKind.blockedAddress => switch (error.reason) {
-    RepoAddressProblem.publicNeedsHttps => AddRepoFailure.publicNeedsHttps,
-    RepoAddressProblem.invalidUrl ||
-    RepoAddressProblem.userInfo => AddRepoFailure.invalidUrl,
-    _ => AddRepoFailure.blockedAddress,
-  },
-};

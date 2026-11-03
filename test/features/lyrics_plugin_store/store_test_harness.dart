@@ -90,6 +90,8 @@ LyricsPluginRecord recordOf(
 /// with the results the test sets.
 class FakeRepos extends Fake implements LyricsPluginReposController {
   int refreshAllCalls = 0;
+  int refreshStaleCalls = 0;
+  List<RepoRefreshResult> refreshStaleResult = const [];
   final refreshed = <String>[];
   final installs = <(String, String)>[];
   final updates = <String>[];
@@ -148,6 +150,14 @@ class FakeRepos extends Fake implements LyricsPluginReposController {
   @override
   Stream<List<PluginRepo>> watchRepos() =>
       Stream.value(catalog ?? const <PluginRepo>[]);
+
+  @override
+  Future<List<RepoRefreshResult>> refreshStale({
+    Duration maxAge = repoRefreshMaxAge,
+  }) async {
+    refreshStaleCalls++;
+    return refreshStaleResult;
+  }
 
   @override
   Future<List<RepoRefreshResult>> refreshAll() async {
