@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/history_queries.dart'
+    show historyRangeSummarySql;
 import 'package:kanaru/core/stats/listen_recorder_provider.dart';
+import 'package:logging/logging.dart';
 import 'package:kanaru/features/history/history_clock.dart';
 import 'package:kanaru/features/history/history_side_pane.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -164,6 +167,72 @@ void main() {
     await settleHistory(tester);
 
     expect(find.text('Cleared 1 listen from history'), findsOneWidget);
+  });
+
+  /// Like [openDialog], but the first range count fails.
+  Future<void> openDialogWithFailingCount(WidgetTester tester) async {
+    // 9:30: the 9:00 play falls in the last hour.
+    clock = DateTime(2026, 10, 23, 9, 30);
+    await open(tester);
+    await tester.tap(_more);
+    await settleModal(tester);
+    await tester.tap(_row('advanced'));
+    await settleModal(tester);
+    gate.failNext(historyRangeSummarySql);
+    await tester.tap(_row('clear'));
+    await settleModal(tester);
+  }
+
+  final failedText = find.text("Couldn't count the listens");
+  final retry = find.byKey(const ValueKey('history-clear-retry'));
+
+  historyTestWidgets('a failed count shows an error and Retry, Clear off', (
+    tester,
+  ) async {
+    final records = <LogRecord>[];
+    final level = Logger.root.level;
+    Logger.root.level = Level.ALL;
+    final sub = Logger.root.onRecord.listen(records.add);
+    addTearDown(() async {
+      await sub.cancel();
+      Logger.root.level = level;
+    });
+
+    await openDialogWithFailingCount(tester);
+
+    expect(failedText, findsOneWidget);
+    expect(retry, findsOneWidget);
+    await tester.tap(_option('lastHour'));
+    await tester.pump();
+    expect(confirmEnabled(tester), isFalse);
+    expect(failedText, findsOneWidget);
+    final logged = records.where((r) => r.loggerName == 'history');
+    expect(logged, hasLength(1));
+    expect(
+      logged.single.message,
+      'Counting the listens to clear failed: StateError',
+    );
+  });
+
+  historyTestWidgets('Retry reads the failed count and enables Clear', (
+    tester,
+  ) async {
+    await openDialogWithFailingCount(tester);
+
+    await tester.tap(_option('lastHour'));
+    await tester.pump();
+    expect(confirmEnabled(tester), isFalse);
+
+    await tester.tap(retry);
+    await tester.pumpAndSettle();
+
+    expect(find.text("Couldn't count the listens"), findsNothing);
+    expect(retry, findsNothing);
+    expect(
+      find.descendant(of: _option('lastHour'), matching: find.text('1 listen')),
+      findsOneWidget,
+    );
+    expect(confirmEnabled(tester), isTrue);
   });
 
   historyTestWidgets('a failing delete says so and keeps the plays', (

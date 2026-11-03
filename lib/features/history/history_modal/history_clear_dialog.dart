@@ -4,6 +4,7 @@ import '../../../core/database/history_queries.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/stats/listen_clear_scope.dart';
 import '../../../l10n/l10n.dart';
+import '../history_error_log.dart';
 import 'history_clear_range.dart';
 
 /// Asks which part of the History to clear, above the History modal. Resolves
@@ -41,6 +42,7 @@ class _HistoryClearDialogState extends State<_HistoryClearDialog> {
   /// `now` of this dialog: every option's bounds and count come from it.
   late final DateTime _now = widget.now;
   final _counts = <HistoryClearRange, int>{};
+  final _failed = <HistoryClearRange>{};
   HistoryClearRange? _picked;
 
   @override
@@ -52,8 +54,10 @@ class _HistoryClearDialogState extends State<_HistoryClearDialog> {
     }
   }
 
-  /// A failed count leaves the option without one, so it cannot be cleared.
+  /// A failed count leaves the option without one, so it cannot be cleared;
+  /// the option shows an error and [_retry] reads it again.
   Future<void> _load(HistoryClearRange range) async {
+    _failed.remove(range);
     final bounds = range.bounds(_now);
     try {
       final summary = await widget.db.historyRangeSummary(
@@ -61,8 +65,16 @@ class _HistoryClearDialogState extends State<_HistoryClearDialog> {
         bounds.to!,
       );
       if (mounted) setState(() => _counts[range] = summary.plays);
-    } on Object {
-      // Left unset: the option shows no count and Clear stays off.
+    } on Object catch (error) {
+      logHistoryError('Counting the listens to clear failed', error);
+      if (mounted) setState(() => _failed.add(range));
+    }
+  }
+
+  void _retry() {
+    for (final range in _failed.toList()) {
+      setState(() => _failed.remove(range));
+      _load(range);
     }
   }
 
@@ -101,13 +113,24 @@ class _HistoryClearDialogState extends State<_HistoryClearDialog> {
                       key: ValueKey('history-clear-${range.name}'),
                       value: range,
                       title: Text(_label(range)),
-                      subtitle: _counts[range] == null
-                          ? null
-                          : Text(l10n.historyListenCount(_counts[range]!)),
+                      subtitle: _counts[range] != null
+                          ? Text(l10n.historyListenCount(_counts[range]!))
+                          : _failed.contains(range)
+                          ? Text(
+                              l10n.historyClearCountFailed,
+                              style: TextStyle(color: colors.error),
+                            )
+                          : null,
                     ),
                 ],
               ),
             ),
+            if (_failed.isNotEmpty)
+              TextButton(
+                key: const ValueKey('history-clear-retry'),
+                onPressed: _retry,
+                child: Text(l10n.historyClearRetry),
+              ),
           ],
         ),
       ),

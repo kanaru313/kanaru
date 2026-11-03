@@ -1941,5 +1941,7 @@
   "historyClearToday": "Hôm nay",
   "historyClearDays7": "7 ngày qua",
   "historyClearEverything": "Toàn bộ",
+  "historyClearCountFailed": "Không đếm được lượt nghe",
+  "historyClearRetry": "Thử lại",
   "historyCleared": "{count, plural, =0{Không có gì để xoá} other{Đã xoá {count} lượt nghe khỏi lịch sử}}"
 }

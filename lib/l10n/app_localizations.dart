@@ -7652,6 +7652,18 @@ abstract class AppLocalizations {
   /// **'Everything'**
   String get historyClearEverything;
 
+  /// Clear history dialog: shown under an option whose listen count could not be read
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t count the listens'**
+  String get historyClearCountFailed;
+
+  /// Clear history dialog: button that reads the failed listen counts again
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get historyClearRetry;
+
   /// Snackbar after the History was cleared for a range
   ///
   /// In en, this message translates to:

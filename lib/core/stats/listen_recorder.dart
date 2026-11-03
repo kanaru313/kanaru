@@ -59,6 +59,9 @@ class ListenRecorder {
   /// Clears queued or running. Nothing is counted meanwhile.
   int _pendingClears = 0;
 
+  /// Completes when the last pending clear is done; null while none is.
+  Completer<void>? _clearsDone;
+
   /// The open playthrough, parked while clears are pending: each clear
   /// decides, when its delete has run, whether it is dropped or kept.
   ListenPlaythrough? _held;
@@ -134,6 +137,7 @@ class ListenRecorder {
   Future<int?> clearHistory({int? from, int? to}) {
     final bounds = (from: from, to: to);
     if (_pendingClears++ == 0) {
+      _clearsDone = Completer<void>();
       _held = _current;
       _current = null;
       _setClearing(true);
@@ -156,18 +160,27 @@ class ListenRecorder {
     if (_switchedOff != null && clearTouches(bounds, _switchedOff!.playedAt)) {
       _switchedOff = null;
     }
-    _clearedPlays.add(bounds);
+    if (!_clearedPlays.isClosed) _clearedPlays.add(bounds);
     return removed;
   }
 
   /// The last pending clear is done: a playthrough that survived goes on (or
   /// gets its final write if the player left it), then counting restarts.
   void _finishClears() {
-    final kept = _held;
-    _held = null;
-    if (kept != null) _resume(kept);
-    _setClearing(false);
-    _restart();
+    // Taken first: a listener woken by _setClearing may start a new clear,
+    // which makes its own completer.
+    final done = _clearsDone;
+    _clearsDone = null;
+    try {
+      final kept = _held;
+      _held = null;
+      if (kept != null) _resume(kept);
+      _setClearing(false);
+      _restart();
+    } finally {
+      // Always release flush(), even when resuming threw.
+      done?.complete();
+    }
   }
 
   void _setClearing(bool value) {
@@ -208,9 +221,9 @@ class ListenRecorder {
   /// Listened time is as of the last player state.
   Future<void> flush() async {
     // A pending clear parks the open play; wait until it is back (or gone).
-    while (_pendingClears > 0) {
-      await _writes.idle;
-      await Future<void>.delayed(Duration.zero);
+    // Loops: a clear queued before this resumes starts a fresh completer.
+    for (var done = _clearsDone; done != null; done = _clearsDone) {
+      await done.future;
     }
     final open = _current;
     if (!_disposed && open != null) _writeProgress(open);
@@ -223,6 +236,7 @@ class ListenRecorder {
     _end();
     _disposed = true;
     _clearingNow.dispose();
+    unawaited(_clearedPlays.close());
   }
 
   ListenPlaythrough _begin(PlayerState state, Track track) => ListenPlaythrough(

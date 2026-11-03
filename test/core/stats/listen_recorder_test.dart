@@ -992,4 +992,101 @@ void main() {
       }
     });
   });
+
+  group('clear lifecycle', () {
+    test('dispose closes the cleared stream', () async {
+      var done = false;
+      recorder.cleared.listen((_) {}, onDone: () => done = true);
+
+      recorder.dispose();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(done, isTrue);
+    });
+
+    test('a clear queued before dispose still returns its count', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      final cleared = recorder.clearHistory();
+      recorder.dispose();
+
+      expect(await cleared, 1);
+      expect(await plays(), isEmpty);
+    });
+
+    test(
+      'flush during a failing delete completes and writes the open play',
+      () async {
+        sim.open(trackA);
+        sim.listen(100);
+        await recorder.idle;
+        sim.listen(20);
+
+        gate.failNext('DELETE FROM');
+        final cleared = recorder.clearHistory();
+        await recorder.flush();
+
+        expect(await cleared, isNull);
+        expect((await plays()).single.listenedMs, 120000);
+      },
+    );
+
+    test('flush waits for two clears queued back to back', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+
+      final first = recorder.clearHistory();
+      final second = recorder.clearHistory();
+      var flushed = false;
+      final flush = recorder.flush().then((_) => flushed = true);
+      await first;
+      expect(recorder.clearing.value, isTrue);
+      expect(flushed, isFalse);
+      await second;
+      await flush;
+
+      expect(recorder.clearing.value, isFalse);
+      expect(await plays(), isEmpty);
+    });
+
+    test('clearing returns to false after a failing delete', () async {
+      gate.failNext('DELETE FROM');
+      expect(await recorder.clearHistory(), isNull);
+
+      expect(recorder.clearing.value, isFalse);
+    });
+
+    test('flush waits for a clear started by a clearing listener', () async {
+      sim.open(trackA);
+      sim.listen(100);
+      await recorder.idle;
+      sim.listen(20);
+      var again = true;
+      Future<int?>? second;
+      recorder.clearing.addListener(() {
+        if (!recorder.clearing.value && again) {
+          again = false;
+          second = recorder.clearHistory(from: 0, to: 1);
+        }
+      });
+
+      final first = recorder.clearHistory(from: 0, to: 1);
+      var secondDone = false;
+      var secondDoneAtFlush = false;
+      final flush = recorder.flush().then(
+        (_) => secondDoneAtFlush = secondDone,
+      );
+      await first;
+      await second!.then((_) => secondDone = true);
+      await flush.timeout(const Duration(seconds: 5));
+
+      expect(secondDoneAtFlush, isTrue);
+
+      expect(recorder.clearing.value, isFalse);
+      expect((await plays()).single.listenedMs, 120000);
+    });
+  });
 }

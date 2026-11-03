@@ -4944,6 +4944,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get historyClearEverything => 'Toàn bộ';
 
   @override
+  String get historyClearCountFailed => 'Không đếm được lượt nghe';
+
+  @override
+  String get historyClearRetry => 'Thử lại';
+
+  @override
   String historyCleared(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

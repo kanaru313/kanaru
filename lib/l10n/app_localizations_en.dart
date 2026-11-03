@@ -5255,6 +5255,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyClearEverything => 'Everything';
 
   @override
+  String get historyClearCountFailed => 'Couldn\'t count the listens';
+
+  @override
+  String get historyClearRetry => 'Retry';
+
+  @override
   String historyCleared(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
