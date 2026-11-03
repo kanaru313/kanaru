@@ -4925,6 +4925,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Treat a name as two artists, or join spellings';
 
   @override
+  String get genreModalSetPicture => 'Set genre picture';
+
+  @override
   String get genreModalLabel => 'Genre options';
 
   @override
@@ -5025,6 +5028,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playlistModalLabel => 'Playlist options';
+
+  @override
+  String get playlistModalChangeCover => 'Change playlist cover';
 
   @override
   String get playlistGoTo => 'Go to playlist';

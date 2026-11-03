@@ -43,7 +43,7 @@ ContextModalPage playlistModalActionsPage(PlaylistModalSession session) {
           onTap: session.showGoTo && !data.gone
               ? () => contextModalCloseThen(handlers.goToPlaylist)(nav)
               : null,
-          onEdit: data.isFavorites || data.gone ? null : handlers.edit,
+          showCoverButton: !data.isFavorites && !data.gone,
         );
       },
     ),

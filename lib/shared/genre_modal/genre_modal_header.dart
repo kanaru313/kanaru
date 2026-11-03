@@ -4,6 +4,8 @@ import '../../l10n/l10n.dart';
 import '../genre_summaries.dart';
 import '../icons/app_icons.dart';
 import '../library_route_keys.dart' show unknownGenreKey;
+import '../widgets/context_modal/context_modal_coming_soon_button.dart';
+import '../widgets/context_modal/context_modal_header.dart';
 import '../widgets/library_row.dart';
 import '../widgets/playlist_cover.dart';
 
@@ -12,11 +14,12 @@ const double _coverSize = 64;
 /// Top of the genre modal: the cover collage, the name and
 /// "N albums • N songs • length". The song count comes from the tile the
 /// modal was opened from, so it shows at once; the album count and duration
-/// appear once the links load.
+/// appear once the links load, and the Set genre picture button (not
+/// available yet).
 ///
-/// With [onTap] (Go to genre, which closes the modal first) the cover and
-/// the text are one button that does not take keyboard focus: the first row
-/// does. It is null on the page of the genre itself.
+/// With [onTap] (Go to genre, which closes the modal first) the whole header
+/// is one button that does not take keyboard focus: the first row does. It is
+/// null on the page of the genre itself. The picture button keeps its own tap.
 class GenreModalHeader extends StatelessWidget {
   const GenreModalHeader({
     super.key,
@@ -48,46 +51,25 @@ class GenreModalHeader extends StatelessWidget {
       l10n.albumsSongCount(genre.songCount),
       if (duration != null) rowLength(l10n, duration),
     ]);
-    Widget line(String text, TextStyle? style) =>
-        Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
-    final identity = Row(
-      spacing: 16,
-      children: [
-        PlaylistCover(
-          coverKeys: genre.coverKeys,
-          size: _coverSize,
-          seed: 'genre:${genre.key}',
-          icon: genre.key == unknownGenreKey
-              ? AppIcons.genreOutlined
-              : AppIcons.genre,
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              line(displayName, theme.textTheme.titleMedium),
-              line(details, quiet),
-            ],
-          ),
-        ),
+    return ContextModalHeader(
+      leading: PlaylistCover(
+        coverKeys: genre.coverKeys,
+        size: _coverSize,
+        seed: 'genre:${genre.key}',
+        icon: genre.key == unknownGenreKey
+            ? AppIcons.genreOutlined
+            : AppIcons.genre,
+      ),
+      lines: [
+        contextModalHeaderLine(displayName, theme.textTheme.titleMedium),
+        contextModalHeaderLine(details, quiet),
       ],
-    );
-    final tap = onTap;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      child: tap == null
-          ? identity
-          : Semantics(
-              button: true,
-              hint: l10n.songModalGoToGenre,
-              child: InkWell(
-                canRequestFocus: false,
-                borderRadius: BorderRadius.circular(12),
-                onTap: tap,
-                child: identity,
-              ),
-            ),
+      trailing: ContextModalComingSoonIconButton(
+        icon: AppIcons.editAlbumArt,
+        tooltip: l10n.genreModalSetPicture,
+      ),
+      onTap: onTap,
+      tapHint: l10n.songModalGoToGenre,
     );
   }
 }

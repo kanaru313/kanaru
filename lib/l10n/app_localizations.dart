@@ -7226,6 +7226,12 @@ abstract class AppLocalizations {
   /// **'Treat a name as two artists, or join spellings'**
   String get artistModalSplitMergeHint;
 
+  /// Tooltip of the button in the genre options header that will set the genre picture (not available yet)
+  ///
+  /// In en, this message translates to:
+  /// **'Set genre picture'**
+  String get genreModalSetPicture;
+
   /// Semantics label for the genre options modal sheet
   ///
   /// In en, this message translates to:
@@ -7381,6 +7387,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Playlist options'**
   String get playlistModalLabel;
+
+  /// Tooltip of the button in the playlist options header that will change the playlist cover (not available yet)
+  ///
+  /// In en, this message translates to:
+  /// **'Change playlist cover'**
+  String get playlistModalChangeCover;
 
   /// Playlist modal row that opens the playlist page
   ///

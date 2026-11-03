@@ -26,11 +26,10 @@ void main() {
   }
 
   Future<void> openEdit(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Edit'));
-    await settleModal(tester);
+    await tapModalAction(tester, 'edit');
   }
 
-  testWidgets('the Edit button opens the dialog above the open modal', (
+  testWidgets('the Edit row opens the dialog above the open modal', (
     tester,
   ) async {
     await open(tester);
@@ -43,13 +42,6 @@ void main() {
     await settleModal(tester);
     expect(_editDialog, findsOneWidget);
     expect(queueTitles(h), isEmpty);
-  });
-
-  testWidgets('the Edit row opens it too, and the modal stays', (tester) async {
-    await open(tester);
-    await tapModalAction(tester, 'edit');
-    expect(_editDialog, findsOneWidget);
-    expect(_modalRow, findsOneWidget);
   });
 
   for (final (label, dismiss)

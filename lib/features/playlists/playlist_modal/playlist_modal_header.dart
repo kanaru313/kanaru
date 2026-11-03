@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/icons/app_icons.dart';
+import '../../../shared/widgets/context_modal/context_modal_coming_soon_button.dart';
+import '../../../shared/widgets/context_modal/context_modal_header.dart';
 import '../../../shared/widgets/library_row.dart';
 import '../../../shared/widgets/playlist_cover.dart';
 import '../playlist_display_name.dart';
@@ -12,26 +14,28 @@ const double _coverSize = 64;
 
 /// Top of the playlist modal: the cover, the name, "N songs • Created date"
 /// ("Created" is left out for Favorites), the description when there is one,
-/// and the Edit button (not for Favorites).
+/// and the Change playlist cover button (not available yet; see
+/// [showCoverButton]).
 ///
-/// With [onTap] (Go to playlist, which closes the modal first) the cover and
-/// the text are one button that does not take keyboard focus: the first row
-/// does. It is null on the page of the playlist itself.
+/// With [onTap] (Go to playlist, which closes the modal first) the whole
+/// header, description included, is one button that does not take keyboard
+/// focus: the first row does. It is null on the page of the playlist itself.
 class PlaylistModalHeader extends StatelessWidget {
   const PlaylistModalHeader({
     super.key,
     required this.playlist,
     required this.coverKeys,
     this.onTap,
-    this.onEdit,
+    this.showCoverButton = false,
   });
 
   final PlaylistSummary playlist;
   final List<String> coverKeys;
   final VoidCallback? onTap;
 
-  /// Null leaves the Edit button out.
-  final VoidCallback? onEdit;
+  /// Shows the Change playlist cover button (not available yet). The caller
+  /// leaves it out for Favorites and a playlist that is gone.
+  final bool showCoverButton;
 
   @override
   Widget build(BuildContext context) {
@@ -48,75 +52,31 @@ class PlaylistModalHeader extends StatelessWidget {
           DateTime.fromMillisecondsSinceEpoch(playlist.createdAt),
         ),
     ]);
-    Widget line(String text, TextStyle? style) =>
-        Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
-    final identity = Row(
-      spacing: 16,
-      children: [
-        PlaylistCover(
-          coverKeys: coverKeys,
-          size: _coverSize,
-          seed: 'playlist:${playlist.id}',
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              line(
-                playlistDisplayName(playlist, l10n),
-                theme.textTheme.titleMedium,
-              ),
-              line(meta, quiet),
-            ],
-          ),
-        ),
-      ],
-    );
-    final tap = onTap;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 10, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            spacing: 8,
-            children: [
-              Expanded(
-                child: tap == null
-                    ? identity
-                    : Semantics(
-                        button: true,
-                        hint: l10n.playlistGoTo,
-                        child: InkWell(
-                          canRequestFocus: false,
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: tap,
-                          child: identity,
-                        ),
-                      ),
-              ),
-              if (onEdit != null)
-                IconButton(
-                  key: const ValueKey('playlist-modal-edit'),
-                  tooltip: l10n.playlistEditAction,
-                  icon: const Icon(AppIcons.edit),
-                  color: colors.onSurfaceVariant,
-                  onPressed: onEdit,
-                ),
-            ],
-          ),
-          if (playlist.description.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 10, right: 10),
-              child: PlaylistDescriptionBox(
-                text: playlist.description,
-                style: quiet,
-              ),
-            ),
-        ],
+    final description = playlist.description;
+    return ContextModalHeader(
+      leading: PlaylistCover(
+        coverKeys: coverKeys,
+        size: _coverSize,
+        seed: 'playlist:${playlist.id}',
       ),
+      lines: [
+        contextModalHeaderLine(
+          playlistDisplayName(playlist, l10n),
+          theme.textTheme.titleMedium,
+        ),
+        contextModalHeaderLine(meta, quiet),
+      ],
+      trailing: showCoverButton
+          ? ContextModalComingSoonIconButton(
+              icon: AppIcons.editAlbumArt,
+              tooltip: l10n.playlistModalChangeCover,
+            )
+          : null,
+      below: description.isEmpty
+          ? null
+          : PlaylistDescriptionBox(text: description, style: quiet),
+      onTap: onTap,
+      tapHint: l10n.playlistGoTo,
     );
   }
 }

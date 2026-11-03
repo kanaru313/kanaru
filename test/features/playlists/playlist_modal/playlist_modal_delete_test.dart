@@ -91,5 +91,6 @@ void main() {
     expect(modalAction('delete'), findsNothing);
     expect(modalAction('edit'), findsNothing);
     expect(find.byTooltip('Edit'), findsNothing);
+    expect(find.byTooltip('Change playlist cover'), findsNothing);
   });
 }

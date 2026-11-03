@@ -4630,6 +4630,9 @@ class AppLocalizationsVi extends AppLocalizations {
       'Coi một tên là hai nghệ sĩ, hoặc gộp các cách viết';
 
   @override
+  String get genreModalSetPicture => 'Đặt ảnh thể loại';
+
+  @override
   String get genreModalLabel => 'Tùy chọn thể loại';
 
   @override
@@ -4730,6 +4733,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get playlistModalLabel => 'Tùy chọn playlist';
+
+  @override
+  String get playlistModalChangeCover => 'Đổi ảnh playlist';
 
   @override
   String get playlistGoTo => 'Đến playlist';

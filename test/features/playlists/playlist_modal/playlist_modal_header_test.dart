@@ -26,7 +26,7 @@ Future<void> _pump(
   WidgetTester tester,
   PlaylistSummary playlist, {
   VoidCallback? onTap,
-  VoidCallback? onEdit,
+  bool showCoverButton = false,
   double width = 420,
 }) => tester.pumpWidget(
   ProviderScope(
@@ -42,7 +42,7 @@ Future<void> _pump(
               playlist: playlist,
               coverKeys: const [],
               onTap: onTap,
-              onEdit: onEdit,
+              showCoverButton: showCoverButton,
             ),
           ),
         ),
@@ -117,30 +117,48 @@ void main() {
     expect(scrollable.position.maxScrollExtent, 0);
   });
 
-  testWidgets('the Edit button shows with a callback and is hidden without', (
+  testWidgets(
+    'Change playlist cover shows only when asked; it is coming soon',
+    (tester) async {
+      var taps = 0;
+      await _pump(
+        tester,
+        _playlist(),
+        onTap: () => taps++,
+        showCoverButton: true,
+      );
+      await tester.tap(find.byTooltip('Change playlist cover'));
+      await tester.pump();
+      expect(taps, 0);
+      expect(find.textContaining("isn't available yet"), findsOneWidget);
+      expect(find.byTooltip('Edit'), findsNothing);
+      await _pump(tester, _playlist());
+      expect(find.byTooltip('Change playlist cover'), findsNothing);
+    },
+  );
+
+  testWidgets('a tap on the description calls onTap; a drag does not', (
     tester,
   ) async {
-    var edits = 0;
-    await _pump(tester, _playlist(), onEdit: () => edits++);
-    await tester.tap(find.byTooltip('Edit'));
-    expect(edits, 1);
-    await _pump(tester, _playlist(favorites: true));
-    expect(find.byTooltip('Edit'), findsNothing);
+    var taps = 0;
+    final text = List.filled(30, 'Songs for the long drive north').join(' ');
+    await _pump(tester, _playlist(description: text), onTap: () => taps++);
+    final box = find.byType(PlaylistDescriptionBox);
+    await tester.drag(box, const Offset(0, -40));
+    await tester.pump();
+    expect(taps, 0);
+    await tester.tap(box);
+    expect(taps, 1);
   });
 
-  testWidgets('the identity area is a tap target only with onTap', (
-    tester,
-  ) async {
+  testWidgets('the header is a tap target only with onTap', (tester) async {
     var taps = 0;
     await _pump(tester, _playlist(), onTap: () => taps++);
     await tester.tap(find.text('Road trip'));
     expect(taps, 1);
     await _pump(tester, _playlist());
     expect(
-      find.descendant(
-        of: find.byType(PlaylistModalHeader),
-        matching: find.byType(InkWell),
-      ),
+      find.ancestor(of: find.text('Road trip'), matching: find.byType(InkWell)),
       findsNothing,
     );
   });

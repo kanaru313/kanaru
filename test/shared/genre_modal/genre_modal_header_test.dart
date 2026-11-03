@@ -35,34 +35,23 @@ Future<void> _pumpHeader(
 );
 
 void main() {
-  testWidgets('64 px cover, display name, and details with album, songs, duration', (
-    tester,
-  ) async {
-    await _pumpHeader(
-      tester,
-      albumCount: 3,
-      durationMs: 3600000,
-    );
-    expect(tester.getSize(find.byType(PlaylistCover)), const Size(64, 64));
-    expect(find.text('Rock'), findsWidgets);
-    expect(find.text('3 albums • 12 songs • 1 h 0 min'), findsOneWidget);
-  });
+  testWidgets(
+    '64 px cover, display name, and details with album, songs, duration',
+    (tester) async {
+      await _pumpHeader(tester, albumCount: 3, durationMs: 3600000);
+      expect(tester.getSize(find.byType(PlaylistCover)), const Size(64, 64));
+      expect(find.text('Rock'), findsWidgets);
+      expect(find.text('3 albums • 12 songs • 1 h 0 min'), findsOneWidget);
+    },
+  );
 
   testWidgets('unknown duration is left out', (tester) async {
-    await _pumpHeader(
-      tester,
-      albumCount: 2,
-      durationMs: null,
-    );
+    await _pumpHeader(tester, albumCount: 2, durationMs: null);
     expect(find.text('2 albums • 12 songs'), findsOneWidget);
   });
 
   testWidgets('unknown album count is left out while loading', (tester) async {
-    await _pumpHeader(
-      tester,
-      albumCount: null,
-      durationMs: 180000,
-    );
+    await _pumpHeader(tester, albumCount: null, durationMs: 180000);
     expect(find.text('12 songs • 3 min'), findsOneWidget);
   });
 
@@ -112,7 +101,9 @@ void main() {
     expect(find.byType(PlaylistCover), findsOneWidget);
   });
 
-  testWidgets('tapping header in modal navigates to genreLocation', (tester) async {
+  testWidgets('tapping header in modal navigates to genreLocation', (
+    tester,
+  ) async {
     final host = await pumpGenreHost(tester, links: linksOf());
     await openGenreModalOf(tester);
     await tester.tap(find.text('Rock').first);
@@ -132,5 +123,53 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('Set genre picture answers with a coming soon snackbar', (
+    tester,
+  ) async {
+    var taps = 0;
+    await _pumpHeader(tester, onTap: () => taps++);
+    await tester.tap(find.byTooltip('Set genre picture'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(taps, 0);
+    expect(find.textContaining("isn't available yet"), findsOneWidget);
+  });
+
+  testWidgets('Set genre picture says coming soon and takes no focus', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pumpHeader(tester);
+    final data = tester
+        .getSemantics(find.byTooltip('Set genre picture'))
+        .getSemanticsData();
+    expect(data.hint, 'Coming soon');
+    expect(data.flagsCollection.isButton, isTrue);
+    expect(
+      find.ancestor(
+        of: find.byTooltip('Set genre picture'),
+        matching: find.byType(ExcludeFocus),
+      ),
+      findsWidgets,
+    );
+    handle.dispose();
+  });
+
+  testWidgets('the Unknown genre header has the picture button too', (
+    tester,
+  ) async {
+    await _pumpHeader(
+      tester,
+      genre: const GenreSummary(
+        key: unknownGenreKey,
+        name: '',
+        songCount: 5,
+        raws: [],
+        withoutGenre: true,
+      ),
+      displayName: 'Tracks without genre',
+    );
+    expect(find.byTooltip('Set genre picture'), findsOneWidget);
   });
 }
