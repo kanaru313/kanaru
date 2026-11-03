@@ -162,17 +162,21 @@ void main() {
       expect(find.text('Remove from history'), findsOneWidget);
     });
 
-    historyTestWidgets('the song modal shows the played chip', (tester) async {
-      await insertTracks(tester, h, [song('A')]);
-      await _insert(tester, h, '/m/A.flac', _at(22));
-      await h.pump(tester, hasRoots: true);
-      goTo(tester, h, historyTrackLocation('/m/A.flac'));
-      await settleHistory(tester);
+    historyTestWidgets(
+      'the song modal has no played chip, the row shows the time',
+      (tester) async {
+        await insertTracks(tester, h, [song('A')]);
+        await _insert(tester, h, '/m/A.flac', _at(22));
+        await h.pump(tester, hasRoots: true);
+        goTo(tester, h, historyTrackLocation('/m/A.flac'));
+        await settleHistory(tester);
 
-      await _menuOfRow(tester, 0, null);
+        await _menuOfRow(tester, 0, null);
 
-      expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsOneWidget);
-    });
+        expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsNothing);
+        expect(find.text('Remove from history'), findsOneWidget);
+      },
+    );
 
     historyTestWidgets('a song gone from the library opens the Missing-play '
         'modal with Remove only', (tester) async {
@@ -188,7 +192,8 @@ void main() {
       );
       await settleModal(tester);
 
-      expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsOneWidget);
+      expect(find.text('Played Thu, Oct 22 · 9:00 AM'), findsNothing);
+      expect(find.text('Not in library'), findsWidgets);
       expect(find.text('Song history'), findsNothing);
       expect(find.text('Play next'), findsNothing);
 

@@ -12,13 +12,13 @@ const double _tileSize = 64;
 
 /// Opens the modal of a play or a Most played row whose file is not in the
 /// library: a crossed-note tile, the file name of [path], "Not in library"
-/// and the [chip] (the row's own text). Its rows are the [extras] actions
+/// and the [chip] (the row's own text; none when null). Its rows are the [extras] actions
 /// (Song history, Remove from history) and it has no footer, since nothing
 /// here can be queued. [viaKeyboard] focuses the first row.
 void openHistoryMissingPlayModal(
   BuildContext context, {
   required String path,
-  required String chip,
+  String? chip,
   required SongModalExtras extras,
   bool viaKeyboard = false,
 }) {
@@ -47,7 +47,7 @@ class _MissingPlayHeader extends StatelessWidget {
   const _MissingPlayHeader({required this.path, required this.chip});
 
   final String path;
-  final String chip;
+  final String? chip;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +77,7 @@ class _MissingPlayHeader extends StatelessWidget {
           context.l10n.playlistNotInLibrary,
           theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
         ),
-        ContextModalHeaderChip(chip),
+        if (chip case final chip?) ContextModalHeaderChip(chip),
       ],
     );
   }

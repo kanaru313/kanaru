@@ -51,23 +51,18 @@ class _HistoryTrackScreenState extends ConsumerState<HistoryTrackScreen> {
     HistoryPlayRow row, {
     required bool viaKeyboard,
   }) {
-    final chip = context.l10n.historyPlayedChip(
-      historyTrackPlayWhen(context, row.playedAt),
-    );
     final extras = historyPlayExtras(
       context: context,
       ref: ref,
       path: row.path,
       location: null,
       playId: row.id,
-      headerNote: chip,
     );
     final item = summary.track;
     if (item == null) {
       openHistoryMissingPlayModal(
         context,
         path: row.path,
-        chip: chip,
         extras: extras,
         viaKeyboard: viaKeyboard,
       );
