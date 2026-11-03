@@ -71,13 +71,52 @@ void main() {
       final adv = _byId(
         historyPageModalAdvancedSections(_l10n, _overview(2), _handlers()),
       );
-      expect(adv.keys, ['export-absolute', 'export-relative']);
+      expect(adv.keys, ['export-absolute', 'export-relative', 'clear']);
       expect(adv['export-absolute']!.subtitle, contains('Absolute'));
       expect(adv['export-relative']!.subtitle, contains('Relative'));
-      for (final a in adv.values) {
+      for (final a in [adv['export-absolute']!, adv['export-relative']!]) {
         expect(a.label, 'Export as M3U');
         expect(a.subtitle, contains('Last played first'));
       }
     },
   );
+
+  group('Clear history', () {
+    HistoryPageModalHandlers withClear() => HistoryPageModalHandlers(
+      addToPlaylist: () {},
+      openMostPlayed: () {},
+      exportAbsolute: () {},
+      exportRelative: () {},
+      clear: (_) {},
+    );
+
+    ContextModalAction clear(
+      HistoryOverview? overview,
+      HistoryPageModalHandlers h, {
+      bool clearing = false,
+    }) => _byId(
+      historyPageModalAdvancedSections(_l10n, overview, h, clearing: clearing),
+    )['clear']!;
+
+    test('is its own destructive group with a hint', () {
+      final groups = historyPageModalAdvancedSections(
+        _l10n,
+        _overview(2),
+        withClear(),
+      );
+      expect(groups, hasLength(2));
+      final row = groups.last.single;
+      expect(row.label, 'Clear history…');
+      expect(row.subtitle, 'Last hour, today, 7 days or everything');
+      expect(row.destructive, isTrue);
+    });
+
+    test('needs a recorder, a listen and no clear running', () {
+      expect(clear(_overview(2), withClear()).enabled, isTrue);
+      expect(clear(_overview(0), withClear()).enabled, isFalse);
+      expect(clear(null, withClear()).enabled, isFalse);
+      expect(clear(_overview(2), withClear(), clearing: true).enabled, isFalse);
+      expect(clear(_overview(2), _handlers()).enabled, isFalse);
+    });
+  });
 }

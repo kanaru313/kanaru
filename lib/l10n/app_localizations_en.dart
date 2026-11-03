@@ -5209,4 +5209,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyLastPlayedFirst => 'Last played first';
+
+  @override
+  String get historyClear => 'Clear history…';
+
+  @override
+  String get historyClearHint => 'Last hour, today, 7 days or everything';
+
+  @override
+  String get historyClearTitle => 'Clear history?';
+
+  @override
+  String get historyClearBody =>
+      'Listens are removed from History and Most played. The songs stay in your library. This can\'t be undone.';
+
+  @override
+  String get historyClearLastHour => 'Last hour';
+
+  @override
+  String get historyClearToday => 'Today';
+
+  @override
+  String get historyClearDays7 => 'Last 7 days';
+
+  @override
+  String get historyClearEverything => 'Everything';
+
+  @override
+  String historyCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count listens from history',
+      one: 'Cleared 1 listen from history',
+      zero: 'Nothing to clear',
+    );
+    return '$_temp0';
+  }
 }

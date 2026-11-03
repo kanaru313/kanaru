@@ -9,6 +9,8 @@ import 'settings_busy_tasks.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 
+final _noClear = ValueNotifier<bool>(false);
+
 /// Listen history rows (STAT-10): whether listens are recorded, and a
 /// button that removes every recorded listen after a confirmation. The
 /// switch is only a preference, so it works without a library; the button
@@ -63,13 +65,12 @@ class _ListenHistorySettingRowsState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final canClear =
-        ref.watch(listenRecorderProvider) != null &&
-        !ref.watch(
-          settingsBusyTasksProvider.select(
-            (s) => s.contains(SettingsTask.listenHistory),
-          ),
-        );
+    final recorder = ref.watch(listenRecorderProvider);
+    final busy = ref.watch(
+      settingsBusyTasksProvider.select(
+        (s) => s.contains(SettingsTask.listenHistory),
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,13 +90,17 @@ class _ListenHistorySettingRowsState
         SettingRow.single(
           title: l10n.listenHistoryClear,
           subtitle: l10n.settingsClearListenHistoryHint,
-          control: FilledButton.tonal(
-            style: settingButtonStyle(),
-            onPressed: canClear ? _clear : null,
-            child: Text(
-              l10n.listenHistoryClearButton,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          // Also off while a clear started elsewhere (the History modal) runs.
+          control: ValueListenableBuilder<bool>(
+            valueListenable: recorder?.clearing ?? _noClear,
+            builder: (context, clearing, _) => FilledButton.tonal(
+              style: settingButtonStyle(),
+              onPressed: recorder != null && !busy && !clearing ? _clear : null,
+              child: Text(
+                l10n.listenHistoryClearButton,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ),

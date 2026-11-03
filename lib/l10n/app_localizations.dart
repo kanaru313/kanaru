@@ -7585,6 +7585,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last played first'**
   String get historyLastPlayedFirst;
+
+  /// History modal Advanced row that opens the clear dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history…'**
+  String get historyClear;
+
+  /// Subtitle of the Clear history row
+  ///
+  /// In en, this message translates to:
+  /// **'Last hour, today, 7 days or everything'**
+  String get historyClearHint;
+
+  /// Title of the clear history dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history?'**
+  String get historyClearTitle;
+
+  /// Body of the clear history dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Listens are removed from History and Most played. The songs stay in your library. This can\'t be undone.'**
+  String get historyClearBody;
+
+  /// Clear history dialog option
+  ///
+  /// In en, this message translates to:
+  /// **'Last hour'**
+  String get historyClearLastHour;
+
+  /// Clear history dialog option: since local midnight
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get historyClearToday;
+
+  /// Clear history dialog option: today and the 6 days before
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get historyClearDays7;
+
+  /// Clear history dialog option: the whole history
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get historyClearEverything;
+
+  /// Snackbar after the History was cleared for a range
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to clear} =1{Cleared 1 listen from history} other{Cleared {count} listens from history}}'**
+  String historyCleared(int count);
 }
 
 class _AppLocalizationsDelegate

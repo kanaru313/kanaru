@@ -5207,5 +5207,46 @@
   "historyLastPlayedFirst": "Last played first",
   "@historyLastPlayedFirst": {
     "description": "Subtitle of the History modal export rows: the order of the exported songs"
+  },
+  "historyClear": "Clear history…",
+  "@historyClear": {
+    "description": "History modal Advanced row that opens the clear dialog"
+  },
+  "historyClearHint": "Last hour, today, 7 days or everything",
+  "@historyClearHint": {
+    "description": "Subtitle of the Clear history row"
+  },
+  "historyClearTitle": "Clear history?",
+  "@historyClearTitle": {
+    "description": "Title of the clear history dialog"
+  },
+  "historyClearBody": "Listens are removed from History and Most played. The songs stay in your library. This can't be undone.",
+  "@historyClearBody": {
+    "description": "Body of the clear history dialog"
+  },
+  "historyClearLastHour": "Last hour",
+  "@historyClearLastHour": {
+    "description": "Clear history dialog option"
+  },
+  "historyClearToday": "Today",
+  "@historyClearToday": {
+    "description": "Clear history dialog option: since local midnight"
+  },
+  "historyClearDays7": "Last 7 days",
+  "@historyClearDays7": {
+    "description": "Clear history dialog option: today and the 6 days before"
+  },
+  "historyClearEverything": "Everything",
+  "@historyClearEverything": {
+    "description": "Clear history dialog option: the whole history"
+  },
+  "historyCleared": "{count, plural, =0{Nothing to clear} =1{Cleared 1 listen from history} other{Cleared {count} listens from history}}",
+  "@historyCleared": {
+    "description": "Snackbar after the History was cleared for a range",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

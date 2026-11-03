@@ -1911,5 +1911,14 @@
   "historyLastPlayedFirst": "Nghe gần nhất trước",
   "@historyLastPlayedFirst": {
     "description": "Subtitle of the History modal export rows: the order of the exported songs"
-  }
+  },
+  "historyClear": "Xoá lịch sử…",
+  "historyClearHint": "Giờ qua, hôm nay, 7 ngày hoặc toàn bộ",
+  "historyClearTitle": "Xoá lịch sử?",
+  "historyClearBody": "Các lượt nghe bị xoá khỏi Lịch sử và Phát nhiều nhất. Bài hát vẫn còn trong thư viện. Không thể hoàn tác.",
+  "historyClearLastHour": "Giờ qua",
+  "historyClearToday": "Hôm nay",
+  "historyClearDays7": "7 ngày qua",
+  "historyClearEverything": "Toàn bộ",
+  "historyCleared": "{count, plural, =0{Không có gì để xoá} other{Đã xoá {count} lượt nghe khỏi lịch sử}}"
 }

@@ -12,8 +12,9 @@ final listenClockProvider = Provider<ListenClock>((ref) {
   return (now: DateTime.now, elapsed: () => stopwatch.elapsed);
 });
 
-/// The listen recorder, or `null` without a library database. Nothing in the
-/// UI reads it except the settings section; `main.dart` keeps it alive.
+/// The listen recorder, or `null` without a library database. The
+/// settings section, the History modal and the delete-undo provider read it;
+/// `main.dart` keeps it alive.
 final listenRecorderProvider = Provider<ListenRecorder?>((ref) {
   final db = ref.watch(libraryDatabaseProvider);
   if (db == null) return null;

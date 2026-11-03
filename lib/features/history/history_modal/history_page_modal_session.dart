@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -7,6 +8,8 @@ import '../../../core/database/history_queries.dart';
 import '../../../core/database/library_database.dart' show LibraryDatabase;
 import '../../../core/m3u/m3u_write.dart' show M3uExportEntry, M3uPathStyle;
 import '../../../core/player/track.dart';
+import '../../../core/stats/listen_clear_scope.dart';
+import '../../../core/stats/listen_recorder.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/m3u/m3u_export_flow.dart';
 import '../../../shared/m3u/m3u_save_picker.dart';
@@ -17,6 +20,7 @@ import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../../../shared/widgets/queue_actions_menu.dart';
 import '../history_routes.dart';
+import 'history_clear_dialog.dart';
 import 'history_page_modal_actions.dart';
 
 final _log = Logger('history');
@@ -37,6 +41,8 @@ class HistoryPageModalSession {
     required this.messenger,
     required this.rootNavigator,
     required this.save,
+    required this.now,
+    this.recorder,
   });
 
   final TrackMenuRunner runner;
@@ -46,6 +52,20 @@ class HistoryPageModalSession {
   final ScaffoldMessengerState messenger;
   final NavigatorState? rootNavigator;
   final M3uSavePicker save;
+
+  /// The page's clock; the Clear dialog reads it once, when it opens.
+  final DateTime Function() now;
+
+  /// Runs the Clear delete; `null` without a library.
+  final ListenRecorder? recorder;
+
+  /// True while the Clear dialog is open above the modal: a second tap
+  /// meanwhile must not stack another one.
+  bool _dialogOpen = false;
+
+  /// Whether a clear (from here or Settings) is queued or running.
+  ValueListenable<bool> get clearing => recorder?.clearing ?? _idle;
+  static final _idle = ValueNotifier<bool>(false);
 
   /// Names the songs in snackbars, the picker and the export file.
   String get label => l10n.navHistory;
@@ -117,10 +137,52 @@ class HistoryPageModalSession {
     );
   }
 
-  /// The callbacks the rows call.
+  /// Asks which part to clear above the modal (Cancel comes back to it),
+  /// closes the modal, clears, and says how many listens went. [plays] is
+  /// the size of the whole history, for the Everything option.
+  Future<void> clear(ContextModalNav nav, int plays) async {
+    final navigator = rootNavigator;
+    final clearer = recorder;
+    if (clearer == null ||
+        navigator == null ||
+        !navigator.mounted ||
+        _dialogOpen ||
+        clearer.clearing.value) {
+      return;
+    }
+    _dialogOpen = true;
+    final ClearBounds? bounds;
+    try {
+      bounds = await showHistoryClearDialog(
+        navigator.context,
+        db: db,
+        now: now(),
+        everythingPlays: plays,
+      );
+    } finally {
+      _dialogOpen = false;
+    }
+    if (bounds == null) return;
+    nav.close();
+    final removed = await clearer.clearHistory(
+      from: bounds.from,
+      to: bounds.to,
+    );
+    if (!messenger.mounted) return;
+    messenger.showAppSnackBar(
+      removed == null ? AppSnackBarKind.error : AppSnackBarKind.success,
+      removed == null
+          ? l10n.listenHistoryClearFailed
+          : l10n.historyCleared(removed),
+    );
+  }
+
+  /// The callbacks the rows call. [plays] is the number of listens now.
   HistoryPageModalHandlers handlers({
+    int plays = 0,
     void Function(ContextModalNav nav)? openAdvanced,
   }) => HistoryPageModalHandlers(
+    clear: recorder == null ? null : (nav) => unawaited(clear(nav, plays)),
     openAdvanced: openAdvanced,
     addToPlaylist: () => unawaited(addToPlaylist()),
     openMostPlayed: () => runner.goTo(mostPlayedPath),

@@ -15,6 +15,7 @@ class HistoryPageModalHandlers {
     required this.openMostPlayed,
     required this.exportAbsolute,
     required this.exportRelative,
+    this.clear,
     this.openAdvanced,
   });
 
@@ -22,6 +23,10 @@ class HistoryPageModalHandlers {
   final VoidCallback openMostPlayed;
   final VoidCallback exportAbsolute;
   final VoidCallback exportRelative;
+
+  /// Asks which part to clear (above the modal), then closes it; `null`
+  /// without a recorder to run the delete.
+  final void Function(ContextModalNav nav)? clear;
   final void Function(ContextModalNav nav)? openAdvanced;
 }
 
@@ -60,13 +65,15 @@ List<List<ContextModalAction>> historyPageModalSections(
   ],
 ];
 
-/// The rows of the Advanced page: the two M3U exports (absolute and relative
-/// paths), last played first. A group list so more groups can follow.
+/// The rows of the Advanced page in two groups: the two M3U exports
+/// (absolute and relative paths, last played first); Clear history. Clear
+/// needs a recorder, a listen, and no clear [clearing] already.
 List<List<ContextModalAction>> historyPageModalAdvancedSections(
   AppLocalizations l10n,
   HistoryOverview? overview,
-  HistoryPageModalHandlers h,
-) {
+  HistoryPageModalHandlers h, {
+  bool clearing = false,
+}) {
   final order = l10n.historyLastPlayedFirst;
   return [
     [
@@ -85,6 +92,17 @@ List<List<ContextModalAction>> historyPageModalAdvancedSections(
         subtitle: joinRowDetails([l10n.playlistExportRelativeHint, order]),
         enabled: _hasPlays(overview),
         onTap: contextModalCloseThen(h.exportRelative),
+      ),
+    ],
+    [
+      ContextModalAction(
+        id: 'clear',
+        icon: AppIcons.clearAll,
+        label: l10n.historyClear,
+        subtitle: l10n.historyClearHint,
+        destructive: true,
+        enabled: h.clear != null && !clearing && _hasPlays(overview),
+        onTap: h.clear,
       ),
     ],
   ];

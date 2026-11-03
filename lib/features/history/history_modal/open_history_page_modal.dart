@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
+import '../../../core/stats/listen_recorder_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/m3u/m3u_save_picker.dart';
 import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/context_modal/context_modal_route.dart';
+import '../history_clock.dart';
 import 'history_page_modal_page.dart';
 import 'history_page_modal_session.dart';
 
@@ -30,6 +32,8 @@ void openHistoryPageModal(
     messenger: ScaffoldMessenger.of(context),
     rootNavigator: Navigator.maybeOf(context, rootNavigator: true),
     save: ref.read(m3uSavePickerProvider),
+    now: ref.read(historyNowProvider),
+    recorder: ref.read(listenRecorderProvider),
   );
   unawaited(
     showContextModal<void>(

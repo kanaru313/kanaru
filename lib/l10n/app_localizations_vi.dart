@@ -4899,4 +4899,40 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get historyLastPlayedFirst => 'Nghe gần nhất trước';
+
+  @override
+  String get historyClear => 'Xoá lịch sử…';
+
+  @override
+  String get historyClearHint => 'Giờ qua, hôm nay, 7 ngày hoặc toàn bộ';
+
+  @override
+  String get historyClearTitle => 'Xoá lịch sử?';
+
+  @override
+  String get historyClearBody =>
+      'Các lượt nghe bị xoá khỏi Lịch sử và Phát nhiều nhất. Bài hát vẫn còn trong thư viện. Không thể hoàn tác.';
+
+  @override
+  String get historyClearLastHour => 'Giờ qua';
+
+  @override
+  String get historyClearToday => 'Hôm nay';
+
+  @override
+  String get historyClearDays7 => '7 ngày qua';
+
+  @override
+  String get historyClearEverything => 'Toàn bộ';
+
+  @override
+  String historyCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count lượt nghe khỏi lịch sử',
+      zero: 'Không có gì để xoá',
+    );
+    return '$_temp0';
+  }
 }

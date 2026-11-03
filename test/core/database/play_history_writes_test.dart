@@ -116,4 +116,88 @@ void main() {
     await settle();
     expect(counts.last, 0);
   });
+
+  group('clearing a range', () {
+    Future<void> seed(String path, List<int> at) async {
+      for (final t in at) {
+        await db.insertLibraryPlay(path: path, playedAt: t, listenedMs: 1);
+      }
+    }
+
+    /// `play_stats` against a `GROUP BY` over `plays`.
+    Future<void> expectStatsMatchPlays() async {
+      Future<List<Map<String, Object?>>> read(String sql) async => [
+        for (final r in await db.customSelect(sql).get()) r.data,
+      ];
+      expect(
+        await read(
+          'SELECT path, play_count, first_played_at, last_played_at '
+          'FROM play_stats ORDER BY path',
+        ),
+        await read(
+          'SELECT path, count(*) AS play_count, min(played_at) AS '
+          'first_played_at, max(played_at) AS last_played_at '
+          'FROM plays GROUP BY path ORDER BY path',
+        ),
+      );
+    }
+
+    test(
+      'removes only the plays in [from, to) and keeps stats exact',
+      () async {
+        // a: before, on from, inside, on to (kept), after, future-dated.
+        await seed('/music/a.flac', [50, 100, 150, 200, 250, 9000000000000]);
+        await seed('/music/b.flac', [120, 130]);
+
+        expect(await db.clearPlayHistory(from: 100, to: 200), 4);
+
+        expect((await allPlays()).map((p) => p.playedAt).toList()..sort(), [
+          50,
+          200,
+          250,
+          9000000000000,
+        ]);
+        final stat = (await allStats()).single;
+        expect(stat.path, '/music/a.flac');
+        expect(stat.playCount, 4);
+        expect(stat.firstPlayedAt, 50);
+        expect(stat.lastPlayedAt, 9000000000000);
+        await expectStatsMatchPlays();
+      },
+    );
+
+    test('a path whose plays all lie inside loses its stats row', () async {
+      await seed('/music/b.flac', [120, 130]);
+      await seed('/music/a.flac', [10, 500]);
+
+      expect(await db.clearPlayHistory(from: 100, to: 200), 2);
+
+      expect((await allStats()).map((s) => s.path), ['/music/a.flac']);
+      await expectStatsMatchPlays();
+    });
+
+    test('an open side reaches the end of time', () async {
+      await seed('/music/a.flac', [10, 100, 500]);
+      expect(await db.clearPlayHistory(from: 100), 2);
+      await seed('/music/a.flac', [600]);
+      expect(await db.clearPlayHistory(to: 550), 1);
+      expect((await allPlays()).single.playedAt, 600);
+      await expectStatsMatchPlays();
+    });
+
+    test('no bounds removes every play and empties the stats', () async {
+      await seed('/music/a.flac', [10, 100]);
+      await seed('/music/b.flac', [5]);
+      expect(await db.clearPlayHistory(), 3);
+      expect(await allPlays(), isEmpty);
+      expect(await allStats(), isEmpty);
+    });
+
+    test('an empty range removes nothing', () async {
+      await seed('/music/a.flac', [10, 100]);
+      expect(await db.clearPlayHistory(from: 20, to: 90), 0);
+      expect(await allPlays(), hasLength(2));
+      await expectStatsMatchPlays();
+    });
+  });
 }
