@@ -35,6 +35,12 @@ CatalogFontItem testFont(String id, Uint8List zip, {String? sha}) => CatalogFont
 /// same family name.
 Uint8List buildFont(String family, {int nameId = 1, int pad = 0}) {
   void u16(BytesBuilder b, int v) => b.add([v >> 8, v & 0xFF]);
+  void u32(BytesBuilder b, int v) => b.add([
+        (v >> 24) & 0xFF,
+        (v >> 16) & 0xFF,
+        (v >> 8) & 0xFF,
+        v & 0xFF,
+      ]);
 
   final str = <int>[for (final u in family.codeUnits) ...[u >> 8, u & 0xFF]];
 
@@ -59,8 +65,8 @@ Uint8List buildFont(String family, {int nameId = 1, int pad = 0}) {
   u16(out, 0); // rangeShift
   out.add('name'.codeUnits);
   out.add([0, 0, 0, 0]); // checksum
-  out.add([0, 0, 0, 28]); // offset = 12 + 16
-  out.add([0, 0, 0, tableBytes.length]);
+  u32(out, 28); // offset = 12 + 16
+  u32(out, tableBytes.length);
   out.add(tableBytes);
   out.add(List<int>.filled(pad, 0));
   return out.toBytes();

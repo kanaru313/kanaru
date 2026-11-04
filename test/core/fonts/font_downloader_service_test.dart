@@ -76,6 +76,18 @@ void main() {
     });
   }
 
+  test('cleans up and deletes catalog font directory when engine rejects font', () async {
+    final zip = createMockZip({'Bad.ttf': 'x'});
+    registrar.fail = true;
+    await expectLater(
+      serviceFor(zip).downloadAndInstall(font: testFont('t', zip)),
+      throwsA(isA<StateError>()),
+    );
+    expect(storage.fontDirectoryForCatalog('t').existsSync(), isFalse);
+    expectNoStaging('t');
+    expect(storage.isCatalogFontInstalled('t'), isFalse);
+  });
+
   test('a failed update keeps the previous install untouched', () async {
     final previous = storage.fontDirectoryForCatalog('t')..createSync(recursive: true);
     File('${previous.path}/Old.ttf').writeAsStringSync('old');

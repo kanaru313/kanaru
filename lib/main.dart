@@ -60,7 +60,7 @@ Future<void> main() async {
   }
 
   // Fonts storage and dynamic loader. Stale downloads cleaned up at startup.
-  final fontStorage = FontStorageService();
+  final fontStorage = FontStorageService(environment: Platform.environment);
   final fontLoader = DynamicFontLoader();
   fontStorage.cleanupStaleStaging();
 
