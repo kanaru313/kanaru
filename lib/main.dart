@@ -11,6 +11,10 @@ import 'package:window_manager/window_manager.dart';
 import 'app/app.dart';
 import 'app/shell/window/desktop_window.dart';
 import 'core/database/library_startup.dart';
+import 'core/fonts/dynamic_font_loader.dart';
+import 'core/fonts/font_bootstrap.dart';
+import 'core/fonts/font_providers.dart';
+import 'core/fonts/font_storage_service.dart';
 import 'core/indexer/library_startup_tasks.dart';
 import 'core/logging/app_logging.dart';
 import 'core/lyrics_translation/translation_service_resolution.dart';
@@ -55,10 +59,27 @@ Future<void> main() async {
     log.severe('Audio engine failed to initialise', error, stack);
   }
 
+  // Fonts storage and dynamic loader. Stale downloads cleaned up at startup.
+  final fontStorage = FontStorageService();
+  final fontLoader = DynamicFontLoader();
+  fontStorage.cleanupStaleStaging();
+
   // Settings come first: the title bar choice is applied while the window is
   // set up. Loading never throws; a missing or broken file means defaults.
   final settingsFile = settingsFileFor(Platform.environment);
-  final settings = settingsFile?.load() ?? const AppSettings();
+  var settings = settingsFile?.load() ?? const AppSettings();
+
+  final safeFontId = await resolveStartupFontId(
+    fontId: settings.display.fontId,
+    storage: fontStorage,
+    loader: fontLoader,
+  );
+  if (safeFontId != settings.display.fontId) {
+    settings = settings.copyWith(
+      display: settings.display.copyWith(fontId: safeFontId),
+    );
+    await settingsFile?.save(settings);
+  }
 
   // A window that cannot be set up falls back to the system title bar.
   var customTitleBar = false;
@@ -82,6 +103,8 @@ Future<void> main() async {
   // they reach the root zone, where PlatformDispatcher.onError logs them.
   final container = ProviderContainer(
     overrides: [
+      fontStorageServiceProvider.overrideWithValue(fontStorage),
+      dynamicFontLoaderProvider.overrideWithValue(fontLoader),
       initialSettingsProvider.overrideWithValue(settings),
       settingsFileProvider.overrideWithValue(settingsFile),
       searchPrefsFileProvider.overrideWithValue(
@@ -133,9 +156,10 @@ Future<void> main() async {
     UncontrolledProviderScope(container: container, child: const KanaruApp()),
   );
   // After the first frame, so the scan never delays the window appearing.
-  WidgetsBinding.instance.addPostFrameCallback(
-    (_) => unawaited(_runStartupTasks(container)),
-  );
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    fontLoader.registerInstalledLicenses(fontStorage);
+    unawaited(_runStartupTasks(container));
+  });
   if (windowReady) await _installExitHook(container, log);
 }
 

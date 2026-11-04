@@ -1,3 +1,5 @@
+import '../fonts/font_catalog_manifest.dart';
+
 /// A font the app can use for all its text. Built-in now; fonts downloaded
 /// later become more entries (`bundled: false`) loaded with `FontLoader`.
 class AppFont {
@@ -47,8 +49,38 @@ const builtInAppFonts = <AppFont>[
   ),
 ];
 
+const customFontIdPrefix = 'custom_';
+
+bool isCustomFontId(String id) => id.startsWith(customFontIdPrefix);
+
+/// Human readable fallback for a custom id, e.g. `custom_my_font_1a2b3c4d`
+/// becomes `my font`. The real label comes from `custom_fonts.json`
+/// (see Phase 3 §5); this is only used when that entry is missing.
+String customFontFallbackLabel(String id) {
+  final body = id.substring(customFontIdPrefix.length);
+  return body
+      .replaceFirst(RegExp(r'_[0-9a-f]{8}$'), '')
+      .replaceAll('_', ' ')
+      .trim();
+}
+
 /// The font with [id]; an unknown id gives the default font (Nunito).
-AppFont appFontFor(String id) => builtInAppFonts.firstWhere(
-  (f) => f.id == id,
-  orElse: () => builtInAppFonts.firstWhere((f) => f.id == defaultFontId),
-);
+AppFont appFontFor(String id) {
+  for (final f in builtInAppFonts) {
+    if (f.id == id) return f;
+  }
+  for (final c in catalogFontsManifest) {
+    if (c.id == id) {
+      return AppFont(id: c.id, label: c.label, family: c.family, bundled: false);
+    }
+  }
+  if (isCustomFontId(id)) {
+    return AppFont(
+      id: id,
+      label: customFontFallbackLabel(id),
+      family: id,
+      bundled: false,
+    );
+  }
+  return builtInAppFonts.firstWhere((f) => f.id == defaultFontId);
+}
