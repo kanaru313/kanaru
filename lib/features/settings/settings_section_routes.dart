@@ -2,12 +2,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../shared/settings_routes.dart';
 import 'about_settings_page.dart';
+import 'advanced_settings_page.dart';
 import 'appearance_settings_page.dart';
 import 'data_storage_settings_page.dart';
 import 'library_settings_page.dart';
 import 'playback_settings_page.dart';
 
-/// The five settings pages below `/settings`, as relative routes (go_router
+/// The six settings pages below `/settings`, as relative routes (go_router
 /// rejects a leading `/` on a nested route); joined they equal the
 /// `settings*Route` constants, which a test keeps equal.
 ///
@@ -33,6 +34,10 @@ List<RouteBase> settingsSectionRoutes({
     path: _relative(settingsDataRoute),
     builder: (context, state) =>
         DataStorageSettingsPage(focus: _focusOf(state)),
+  ),
+  GoRoute(
+    path: _relative(settingsAdvancedRoute),
+    builder: (context, state) => AdvancedSettingsPage(focus: _focusOf(state)),
   ),
   GoRoute(
     path: _relative(settingsAboutRoute),

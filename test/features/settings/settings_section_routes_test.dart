@@ -20,6 +20,7 @@ void main() {
       settingsPlaybackRoute,
       settingsLibraryRoute,
       settingsDataRoute,
+      settingsAdvancedRoute,
       settingsAboutRoute,
     ]);
   });
