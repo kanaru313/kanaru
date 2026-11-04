@@ -9,6 +9,7 @@ class ContextModalNav {
     required this.push,
     required this.pop,
     required this.close,
+    this.isKeyboardMode,
   });
 
   /// Opens [page] on top of the current one.
@@ -19,4 +20,10 @@ class ContextModalNav {
 
   /// Closes the modal, completing `showContextModal` with [result].
   final void Function([Object? result]) close;
+
+  final bool Function()? isKeyboardMode;
+
+  /// True when the modal is in keyboard mode (opened via keyboard or a
+  /// navigation key was used inside).
+  bool get viaKeyboard => isKeyboardMode?.call() ?? false;
 }

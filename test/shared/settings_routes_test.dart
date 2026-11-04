@@ -9,6 +9,7 @@ void main() {
     expect(settingsPlaybackRoute, '/settings/playback');
     expect(settingsLibraryRoute, '/settings/library');
     expect(settingsDataRoute, '/settings/data');
+    expect(settingsAdvancedRoute, '/settings/advanced');
     expect(settingsAboutRoute, '/settings/about');
   });
 
@@ -39,6 +40,14 @@ void main() {
     expect(
       settingsFocusLocation(SettingsAnchor.libraryFolders),
       '/settings/library?focus=folders',
+    );
+    expect(
+      settingsFocusLocation(SettingsAnchor.advancedAudio),
+      '/settings/advanced?focus=advanced-audio',
+    );
+    expect(
+      settingsFocusLocation(SettingsAnchor.advancedDanger),
+      '/settings/advanced?focus=advanced-danger',
     );
   });
 

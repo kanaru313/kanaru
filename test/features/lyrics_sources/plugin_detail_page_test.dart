@@ -7,6 +7,7 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
@@ -290,11 +291,17 @@ void main() {
       );
       expect(editable().obscureText, isTrue);
       expect(find.text(en.pluginSecretNote), findsOneWidget);
+      // While empty and unsaved, no suffix icon is shown.
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Cookie'),
         's3cret',
       );
+      await tester.pump();
+      // While typing, the reveal button appears and clear button stays hidden.
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
       await tester.tap(find.byTooltip(en.pluginSecretShow));
       await tester.pump();
       expect(editable().obscureText, isFalse);
@@ -308,6 +315,10 @@ void main() {
       // The value is not kept in the box; the note says it is saved.
       expect(find.text('s3cret'), findsNothing);
       expect(find.text(en.pluginSecretSaved), findsOneWidget);
+      // Once saved and cleared, reveal is hidden and clear button appears.
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      expect(find.byTooltip(en.pluginSecretClear), findsOneWidget);
+      expect(find.text('••••••••'), findsOneWidget);
     });
 
     testWidgets('a saved secret says so and can be removed', (tester) async {
@@ -315,10 +326,30 @@ void main() {
       await open(tester, withConfig, plugins: plugins);
 
       expect(find.text(en.pluginSecretSaved), findsOneWidget);
+      expect(find.text('••••••••'), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretClear), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      final field = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Cookie'),
+      );
+      expect(
+        field.decoration?.floatingLabelBehavior,
+        FloatingLabelBehavior.always,
+      );
+
       await tester.tap(find.byTooltip(en.pluginSecretClear));
       await tester.pumpAndSettle();
       expect(plugins.configWrites, [(idA, 'cookie', '')]);
       expect(find.text(en.pluginSecretNote), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      final cleared = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Cookie'),
+      );
+      expect(
+        cleared.decoration?.floatingLabelBehavior,
+        FloatingLabelBehavior.auto,
+      );
     });
 
     testWidgets('without a system keyring the fallback warning replaces it', (
@@ -541,6 +572,31 @@ void main() {
 
       expect(plugins.uninstalls, [idA]);
       // Back on the sources list (its Get more plugins row), with the note.
+      expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
+      expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
+    });
+
+    testWidgets('uninstalls immediately without dialog when confirm is false', (
+      tester,
+    ) async {
+      final plugins = FakePlugins();
+      await pumpSources(
+        tester,
+        records: [plain],
+        plugins: plugins,
+        stats: stats,
+        location: lyricsPluginRoute(idA),
+        overrides: [
+          initialSettingsProvider.overrideWithValue(
+            const AppSettings(confirmPluginUninstall: false),
+          ),
+        ],
+      );
+      await tester.tap(find.byTooltip(en.pluginUninstall));
+      await tester.pumpAndSettle();
+
+      expect(find.text(en.pluginUninstallTitle('Alpha')), findsNothing);
+      expect(plugins.uninstalls, [idA]);
       expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
       expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
     });

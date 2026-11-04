@@ -57,6 +57,7 @@ class _ContextModalShellState extends State<ContextModalShell> {
     push: _push,
     pop: _pop,
     close: _close,
+    isKeyboardMode: () => _keyboardMode,
   );
 
   @override

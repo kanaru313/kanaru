@@ -18,7 +18,7 @@ class SettingsSection extends StatelessWidget {
     final title = this.title;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (title == null)
           const SizedBox(height: 8)
@@ -27,8 +27,9 @@ class SettingsSection extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               title,
-              style: theme.textTheme.titleSmall?.copyWith(
+              style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

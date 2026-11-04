@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../shared/icons/app_icons.dart';
+import 'setting_card.dart';
 
 /// One entry of the Settings root: a round icon, a title, a short static
-/// description and a chevron. It never navigates; the caller passes [onTap].
+/// description and a chevron, wrapped in a [SettingCard]. It never navigates;
+/// the caller passes [onTap].
 class SettingsCategoryTile extends StatelessWidget {
   const SettingsCategoryTile({
     super.key,
@@ -22,11 +24,10 @@ class SettingsCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    return SettingCard(
       child: ListTile(
         minTileHeight: 72,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         leading: CircleAvatar(
           radius: 20,
           backgroundColor: scheme.primaryContainer,

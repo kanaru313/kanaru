@@ -9,7 +9,7 @@ import 'package:kanaru/core/database/play_history_writes.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/stats/listen_recorder.dart';
 import 'package:kanaru/core/stats/listen_recorder_provider.dart';
-import 'package:kanaru/features/settings/listen_history_setting_rows.dart';
+import 'package:kanaru/features/settings/danger_zone_setting_rows.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -43,19 +43,21 @@ void main() {
     matching: find.byType(FilledButton),
   );
 
-  Future<void> openSettings(WidgetTester tester, LibraryHarness h) async {
+  Future<void> openSettings(
+    WidgetTester tester,
+    LibraryHarness h, {
+    String page = 'Advanced',
+  }) async {
     await h.pump(tester);
     // Tall, so every row on the page is on screen.
     tester.view.physicalSize = const Size(1280, 3000);
     await tester.tap(find.byTooltip('Settings'));
     await settleIo(tester, h);
-    await openSettingsPage(
-      tester,
-      'Playback',
-      settle: () => settleIo(tester, h),
-    );
-    await tester.ensureVisible(clearButton);
-    await tester.pumpAndSettle();
+    await openSettingsPage(tester, page, settle: () => settleIo(tester, h));
+    if (page == 'Advanced') {
+      await tester.ensureVisible(clearButton);
+      await tester.pumpAndSettle();
+    }
   }
 
   /// Two plays in the harness database, as if two listens were recorded.
@@ -108,7 +110,7 @@ void main() {
 
   testWidgets('the switch shows and changes the setting', (tester) async {
     final h = LibraryHarness(overrides: [_onboarded]);
-    await openSettings(tester, h);
+    await openSettings(tester, h, page: 'Playback');
     expect(find.text('Playback'), findsWidgets);
     expect(h.container.read(settingsProvider).recordListenHistory, isTrue);
     expect(tester.widget<Switch>(recordSwitch).value, isTrue);
@@ -126,11 +128,15 @@ void main() {
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
     await openSettingsPage(tester, 'Playback');
+    expect(tester.widget<Switch>(recordSwitch).onChanged, isNotNull);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    await openSettingsPage(tester, 'Advanced');
     await tester.ensureVisible(clearButton);
     await tester.pumpAndSettle();
 
     expect(tester.widget<FilledButton>(clearButton).onPressed, isNull);
-    expect(tester.widget<Switch>(recordSwitch).onChanged, isNotNull);
   });
 
   testWidgets('cancelling keeps the history', (tester) async {
@@ -273,7 +279,7 @@ void main() {
               body: ValueListenableBuilder<bool>(
                 valueListenable: visible,
                 builder: (_, show, _) =>
-                    show ? const ListenHistorySettingRows() : const SizedBox(),
+                    show ? const DangerZoneSettingRows() : const SizedBox(),
               ),
             ),
           ),

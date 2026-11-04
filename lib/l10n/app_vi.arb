@@ -50,9 +50,11 @@
   "playlistAddedSkippedSuffix": ", bỏ qua {count} bài",
   "playlistAddedRemovedSuffix": ", đã xoá {count} bản cũ",
   "alreadyInPlaylistTitle": "Đã có trong playlist",
-  "alreadyInPlaylistOne": "{songs, plural, =1{Bài này đã có trong playlist.} other{Một số trong {songs} bài đã có trong playlist này.}}",
+  "alreadyInPlaylistOneAll": "{songs, plural, =1{Bài này đã có trong playlist “{name}”.} other{Cả {songs} bài hát đều đã có trong playlist “{name}”.}}",
+  "alreadyInPlaylistOneSome": "{held} trong số {songs} bài hát đã có trong playlist “{name}”.",
   "alreadyInPlaylistMany": "{songs, plural, =1{Bài này đã có trong {count} playlist. Lựa chọn của bạn áp dụng cho tất cả.} other{Một số trong {songs} bài đã có trong {count} playlist. Lựa chọn của bạn áp dụng cho tất cả.}}",
-  "alreadyInPlaylistRow": "{held}/{songs} bài",
+  "alreadyInPlaylistRowAll": "{count, plural, =1{Đã có} other{Cả {count} bài đã có}}",
+  "alreadyInPlaylistRow": "{held}/{songs} bài đã có",
   "alreadyInPlaylistReplace": "Thêm tất cả và xoá các bản cũ",
   "alreadyInPlaylistReplaceHint": "Các bài trùng được chuyển xuống cuối",
   "alreadyInPlaylistMissing": "Chỉ thêm các bài còn thiếu",
@@ -380,6 +382,8 @@
   "settingsClearCoverCacheButton": "Xoá",
   "settingsPreferEmbeddedLyrics": "Ưu tiên lời nhúng trong file",
   "settingsPreferEmbeddedLyricsHint": "Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.",
+  "settingsConfirmPluginUninstall": "Xác nhận trước khi gỡ plugin",
+  "settingsConfirmPluginUninstallHint": "Hiển thị chi tiết những gì sẽ bị xóa và giữ lại trước khi gỡ plugin.",
   "settingsGapless": "Phát liền mạch (gapless)",
   "settingsGaplessHint": "Không có khoảng lặng giữa các bài nối tiếp nhau, như trong một album.",
   "settingsCrossfade": "Chuyển bài mờ dần (crossfade)",
@@ -407,17 +411,31 @@
   "settingsPlaybackDescription": "Chuyển bài, âm lượng, lời bài hát, dịch",
   "settingsLibraryDescription": "Thư mục nhạc, quét, nhóm album",
   "settingsPluginsDescription": "Tải và cài plugin từ repository hoặc file",
-  "settingsDataStorageDescription": "Sao lưu, bộ nhớ đệm, nhật ký",
+  "settingsDataStorageDescription": "Sao lưu, bộ nhớ đệm",
+  "settingsAdvanced": "Nâng cao",
+  "settingsAdvancedDescription": "Bộ phát âm thanh, quyền riêng tư & mạng, chẩn đoán, vùng nguy hiểm",
   "settingsAboutDescription": "Phiên bản, giấy phép, mã nguồn",
   "settingsGroupTheme": "Chủ đề",
   "settingsGroupText": "Chữ",
   "settingsGroupLayout": "Bố cục",
+  "settingsGroupOverview": "Tổng quan",
   "settingsGroupFolders": "Thư mục",
   "settingsGroupScanning": "Quét",
   "settingsGroupOrganization": "Sắp xếp",
   "settingsGroupTranslation": "Dịch",
   "settingsGroupCaches": "Bộ nhớ đệm",
   "settingsGroupLogs": "Nhật ký",
+  "settingsGroupAudioEngine": "Bộ phát âm thanh",
+  "settingsGroupPrivacyNetwork": "Quyền riêng tư & mạng",
+  "settingsGroupDiagnostics": "Chẩn đoán",
+  "settingsGroupDangerZone": "Vùng nguy hiểm",
+  "settingsResetAllTitle": "Đặt lại toàn bộ cài đặt",
+  "settingsResetAllHint": "Khôi phục toàn bộ tùy chọn về giá trị mặc định",
+  "settingsResetAllButton": "Đặt lại",
+  "settingsResetAllConfirmTitle": "Đặt lại toàn bộ cài đặt?",
+  "settingsResetAllConfirmBody": "Thao tác này sẽ khôi phục tất cả cài đặt về mặc định. Thư viện bài hát, playlist và cấu hình tiện ích (plugin) sẽ không bị xóa.",
+  "settingsResetAllSuccess": "Toàn bộ cài đặt đã được đặt về mặc định",
+  "settingsResetAllFailed": "Không thể đặt lại cài đặt",
   "settingsLyrics": "Lời bài hát",
   "settingsBackupRestore": "Sao lưu & khôi phục",
   "settingsBackupRestoreRow": "Sao lưu và khôi phục dữ liệu",
@@ -844,6 +862,41 @@
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
   },
+  "favoritesClear": "Xoá hết trong Yêu thích",
+  "@favoritesClear": {
+    "description": "Row on the Advanced page of the Favorites modal that clears every liked song"
+  },
+  "favoritesClearHint": "Bỏ tất cả bài hát khỏi Yêu thích",
+  "@favoritesClearHint": {
+    "description": "Subtitle of the Clear all favorites row"
+  },
+  "favoritesClearTitle": "Xoá tất cả bài hát yêu thích?",
+  "@favoritesClearTitle": {
+    "description": "Title of the dialog asking whether to clear all favorites"
+  },
+  "favoritesClearBody": "{count, plural, other{Tất cả {count} bài hát sẽ bị bỏ khỏi Yêu thích.}} Bài hát vẫn còn trong thư viện.",
+  "@favoritesClearBody": {
+    "description": "Body of the dialog asking whether to clear all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesClearConfirm": "Xoá hết",
+  "@favoritesClearConfirm": {
+    "description": "Confirm button on the dialog asking whether to clear all favorites"
+  },
+  "favoritesCleared": "{count, plural, =0{Không có gì để xoá} other{Đã xoá {count} bài hát khỏi Yêu thích}}",
+  "@favoritesCleared": {
+    "description": "Snackbar after clearing all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesCopyDefaultName": "Yêu thích ({date})",
   "playlistM3uImport": "Nhập M3U…",
   "@playlistM3uImport": {
     "description": "Button on the playlists page that imports an M3U playlist file"
@@ -2009,5 +2062,24 @@
   "pluginsNeedConfigTitleTwo": "{first} và {second} cần được cấu hình",
   "pluginsNeedConfigTitleMany": "{first}, {second} và {more, plural, other{{more} plugin khác}} cần được cấu hình",
   "pluginOpenConfig": "Mở cấu hình",
-  "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy."
+  "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy.",
+  "settingsAppearanceFontsTitle": "Phông chữ",
+  "settingsAppearanceFontsSubtitle": "Ký tự CJK và biểu tượng cảm xúc (emoji) sẽ dùng phông chữ hệ thống.",
+  "customFontImportTooltip": "Nhập phông chữ tùy chỉnh (.ttf, .otf)",
+  "customFontDisclaimerTitle": "Nhập phông chữ tùy chỉnh",
+  "customFontDisclaimerBody": "Bạn đang nhập tệp phông chữ từ thiết bị. Vui lòng đảm bảo bạn có giấy phép hoặc quyền hợp pháp để sử dụng phông chữ này. Kanaru không phân phối hay chịu trách nhiệm về các tệp phông chữ do người dùng tự nhập.",
+  "customFontDisclaimerConfirm": "Tôi hiểu & Nhập",
+  "fontDialogCancel": "Hủy",
+  "customFontImportFailed": "Không thể nhập tệp phông chữ. Vui lòng kiểm tra tệp có đúng định dạng TrueType hoặc OpenType hợp lệ.",
+  "downloadFontTooltip": "Tải phông chữ ({size})",
+  "fontDownloadFailed": "Tải phông chữ {fontName} thất bại",
+  "fontLoadFailed": "Không thể nạp phông chữ {fontName}",
+  "deleteFontTooltip": "Xóa phông chữ",
+  "selectedFontSemantics": "Phông chữ đang chọn",
+  "deleteCustomFontTitle": "Xóa phông chữ?",
+  "deleteCustomFontBody": "\"{fontName}\" sẽ bị xóa khỏi Kanaru. Tệp gốc trên thiết bị của bạn không bị ảnh hưởng.",
+  "deleteCustomFontConfirm": "Xóa",
+  "settingsFontGroupBuiltIn": "Phông chữ có sẵn",
+  "settingsFontGroupCustom": "Phông chữ tùy chỉnh",
+  "settingsFontGroupCatalog": "Kho phông chữ trực tuyến"
 }

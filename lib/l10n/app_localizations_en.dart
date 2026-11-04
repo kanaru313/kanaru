@@ -217,12 +217,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyInPlaylistTitle => 'Already in playlist';
 
   @override
-  String alreadyInPlaylistOne(int songs) {
+  String alreadyInPlaylistOneAll(int songs, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       songs,
       locale: localeName,
-      other: 'Some of the $songs songs are already in this playlist.',
-      one: 'This song is already in this playlist.',
+      other: 'All $songs songs are already in “$name”.',
+      one: 'This song is already in “$name”.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistOneSome(int held, int songs, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      held,
+      locale: localeName,
+      other: '$held of the $songs songs are already in “$name”.',
+      one: '1 of the $songs songs is already in “$name”.',
     );
     return '$_temp0';
   }
@@ -241,8 +252,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String alreadyInPlaylistRowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'All $count already in',
+      one: 'Already in',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String alreadyInPlaylistRow(int held, int songs) {
-    return '$held of $songs';
+    return '$held of $songs already in';
   }
 
   @override
@@ -1527,6 +1549,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use lyrics stored in the song file before lyric files next to it.';
 
   @override
+  String get settingsConfirmPluginUninstall =>
+      'Confirm before uninstalling plugins';
+
+  @override
+  String get settingsConfirmPluginUninstallHint =>
+      'Show what will be deleted and kept before removing a plugin.';
+
+  @override
   String get settingsGapless => 'Gapless playback';
 
   @override
@@ -1619,10 +1649,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'Get and install plugins from a repository or a file';
 
   @override
-  String get settingsDataStorageDescription => 'Backup, caches, logs';
+  String get settingsDataStorageDescription => 'Backup, caches';
+
+  @override
+  String get settingsAdvanced => 'Advanced';
+
+  @override
+  String get settingsAdvancedDescription =>
+      'Audio engine, privacy & network, diagnostics, danger zone';
 
   @override
   String get settingsAboutDescription => 'Version, licenses, source code';
+
+  @override
+  String get settingsGroupAudioEngine => 'Audio engine';
+
+  @override
+  String get settingsGroupPrivacyNetwork => 'Privacy & network';
+
+  @override
+  String get settingsGroupDiagnostics => 'Diagnostics';
+
+  @override
+  String get settingsGroupDangerZone => 'Danger zone';
+
+  @override
+  String get settingsResetAllTitle => 'Reset all settings';
+
+  @override
+  String get settingsResetAllHint =>
+      'Restore all preferences to default values';
+
+  @override
+  String get settingsResetAllButton => 'Reset';
+
+  @override
+  String get settingsResetAllConfirmTitle => 'Reset all settings?';
+
+  @override
+  String get settingsResetAllConfirmBody =>
+      'This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.';
+
+  @override
+  String get settingsResetAllSuccess =>
+      'All settings have been reset to defaults';
+
+  @override
+  String get settingsResetAllFailed => 'Could not reset settings';
 
   @override
   String get settingsGroupTheme => 'Theme';
@@ -1632,6 +1705,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupOverview => 'Overview';
 
   @override
   String get settingsGroupFolders => 'Folders';
@@ -2132,6 +2208,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get favoritesRemoved => 'Removed from Favorites';
+
+  @override
+  String get favoritesClear => 'Clear all favorites';
+
+  @override
+  String get favoritesClearHint => 'Remove every song from Favorites';
+
+  @override
+  String get favoritesClearTitle => 'Clear all favorites?';
+
+  @override
+  String favoritesClearBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs will be removed from Favorites.',
+      one: '1 song will be removed from Favorites.',
+    );
+    return '$_temp0 The songs stay in your library.';
+  }
+
+  @override
+  String get favoritesClearConfirm => 'Clear';
+
+  @override
+  String favoritesCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count songs from Favorites',
+      one: 'Cleared 1 song from Favorites',
+      zero: 'No favorites to clear',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String favoritesCopyDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Favorites ($dateString)';
+  }
 
   @override
   String get playlistM3uImport => 'Import M3U…';
@@ -5384,4 +5503,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsTranslationFailNeedsConfig =>
       'This translation plugin needs configuration before it can run.';
+
+  @override
+  String get settingsAppearanceFontsTitle => 'Fonts';
+
+  @override
+  String get settingsAppearanceFontsSubtitle =>
+      'System font is used for CJK characters and emoji.';
+
+  @override
+  String get customFontImportTooltip => 'Import custom font (.ttf, .otf)';
+
+  @override
+  String get customFontDisclaimerTitle => 'Import Custom Font';
+
+  @override
+  String get customFontDisclaimerBody =>
+      'You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.';
+
+  @override
+  String get customFontDisclaimerConfirm => 'I Understand & Import';
+
+  @override
+  String get fontDialogCancel => 'Cancel';
+
+  @override
+  String get customFontImportFailed =>
+      'Failed to import font file. Verify that the file is a valid TrueType or OpenType font.';
+
+  @override
+  String downloadFontTooltip(String size) {
+    return 'Download font ($size)';
+  }
+
+  @override
+  String fontDownloadFailed(String fontName) {
+    return 'Failed to download $fontName';
+  }
+
+  @override
+  String fontLoadFailed(String fontName) {
+    return 'Could not load $fontName';
+  }
+
+  @override
+  String get deleteFontTooltip => 'Delete font';
+
+  @override
+  String get selectedFontSemantics => 'Selected font';
+
+  @override
+  String get deleteCustomFontTitle => 'Delete font?';
+
+  @override
+  String deleteCustomFontBody(String fontName) {
+    return '\"$fontName\" will be removed from Kanaru. The original file on your device is not affected.';
+  }
+
+  @override
+  String get deleteCustomFontConfirm => 'Delete';
+
+  @override
+  String get settingsFontGroupBuiltIn => 'Built-in';
+
+  @override
+  String get settingsFontGroupCustom => 'Custom';
+
+  @override
+  String get settingsFontGroupCatalog => 'Catalog';
 }

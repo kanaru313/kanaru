@@ -64,8 +64,9 @@ class PlaylistModalSession {
   /// on the playlist page). Awaited before anything reads the entries.
   final Future<void> Function()? beforeRead;
 
-  /// True while the Edit dialog or the Delete confirm is open above the
-  /// modal: a second tap meanwhile must not stack another one.
+  /// True while the Edit dialog, the Delete confirm, or the Clear favorites
+  /// confirm is open above the modal: a second tap meanwhile must not stack
+  /// another one.
   bool dialogOpen = false;
 
   /// Waits for [beforeRead]; a failure there is logged, never blocks the
@@ -80,6 +81,7 @@ class PlaylistModalSession {
 
   /// Shows [text] in the opener's messenger; never throws.
   void say(AppSnackBarKind kind, String text) {
+    if (openerMessenger?.mounted != true) return;
     try {
       openerMessenger?.showAppSnackBar(kind, text);
     } catch (error, stack) {
@@ -126,6 +128,9 @@ class PlaylistModalSession {
       exportRelative: () => unawaited(export(latest, M3uPathStyle.relative)),
       removeDuplicates: () => unawaited(removeRepeated(latest)),
       removeMissing: () => unawaited(removeMissing(latest)),
+      clearFavorites: latest.isFavorites
+          ? (nav) => unawaited(clearFavorites(nav, latest))
+          : null,
     );
   }
 }

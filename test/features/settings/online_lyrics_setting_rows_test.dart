@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/lyrics_setting_rows.dart';
+import 'package:kanaru/features/settings/privacy_network_setting_rows.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -24,7 +25,7 @@ void main() {
     bool manualConsent = false,
   }) => LyricsRowsHarness.create(
     tester,
-    const LyricsSettingRows(),
+    const Column(children: [LyricsSettingRows(), PrivacyNetworkSettingRows()]),
     autoFetch: autoFetch,
     autoConsent: autoConsent,
     manualConsent: manualConsent,
@@ -197,7 +198,9 @@ void main() {
   ) async {
     final r = await LyricsRowsHarness.create(
       tester,
-      const LyricsSettingRows(),
+      const Column(
+        children: [LyricsSettingRows(), PrivacyNetworkSettingRows()],
+      ),
       extraProviders: [FakeLyricsProvider(id: 'second')],
     );
     expect(r.container.read(lyricsProvidersProvider).map((p) => p.id), [

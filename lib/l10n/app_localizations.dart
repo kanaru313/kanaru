@@ -398,11 +398,17 @@ abstract class AppLocalizations {
   /// **'Already in playlist'**
   String get alreadyInPlaylistTitle;
 
-  /// No description provided for @alreadyInPlaylistOne.
+  /// No description provided for @alreadyInPlaylistOneAll.
   ///
   /// In en, this message translates to:
-  /// **'{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}'**
-  String alreadyInPlaylistOne(int songs);
+  /// **'{songs, plural, =1{This song is already in “{name}”.} other{All {songs} songs are already in “{name}”.}}'**
+  String alreadyInPlaylistOneAll(int songs, String name);
+
+  /// No description provided for @alreadyInPlaylistOneSome.
+  ///
+  /// In en, this message translates to:
+  /// **'{held, plural, =1{1 of the {songs} songs is already in “{name}”.} other{{held} of the {songs} songs are already in “{name}”.}}'**
+  String alreadyInPlaylistOneSome(int held, int songs, String name);
 
   /// No description provided for @alreadyInPlaylistMany.
   ///
@@ -410,10 +416,16 @@ abstract class AppLocalizations {
   /// **'{songs, plural, =1{This song is already in {count} of the playlists. Your choice applies to all of them.} other{Some of the {songs} songs are already in {count} of the playlists. Your choice applies to all of them.}}'**
   String alreadyInPlaylistMany(int songs, int count);
 
+  /// No description provided for @alreadyInPlaylistRowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already in} other{All {count} already in}}'**
+  String alreadyInPlaylistRowAll(int count);
+
   /// No description provided for @alreadyInPlaylistRow.
   ///
   /// In en, this message translates to:
-  /// **'{held} of {songs}'**
+  /// **'{held} of {songs} already in'**
   String alreadyInPlaylistRow(int held, int songs);
 
   /// No description provided for @alreadyInPlaylistReplace.
@@ -2228,6 +2240,18 @@ abstract class AppLocalizations {
   /// **'Use lyrics stored in the song file before lyric files next to it.'**
   String get settingsPreferEmbeddedLyricsHint;
 
+  /// No description provided for @settingsConfirmPluginUninstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm before uninstalling plugins'**
+  String get settingsConfirmPluginUninstall;
+
+  /// No description provided for @settingsConfirmPluginUninstallHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show what will be deleted and kept before removing a plugin.'**
+  String get settingsConfirmPluginUninstallHint;
+
   /// No description provided for @settingsGapless.
   ///
   /// In en, this message translates to:
@@ -2393,14 +2417,92 @@ abstract class AppLocalizations {
   /// Description under the Data and storage tile on the Settings root
   ///
   /// In en, this message translates to:
-  /// **'Backup, caches, logs'**
+  /// **'Backup, caches'**
   String get settingsDataStorageDescription;
+
+  /// Title of the Advanced category tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// Description under the Advanced tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Audio engine, privacy & network, diagnostics, danger zone'**
+  String get settingsAdvancedDescription;
 
   /// Description under the About tile on the Settings root
   ///
   /// In en, this message translates to:
   /// **'Version, licenses, source code'**
   String get settingsAboutDescription;
+
+  /// Header of the audio engine group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Audio engine'**
+  String get settingsGroupAudioEngine;
+
+  /// Header of the privacy and network group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & network'**
+  String get settingsGroupPrivacyNetwork;
+
+  /// Header of the diagnostics group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get settingsGroupDiagnostics;
+
+  /// Header of the danger zone group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Danger zone'**
+  String get settingsGroupDangerZone;
+
+  /// Title of the reset all settings row in the danger zone
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all settings'**
+  String get settingsResetAllTitle;
+
+  /// Subtitle of the reset all settings row in the danger zone
+  ///
+  /// In en, this message translates to:
+  /// **'Restore all preferences to default values'**
+  String get settingsResetAllHint;
+
+  /// Button label to reset all settings
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get settingsResetAllButton;
+
+  /// Title of the confirm dialog before resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all settings?'**
+  String get settingsResetAllConfirmTitle;
+
+  /// Body of the confirm dialog before resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.'**
+  String get settingsResetAllConfirmBody;
+
+  /// Snackbar message shown after resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'All settings have been reset to defaults'**
+  String get settingsResetAllSuccess;
+
+  /// Snackbar message shown when resetting all settings fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reset settings'**
+  String get settingsResetAllFailed;
 
   /// Header of the theme group on the Appearance settings page
   ///
@@ -2419,6 +2521,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Layout'**
   String get settingsGroupLayout;
+
+  /// Header of the overview group on the Library settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get settingsGroupOverview;
 
   /// Header of the folders group on the Library settings page
   ///
@@ -3139,6 +3247,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Removed from Favorites'**
   String get favoritesRemoved;
+
+  /// Row on the Advanced page of the Favorites modal that clears every liked song
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all favorites'**
+  String get favoritesClear;
+
+  /// Subtitle of the Clear all favorites row
+  ///
+  /// In en, this message translates to:
+  /// **'Remove every song from Favorites'**
+  String get favoritesClearHint;
+
+  /// Title of the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all favorites?'**
+  String get favoritesClearTitle;
+
+  /// Body of the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song will be removed from Favorites.} other{{count} songs will be removed from Favorites.}} The songs stay in your library.'**
+  String favoritesClearBody(int count);
+
+  /// Confirm button on the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get favoritesClearConfirm;
+
+  /// Snackbar after clearing all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No favorites to clear} =1{Cleared 1 song from Favorites} other{Cleared {count} songs from Favorites}}'**
+  String favoritesCleared(int count);
+
+  /// Suggested name of a new playlist copied from Favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites ({date})'**
+  String favoritesCopyDefaultName(DateTime date);
 
   /// Button on the playlists page that imports an M3U playlist file
   ///
@@ -7795,6 +7945,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This translation plugin needs configuration before it can run.'**
   String get lyricsTranslationFailNeedsConfig;
+
+  /// Title of the font management page
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts'**
+  String get settingsAppearanceFontsTitle;
+
+  /// Note about system font fallback
+  ///
+  /// In en, this message translates to:
+  /// **'System font is used for CJK characters and emoji.'**
+  String get settingsAppearanceFontsSubtitle;
+
+  /// Tooltip of the header import button
+  ///
+  /// In en, this message translates to:
+  /// **'Import custom font (.ttf, .otf)'**
+  String get customFontImportTooltip;
+
+  /// Title of the import disclaimer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Import Custom Font'**
+  String get customFontDisclaimerTitle;
+
+  /// Body of the import disclaimer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.'**
+  String get customFontDisclaimerBody;
+
+  /// Confirm button of the import disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand & Import'**
+  String get customFontDisclaimerConfirm;
+
+  /// Cancel button of the font dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get fontDialogCancel;
+
+  /// Snackbar when import fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import font file. Verify that the file is a valid TrueType or OpenType font.'**
+  String get customFontImportFailed;
+
+  /// Tooltip of the download button
+  ///
+  /// In en, this message translates to:
+  /// **'Download font ({size})'**
+  String downloadFontTooltip(String size);
+
+  /// Snackbar when a catalog download fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download {fontName}'**
+  String fontDownloadFailed(String fontName);
+
+  /// Snackbar when an installed font cannot be registered
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load {fontName}'**
+  String fontLoadFailed(String fontName);
+
+  /// Tooltip of the delete button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete font'**
+  String get deleteFontTooltip;
+
+  /// Semantics label of the checkmark
+  ///
+  /// In en, this message translates to:
+  /// **'Selected font'**
+  String get selectedFontSemantics;
+
+  /// Title of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete font?'**
+  String get deleteCustomFontTitle;
+
+  /// Body of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'\"{fontName}\" will be removed from Kanaru. The original file on your device is not affected.'**
+  String deleteCustomFontBody(String fontName);
+
+  /// Confirm button of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteCustomFontConfirm;
+
+  /// Section title for built-in bundled fonts
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in'**
+  String get settingsFontGroupBuiltIn;
+
+  /// Section title for imported custom fonts
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get settingsFontGroupCustom;
+
+  /// Section title for online open font catalog
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get settingsFontGroupCatalog;
 }
 
 class _AppLocalizationsDelegate

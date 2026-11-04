@@ -59,6 +59,7 @@ Future<PlaylistAddPlan?> showPlaylistPicker(
   required String label,
   int? excludePlaylistId,
   String? suggestedName,
+  bool viaKeyboard = false,
 }) async {
   final plan = await showDialog<PlaylistAddPlan>(
     context: context,
@@ -68,6 +69,7 @@ Future<PlaylistAddPlan?> showPlaylistPicker(
       label: label,
       excludePlaylistId: excludePlaylistId,
       suggestedName: suggestedName,
+      viaKeyboard: viaKeyboard,
     ),
   );
   if (plan == null) return null;

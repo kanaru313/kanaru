@@ -98,6 +98,15 @@ extension PlaylistFavorites on LibraryDatabase {
     });
   });
 
+  /// Removes every entry from the Favorites playlist and returns how many were
+  /// deleted. Never deletes the Favorites playlist row itself. No-op and
+  /// returns 0 when Favorites does not exist yet.
+  Future<int> clearFavorites() => transaction(() async {
+    final id = await favoritesPlaylistId();
+    if (id == null) return 0;
+    return (delete(playlistEntries)..where((e) => e.playlistId.equals(id))).go();
+  });
+
   /// The paths in Favorites; emits only when the set changes. Re-queries on
   /// writes to `playlists` and `playlist_entries` only, never on scans.
   Stream<Set<String>> watchFavoritePaths() =>

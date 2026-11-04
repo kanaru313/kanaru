@@ -20,11 +20,13 @@ class SettingsPageScaffold extends StatefulWidget {
     required this.title,
     required this.children,
     this.focus,
+    this.actions,
   });
 
   final String title;
   final List<Widget> children;
   final SettingsAnchor? focus;
+  final List<Widget>? actions;
 
   @override
   State<SettingsPageScaffold> createState() => _SettingsPageScaffoldState();
@@ -95,6 +97,7 @@ class _SettingsPageScaffoldState extends State<SettingsPageScaffold> {
   Widget build(BuildContext context) {
     return PageScaffold(
       title: widget.title,
+      actions: widget.actions,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [

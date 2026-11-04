@@ -6,9 +6,13 @@ library;
 const settingsRoute = '/settings';
 
 const settingsAppearanceRoute = '$settingsRoute/appearance';
+const settingsAppearanceFontsSegment = 'fonts';
+const settingsAppearanceFontsRoute =
+    '$settingsAppearanceRoute/$settingsAppearanceFontsSegment';
 const settingsPlaybackRoute = '$settingsRoute/playback';
 const settingsLibraryRoute = '$settingsRoute/library';
 const settingsDataRoute = '$settingsRoute/data';
+const settingsAdvancedRoute = '$settingsRoute/advanced';
 const settingsAboutRoute = '$settingsRoute/about';
 
 /// Query parameter naming the anchor a Settings link opens.
@@ -18,7 +22,9 @@ const settingsFocusParam = 'focus';
 enum SettingsAnchor {
   playbackTranslation('translation', settingsPlaybackRoute),
   playbackLyrics('lyrics', settingsPlaybackRoute),
-  libraryFolders('folders', settingsLibraryRoute);
+  libraryFolders('folders', settingsLibraryRoute),
+  advancedAudio('advanced-audio', settingsAdvancedRoute),
+  advancedDanger('advanced-danger', settingsAdvancedRoute);
 
   const SettingsAnchor(this.id, this.page);
 

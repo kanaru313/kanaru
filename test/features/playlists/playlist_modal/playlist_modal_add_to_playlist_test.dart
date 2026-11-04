@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/playlist_favorites.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../library/browse_test_data.dart';
 import '../../library/library_test_harness.dart';
@@ -65,4 +68,30 @@ void main() {
 
     expect(await storedPaths(tester, h, target), hasLength(4));
   });
+
+  testWidgets(
+    'Favorites suggests a date-stamped name when creating a new playlist',
+    (tester) async {
+      await insertTracks(tester, h, const [TestTrack('a')]);
+      final path = (await trackPaths(tester, h))['a']!;
+      await tester.runAsync(
+        () => h.db.setFavorite(path, favorite: true, now: 1),
+      );
+      final favId = (await tester.runAsync(
+        () => h.db.favoritesPlaylistId(),
+      ))!;
+      await pumpModalHost(tester, h, id: favId);
+      await openPlaylistModalOf(tester);
+      await tapModalAction(tester, 'add-to-playlist');
+
+      await tester.tap(inPicker('New playlist…'));
+      await tester.pumpAndSettle();
+
+      final l10n = await tester.runAsync(
+        () => AppLocalizations.delegate.load(const Locale('en')),
+      );
+      final expected = l10n!.favoritesCopyDefaultName(DateTime.now());
+      expect(find.widgetWithText(TextField, expected), findsOneWidget);
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'picker_test_host.dart';
@@ -73,20 +74,24 @@ void main() {
 
     expect(question, findsOneWidget);
     expect(
-      find.text('Some of the 2 songs are already in this playlist.'),
+      find.text('1 of the 2 songs is already in “Half”.'),
       findsOneWidget,
     );
     final dialog = find.byType(AlertDialog).last;
     expect(
-      find.descendant(of: dialog, matching: find.text('Half')),
+      find.descendant(of: dialog, matching: find.textContaining('Half')),
       findsOneWidget,
     );
+    // Single affected playlist does not render the inner playlist list box.
     expect(
-      find.descendant(of: dialog, matching: find.text('1 of 2')),
-      findsOne,
+      find.descendant(
+        of: dialog,
+        matching: find.byIcon(AppIcons.playlistOutlined),
+      ),
+      findsNothing,
     );
     expect(
-      find.descendant(of: dialog, matching: find.text('Empty')),
+      find.descendant(of: dialog, matching: find.textContaining('Empty')),
       findsNothing,
     );
     expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
@@ -211,7 +216,7 @@ void main() {
     await tick(tester, 'X');
     await tick(tester, 'Y');
     await pressAdd(tester);
-    expect(find.text('1 of 2'), findsOneWidget);
+    expect(find.text('1 of the 2 songs is already in “X”.'), findsOneWidget);
     expect(find.text('Skips the 1 already there'), findsOneWidget);
 
     await tester.tap(find.text('Add only missing songs'));
@@ -223,4 +228,100 @@ void main() {
     expect(await host.pathsIn(tester, 'Y'), ['/a', '/a', '/b']);
     expect(find.textContaining('1 skipped'), findsOneWidget);
   });
+
+  testWidgets('single affected playlist: all songs already in (multiple songs)', (
+    tester,
+  ) async {
+    await pumpPickerHost(
+      tester,
+      seed: {'Full': const ['/m/1', '/m/2']},
+      configure: (h) => h.readPaths = () async => ['/m/1', '/m/2'],
+    );
+    await openPicker(tester);
+    await tick(tester, 'Full');
+    await pressAdd(tester);
+
+    expect(question, findsOneWidget);
+    expect(find.text('All 2 songs are already in “Full”.'), findsOneWidget);
+    expect(find.byIcon(AppIcons.playlistOutlined), findsNothing);
+  });
+
+  testWidgets('single affected playlist: single song already in', (
+    tester,
+  ) async {
+    await pumpPickerHost(
+      tester,
+      seed: {'Solo': const ['/m/1']},
+      configure: (h) => h.readPaths = () async => ['/m/1'],
+    );
+    await openPicker(tester);
+    await tick(tester, 'Solo');
+    await pressAdd(tester);
+
+    expect(question, findsOneWidget);
+    expect(find.text('This song is already in “Solo”.'), findsOneWidget);
+    expect(find.byIcon(AppIcons.playlistOutlined), findsNothing);
+  });
+
+  testWidgets(
+    'multiple affected playlists: shows list with icons, dividers, and counts',
+    (tester) async {
+      await pumpPickerHost(
+        tester,
+        seed: {
+          'Full': const ['/m/1', '/m/2'],
+          'Half': const ['/m/2'],
+          'Empty': const [],
+        },
+        configure: (h) => h.readPaths = () async => ['/m/1', '/m/2'],
+      );
+      await openPicker(tester);
+      await tick(tester, 'Full');
+      await tick(tester, 'Half');
+      await tick(tester, 'Empty');
+      await pressAdd(tester);
+
+      expect(question, findsOneWidget);
+      expect(
+        find.text(
+          'Some of the 2 songs are already in 2 of the playlists. '
+          'Your choice applies to all of them.',
+        ),
+        findsOneWidget,
+      );
+
+      final dialog = find.byType(AlertDialog).last;
+      expect(
+        find.descendant(
+          of: dialog,
+          matching: find.byIcon(AppIcons.playlistOutlined),
+        ),
+        findsNWidgets(2),
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('Full')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('Half')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('Empty')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('All 2 already in')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('1 of 2 already in')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.byType(Divider)),
+        findsOneWidget,
+      );
+    },
+  );
 }

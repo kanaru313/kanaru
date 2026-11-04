@@ -197,7 +197,7 @@ void main() {
     });
 
     test(
-      'Favorites keeps Remove missing but not Remove duplicates or Add all',
+      'Favorites keeps Remove missing and Clear all but not Remove duplicates or Add all',
       () {
         final rows = _advanced(
           _data(
@@ -208,8 +208,23 @@ void main() {
         expect(rows.keys, isNot(contains('remove-duplicates')));
         expect(rows.keys, isNot(contains('add-all-to-favorites')));
         expect(rows.keys, contains('remove-missing'));
+        expect(rows.keys, contains('clear-favorites'));
+        expect(rows['clear-favorites']!.destructive, isTrue);
+        expect(rows['clear-favorites']!.enabled, isTrue);
       },
     );
+
+    test('Clear all favorites is disabled when there are no entries', () {
+      final rows = _advanced(
+        _data(playlist: _playlist(favorites: true, count: 0)),
+      );
+      expect(rows['clear-favorites']!.enabled, isFalse);
+    });
+
+    test('ordinary playlists do not have Clear all favorites', () {
+      final rows = _advanced(_data(playlist: _playlist(favorites: false)));
+      expect(rows.keys, isNot(contains('clear-favorites')));
+    });
 
     test('Duplicate names the copy and the export says which paths', () {
       final rows = _advanced(_data());

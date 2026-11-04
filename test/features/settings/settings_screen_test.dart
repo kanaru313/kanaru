@@ -81,8 +81,14 @@ void main() {
     final groups = {
       'Appearance': ['Theme', 'Text', 'Layout'],
       'Playback': ['Playback', 'Lyrics', 'Translation'],
-      'Library': ['Folders', 'Scanning', 'Organization'],
-      'Data & storage': ['Backup and restore', 'Caches', 'Logs'],
+      'Library': ['Overview', 'Folders', 'Scanning', 'Organization'],
+      'Data & storage': ['Backup and restore', 'Caches'],
+      'Advanced': [
+        'Audio engine',
+        'Privacy & network',
+        'Diagnostics',
+        'Danger zone',
+      ],
     };
     await pumpSettings(tester);
     for (final MapEntry(key: page, value: titles) in groups.entries) {
@@ -111,7 +117,7 @@ void main() {
       _rowTop(tester, 'Animations'),
     ]);
     _expectAscending([
-      _rowTop(tester, 'Font'),
+      tester.getTopLeft(find.widgetWithText(ListTile, 'Font')).dy,
       _rowTop(tester, 'Text size'),
       _rowTop(tester, 'Language'),
     ]);
@@ -125,7 +131,7 @@ void main() {
       _groupTop(tester, 'Theme'),
       _rowTop(tester, 'Theme'),
       _groupTop(tester, 'Text'),
-      _rowTop(tester, 'Font'),
+      tester.getTopLeft(find.widgetWithText(ListTile, 'Font')).dy,
       _groupTop(tester, 'Layout'),
       tester.getTopLeft(find.text('Sidebar tabs')).dy,
     ]);
@@ -137,6 +143,7 @@ void main() {
       await pumpSettings(tester, page: 'Library');
 
       _expectAscending([
+        _groupTop(tester, 'Overview'),
         _groupTop(tester, 'Folders'),
         _groupTop(tester, 'Scanning'),
         tester.getTopLeft(find.text('Rescan library')).dy,

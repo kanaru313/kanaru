@@ -136,11 +136,28 @@
     }
   },
   "alreadyInPlaylistTitle": "Already in playlist",
-  "alreadyInPlaylistOne": "{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}",
-  "@alreadyInPlaylistOne": {
+  "alreadyInPlaylistOneAll": "{songs, plural, =1{This song is already in “{name}”.} other{All {songs} songs are already in “{name}”.}}",
+  "@alreadyInPlaylistOneAll": {
     "placeholders": {
       "songs": {
         "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyInPlaylistOneSome": "{held, plural, =1{1 of the {songs} songs is already in “{name}”.} other{{held} of the {songs} songs are already in “{name}”.}}",
+  "@alreadyInPlaylistOneSome": {
+    "placeholders": {
+      "held": {
+        "type": "int"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
       }
     }
   },
@@ -155,7 +172,15 @@
       }
     }
   },
-  "alreadyInPlaylistRow": "{held} of {songs}",
+  "alreadyInPlaylistRowAll": "{count, plural, =1{Already in} other{All {count} already in}}",
+  "@alreadyInPlaylistRowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistRow": "{held} of {songs} already in",
   "@alreadyInPlaylistRow": {
     "placeholders": {
       "held": {
@@ -1010,6 +1035,8 @@
   "settingsClearCoverCacheButton": "Clear",
   "settingsPreferEmbeddedLyrics": "Prefer embedded lyrics",
   "settingsPreferEmbeddedLyricsHint": "Use lyrics stored in the song file before lyric files next to it.",
+  "settingsConfirmPluginUninstall": "Confirm before uninstalling plugins",
+  "settingsConfirmPluginUninstallHint": "Show what will be deleted and kept before removing a plugin.",
   "settingsGapless": "Gapless playback",
   "settingsGaplessHint": "No silence between songs that follow each other, as on an album.",
   "settingsCrossfade": "Crossfade",
@@ -1061,13 +1088,65 @@
   "@settingsPluginsDescription": {
     "description": "Description under the Plugins tile on the Settings root"
   },
-  "settingsDataStorageDescription": "Backup, caches, logs",
+  "settingsDataStorageDescription": "Backup, caches",
   "@settingsDataStorageDescription": {
     "description": "Description under the Data and storage tile on the Settings root"
+  },
+  "settingsAdvanced": "Advanced",
+  "@settingsAdvanced": {
+    "description": "Title of the Advanced category tile on the Settings root"
+  },
+  "settingsAdvancedDescription": "Audio engine, privacy & network, diagnostics, danger zone",
+  "@settingsAdvancedDescription": {
+    "description": "Description under the Advanced tile on the Settings root"
   },
   "settingsAboutDescription": "Version, licenses, source code",
   "@settingsAboutDescription": {
     "description": "Description under the About tile on the Settings root"
+  },
+  "settingsGroupAudioEngine": "Audio engine",
+  "@settingsGroupAudioEngine": {
+    "description": "Header of the audio engine group on the Advanced settings page"
+  },
+  "settingsGroupPrivacyNetwork": "Privacy & network",
+  "@settingsGroupPrivacyNetwork": {
+    "description": "Header of the privacy and network group on the Advanced settings page"
+  },
+  "settingsGroupDiagnostics": "Diagnostics",
+  "@settingsGroupDiagnostics": {
+    "description": "Header of the diagnostics group on the Advanced settings page"
+  },
+  "settingsGroupDangerZone": "Danger zone",
+  "@settingsGroupDangerZone": {
+    "description": "Header of the danger zone group on the Advanced settings page"
+  },
+  "settingsResetAllTitle": "Reset all settings",
+  "@settingsResetAllTitle": {
+    "description": "Title of the reset all settings row in the danger zone"
+  },
+  "settingsResetAllHint": "Restore all preferences to default values",
+  "@settingsResetAllHint": {
+    "description": "Subtitle of the reset all settings row in the danger zone"
+  },
+  "settingsResetAllButton": "Reset",
+  "@settingsResetAllButton": {
+    "description": "Button label to reset all settings"
+  },
+  "settingsResetAllConfirmTitle": "Reset all settings?",
+  "@settingsResetAllConfirmTitle": {
+    "description": "Title of the confirm dialog before resetting all settings"
+  },
+  "settingsResetAllConfirmBody": "This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.",
+  "@settingsResetAllConfirmBody": {
+    "description": "Body of the confirm dialog before resetting all settings"
+  },
+  "settingsResetAllSuccess": "All settings have been reset to defaults",
+  "@settingsResetAllSuccess": {
+    "description": "Snackbar message shown after resetting all settings"
+  },
+  "settingsResetAllFailed": "Could not reset settings",
+  "@settingsResetAllFailed": {
+    "description": "Snackbar message shown when resetting all settings fails"
   },
   "settingsGroupTheme": "Theme",
   "@settingsGroupTheme": {
@@ -1080,6 +1159,10 @@
   "settingsGroupLayout": "Layout",
   "@settingsGroupLayout": {
     "description": "Header of the layout group on the Appearance settings page"
+  },
+  "settingsGroupOverview": "Overview",
+  "@settingsGroupOverview": {
+    "description": "Header of the overview group on the Library settings page"
   },
   "settingsGroupFolders": "Folders",
   "@settingsGroupFolders": {
@@ -1596,6 +1679,50 @@
   "favoritesRemoved": "Removed from Favorites",
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
+  },
+  "favoritesClear": "Clear all favorites",
+  "@favoritesClear": {
+    "description": "Row on the Advanced page of the Favorites modal that clears every liked song"
+  },
+  "favoritesClearHint": "Remove every song from Favorites",
+  "@favoritesClearHint": {
+    "description": "Subtitle of the Clear all favorites row"
+  },
+  "favoritesClearTitle": "Clear all favorites?",
+  "@favoritesClearTitle": {
+    "description": "Title of the dialog asking whether to clear all favorites"
+  },
+  "favoritesClearBody": "{count, plural, =1{1 song will be removed from Favorites.} other{{count} songs will be removed from Favorites.}} The songs stay in your library.",
+  "@favoritesClearBody": {
+    "description": "Body of the dialog asking whether to clear all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesClearConfirm": "Clear",
+  "@favoritesClearConfirm": {
+    "description": "Confirm button on the dialog asking whether to clear all favorites"
+  },
+  "favoritesCleared": "{count, plural, =0{No favorites to clear} =1{Cleared 1 song from Favorites} other{Cleared {count} songs from Favorites}}",
+  "@favoritesCleared": {
+    "description": "Snackbar after clearing all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesCopyDefaultName": "Favorites ({date})",
+  "@favoritesCopyDefaultName": {
+    "description": "Suggested name of a new playlist copied from Favorites",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
   },
   "playlistM3uImport": "Import M3U…",
   "@playlistM3uImport": {
@@ -5385,5 +5512,55 @@
   "lyricsTranslationFailNeedsConfig": "This translation plugin needs configuration before it can run.",
   "@lyricsTranslationFailNeedsConfig": {
     "description": "Why a translation failed: a required plugin setting is empty"
-  }
+  },
+  "settingsAppearanceFontsTitle": "Fonts",
+  "@settingsAppearanceFontsTitle": { "description": "Title of the font management page" },
+  "settingsAppearanceFontsSubtitle": "System font is used for CJK characters and emoji.",
+  "@settingsAppearanceFontsSubtitle": { "description": "Note about system font fallback" },
+  "customFontImportTooltip": "Import custom font (.ttf, .otf)",
+  "@customFontImportTooltip": { "description": "Tooltip of the header import button" },
+  "customFontDisclaimerTitle": "Import Custom Font",
+  "@customFontDisclaimerTitle": { "description": "Title of the import disclaimer dialog" },
+  "customFontDisclaimerBody": "You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.",
+  "@customFontDisclaimerBody": { "description": "Body of the import disclaimer dialog" },
+  "customFontDisclaimerConfirm": "I Understand & Import",
+  "@customFontDisclaimerConfirm": { "description": "Confirm button of the import disclaimer" },
+  "fontDialogCancel": "Cancel",
+  "@fontDialogCancel": { "description": "Cancel button of the font dialogs" },
+  "customFontImportFailed": "Failed to import font file. Verify that the file is a valid TrueType or OpenType font.",
+  "@customFontImportFailed": { "description": "Snackbar when import fails" },
+  "downloadFontTooltip": "Download font ({size})",
+  "@downloadFontTooltip": {
+    "description": "Tooltip of the download button",
+    "placeholders": { "size": { "type": "String" } }
+  },
+  "fontDownloadFailed": "Failed to download {fontName}",
+  "@fontDownloadFailed": {
+    "description": "Snackbar when a catalog download fails",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "fontLoadFailed": "Could not load {fontName}",
+  "@fontLoadFailed": {
+    "description": "Snackbar when an installed font cannot be registered",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "deleteFontTooltip": "Delete font",
+  "@deleteFontTooltip": { "description": "Tooltip of the delete button" },
+  "selectedFontSemantics": "Selected font",
+  "@selectedFontSemantics": { "description": "Semantics label of the checkmark" },
+  "deleteCustomFontTitle": "Delete font?",
+  "@deleteCustomFontTitle": { "description": "Title of the delete confirmation" },
+  "deleteCustomFontBody": "\"{fontName}\" will be removed from Kanaru. The original file on your device is not affected.",
+  "@deleteCustomFontBody": {
+    "description": "Body of the delete confirmation",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "deleteCustomFontConfirm": "Delete",
+  "@deleteCustomFontConfirm": { "description": "Confirm button of the delete confirmation" },
+  "settingsFontGroupBuiltIn": "Built-in",
+  "@settingsFontGroupBuiltIn": { "description": "Section title for built-in bundled fonts" },
+  "settingsFontGroupCustom": "Custom",
+  "@settingsFontGroupCustom": { "description": "Section title for imported custom fonts" },
+  "settingsFontGroupCatalog": "Catalog",
+  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" }
 }

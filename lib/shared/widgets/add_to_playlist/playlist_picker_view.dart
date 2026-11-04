@@ -27,6 +27,7 @@ class PlaylistPickerView extends StatelessWidget {
     required this.onSubmit,
     this.enabled = true,
     this.pendingFocus,
+    this.autofocusNew = false,
   });
 
   final List<PlaylistSummary> playlists;
@@ -45,6 +46,10 @@ class PlaylistPickerView extends StatelessWidget {
 
   /// Focus node of the newest pending row.
   final FocusNode? pendingFocus;
+
+  /// True when the "New playlist…" row takes focus on mount (opened from
+  /// the keyboard, or with a screen reader on).
+  final bool autofocusNew;
 
   Widget _row({
     Key? key,
@@ -78,7 +83,7 @@ class PlaylistPickerView extends StatelessWidget {
     return ListView(
       children: [
         ListTile(
-          autofocus: true,
+          autofocus: autofocusNew,
           enabled: enabled,
           leading: const Icon(AppIcons.add),
           title: Text(l10n.playlistPickerNew),

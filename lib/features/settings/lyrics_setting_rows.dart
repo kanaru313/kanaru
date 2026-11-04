@@ -6,13 +6,13 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/online_lyrics_notice_dialog.dart';
-import 'online_lyrics_consent_setting_row.dart';
 import 'setting_row.dart';
 
 /// Lyrics options, in Playback › Lyrics: whether lyrics embedded in the
 /// file are tried before the `.lrc` file next to it (changing it reloads the
-/// playing track's lyrics) and the online lookup switches with their
-/// permission. The saved online lyrics are in Data & storage › Caches.
+/// playing track's lyrics) and the online lookup switch. (Consent revocation
+/// is in Settings › Advanced › Privacy & network; saved online lyrics are in
+/// Data & storage › Caches).
 class LyricsSettingRows extends ConsumerWidget {
   const LyricsSettingRows({super.key});
 
@@ -59,7 +59,6 @@ class LyricsSettingRows extends ConsumerWidget {
             },
           ),
         ),
-        const OnlineLyricsConsentSettingRow(),
       ],
     );
   }

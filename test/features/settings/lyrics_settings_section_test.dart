@@ -8,6 +8,7 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/settings/setting_row.dart';
 import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
@@ -83,7 +84,6 @@ void main() {
       l10n.lyricsSourcesTitle,
       l10n.settingsPreferEmbeddedLyrics,
       l10n.settingsAutoOnlineLyrics,
-      l10n.settingsLyricsConsent,
     ]) {
       final y = top(tester, title);
       expect(y, greaterThan(lyrics), reason: title);
@@ -108,14 +108,12 @@ void main() {
     await openSettings(tester, page: 'Data & storage');
     final l10n = lookupAppLocalizations(const Locale('en'));
     final caches = groupTop(tester, l10n.settingsGroupCaches);
-    final logs = groupTop(tester, l10n.settingsGroupLogs);
     for (final title in [
       l10n.settingsSavedLyrics,
       l10n.settingsTranslationCache,
     ]) {
       final y = top(tester, title);
       expect(y, greaterThan(caches), reason: title);
-      expect(y, lessThan(logs), reason: title);
     }
   });
 
@@ -203,5 +201,27 @@ void main() {
       // The page's Get more plugins row is only on the sources page.
       expect(find.text(l10n.lyricsSourcesGetMore), findsOneWidget);
     });
+  });
+
+  testWidgets('confirm plugin uninstall switch toggles the setting', (
+    tester,
+  ) async {
+    await openSettings(tester, page: 'Advanced');
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    final rowFinder = find.widgetWithText(
+      SettingRow,
+      l10n.settingsConfirmPluginUninstall,
+    );
+    final switchFinder = find.descendant(
+      of: rowFinder,
+      matching: find.byType(Switch),
+    );
+    expect(switchFinder, findsOneWidget);
+    expect(tester.widget<Switch>(switchFinder).value, isTrue);
+
+    await tester.tap(switchFinder);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Switch>(switchFinder).value, isFalse);
   });
 }

@@ -14,7 +14,7 @@ import 'settings_focus.dart';
 import 'settings_page_scaffold.dart';
 import 'settings_section.dart';
 
-/// Settings › Library: the counts and what the last scan did (no header),
+/// Settings › Library: the counts and what the last scan did (Overview),
 /// then Folders, Scanning and Organization.
 class LibrarySettingsPage extends StatelessWidget {
   const LibrarySettingsPage({super.key, this.focus});
@@ -30,9 +30,9 @@ class LibrarySettingsPage extends StatelessWidget {
       title: l10n.settingsLibrary,
       focus: focus,
       children: [
-        const SettingsSection(
-          title: null,
-          children: [LibraryStatsRow(), ScanStatsRows()],
+        SettingsSection(
+          title: l10n.settingsGroupOverview,
+          children: const [LibraryStatsRow(), ScanStatsRows()],
         ),
         SettingsFocusTarget(
           anchor: SettingsAnchor.libraryFolders,

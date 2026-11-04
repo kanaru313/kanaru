@@ -70,6 +70,7 @@ const _pages = [
   settingsPlaybackRoute,
   settingsLibraryRoute,
   settingsDataRoute,
+  settingsAdvancedRoute,
 ];
 
 /// The coming soon rows: every row and chips row marked so.
@@ -118,9 +119,10 @@ void main() {
         rows.length,
         {
           settingsAppearanceRoute: 0,
-          settingsPlaybackRoute: 2,
+          settingsPlaybackRoute: 0,
           settingsLibraryRoute: 2,
           settingsDataRoute: 1,
+          settingsAdvancedRoute: 2,
         }[page],
         reason: page,
       );
@@ -162,9 +164,11 @@ void main() {
     expect(chip('Album artist'), isFalse);
     expect(chip('Year'), isTrue);
 
-    await _visit(tester, settingsPlaybackRoute);
+    await _visit(tester, settingsAdvancedRoute);
     expect(switchOf('Gapless playback'), isFalse);
     expect(dropdownText('Crossfade'), '6 s');
+
+    await _visit(tester, settingsPlaybackRoute);
     expect(dropdownTextAt('A listen counts after', 0), '3 min');
     expect(dropdownTextAt('A listen counts after', 1), '75%');
   });
@@ -173,7 +177,7 @@ void main() {
     tester,
   ) async {
     await _openApp(tester, const AppSettings());
-    await _visit(tester, settingsPlaybackRoute);
+    await _visit(tester, settingsAdvancedRoute);
 
     final menus = [
       for (final row in _comingSoonRows())

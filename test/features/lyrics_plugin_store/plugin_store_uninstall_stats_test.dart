@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/lyrics_plugin_store/plugin_store_page.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -171,5 +172,28 @@ void main() {
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uninstalls immediately without dialog when confirm is false', (
+    tester,
+  ) async {
+    final plugins = FakePlugins();
+    await pumpStore(
+      tester,
+      _page(),
+      records: [_installed],
+      plugins: plugins,
+      overrides: [
+        initialSettingsProvider.overrideWithValue(
+          const AppSettings(confirmPluginUninstall: false),
+        ),
+      ],
+    );
+    await tester.tap(find.byTooltip(en.lyricsStoreUninstallTooltip));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(plugins.uninstalls, ['plugin-file']);
+    expect(find.text(en.lyricsStoreUninstalled('FromZip')), findsOneWidget);
   });
 }

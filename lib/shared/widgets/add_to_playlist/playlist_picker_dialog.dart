@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,6 +27,7 @@ class PlaylistPickerDialog extends ConsumerStatefulWidget {
     required this.label,
     this.excludePlaylistId,
     this.suggestedName,
+    this.viaKeyboard = false,
   });
 
   final LibraryDatabase db;
@@ -36,6 +38,9 @@ class PlaylistPickerDialog extends ConsumerStatefulWidget {
   /// Name offered by the first "New playlist"; null offers the default.
   final String? suggestedName;
 
+  /// Opened from the keyboard: focus lands on "New playlist…" at once.
+  final bool viaKeyboard;
+
   @override
   ConsumerState<PlaylistPickerDialog> createState() =>
       _PlaylistPickerDialogState();
@@ -45,6 +50,10 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
   final Set<int> _ticked = {};
   final List<PendingPlaylist> _pending = [];
   final FocusNode _pendingFocus = FocusNode(debugLabel: 'pending playlist');
+  late final _scope = FocusScopeNode(
+    debugLabel: 'PlaylistPickerDialog',
+    onKeyEvent: (_, event) => _onKey(event),
+  );
   int? _songCount;
   Map<int, int> _overlaps = const {};
   bool _busy = false;
@@ -58,8 +67,25 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
 
   @override
   void dispose() {
+    _scope.dispose();
     _pendingFocus.dispose();
     super.dispose();
+  }
+
+  KeyEventResult _onKey(KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final isNav =
+        key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.arrowUp ||
+        key == LogicalKeyboardKey.tab;
+    // Nothing in the picker has focus yet: the first navigation key lands on
+    // the first row instead of moving from nowhere.
+    if (isNav && _scope.focusedChild == null) {
+      _scope.nextFocus();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   /// The song count and "has K of them" hints, once the paths are read.
@@ -159,36 +185,42 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
     final l10n = context.l10n;
     ref.watch(playlistSummariesProvider);
     final count = _selected;
+    final autofocusNew =
+        widget.viaKeyboard || MediaQuery.accessibleNavigationOf(context);
     return PopScope(
       canPop: !_busy,
-      child: AlertDialog(
-        title: PlaylistPickerHeader(label: widget.label, songCount: _songCount),
-        content: SizedBox(
-          width: 440,
-          height: 420,
-          child: Column(
-            children: [
-              // Rows scrolled under the title keep their ink in the list.
-              Expanded(
-                child: ScrollInkSurface(
-                  child: ref
-                      .watch(playlistSummariesProvider)
-                      .when(
-                        data: (playlists) => PlaylistPickerView(
-                          playlists: [
-                            for (final p in playlists)
-                              if (p.id != widget.excludePlaylistId) p,
-                          ],
-                          ticked: _ticked,
-                          pending: _pending,
-                          overlaps: _overlaps,
-                          enabled: !_busy,
-                          pendingFocus: _pendingFocus,
-                          onCreate: _newPlaylist,
-                          onToggle: _toggle,
-                          onTogglePending: _togglePending,
-                          onSubmit: count == 0 || _busy ? () {} : _add,
-                        ),
+      child: FocusScope(
+        node: _scope,
+        autofocus: true,
+        child: AlertDialog(
+          title: PlaylistPickerHeader(label: widget.label, songCount: _songCount),
+          content: SizedBox(
+            width: 440,
+            height: 420,
+            child: Column(
+              children: [
+                // Rows scrolled under the title keep their ink in the list.
+                Expanded(
+                  child: ScrollInkSurface(
+                    child: ref
+                        .watch(playlistSummariesProvider)
+                        .when(
+                          data: (playlists) => PlaylistPickerView(
+                            playlists: [
+                              for (final p in playlists)
+                                if (p.id != widget.excludePlaylistId) p,
+                            ],
+                            ticked: _ticked,
+                            pending: _pending,
+                            overlaps: _overlaps,
+                            enabled: !_busy,
+                            pendingFocus: _pendingFocus,
+                            autofocusNew: autofocusNew,
+                            onCreate: _newPlaylist,
+                            onToggle: _toggle,
+                            onTogglePending: _togglePending,
+                            onSubmit: count == 0 || _busy ? () {} : _add,
+                          ),
                         loading: () =>
                             const Center(child: CircularProgressIndicator()),
                         error: (_, _) =>
@@ -202,6 +234,7 @@ class _PlaylistPickerDialogState extends ConsumerState<PlaylistPickerDialog> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

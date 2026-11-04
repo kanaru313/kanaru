@@ -226,4 +226,47 @@ void main() {
       expect(events, [null, await db.favoritesPlaylistId()]);
     });
   });
+
+  group('clearFavorites', () {
+    test('clearing before the first like returns 0 and creates nothing', () async {
+      expect(await db.clearFavorites(), 0);
+      expect(await db.favoritesPlaylistId(), isNull);
+    });
+
+    test('clears all entries, returns count, and leaves ordinary playlists untouched', () async {
+      await db.setFavorite('/m/a', favorite: true, now: 1);
+      await db.setFavorite('/m/b', favorite: true, now: 1);
+      final id = (await db.favoritesPlaylistId())!;
+      final mixId = await db.createPlaylist('Mix', now: 1, paths: ['/m/c', '/m/d']);
+
+      final deleted = await db.clearFavorites();
+
+      expect(deleted, 2);
+      expect(await favoritePaths(id), isEmpty);
+      expect(await db.isFavorite('/m/a'), isFalse);
+      expect(await db.isFavorite('/m/b'), isFalse);
+      expect(await db.favoritesPlaylistId(), id, reason: 'keeps the playlist row');
+
+      final mixPage = (await db.playlistPage(mixId))!;
+      expect([for (final e in mixPage.entries) e.path], ['/m/c', '/m/d']);
+
+      expect(await db.clearFavorites(), 0);
+    });
+
+    test('updates watchFavoritePaths stream to empty set', () async {
+      await db.setFavorite('/m/a', favorite: true, now: 1);
+      final events = <Set<String>>[];
+      final sub = db.watchFavoritePaths().listen(events.add);
+      addTearDown(sub.cancel);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      await db.clearFavorites();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(events, [
+        {'/m/a'},
+        <String>{},
+      ]);
+    });
+  });
 }

@@ -1,11 +1,14 @@
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/database/playlist_favorites.dart';
 import '../../../core/database/playlist_modal_queries.dart';
 import '../../../core/database/playlist_page_queries.dart';
 import '../../../core/database/playlist_rows.dart';
 import '../../../core/m3u/m3u_write.dart' show M3uPathStyle;
 import '../../../shared/track_menu_actions.dart';
 import '../../../shared/widgets/add_to_playlist/add_to_playlist_flow.dart';
+import '../../../shared/widgets/app_snack_bar.dart';
 import '../../../shared/widgets/context_modal/context_modal_nav.dart';
 import '../m3u_export_flow.dart';
 import '../playlist_delete_dialog.dart';
@@ -14,6 +17,8 @@ import '../playlist_edit_flow.dart';
 import '../playlist_page_actions.dart';
 import '../playlist_play_actions.dart';
 import 'playlist_modal_session.dart';
+
+final _log = Logger('playlists');
 
 /// The actions of the first page and the exports, each one reading the
 /// opener's captured state through the session.
@@ -27,6 +32,7 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
     final db = this.db;
     final navigator = rootNavigator;
     if (db == null || navigator == null) return;
+    final name = playlistDisplayName(latest, l10n);
     await addTracksToPlaylistWith(
       db: db,
       messenger: openerMessenger,
@@ -37,8 +43,11 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
         await ready();
         return db.playlistEntryPaths(latest.id);
       },
-      label: playlistDisplayName(latest, l10n),
+      label: name,
       excludePlaylistId: latest.id,
+      suggestedName: latest.isFavorites
+          ? l10n.favoritesCopyDefaultName(DateTime.now())
+          : name,
     );
   }
 
@@ -98,6 +107,31 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
       l10n: l10n,
       playlist: latest,
     );
+  }
+
+  Future<void> clearFavorites(
+    ContextModalNav nav,
+    PlaylistSummary latest,
+  ) async {
+    final db = this.db;
+    final navigator = rootNavigator;
+    if (db == null || navigator == null || !navigator.mounted) return;
+    if (dialogOpen) return;
+    dialogOpen = true;
+    final confirmed = await confirmClearFavorites(
+      navigator.context,
+      latest.entryCount,
+    ).whenComplete(() => dialogOpen = false);
+    if (!confirmed) return;
+    nav.close();
+    await ready();
+    try {
+      final count = await db.clearFavorites();
+      say(AppSnackBarKind.success, l10n.favoritesCleared(count));
+    } catch (error, stack) {
+      _log.severe('Clearing favorites failed', error, stack);
+      say(AppSnackBarKind.error, l10n.playlistSaveFailed);
+    }
   }
 
   Future<void> export(PlaylistSummary latest, M3uPathStyle style) async {

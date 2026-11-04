@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/setting_row.dart';
@@ -13,8 +14,9 @@ Future<ProviderContainer> pumpAppearanceRows(
   Widget child, {
   Locale locale = const Locale('en'),
   String? fontId,
+  List<Override> overrides = const [],
 }) async {
-  final container = ProviderContainer();
+  final container = ProviderContainer(overrides: overrides);
   addTearDown(container.dispose);
   if (fontId != null) {
     final s = container.read(settingsProvider);

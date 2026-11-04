@@ -17,9 +17,11 @@ void main() {
   test('the section paths join to the shared constants', () {
     expect(_joined(settingsRoute, settingsSectionRoutes()), [
       settingsAppearanceRoute,
+      settingsAppearanceFontsRoute,
       settingsPlaybackRoute,
       settingsLibraryRoute,
       settingsDataRoute,
+      settingsAdvancedRoute,
       settingsAboutRoute,
     ]);
   });
@@ -34,8 +36,8 @@ void main() {
     );
     for (final route in routes.whereType<GoRoute>()) {
       expect(
-        route.routes,
-        route.path == 'playback' ? [child] : isEmpty,
+        route.routes.contains(child),
+        route.path == 'playback',
         reason: route.path,
       );
     }

@@ -196,14 +196,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get alreadyInPlaylistTitle => 'Đã có trong playlist';
 
   @override
-  String alreadyInPlaylistOne(int songs) {
+  String alreadyInPlaylistOneAll(int songs, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       songs,
       locale: localeName,
-      other: 'Một số trong $songs bài đã có trong playlist này.',
-      one: 'Bài này đã có trong playlist.',
+      other: 'Cả $songs bài hát đều đã có trong playlist “$name”.',
+      one: 'Bài này đã có trong playlist “$name”.',
     );
     return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistOneSome(int held, int songs, String name) {
+    return '$held trong số $songs bài hát đã có trong playlist “$name”.';
   }
 
   @override
@@ -220,8 +225,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String alreadyInPlaylistRowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cả $count bài đã có',
+      one: 'Đã có',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String alreadyInPlaylistRow(int held, int songs) {
-    return '$held/$songs bài';
+    return '$held/$songs bài đã có';
   }
 
   @override
@@ -1436,6 +1452,13 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.';
 
   @override
+  String get settingsConfirmPluginUninstall => 'Xác nhận trước khi gỡ plugin';
+
+  @override
+  String get settingsConfirmPluginUninstallHint =>
+      'Hiển thị chi tiết những gì sẽ bị xóa và giữ lại trước khi gỡ plugin.';
+
+  @override
   String get settingsGapless => 'Phát liền mạch (gapless)';
 
   @override
@@ -1526,10 +1549,53 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tải và cài plugin từ repository hoặc file';
 
   @override
-  String get settingsDataStorageDescription => 'Sao lưu, bộ nhớ đệm, nhật ký';
+  String get settingsDataStorageDescription => 'Sao lưu, bộ nhớ đệm';
+
+  @override
+  String get settingsAdvanced => 'Nâng cao';
+
+  @override
+  String get settingsAdvancedDescription =>
+      'Bộ phát âm thanh, quyền riêng tư & mạng, chẩn đoán, vùng nguy hiểm';
 
   @override
   String get settingsAboutDescription => 'Phiên bản, giấy phép, mã nguồn';
+
+  @override
+  String get settingsGroupAudioEngine => 'Bộ phát âm thanh';
+
+  @override
+  String get settingsGroupPrivacyNetwork => 'Quyền riêng tư & mạng';
+
+  @override
+  String get settingsGroupDiagnostics => 'Chẩn đoán';
+
+  @override
+  String get settingsGroupDangerZone => 'Vùng nguy hiểm';
+
+  @override
+  String get settingsResetAllTitle => 'Đặt lại toàn bộ cài đặt';
+
+  @override
+  String get settingsResetAllHint =>
+      'Khôi phục toàn bộ tùy chọn về giá trị mặc định';
+
+  @override
+  String get settingsResetAllButton => 'Đặt lại';
+
+  @override
+  String get settingsResetAllConfirmTitle => 'Đặt lại toàn bộ cài đặt?';
+
+  @override
+  String get settingsResetAllConfirmBody =>
+      'Thao tác này sẽ khôi phục tất cả cài đặt về mặc định. Thư viện bài hát, playlist và cấu hình tiện ích (plugin) sẽ không bị xóa.';
+
+  @override
+  String get settingsResetAllSuccess =>
+      'Toàn bộ cài đặt đã được đặt về mặc định';
+
+  @override
+  String get settingsResetAllFailed => 'Không thể đặt lại cài đặt';
 
   @override
   String get settingsGroupTheme => 'Chủ đề';
@@ -1539,6 +1605,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsGroupLayout => 'Bố cục';
+
+  @override
+  String get settingsGroupOverview => 'Tổng quan';
 
   @override
   String get settingsGroupFolders => 'Thư mục';
@@ -2029,6 +2098,47 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get favoritesRemoved => 'Đã bỏ khỏi Yêu thích';
+
+  @override
+  String get favoritesClear => 'Xoá hết trong Yêu thích';
+
+  @override
+  String get favoritesClearHint => 'Bỏ tất cả bài hát khỏi Yêu thích';
+
+  @override
+  String get favoritesClearTitle => 'Xoá tất cả bài hát yêu thích?';
+
+  @override
+  String favoritesClearBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tất cả $count bài hát sẽ bị bỏ khỏi Yêu thích.',
+    );
+    return '$_temp0 Bài hát vẫn còn trong thư viện.';
+  }
+
+  @override
+  String get favoritesClearConfirm => 'Xoá hết';
+
+  @override
+  String favoritesCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count bài hát khỏi Yêu thích',
+      zero: 'Không có gì để xoá',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String favoritesCopyDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Yêu thích ($dateString)';
+  }
 
   @override
   String get playlistM3uImport => 'Nhập M3U…';
@@ -5067,4 +5177,72 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsTranslationFailNeedsConfig =>
       'Plugin dịch này cần được cấu hình trước khi chạy.';
+
+  @override
+  String get settingsAppearanceFontsTitle => 'Phông chữ';
+
+  @override
+  String get settingsAppearanceFontsSubtitle =>
+      'Ký tự CJK và biểu tượng cảm xúc (emoji) sẽ dùng phông chữ hệ thống.';
+
+  @override
+  String get customFontImportTooltip => 'Nhập phông chữ tùy chỉnh (.ttf, .otf)';
+
+  @override
+  String get customFontDisclaimerTitle => 'Nhập phông chữ tùy chỉnh';
+
+  @override
+  String get customFontDisclaimerBody =>
+      'Bạn đang nhập tệp phông chữ từ thiết bị. Vui lòng đảm bảo bạn có giấy phép hoặc quyền hợp pháp để sử dụng phông chữ này. Kanaru không phân phối hay chịu trách nhiệm về các tệp phông chữ do người dùng tự nhập.';
+
+  @override
+  String get customFontDisclaimerConfirm => 'Tôi hiểu & Nhập';
+
+  @override
+  String get fontDialogCancel => 'Hủy';
+
+  @override
+  String get customFontImportFailed =>
+      'Không thể nhập tệp phông chữ. Vui lòng kiểm tra tệp có đúng định dạng TrueType hoặc OpenType hợp lệ.';
+
+  @override
+  String downloadFontTooltip(String size) {
+    return 'Tải phông chữ ($size)';
+  }
+
+  @override
+  String fontDownloadFailed(String fontName) {
+    return 'Tải phông chữ $fontName thất bại';
+  }
+
+  @override
+  String fontLoadFailed(String fontName) {
+    return 'Không thể nạp phông chữ $fontName';
+  }
+
+  @override
+  String get deleteFontTooltip => 'Xóa phông chữ';
+
+  @override
+  String get selectedFontSemantics => 'Phông chữ đang chọn';
+
+  @override
+  String get deleteCustomFontTitle => 'Xóa phông chữ?';
+
+  @override
+  String deleteCustomFontBody(String fontName) {
+    return '\"$fontName\" sẽ bị xóa khỏi Kanaru. Tệp gốc trên thiết bị của bạn không bị ảnh hưởng.';
+  }
+
+  @override
+  String get deleteCustomFontConfirm => 'Xóa';
+
+  @override
+  String get settingsFontGroupBuiltIn => 'Phông chữ có sẵn';
+
+  @override
+  String get settingsFontGroupCustom => 'Phông chữ tùy chỉnh';
+
+  @override
+  String get settingsFontGroupCatalog => 'Kho phông chữ trực tuyến';
 }

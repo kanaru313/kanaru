@@ -5,6 +5,7 @@ import '../../core/database/scan_stats_queries.dart';
 import '../../core/indexer/scan_stats.dart';
 import '../../l10n/l10n.dart';
 import 'scan_stats_provider.dart';
+import 'setting_card.dart';
 
 /// What the scan did, as rows without a control (laid out like
 /// `LibraryStatsRow`): the songs stored out of the music files seen, the
@@ -103,18 +104,20 @@ class _StatLine extends StatelessWidget {
     final muted = theme.textTheme.bodyMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 56),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: theme.textTheme.bodyLarge),
-            for (final line in value) Text(line, style: muted),
-            if (note case final note?) Text(note, style: muted),
-          ],
+    return SettingCard(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: theme.textTheme.bodyLarge),
+              for (final line in value) Text(line, style: muted),
+              if (note case final note?) Text(note, style: muted),
+            ],
+          ),
         ),
       ),
     );

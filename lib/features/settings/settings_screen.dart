@@ -20,6 +20,7 @@ class SettingsScreen extends StatelessWidget {
     return SettingsPageScaffold(
       title: l10n.navSettings,
       children: [
+        const SizedBox(height: 8),
         SettingsCategoryTile(
           icon: AppIcons.settingsAppearance,
           title: l10n.settingsAppearance,
@@ -38,6 +39,7 @@ class SettingsScreen extends StatelessWidget {
           description: l10n.settingsLibraryDescription,
           onTap: () => context.go(settingsLibraryRoute),
         ),
+        const SizedBox(height: 12),
         SettingsCategoryTile(
           icon: AppIcons.extension,
           title: l10n.settingsPlugins,
@@ -49,6 +51,13 @@ class SettingsScreen extends StatelessWidget {
           title: l10n.settingsDataStorage,
           description: l10n.settingsDataStorageDescription,
           onTap: () => context.go(settingsDataRoute),
+        ),
+        const SizedBox(height: 12),
+        SettingsCategoryTile(
+          icon: AppIcons.settingsAdvanced,
+          title: l10n.settingsAdvanced,
+          description: l10n.settingsAdvancedDescription,
+          onTap: () => context.go(settingsAdvancedRoute),
         ),
         SettingsCategoryTile(
           icon: AppIcons.settingsAbout,
