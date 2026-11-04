@@ -3,16 +3,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
-import 'audio_output_device_setting_rows.dart';
-import 'audio_replay_gain_setting_rows.dart';
-import 'coming_soon_rows.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
-/// Playback options. The output device, ReplayGain, the play/pause fades,
-/// the endless queue and when a play counts as a listen are wired; gapless
-/// and crossfade are not yet (shown from the saved values, off).
+/// Playback options: fade in/out, endless queue, and when a play counts as a listen.
+/// (Audio engine options such as output device, ReplayGain, and crossfade
+/// are located in Settings › Advanced).
 class PlaybackSettingRows extends ConsumerWidget {
   const PlaybackSettingRows({super.key});
 
@@ -25,23 +22,6 @@ class PlaybackSettingRows extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const AudioOutputDeviceSettingRow(),
-        const ReplayGainSettingRows(),
-        ComingSoonSwitchRow(
-          title: l10n.settingsGapless,
-          subtitle: l10n.settingsGaplessHint,
-          value: p.gapless,
-        ),
-        ComingSoonDropdownRow<int>(
-          title: l10n.settingsCrossfade,
-          subtitle: l10n.settingsCrossfadeHint,
-          options: presetOptions(
-            crossfadePresetsSeconds,
-            p.crossfadeSeconds,
-            (s) => formatSeconds(l10n, s),
-          ),
-          selected: p.crossfadeSeconds,
-        ),
         SettingRow.single(
           title: l10n.settingsFadeOnPlay,
           subtitle: l10n.settingsFadeOnPlayHint,

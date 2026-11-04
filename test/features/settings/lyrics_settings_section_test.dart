@@ -83,9 +83,7 @@ void main() {
     for (final title in [
       l10n.lyricsSourcesTitle,
       l10n.settingsPreferEmbeddedLyrics,
-      l10n.settingsConfirmPluginUninstall,
       l10n.settingsAutoOnlineLyrics,
-      l10n.settingsLyricsConsent,
     ]) {
       final y = top(tester, title);
       expect(y, greaterThan(lyrics), reason: title);
@@ -110,14 +108,12 @@ void main() {
     await openSettings(tester, page: 'Data & storage');
     final l10n = lookupAppLocalizations(const Locale('en'));
     final caches = groupTop(tester, l10n.settingsGroupCaches);
-    final logs = groupTop(tester, l10n.settingsGroupLogs);
     for (final title in [
       l10n.settingsSavedLyrics,
       l10n.settingsTranslationCache,
     ]) {
       final y = top(tester, title);
       expect(y, greaterThan(caches), reason: title);
-      expect(y, lessThan(logs), reason: title);
     }
   });
 
@@ -210,7 +206,7 @@ void main() {
   testWidgets('confirm plugin uninstall switch toggles the setting', (
     tester,
   ) async {
-    await openSettings(tester);
+    await openSettings(tester, page: 'Advanced');
     final l10n = lookupAppLocalizations(const Locale('en'));
     final rowFinder = find.widgetWithText(
       SettingRow,
