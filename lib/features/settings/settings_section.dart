@@ -10,24 +10,18 @@ class SettingsSection extends StatelessWidget {
     super.key,
     required this.title,
     required this.children,
-    this.card = true,
   });
 
   final String? title;
   final List<Widget> children;
 
-  /// Whether to wrap [children] in a container Card. Defaults to `true`
-  /// unless [title] is null.
-  final bool card;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final title = this.title;
-    final wrapInCard = card && title != null;
 
     final Widget content;
-    if (!wrapInCard) {
+    if (title == null) {
       content = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: children,
