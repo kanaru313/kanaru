@@ -36,6 +36,18 @@ class LyricsSettingRows extends ConsumerWidget {
           ),
         ),
         SettingRow.single(
+          title: l10n.settingsConfirmPluginUninstall,
+          subtitle: l10n.settingsConfirmPluginUninstallHint,
+          control: Switch(
+            value: ref.watch(
+              settingsProvider.select((s) => s.confirmPluginUninstall),
+            ),
+            onChanged: (on) => ref
+                .read(settingsProvider.notifier)
+                .setConfirmPluginUninstall(on),
+          ),
+        ),
+        SettingRow.single(
           title: l10n.settingsAutoOnlineLyrics,
           subtitle: l10n.settingsAutoOnlineLyricsHint,
           control: Switch(

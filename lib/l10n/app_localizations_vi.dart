@@ -1436,6 +1436,13 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.';
 
   @override
+  String get settingsConfirmPluginUninstall => 'Xác nhận trước khi gỡ plugin';
+
+  @override
+  String get settingsConfirmPluginUninstallHint =>
+      'Hiển thị chi tiết những gì sẽ bị xóa và giữ lại trước khi gỡ plugin.';
+
+  @override
   String get settingsGapless => 'Phát liền mạch (gapless)';
 
   @override

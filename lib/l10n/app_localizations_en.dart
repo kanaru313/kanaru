@@ -1527,6 +1527,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use lyrics stored in the song file before lyric files next to it.';
 
   @override
+  String get settingsConfirmPluginUninstall =>
+      'Confirm before uninstalling plugins';
+
+  @override
+  String get settingsConfirmPluginUninstallHint =>
+      'Show what will be deleted and kept before removing a plugin.';
+
+  @override
   String get settingsGapless => 'Gapless playback';
 
   @override

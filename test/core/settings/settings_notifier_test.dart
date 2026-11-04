@@ -156,6 +156,22 @@ void main() {
     },
   );
 
+  test(
+    'the confirmPluginUninstall switch is saved and survives a language change',
+    () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.setConfirmPluginUninstall(false);
+      notifier.setLanguage('vi');
+      await notifier.flush();
+
+      expect(container.read(settingsProvider).confirmPluginUninstall, isFalse);
+      expect(stored()['confirmPluginUninstall'], false);
+      expect(stored()['language'], 'vi');
+    },
+  );
+
   test('each group setter is saved and a language change keeps them', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

@@ -380,6 +380,8 @@
   "settingsClearCoverCacheButton": "Xoá",
   "settingsPreferEmbeddedLyrics": "Ưu tiên lời nhúng trong file",
   "settingsPreferEmbeddedLyricsHint": "Dùng lời lưu trong file nhạc trước các file lời đặt cạnh nó.",
+  "settingsConfirmPluginUninstall": "Xác nhận trước khi gỡ plugin",
+  "settingsConfirmPluginUninstallHint": "Hiển thị chi tiết những gì sẽ bị xóa và giữ lại trước khi gỡ plugin.",
   "settingsGapless": "Phát liền mạch (gapless)",
   "settingsGaplessHint": "Không có khoảng lặng giữa các bài nối tiếp nhau, như trong một album.",
   "settingsCrossfade": "Chuyển bài mờ dần (crossfade)",

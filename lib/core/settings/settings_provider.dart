@@ -89,6 +89,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setAnimations(bool enabled) =>
       _update(state.copyWith(animations: enabled));
 
+  void setConfirmPluginUninstall(bool enabled) =>
+      _update(state.copyWith(confirmPluginUninstall: enabled));
+
   // The group setters write every option of a group (scan, playback,
   // display). An option's settings row calls them once the option is wired;
   // rows of options not wired yet are disabled and do not.

@@ -46,6 +46,7 @@ class AppSettings {
     this.libraryOnboarded = false,
     this.recordListenHistory = true,
     this.animations = true,
+    this.confirmPluginUninstall = true,
     this.libraryScan = const LibraryScanPrefs(),
     this.playback = const PlaybackPrefs(),
     this.display = const DisplayPrefs(),
@@ -86,6 +87,10 @@ class AppSettings {
   /// which sets `MediaQuery.disableAnimations` for every page.
   final bool animations;
 
+  /// Show a confirmation dialog with dynamic statistics before uninstalling a
+  /// plugin. Turning it off uninstalls plugins immediately on delete tap.
+  final bool confirmPluginUninstall;
+
   /// Library scan, playback and display options, grouped so that this class
   /// stays small. Their defaults are today's behavior. Read today: the scan
   /// filters (`.nomedia`, size, duration) and folder watching, ReplayGain
@@ -115,6 +120,7 @@ class AppSettings {
     bool? libraryOnboarded,
     bool? recordListenHistory,
     bool? animations,
+    bool? confirmPluginUninstall,
     LibraryScanPrefs? libraryScan,
     PlaybackPrefs? playback,
     DisplayPrefs? display,
@@ -133,6 +139,8 @@ class AppSettings {
     libraryOnboarded: libraryOnboarded ?? this.libraryOnboarded,
     recordListenHistory: recordListenHistory ?? this.recordListenHistory,
     animations: animations ?? this.animations,
+    confirmPluginUninstall:
+        confirmPluginUninstall ?? this.confirmPluginUninstall,
     libraryScan: libraryScan ?? this.libraryScan,
     playback: playback ?? this.playback,
     display: display ?? this.display,
@@ -154,6 +162,7 @@ class AppSettings {
     libraryOnboarded: libraryOnboarded,
     recordListenHistory: recordListenHistory,
     animations: animations,
+    confirmPluginUninstall: confirmPluginUninstall,
     libraryScan: libraryScan,
     playback: playback,
     display: display,
@@ -176,6 +185,7 @@ class AppSettings {
       other.libraryOnboarded == libraryOnboarded &&
       other.recordListenHistory == recordListenHistory &&
       other.animations == animations &&
+      other.confirmPluginUninstall == confirmPluginUninstall &&
       other.libraryScan == libraryScan &&
       other.playback == playback &&
       other.display == display &&
@@ -196,6 +206,7 @@ class AppSettings {
     libraryOnboarded,
     recordListenHistory,
     animations,
+    confirmPluginUninstall,
     libraryScan,
     playback,
     display,
@@ -213,6 +224,7 @@ class AppSettings {
       'rescanOnStartup: $rescanOnStartup, '
       'libraryOnboarded: $libraryOnboarded, '
       'recordListenHistory: $recordListenHistory, animations: $animations, '
+      'confirmPluginUninstall: $confirmPluginUninstall, '
       'libraryScan: $libraryScan, playback: $playback, display: $display, '
       'translation: $translation, onlineLyrics: $onlineLyrics)';
 }

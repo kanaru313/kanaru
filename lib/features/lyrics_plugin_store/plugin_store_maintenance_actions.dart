@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
+import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_plugins/plugin_failure_text.dart';
 import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
@@ -124,18 +125,23 @@ class StoreMaintenanceActions {
   }
 
   Future<void> _confirmAndUninstall(LyricsPluginRecord record) async {
-    // Read again: lookups may have saved lyrics since the store opened.
-    PluginDataStats stats;
-    try {
-      stats = await _container.refresh(
-        pluginDataStatsProvider(record.installId).future,
-      );
-    } on Object catch (error, stackTrace) {
-      _log.warning('Reading the plugin data sizes failed', error, stackTrace);
-      stats = (storageBytes: 0, foundCount: 0, textBytes: 0);
+    final confirm = _container.read(
+      settingsProvider.select((s) => s.confirmPluginUninstall),
+    );
+    if (confirm) {
+      // Read again: lookups may have saved lyrics since the store opened.
+      PluginDataStats stats;
+      try {
+        stats = await _container.refresh(
+          pluginDataStatsProvider(record.installId).future,
+        );
+      } on Object catch (error, stackTrace) {
+        _log.warning('Reading the plugin data sizes failed', error, stackTrace);
+        stats = (storageBytes: 0, foundCount: 0, textBytes: 0);
+      }
+      if (!_context.mounted) return;
+      if (!await confirmPluginUninstall(_context, record, stats)) return;
     }
-    if (!_context.mounted) return;
-    if (!await confirmPluginUninstall(_context, record, stats)) return;
     final plugins = _container.read(lyricsPluginsControllerProvider);
     if (plugins == null) return;
     try {

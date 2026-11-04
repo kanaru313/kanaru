@@ -22,6 +22,7 @@ const _rescanOnStartupKey = 'rescanOnStartup';
 const _libraryOnboardedKey = 'libraryOnboarded';
 const _recordListenHistoryKey = 'recordListenHistory';
 const _animationsKey = 'animations';
+const _confirmPluginUninstallKey = 'confirmPluginUninstall';
 const _libraryScanKey = 'libraryScan';
 const _playbackKey = 'playback';
 const _displayKey = 'display';
@@ -39,6 +40,7 @@ const _knownKeys = {
   _libraryOnboardedKey,
   _recordListenHistoryKey,
   _animationsKey,
+  _confirmPluginUninstallKey,
   _libraryScanKey,
   _playbackKey,
   _displayKey,
@@ -149,6 +151,10 @@ DecodedSettings decodeSettings(Object? json) {
         defaults.recordListenHistory,
       ),
       animations: boolOr(json[_animationsKey], defaults.animations),
+      confirmPluginUninstall: boolOr(
+        json[_confirmPluginUninstallKey],
+        defaults.confirmPluginUninstall,
+      ),
       libraryScan: libraryScan,
       playback: playback,
       display: display,
@@ -199,6 +205,7 @@ Map<String, Object?> encodeSettings(
   _libraryOnboardedKey: settings.libraryOnboarded,
   _recordListenHistoryKey: settings.recordListenHistory,
   _animationsKey: settings.animations,
+  _confirmPluginUninstallKey: settings.confirmPluginUninstall,
   _libraryScanKey: encodeLibraryScanPrefs(
     settings.libraryScan,
     extra: groupExtras[_libraryScanKey] ?? const {},

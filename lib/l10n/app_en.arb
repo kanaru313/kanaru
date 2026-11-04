@@ -1010,6 +1010,8 @@
   "settingsClearCoverCacheButton": "Clear",
   "settingsPreferEmbeddedLyrics": "Prefer embedded lyrics",
   "settingsPreferEmbeddedLyricsHint": "Use lyrics stored in the song file before lyric files next to it.",
+  "settingsConfirmPluginUninstall": "Confirm before uninstalling plugins",
+  "settingsConfirmPluginUninstallHint": "Show what will be deleted and kept before removing a plugin.",
   "settingsGapless": "Gapless playback",
   "settingsGaplessHint": "No silence between songs that follow each other, as on an album.",
   "settingsCrossfade": "Crossfade",

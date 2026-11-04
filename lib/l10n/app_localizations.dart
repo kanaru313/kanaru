@@ -2228,6 +2228,18 @@ abstract class AppLocalizations {
   /// **'Use lyrics stored in the song file before lyric files next to it.'**
   String get settingsPreferEmbeddedLyricsHint;
 
+  /// No description provided for @settingsConfirmPluginUninstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm before uninstalling plugins'**
+  String get settingsConfirmPluginUninstall;
+
+  /// No description provided for @settingsConfirmPluginUninstallHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show what will be deleted and kept before removing a plugin.'**
+  String get settingsConfirmPluginUninstallHint;
+
   /// No description provided for @settingsGapless.
   ///
   /// In en, this message translates to:

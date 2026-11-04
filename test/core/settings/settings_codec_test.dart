@@ -318,6 +318,35 @@ void main() {
     });
   });
 
+  group('confirmPluginUninstall', () {
+    test('is on by default, also for a file without the key', () {
+      expect(
+        decodeSettings(<String, Object?>{}).settings.confirmPluginUninstall,
+        isTrue,
+      );
+      expect(const AppSettings().confirmPluginUninstall, isTrue);
+    });
+
+    test('round-trips when turned off', () {
+      const settings = AppSettings(confirmPluginUninstall: false);
+
+      final json = encodeSettings(settings);
+
+      expect(json['confirmPluginUninstall'], false);
+      expect(decodeSettings(json).settings, settings);
+      expect(settings.toString(), contains('confirmPluginUninstall: false'));
+    });
+
+    test('a value of the wrong type gives the default', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'confirmPluginUninstall': 'no',
+      });
+
+      expect(decoded.settings.confirmPluginUninstall, isTrue);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+  });
+
   group('lyricsTranslation group', () {
     const translated = AppSettings(
       translation: TranslationPrefs(

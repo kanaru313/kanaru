@@ -7,6 +7,7 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
@@ -541,6 +542,31 @@ void main() {
 
       expect(plugins.uninstalls, [idA]);
       // Back on the sources list (its Get more plugins row), with the note.
+      expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
+      expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
+    });
+
+    testWidgets('uninstalls immediately without dialog when confirm is false', (
+      tester,
+    ) async {
+      final plugins = FakePlugins();
+      await pumpSources(
+        tester,
+        records: [plain],
+        plugins: plugins,
+        stats: stats,
+        location: lyricsPluginRoute(idA),
+        overrides: [
+          initialSettingsProvider.overrideWithValue(
+            const AppSettings(confirmPluginUninstall: false),
+          ),
+        ],
+      );
+      await tester.tap(find.byTooltip(en.pluginUninstall));
+      await tester.pumpAndSettle();
+
+      expect(find.text(en.pluginUninstallTitle('Alpha')), findsNothing);
+      expect(plugins.uninstalls, [idA]);
       expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
       expect(find.text(en.pluginUninstalled('Alpha')), findsOneWidget);
     });
