@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../queue_host.dart';
 import 'context_modal_nav.dart';
 
 /// A link row for artists with this many targets or more opens a page of
@@ -8,11 +9,13 @@ import 'context_modal_nav.dart';
 const contextModalLinksPageFrom = 4;
 
 /// Closes the modal, then calls [then]: every action that leaves the modal
-/// goes through here.
+/// goes through here. The action runs with the modal's [viaKeyboard] state in
+/// effect (for pickers and dialogs it may open).
 void Function(ContextModalNav) contextModalCloseThen(VoidCallback then) =>
     (nav) {
+      final viaKeyboard = nav.viaKeyboard;
       nav.close();
-      then();
+      QueueHost.runWithViaKeyboard(viaKeyboard, then);
     };
 
 /// A small icon button at the end of an action row (for example "show in

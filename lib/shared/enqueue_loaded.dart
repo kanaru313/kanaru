@@ -52,6 +52,7 @@ void enqueueLoaded(
         () async => [for (final t in tracks) ?localPathOf(t.uri)],
         label,
         excludePlaylistId: excludePlaylistId,
+        viaKeyboard: QueueHost.currentViaKeyboard,
       ),
     );
     return;

@@ -31,6 +31,7 @@ Future<void> addTracksToPlaylist(
   Future<List<String>> Function() readPaths,
   String label, {
   int? excludePlaylistId,
+  bool viaKeyboard = false,
 }) async {
   if (!context.mounted) return;
   final db = ref.read(libraryDatabaseProvider);
@@ -44,6 +45,7 @@ Future<void> addTracksToPlaylist(
     readPaths: readPaths,
     label: label,
     excludePlaylistId: excludePlaylistId,
+    viaKeyboard: viaKeyboard,
   );
 }
 
@@ -61,6 +63,7 @@ Future<void> addTracksToPlaylistWith({
   required String label,
   int? excludePlaylistId,
   String? suggestedName,
+  bool viaKeyboard = false,
 }) async {
   if (!dialogContext.mounted) return;
   // Read while the picker is open, for its hints. A failure surfaces when
@@ -78,6 +81,7 @@ Future<void> addTracksToPlaylistWith({
       label: label,
       excludePlaylistId: excludePlaylistId,
       suggestedName: suggestedName,
+      viaKeyboard: viaKeyboard,
     );
     // Dismissed, or the album or artist vanished in a rescan: nothing to add.
     if (plan == null) return;

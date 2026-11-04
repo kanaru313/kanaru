@@ -41,6 +41,7 @@ class QueueRowMenuTarget {
     required this.l10n,
     required this.navigator,
     required this.position,
+    this.viaKeyboard = false,
   });
 
   final ProviderContainer container;
@@ -66,6 +67,9 @@ class QueueRowMenuTarget {
 
   /// Global point the menu opened at, where an artist picker would go.
   final Offset position;
+
+  /// Opened via keyboard.
+  final bool viaKeyboard;
 
   /// The play position of the entry, or null when the queue no longer holds
   /// this very track at it. Entry numbers are reused after the queue is
@@ -195,6 +199,7 @@ class QueueRowMenuTarget {
       dialogContext: navigator.context,
       readPaths: () async => [file],
       label: track.title,
+      viaKeyboard: viaKeyboard,
     );
   }
 }
