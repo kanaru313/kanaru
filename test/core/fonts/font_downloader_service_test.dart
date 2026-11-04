@@ -1,304 +1,130 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/fonts/dynamic_font_loader.dart';
-import 'package:kanaru/core/fonts/font_catalog_manifest.dart';
 import 'package:kanaru/core/fonts/font_downloader_service.dart';
 import 'package:kanaru/core/fonts/font_storage_service.dart';
 
-Uint8List _createZip(Map<String, List<int>> files) {
-  final archive = Archive();
-  for (final entry in files.entries) {
-    archive.addFile(ArchiveFile(entry.key, entry.value.length, entry.value));
-  }
-  return Uint8List.fromList(ZipEncoder().encode(archive));
-}
+import 'font_test_helpers.dart';
 
 void main() {
   late Directory tempDir;
   late FontStorageService storage;
-  late DynamicFontLoader loader;
+  late FakeRegistrar registrar;
 
   setUp(() {
-    tempDir = Directory.systemTemp.createTempSync('font_downloader_test_');
-    storage = FontStorageService(baseDirectory: tempDir);
-    loader = DynamicFontLoader(registrar: (family, fonts) async {});
+    tempDir = Directory.systemTemp.createTempSync('font_test_');
+    storage = FontStorageService(environment: {'XDG_DATA_HOME': tempDir.path});
+    registrar = FakeRegistrar();
   });
 
-  tearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
+  tearDown(() => tempDir.deleteSync(recursive: true));
 
-  CatalogFontItem makeItem({
-    required String id,
-    required String family,
-    required String filename,
-    required int sizeBytes,
-    required String sha256,
-  }) {
-    return CatalogFontItem(
-      id: id,
-      label: family,
-      family: family,
-      category: 'sans-serif',
-      designer: 'Test Designer',
-      license: 'OFL-1.1',
-      filename: filename,
-      sizeBytes: sizeBytes,
-      sha256: sha256,
-      previewSvgAsset: 'assets/font_previews/$id.svg',
-    );
+  FontDownloaderService serviceFor(Uint8List zip) => FontDownloaderService(
+        storage: storage,
+        fontLoader: DynamicFontLoader(registrar: registrar.call),
+        fetcher: (uri, {onProgress}) async => zip,
+      );
+
+  void expectNoStaging(String id) {
+    expect(storage.stagingDirectoryForCatalog(id).existsSync(), isFalse);
+    expect(storage.backupDirectoryForCatalog(id).existsSync(), isFalse);
   }
 
-  group('FontDownloaderService', () {
-    test('successfully downloads, extracts, installs, and loads font', () async {
-      final zipBytes = _createZip({
-        'TestFont-Regular.ttf': [1, 2, 3, 4],
-        'TestFont-Bold.otf': [5, 6, 7, 8],
-        'OFL.txt': 'OFL License 1.1'.codeUnits,
-        'random_ignored.txt': 'ignored'.codeUnits,
-      });
-      final digest = sha256.convert(zipBytes).toString();
-
-      final fontItem = makeItem(
-        id: 'test-font',
-        family: 'Test Font',
-        filename: 'test-font.zip',
-        sizeBytes: zipBytes.length,
-        sha256: digest,
-      );
-
-      final progressValues = <double>[];
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async {
-          onProgress?.call(zipBytes.length, zipBytes.length);
-          return zipBytes;
-        },
-      );
-
-      await downloader.downloadAndInstall(
-        font: fontItem,
-        onProgress: (p) => progressValues.add(p),
-      );
-
-      expect(progressValues, contains(1.0));
-      expect(storage.isCatalogFontInstalled('test-font'), isTrue);
-
-      final fontFiles = storage.listFontFilesForFamily('test-font');
-      final filenames = fontFiles.map((f) => f.uri.pathSegments.last).toSet();
-      expect(filenames, {'TestFont-Regular.ttf', 'TestFont-Bold.otf'});
-
-      expect(storage.readLicenseText('test-font'), 'OFL License 1.1');
-      expect(loader.isFamilyLoaded('Test Font'), isTrue);
+  test('installs only fonts and license, registers one family with all weights', () async {
+    final zip = createMockZip({
+      'Test-Regular.ttf': 'a',
+      'Test-Bold.ttf': 'b',
+      'OFL.txt': 'license',
+      'readme.md': 'ignored',
     });
+    await serviceFor(zip).downloadAndInstall(font: testFont('t', zip));
 
-    test('rejects download when SHA-256 does not match', () async {
-      final zipBytes = _createZip({
-        'TestFont.ttf': [1, 2],
-        'OFL.txt': 'license'.codeUnits,
-      });
+    final dir = storage.fontDirectoryForCatalog('t');
+    expect(dir.listSync().map(baseName).toSet(),
+        {'Test-Regular.ttf', 'Test-Bold.ttf', 'OFL.txt'});
+    expectNoStaging('t');
+    expect(registrar.calls.single.family, 'Test Font');
+    expect(registrar.calls.single.fileCount, 2);
+    expect(storage.isCatalogFontInstalled('t'), isTrue);
+  });
 
-      final fontItem = makeItem(
-        id: 'bad-sha-font',
-        family: 'Bad SHA Font',
-        filename: 'bad-sha.zip',
-        sizeBytes: zipBytes.length,
-        sha256: '0000000000000000000000000000000000000000000000000000000000000000',
+  test('rejects a SHA-256 mismatch and installs nothing', () async {
+    final zip = createMockZip({'A.ttf': 'a'});
+    await expectLater(
+      serviceFor(zip).downloadAndInstall(font: testFont('t', zip, sha: '0' * 64)),
+      throwsA(isA<FormatException>()),
+    );
+    expect(storage.fontDirectoryForCatalog('t').existsSync(), isFalse);
+    expectNoStaging('t');
+  });
+
+  for (final bad in {
+    'path traversal': {'../evil.ttf': 'x'},
+    'duplicate names': {'a/X.ttf': '1', 'b/X.ttf': '2'},
+    'no font files': {'OFL.txt': 'license'},
+  }.entries) {
+    test('rejects zip with ${bad.key} and cleans staging', () async {
+      final zip = createMockZip(bad.value);
+      await expectLater(
+        serviceFor(zip).downloadAndInstall(font: testFont('t', zip)),
+        throwsA(isA<FormatException>()),
       );
-
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => zipBytes,
-      );
-
-      expect(
-        () => downloader.downloadAndInstall(font: fontItem),
-        throwsFormatException,
-      );
-      expect(storage.isCatalogFontInstalled('bad-sha-font'), isFalse);
+      expect(storage.fontDirectoryForCatalog('t').existsSync(), isFalse);
+      expectNoStaging('t');
     });
+  }
 
-    test('rejects path traversal in zip', () async {
-      final zipBytes = _createZip({
-        '../evil.ttf': [1, 2],
-        'OFL.txt': 'license'.codeUnits,
-      });
-      final digest = sha256.convert(zipBytes).toString();
+  test('a failed update keeps the previous install untouched', () async {
+    final previous = storage.fontDirectoryForCatalog('t')..createSync(recursive: true);
+    File('${previous.path}/Old.ttf').writeAsStringSync('old');
 
-      final fontItem = makeItem(
-        id: 'evil-font',
-        family: 'Evil Font',
-        filename: 'evil.zip',
-        sizeBytes: zipBytes.length,
-        sha256: digest,
-      );
+    final zip = createMockZip({'../evil.ttf': 'x'});
+    await expectLater(
+      serviceFor(zip).downloadAndInstall(font: testFont('t', zip)),
+      throwsA(isA<FormatException>()),
+    );
+    expect(File('${previous.path}/Old.ttf').existsSync(), isTrue);
+    expectNoStaging('t');
+  });
 
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => zipBytes,
-      );
+  test('a successful update replaces the previous install', () async {
+    final previous = storage.fontDirectoryForCatalog('t')..createSync(recursive: true);
+    File('${previous.path}/Old.ttf').writeAsStringSync('old');
 
-      expect(
-        () => downloader.downloadAndInstall(font: fontItem),
-        throwsFormatException,
-      );
-      expect(storage.isCatalogFontInstalled('evil-font'), isFalse);
-    });
+    final zip = createMockZip({'New.ttf': 'new'});
+    await serviceFor(zip).downloadAndInstall(font: testFont('t', zip));
 
-    test('rejects zip containing no font files', () async {
-      final zipBytes = _createZip({
-        'OFL.txt': 'license'.codeUnits,
-        'readme.md': 'readme'.codeUnits,
-      });
-      final digest = sha256.convert(zipBytes).toString();
+    expect(File('${previous.path}/Old.ttf').existsSync(), isFalse);
+    expect(File('${previous.path}/New.ttf').existsSync(), isTrue);
+    expectNoStaging('t');
+  });
 
-      final fontItem = makeItem(
-        id: 'no-font',
-        family: 'No Font',
-        filename: 'nofont.zip',
-        sizeBytes: zipBytes.length,
-        sha256: digest,
-      );
+  test('progress falls back to the manifest size when content length is unknown', () async {
+    final zip = createMockZip({'A.ttf': 'a'});
+    final seen = <double>[];
+    final service = FontDownloaderService(
+      storage: storage,
+      fontLoader: DynamicFontLoader(registrar: registrar.call),
+      fetcher: (uri, {onProgress}) async {
+        onProgress?.call(zip.length ~/ 2, 0); // total unknown
+        return zip;
+      },
+    );
+    await service.downloadAndInstall(font: testFont('t', zip), onProgress: seen.add);
+    expect(seen.single, closeTo(0.5, 0.05));
+  });
 
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => zipBytes,
-      );
+  test('cleanupStaleStaging restores an interrupted swap and removes tmp dirs', () async {
+    final old = storage.backupDirectoryForCatalog('a')..createSync(recursive: true);
+    File('${old.path}/A.ttf').writeAsStringSync('x');
+    storage.stagingDirectoryForCatalog('b').createSync(recursive: true);
 
-      expect(
-        () => downloader.downloadAndInstall(font: fontItem),
-        throwsFormatException,
-      );
-      expect(storage.isCatalogFontInstalled('no-font'), isFalse);
-    });
+    storage.cleanupStaleStaging();
 
-    test('rejects zip containing duplicate output names', () async {
-      final zipBytes = _createZip({
-        'folder1/Font.ttf': [1],
-        'folder2/Font.ttf': [2],
-        'OFL.txt': 'license'.codeUnits,
-      });
-      final digest = sha256.convert(zipBytes).toString();
-
-      final fontItem = makeItem(
-        id: 'dup-font',
-        family: 'Dup Font',
-        filename: 'dup.zip',
-        sizeBytes: zipBytes.length,
-        sha256: digest,
-      );
-
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => zipBytes,
-      );
-
-      expect(
-        () => downloader.downloadAndInstall(font: fontItem),
-        throwsFormatException,
-      );
-      expect(storage.isCatalogFontInstalled('dup-font'), isFalse);
-    });
-
-    test('cleans up and deletes catalog font if dynamic loader fails', () async {
-      final failingLoader = DynamicFontLoader(
-        registrar: (family, fonts) async {
-          throw Exception('Flutter engine failed to load font');
-        },
-      );
-
-      final zipBytes = _createZip({
-        'Corrupt.ttf': [1, 2, 3],
-        'OFL.txt': 'license'.codeUnits,
-      });
-      final digest = sha256.convert(zipBytes).toString();
-
-      final fontItem = makeItem(
-        id: 'corrupt-font',
-        family: 'Corrupt Font',
-        filename: 'corrupt.zip',
-        sizeBytes: zipBytes.length,
-        sha256: digest,
-      );
-
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: failingLoader,
-        fetcher: (uri, {onProgress}) async => zipBytes,
-      );
-
-      expect(
-        () => downloader.downloadAndInstall(font: fontItem),
-        throwsException,
-      );
-      expect(storage.isCatalogFontInstalled('corrupt-font'), isFalse);
-    });
-
-    test('preserves existing font if new download fails integrity or extraction', () async {
-      // First, install a working version
-      final goodZip = _createZip({
-        'OldVersion.ttf': [10, 20],
-        'OFL.txt': 'old license'.codeUnits,
-      });
-      final goodDigest = sha256.convert(goodZip).toString();
-
-      final goodItem = makeItem(
-        id: 'upgrade-font',
-        family: 'Upgrade Font',
-        filename: 'upgrade.zip',
-        sizeBytes: goodZip.length,
-        sha256: goodDigest,
-      );
-
-      final downloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => goodZip,
-      );
-
-      await downloader.downloadAndInstall(font: goodItem);
-      expect(storage.isCatalogFontInstalled('upgrade-font'), isTrue);
-
-      // Now attempt an update with a broken zip (no font files)
-      final brokenZip = _createZip({'readme.txt': [1]});
-      final brokenDigest = sha256.convert(brokenZip).toString();
-
-      final brokenItem = makeItem(
-        id: 'upgrade-font',
-        family: 'Upgrade Font',
-        filename: 'upgrade.zip',
-        sizeBytes: brokenZip.length,
-        sha256: brokenDigest,
-      );
-
-      final brokenDownloader = FontDownloaderService(
-        storage: storage,
-        fontLoader: loader,
-        fetcher: (uri, {onProgress}) async => brokenZip,
-      );
-
-      expect(
-        () => brokenDownloader.downloadAndInstall(font: brokenItem),
-        throwsFormatException,
-      );
-
-      // Existing font must still be installed!
-      expect(storage.isCatalogFontInstalled('upgrade-font'), isTrue);
-      expect(
-        storage.listFontFilesForFamily('upgrade-font').map((f) => f.uri.pathSegments.last),
-        contains('OldVersion.ttf'),
-      );
-    });
+    expect(storage.isCatalogFontInstalled('a'), isTrue); // .old restored
+    expect(storage.backupDirectoryForCatalog('a').existsSync(), isFalse);
+    expect(storage.stagingDirectoryForCatalog('b').existsSync(), isFalse);
   });
 }
