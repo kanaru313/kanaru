@@ -27,6 +27,7 @@ class PickerHost {
   Future<List<String>> Function() readPaths = () async => ['/m/1', '/m/2'];
   int? excludePlaylistId;
   String? suggestedName;
+  bool viaKeyboard = false;
 
   Future<int> idOf(WidgetTester tester, String name) async {
     final rows = await tester.runAsync(() => db.watchPlaylistSummaries().first);
@@ -78,8 +79,8 @@ Future<PickerHost> pumpPickerHost(
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => addTracksToPlaylistWith(
+            builder: (context) {
+              void open({required bool viaKeyboard}) => addTracksToPlaylistWith(
                 db: db,
                 messenger: ScaffoldMessenger.of(context),
                 l10n: context.l10n,
@@ -91,9 +92,23 @@ Future<PickerHost> pumpPickerHost(
                 label: 'Road album',
                 excludePlaylistId: host.excludePlaylistId,
                 suggestedName: host.suggestedName,
-              ),
-              child: const Text('Open'),
-            ),
+                viaKeyboard: host.viaKeyboard || viaKeyboard,
+              );
+              return CallbackShortcuts(
+                bindings: {
+                  for (final key in const [
+                    LogicalKeyboardKey.enter,
+                    LogicalKeyboardKey.numpadEnter,
+                    LogicalKeyboardKey.space,
+                  ])
+                    SingleActivator(key): () => open(viaKeyboard: true),
+                },
+                child: TextButton(
+                  onPressed: () => open(viaKeyboard: false),
+                  child: const Text('Open'),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -110,8 +125,17 @@ Future<void> settle(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> openPicker(WidgetTester tester) async {
-  await tester.tap(find.text('Open'));
+Future<void> openPicker(
+  WidgetTester tester, {
+  bool viaKeyboard = false,
+}) async {
+  if (viaKeyboard) {
+    Focus.of(tester.element(find.text('Open'))).requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+  } else {
+    await tester.tap(find.text('Open'));
+  }
   await settle(tester);
 }
 

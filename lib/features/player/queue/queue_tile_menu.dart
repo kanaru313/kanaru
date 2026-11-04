@@ -69,6 +69,7 @@ Future<void> openQueueRowMenu(
         l10n: l10n,
         navigator: navigator,
         position: at,
+        viaKeyboard: viaKeyboard,
       ),
     );
     return;
@@ -118,5 +119,6 @@ Future<void> openQueueRowMenu(
     l10n: l10n,
     navigator: navigator,
     position: at,
+    viaKeyboard: viaKeyboard,
   ).run(choice);
 }

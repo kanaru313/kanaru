@@ -13,6 +13,7 @@ import 'widgets/add_to_playlist/add_to_playlist_flow.dart';
 import 'widgets/queue_actions_menu.dart';
 
 final _hostKey = Object();
+final _viaKeyboardKey = Object();
 
 /// What a queue action needs from the widget tree (provider container,
 /// messenger, texts, root navigator, library), captured while the row that
@@ -45,12 +46,33 @@ class QueueHost {
   /// The host of the queue action running right now, if any.
   static QueueHost? get current => Zone.current[_hostKey] as QueueHost?;
 
+  /// True when the current zone runs an action initiated via keyboard.
+  static bool get currentViaKeyboard =>
+      Zone.current[_viaKeyboardKey] as bool? ?? false;
+
+  /// Runs [action] with [viaKeyboard] in effect.
+  static void runWithViaKeyboard(bool viaKeyboard, void Function() action) {
+    if (!viaKeyboard) return action();
+    runZoned(action, zoneValues: {_viaKeyboardKey: true});
+  }
+
   /// Runs [action] so that [enqueueLoaded] and `enqueueFromDatabase` calls made inside it, sync or
   /// async (work started in its zone), use [host]. A null [host] runs
   /// [action] unchanged.
-  static void run(QueueHost? host, void Function() action) {
-    if (host == null) return action();
-    runZoned(action, zoneValues: {_hostKey: host});
+  static void run(
+    QueueHost? host,
+    void Function() action, {
+    bool? viaKeyboard,
+  }) {
+    final keyboard = viaKeyboard ?? currentViaKeyboard;
+    if (host == null && !keyboard) return action();
+    runZoned(
+      action,
+      zoneValues: {
+        _hostKey: ?host,
+        if (keyboard) _viaKeyboardKey: true,
+      },
+    );
   }
 
   /// Copies the local file paths [readPaths] returns (it gets the open
@@ -63,6 +85,7 @@ class QueueHost {
     String label, {
     int? excludePlaylistId,
     String? suggestedName,
+    bool? viaKeyboard,
   }) {
     final db = _db;
     if (db == null) return;
@@ -76,6 +99,7 @@ class QueueHost {
         label: label,
         excludePlaylistId: excludePlaylistId,
         suggestedName: suggestedName,
+        viaKeyboard: viaKeyboard ?? currentViaKeyboard,
       ),
     );
   }

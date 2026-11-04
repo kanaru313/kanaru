@@ -156,6 +156,7 @@ void enqueueFromDatabase(
           for (final t in await read(db, covers)) ?localPathOf(t.uri),
         ],
         label,
+        viaKeyboard: QueueHost.currentViaKeyboard,
       ),
     );
     return;

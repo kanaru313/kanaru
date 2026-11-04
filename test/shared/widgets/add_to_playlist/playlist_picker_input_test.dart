@@ -15,7 +15,7 @@ bool _focusIn<T extends Widget>() =>
 void main() {
   testWidgets('Down moves to a playlist row, Space toggles it', (tester) async {
     await pumpPickerHost(tester, seed: {'Mix': const []});
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
 
     await key(tester, LogicalKeyboardKey.arrowDown);
     expect(_focusIn<CheckboxListTile>(), isTrue);
@@ -28,7 +28,7 @@ void main() {
 
   testWidgets('Enter on a playlist row presses Add', (tester) async {
     final host = await pumpPickerHost(tester, seed: {'Mix': const []});
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
 
     await key(tester, LogicalKeyboardKey.arrowDown);
     await key(tester, LogicalKeyboardKey.space);
@@ -43,7 +43,7 @@ void main() {
     tester,
   ) async {
     await pumpPickerHost(tester, seed: {'Mix': const []});
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
 
     await key(tester, LogicalKeyboardKey.arrowDown);
     await key(tester, LogicalKeyboardKey.enter);
@@ -55,7 +55,7 @@ void main() {
     tester,
   ) async {
     final host = await pumpPickerHost(tester, seed: {'Mix': const []});
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
     await key(tester, LogicalKeyboardKey.arrowDown);
     await key(tester, LogicalKeyboardKey.space);
 
@@ -72,7 +72,7 @@ void main() {
 
   testWidgets('Enter on the New row opens the name dialog', (tester) async {
     await pumpPickerHost(tester);
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
 
     await key(tester, LogicalKeyboardKey.enter);
 
@@ -172,7 +172,7 @@ void main() {
 
   testWidgets('Space on the New row opens the name dialog', (tester) async {
     await pumpPickerHost(tester);
-    await openPicker(tester);
+    await openPicker(tester, viaKeyboard: true);
 
     await key(tester, LogicalKeyboardKey.space);
 

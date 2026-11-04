@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
@@ -48,7 +49,7 @@ class _NowPlayingPlaylistButtonState
   /// press must not open a second picker.
   bool _busy = false;
 
-  Future<void> _add(String path, String title) async {
+  Future<void> _add(String path, String title, {bool viaKeyboard = false}) async {
     if (_busy) return;
     final db = ref.read(libraryDatabaseProvider);
     if (db == null) return;
@@ -65,7 +66,13 @@ class _NowPlayingPlaylistButtonState
         return;
       }
       if (!mounted) return;
-      await addTracksToPlaylist(ref, context, () async => [path], title);
+      await addTracksToPlaylist(
+        ref,
+        context,
+        () async => [path],
+        title,
+        viaKeyboard: viaKeyboard,
+      );
     } catch (error, stack) {
       _log.severe('Adding the current song to a playlist failed', error, stack);
       messenger.showAppSnackBar(AppSnackBarKind.error, l10n.playlistSaveFailed);
@@ -81,11 +88,27 @@ class _NowPlayingPlaylistButtonState
     );
     final path = track == null ? null : localPathOf(track.uri);
     final enabled = path != null && ref.watch(libraryDatabaseProvider) != null;
-    return IconButton(
-      icon: const Icon(AppIcons.playlistAddRounded),
-      iconSize: playerIconSize,
-      tooltip: context.l10n.nowPlayingAddToPlaylist,
-      onPressed: enabled ? () => _add(path, track!.title) : null,
+    void open({required bool viaKeyboard}) {
+      if (path != null && track != null) {
+        _add(path, track.title, viaKeyboard: viaKeyboard);
+      }
+    }
+
+    return CallbackShortcuts(
+      bindings: {
+        for (final key in const [
+          LogicalKeyboardKey.enter,
+          LogicalKeyboardKey.numpadEnter,
+          LogicalKeyboardKey.space,
+        ])
+          SingleActivator(key): () => open(viaKeyboard: true),
+      },
+      child: IconButton(
+        icon: const Icon(AppIcons.playlistAddRounded),
+        iconSize: playerIconSize,
+        tooltip: context.l10n.nowPlayingAddToPlaylist,
+        onPressed: enabled ? () => open(viaKeyboard: false) : null,
+      ),
     );
   }
 }
