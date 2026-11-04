@@ -5,6 +5,7 @@ import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'setting_choice.dart';
+import 'setting_divider.dart';
 import 'setting_row.dart';
 
 /// Appearance › Theme: light or dark, colors taken from the cover, and
@@ -47,6 +48,7 @@ class AppearanceThemeSettingRows extends ConsumerWidget {
             onSelected: notifier.setTheme,
           ),
         ),
+        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsColorFromCover,
           subtitle: l10n.settingsColorFromCoverHint,
@@ -57,6 +59,7 @@ class AppearanceThemeSettingRows extends ConsumerWidget {
             ),
           ),
         ),
+        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsAnimations,
           subtitle: l10n.settingsAnimationsHint,

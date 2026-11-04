@@ -6,6 +6,7 @@ import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'setting_choice.dart';
+import 'setting_divider.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
@@ -62,6 +63,7 @@ class AppearanceTextSettingRows extends ConsumerWidget {
                 notifier.setDisplay(settings.display.copyWith(fontId: id)),
           ),
         ),
+        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsFontScale,
           subtitle: l10n.settingsFontScaleHint,
@@ -77,6 +79,7 @@ class AppearanceTextSettingRows extends ConsumerWidget {
             ),
           ),
         ),
+        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsLanguage,
           subtitle: l10n.settingsLanguageHint,

@@ -5,7 +5,7 @@ import 'setting_row_text.dart';
 
 /// Row width below which the control is built compact (a dropdown rather
 /// than a segmented button), so it leaves the title enough room.
-const _compactBelow = 560.0;
+const _compactBelow = 540.0;
 
 /// Width every compact control gets, so their right and left edges line up
 /// down the list. Fits the longest option (with its icon and arrow) in every
@@ -25,7 +25,7 @@ ButtonStyle settingButtonStyle() => const ButtonStyle(
 );
 
 /// Share of the row a control may take, so the title always keeps a part.
-const _controlMaxShare = 0.6;
+const _controlMaxShare = 0.65;
 
 /// A settings row: [title] with an optional [subtitle], and at its right
 /// a control.

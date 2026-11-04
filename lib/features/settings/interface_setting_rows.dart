@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
+import 'setting_divider.dart';
 import 'setting_row.dart';
 import 'settings_chips_row.dart';
 
@@ -63,6 +64,7 @@ class InterfaceSettingRows extends ConsumerWidget {
               ),
           ],
         ),
+        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsTrackNumbers,
           subtitle: l10n.settingsTrackNumbersHint,

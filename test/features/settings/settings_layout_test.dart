@@ -19,7 +19,7 @@ import '../../core/player/fake_audio_backend.dart';
 
 /// Width of a settings row from which the control is built in full (a
 /// segmented button rather than a dropdown); mirrors `setting_row.dart`.
-const _wideRowFrom = 560.0;
+const _wideRowFrom = 540.0;
 
 void main() {
   // 820 to 940 px windows give 579 to 699 px rows next to the sidebar:
