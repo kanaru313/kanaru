@@ -354,6 +354,34 @@ void main() {
       expect(deleteBtn, findsNothing);
     });
 
+    testWidgets('installed catalog fonts are sorted to the top of catalog section', (
+      tester,
+    ) async {
+      final catalogNotifier = _TestInstalledCatalogFontsNotifier({'roboto', 'lora'});
+
+      await _pumpPage(
+        tester,
+        fontId: 'nunito',
+        overrides: [
+          installedCatalogFontsProvider.overrideWith(() => catalogNotifier),
+        ],
+      );
+
+      final catalogTiles = tester
+          .widgetList<FontCatalogTile>(find.byType(FontCatalogTile))
+          .where((tile) => catalogFontsManifest.any((m) => m.id == tile.id))
+          .toList();
+
+      expect(catalogTiles.length, catalogFontsManifest.length);
+      expect(catalogTiles[0].id, 'roboto');
+      expect(catalogTiles[1].id, 'lora');
+      expect(catalogTiles[0].isInstalled, isTrue);
+      expect(catalogTiles[1].isInstalled, isTrue);
+      for (var i = 2; i < catalogTiles.length; i++) {
+        expect(catalogTiles[i].isInstalled, isFalse);
+      }
+    });
+
     testWidgets('deleting custom font asks for confirmation before deleting', (
       tester,
     ) async {

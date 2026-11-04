@@ -127,6 +127,11 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
     final customFonts = ref.watch(customFontsProvider);
     final downloading = ref.watch(fontDownloadNotifierProvider);
 
+    final sortedCatalogFonts = [
+      ...catalogFontsManifest.where((f) => installedCatalog.contains(f.id)),
+      ...catalogFontsManifest.where((f) => !installedCatalog.contains(f.id)),
+    ];
+
     return SettingsPageScaffold(
       title: l10n.settingsAppearanceFontsTitle,
       actions: [
@@ -191,7 +196,7 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
         SettingsSection(
           title: l10n.settingsFontGroupCatalog,
           children: [
-            for (final font in catalogFontsManifest)
+            for (final font in sortedCatalogFonts)
               SettingCard(
                 child: FontCatalogTile(
                   key: ValueKey(font.id),
