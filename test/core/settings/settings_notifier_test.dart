@@ -618,6 +618,36 @@ void main() {
 
       expect(container.read(settingsSaveFailedProvider), isTrue);
     });
+    test(
+      'resetAllSettings restores defaults while preserving libraryOnboarded',
+      () async {
+        final container = containerFor();
+        final notifier = container.read(settingsProvider.notifier);
+
+        notifier.setTheme(ThemePreference.dark);
+        notifier.setAnimations(false);
+        notifier.markLibraryOnboarded();
+        notifier.setConfirmPluginUninstall(false);
+        notifier.setPlayback(const PlaybackPrefs(fadeOnPlayMs: 500));
+        await notifier.flush();
+
+        expect(container.read(settingsProvider).theme, ThemePreference.dark);
+        expect(container.read(settingsProvider).animations, isFalse);
+        expect(container.read(settingsProvider).libraryOnboarded, isTrue);
+
+        notifier.resetAllSettings();
+        await notifier.flush();
+
+        final reset = container.read(settingsProvider);
+        expect(reset.theme, ThemePreference.system);
+        expect(reset.animations, isTrue);
+        expect(reset.confirmPluginUninstall, isTrue);
+        expect(reset.playback.fadeOnPlayMs, 0);
+        expect(reset.libraryOnboarded, isTrue);
+        expect(stored()['theme'], 'system');
+        expect(stored()['libraryOnboarded'], true);
+      },
+    );
   });
 }
 

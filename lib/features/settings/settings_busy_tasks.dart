@@ -8,6 +8,7 @@ enum SettingsTask {
   listenHistory,
   libraryFolders,
   excludedFolders,
+  resetAll,
 }
 
 /// Clears and folder edits in flight; outlives the rows that start them, so a

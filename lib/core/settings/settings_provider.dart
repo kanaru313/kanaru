@@ -236,6 +236,12 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void markLibraryOnboarded() =>
       _update(state.copyWith(libraryOnboarded: true));
 
+  /// Restores all settings to default values, preserving [libraryOnboarded] so
+  /// the first-run source picker is not re-triggered.
+  void resetAllSettings() => _update(
+    const AppSettings().copyWith(libraryOnboarded: state.libraryOnboarded),
+  );
+
   /// Completes when every change made so far is on disk: nothing is being
   /// written and nothing is waiting.
   @visibleForTesting
