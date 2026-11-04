@@ -5,7 +5,7 @@ import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 
 const fontPreviewSampleText = 'Aa Bb Cc Gg Qq Rr Yy 0123456789';
-const kFontPreviewHeight = 56.0;
+const kFontPreviewHeight = 44.0;
 
 class FontCatalogTile extends StatelessWidget {
   const FontCatalogTile({
@@ -68,6 +68,7 @@ class FontCatalogTile extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16,
               fontFamily: isInstalled ? family : null,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               color: titleColor,
@@ -78,7 +79,8 @@ class FontCatalogTile extends StatelessWidget {
             fontPreviewSampleText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: 14,
               fontFamily: isInstalled ? family : null,
               color: colors.onSurfaceVariant.withValues(alpha: 0.8),
             ),
