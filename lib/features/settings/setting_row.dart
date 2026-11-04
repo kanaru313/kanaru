@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'full_or_compact_control.dart';
+import 'setting_card.dart';
 import 'setting_row_text.dart';
 
 /// Row width below which the control is built compact (a dropdown rather
@@ -73,24 +74,26 @@ class SettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => ConstrainedBox(
-        // As tall as a one-line list tile.
-        constraints: const BoxConstraints(minHeight: 56),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: SettingRowText(
-                  title: title,
-                  subtitle: subtitle,
-                  comingSoon: comingSoon,
+    return SettingCard(
+      child: LayoutBuilder(
+        builder: (context, constraints) => ConstrainedBox(
+          // As tall as a one-line list tile.
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SettingRowText(
+                    title: title,
+                    subtitle: subtitle,
+                    comingSoon: comingSoon,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              _control(constraints.maxWidth),
-            ],
+                const SizedBox(width: 16),
+                _control(constraints.maxWidth),
+              ],
+            ),
           ),
         ),
       ),

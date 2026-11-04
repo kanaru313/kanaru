@@ -10,6 +10,7 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/translation_plugin_routes.dart';
 import '../../shared/translation_service_name.dart';
+import 'setting_card.dart';
 
 /// Under the service picker: one row per installed translate plugin, which
 /// opens its page (config, key, uninstall), and a row to the plugin store on
@@ -27,19 +28,23 @@ class TranslationPluginRows extends ConsumerWidget {
       children: [
         for (final record in live)
           if (TranslationServiceId.tryParse(record.installId) case final id?)
-            ListTile(
-              leading: PluginIcon(record: record, size: 32),
-              title: Text(translationServiceName(l10n, plugins, id)),
-              subtitle: Text('v${record.version}'),
-              trailing: const Icon(AppIcons.chevronRight),
-              onTap: () => context.go(translationPluginRoute(record.installId)),
+            SettingCard(
+              child: ListTile(
+                leading: PluginIcon(record: record, size: 32),
+                title: Text(translationServiceName(l10n, plugins, id)),
+                subtitle: Text('v${record.version}'),
+                trailing: const Icon(AppIcons.chevronRight),
+                onTap: () => context.go(translationPluginRoute(record.installId)),
+              ),
             ),
-        ListTile(
-          leading: const Icon(AppIcons.download),
-          title: Text(l10n.settingsTranslationGetServices),
-          subtitle: Text(l10n.settingsTranslationGetServicesHint),
-          trailing: const Icon(AppIcons.chevronRight),
-          onTap: () => context.go(translationPluginsRoute),
+        SettingCard(
+          child: ListTile(
+            leading: const Icon(AppIcons.download),
+            title: Text(l10n.settingsTranslationGetServices),
+            subtitle: Text(l10n.settingsTranslationGetServicesHint),
+            trailing: const Icon(AppIcons.chevronRight),
+            onTap: () => context.go(translationPluginsRoute),
+          ),
         ),
       ],
     );

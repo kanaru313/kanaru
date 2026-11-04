@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import 'setting_card.dart';
 
 /// One excluded folder with a button that stops excluding it.
 ///
@@ -31,26 +32,28 @@ class ExcludedFolderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final inactive = note != null;
-    return ListTile(
-      leading: Icon(inactive ? AppIcons.folderOff : AppIcons.folderOutlined),
-      title: Tooltip(
-        message: path,
-        child: Text(
-          path,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: inactive
-              ? theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.38),
-                )
-              : theme.textTheme.bodyLarge,
+    return SettingCard(
+      child: ListTile(
+        leading: Icon(inactive ? AppIcons.folderOff : AppIcons.folderOutlined),
+        title: Tooltip(
+          message: path,
+          child: Text(
+            path,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: inactive
+                ? theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.38),
+                  )
+                : theme.textTheme.bodyLarge,
+          ),
         ),
-      ),
-      subtitle: note == null ? null : Text(note!),
-      trailing: IconButton(
-        icon: const Icon(AppIcons.deleteOutline),
-        tooltip: context.l10n.excludedFoldersRemove,
-        onPressed: enabled ? onRemove : null,
+        subtitle: note == null ? null : Text(note!),
+        trailing: IconButton(
+          icon: const Icon(AppIcons.deleteOutline),
+          tooltip: context.l10n.excludedFoldersRemove,
+          onPressed: enabled ? onRemove : null,
+        ),
       ),
     );
   }

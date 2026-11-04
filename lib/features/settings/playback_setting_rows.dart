@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import 'setting_choice.dart';
-import 'setting_divider.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
 
@@ -37,7 +36,6 @@ class PlaybackSettingRows extends ConsumerWidget {
                 settings.setPlayback(p.copyWith(fadeOnPlayMs: ms)),
           ),
         ),
-        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsFadeOnPause,
           subtitle: l10n.settingsFadeOnPauseHint,
@@ -52,7 +50,6 @@ class PlaybackSettingRows extends ConsumerWidget {
                 settings.setPlayback(p.copyWith(fadeOnPauseMs: ms)),
           ),
         ),
-        const SettingDivider(),
         SettingRow.single(
           title: l10n.settingsInfiniteQueue,
           subtitle: l10n.settingsInfiniteQueueHint,
@@ -62,7 +59,6 @@ class PlaybackSettingRows extends ConsumerWidget {
                 settings.setPlayback(p.copyWith(infiniteQueue: on)),
           ),
         ),
-        const SettingDivider(),
         SettingRow(
           title: l10n.settingsListenAfterTime,
           subtitle: l10n.settingsListenAfterTimeHint,

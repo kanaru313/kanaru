@@ -6,9 +6,10 @@ import '../../core/logging/app_logging.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/open_external.dart';
-import '../../shared/widgets/kanaru_logo.dart';
-import 'settings_section.dart';
 import '../../shared/widgets/app_snack_bar.dart';
+import '../../shared/widgets/kanaru_logo.dart';
+import 'setting_card.dart';
+import 'settings_section.dart';
 
 const _licenseName = 'GPL-3.0-or-later';
 
@@ -26,36 +27,42 @@ class AboutSettingsSection extends ConsumerWidget {
       title: null,
       children: [
         const _AboutHeader(),
-        ListTile(
-          title: Text(l10n.settingsLicense),
-          subtitle: const Text(_licenseName),
-        ),
-        ListTile(
-          title: Text(l10n.settingsOpenSourceLicenses),
-          trailing: const Icon(AppIcons.chevronRight),
-          onTap: () => showLicensePage(
-            context: context,
-            applicationName: l10n.appTitle,
-            applicationVersion: kanaruVersion,
+        SettingCard(
+          child: ListTile(
+            title: Text(l10n.settingsLicense),
+            subtitle: const Text(_licenseName),
           ),
         ),
-        ListTile(
-          title: Text(l10n.settingsSourceCode),
-          subtitle: const Text(kanaruRepositoryUrl),
-          trailing: const Icon(AppIcons.openExternal),
-          onTap: () async {
-            final messenger = ScaffoldMessenger.of(context);
-            final opened = await ref.read(openExternalProvider)(
-              kanaruRepositoryUrl,
-            );
-            if (opened) return;
-            messenger.showSnackBar(
-              appSnackBar(
-                kind: AppSnackBarKind.error,
-                title: l10n.settingsOpenFailed(kanaruRepositoryUrl),
-              ),
-            );
-          },
+        SettingCard(
+          child: ListTile(
+            title: Text(l10n.settingsOpenSourceLicenses),
+            trailing: const Icon(AppIcons.chevronRight),
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: l10n.appTitle,
+              applicationVersion: kanaruVersion,
+            ),
+          ),
+        ),
+        SettingCard(
+          child: ListTile(
+            title: Text(l10n.settingsSourceCode),
+            subtitle: const Text(kanaruRepositoryUrl),
+            trailing: const Icon(AppIcons.openExternal),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final opened = await ref.read(openExternalProvider)(
+                kanaruRepositoryUrl,
+              );
+              if (opened) return;
+              messenger.showSnackBar(
+                appSnackBar(
+                  kind: AppSnackBarKind.error,
+                  title: l10n.settingsOpenFailed(kanaruRepositoryUrl),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );

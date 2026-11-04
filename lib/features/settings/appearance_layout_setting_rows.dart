@@ -5,7 +5,6 @@ import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import 'setting_choice.dart';
-import 'setting_divider.dart';
 import 'setting_row.dart';
 
 /// Appearance › Layout, after the interface rows: the seek bar style of Now
@@ -33,7 +32,6 @@ class AppearanceLayoutSettingRows extends ConsumerWidget {
             ),
           ),
         ),
-        const SettingDivider(),
         SettingRow(
           title: l10n.settingsTitleBar,
           subtitle: settings.titleBar != initial.titleBar

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import 'setting_card.dart';
 
 /// How long the remove button takes to fade in or out.
 const _fadeDuration = Duration(milliseconds: 100);
@@ -55,36 +56,38 @@ class _LibraryFolderRowState extends State<LibraryFolderRow> {
         ? Duration.zero
         : _fadeDuration;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      // Only reports focus inside the row: it is no Tab stop itself.
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        onFocusChange: (focused) => setState(() => _focused = focused),
-        child: ListTile(
-          leading: Icon(missing ? AppIcons.folderOff : AppIcons.folderOutlined),
-          title: Tooltip(
-            message: widget.path,
-            child: Text(
-              widget.path,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: pathStyle,
+    return SettingCard(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        // Only reports focus inside the row: it is no Tab stop itself.
+        child: Focus(
+          canRequestFocus: false,
+          skipTraversal: true,
+          onFocusChange: (focused) => setState(() => _focused = focused),
+          child: ListTile(
+            leading: Icon(missing ? AppIcons.folderOff : AppIcons.folderOutlined),
+            title: Tooltip(
+              message: widget.path,
+              child: Text(
+                widget.path,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: pathStyle,
+              ),
             ),
-          ),
-          subtitle: missing ? Text(l10n.settingsFolderMissing) : null,
-          trailing: AnimatedOpacity(
-            opacity: missing || _hovered || _focused ? 1 : 0,
-            duration: fade,
-            // Hidden is only visual: screen readers still find the button.
-            alwaysIncludeSemantics: true,
-            child: IconButton(
-              icon: const Icon(AppIcons.deleteOutline),
-              tooltip: l10n.settingsRemoveFolder,
-              color: missing ? colors.error : colors.onSurface,
-              onPressed: widget.enabled ? widget.onRemove : null,
+            subtitle: missing ? Text(l10n.settingsFolderMissing) : null,
+            trailing: AnimatedOpacity(
+              opacity: missing || _hovered || _focused ? 1 : 0,
+              duration: fade,
+              // Hidden is only visual: screen readers still find the button.
+              alwaysIncludeSemantics: true,
+              child: IconButton(
+                icon: const Icon(AppIcons.deleteOutline),
+                tooltip: l10n.settingsRemoveFolder,
+                color: missing ? colors.error : colors.onSurface,
+                onPressed: widget.enabled ? widget.onRemove : null,
+              ),
             ),
           ),
         ),
