@@ -196,14 +196,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get alreadyInPlaylistTitle => 'Đã có trong playlist';
 
   @override
-  String alreadyInPlaylistOne(int songs) {
+  String alreadyInPlaylistOneAll(int songs, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       songs,
       locale: localeName,
-      other: 'Một số trong $songs bài đã có trong playlist này.',
-      one: 'Bài này đã có trong playlist.',
+      other: 'Cả $songs bài hát đều đã có trong playlist “$name”.',
+      one: 'Bài này đã có trong playlist “$name”.',
     );
     return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistOneSome(int held, int songs, String name) {
+    return '$held trong số $songs bài hát đã có trong playlist “$name”.';
   }
 
   @override
@@ -220,8 +225,19 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String alreadyInPlaylistRowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cả $count bài đã có',
+      one: 'Đã có',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String alreadyInPlaylistRow(int held, int songs) {
-    return '$held/$songs bài';
+    return '$held/$songs bài đã có';
   }
 
   @override

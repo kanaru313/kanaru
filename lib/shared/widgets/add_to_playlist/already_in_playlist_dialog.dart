@@ -41,6 +41,20 @@ class _AlreadyInPlaylistDialog extends StatefulWidget {
 class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
   PlaylistAddMode? _mode;
 
+  String _buildDescription(AppLocalizations l10n, int n) {
+    final affected = widget.affected;
+
+    if (affected.length > 1) {
+      return l10n.alreadyInPlaylistMany(n, affected.length);
+    }
+
+    final first = affected.first;
+
+    return first.held >= n
+        ? l10n.alreadyInPlaylistOneAll(n, first.name)
+        : l10n.alreadyInPlaylistOneSome(first.held, n, first.name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -49,6 +63,7 @@ class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
     // Songs held more than once count once per playlist, as in the rows.
     final held = widget.affected.fold<int>(0, (sum, a) => sum + a.held);
     final nothingNew = widget.affected.every((a) => a.held >= n);
+    final description = _buildDescription(l10n, n);
     return AlertDialog(
       title: Text(l10n.alreadyInPlaylistTitle),
       content: SizedBox(
@@ -60,13 +75,11 @@ class _AlreadyInPlaylistDialogState extends State<_AlreadyInPlaylistDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  many
-                      ? l10n.alreadyInPlaylistMany(n, widget.affected.length)
-                      : l10n.alreadyInPlaylistOne(n),
-                ),
-                const SizedBox(height: 12),
-                _AffectedList(affected: widget.affected, songCount: n),
+                Text(description),
+                if (many) ...[
+                  const SizedBox(height: 12),
+                  _AffectedList(affected: widget.affected, songCount: n),
+                ],
                 const SizedBox(height: 8),
                 RadioGroup<PlaylistAddMode>(
                   groupValue: _mode,
@@ -141,29 +154,51 @@ class _AffectedList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      constraints: const BoxConstraints(maxHeight: 120),
+      constraints: const BoxConstraints(maxHeight: 140),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: scheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ListView(
+      child: ListView.separated(
         shrinkWrap: true,
-        children: [
-          for (final a in affected)
-            Row(
-              children: [
-                Expanded(child: Text(a.name, overflow: TextOverflow.ellipsis)),
-                const SizedBox(width: 12),
-                Text(
-                  context.l10n.alreadyInPlaylistRow(a.held, songCount),
-                  style: TextStyle(color: scheme.onSurfaceVariant),
+        padding: EdgeInsets.zero,
+        itemCount: affected.length,
+        separatorBuilder: (_, _) => Divider(
+          height: 16,
+          thickness: 0.5,
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+        itemBuilder: (context, index) {
+          final a = affected[index];
+          final countText = a.held >= songCount
+              ? l10n.alreadyInPlaylistRowAll(a.held)
+              : l10n.alreadyInPlaylistRow(a.held, songCount);
+          return Row(
+            children: [
+              Icon(
+                AppIcons.playlistOutlined,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  a.name,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-        ],
+              ),
+              const SizedBox(width: 12),
+              Text(
+                countText,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

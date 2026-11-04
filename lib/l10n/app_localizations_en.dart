@@ -217,12 +217,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyInPlaylistTitle => 'Already in playlist';
 
   @override
-  String alreadyInPlaylistOne(int songs) {
+  String alreadyInPlaylistOneAll(int songs, String name) {
     String _temp0 = intl.Intl.pluralLogic(
       songs,
       locale: localeName,
-      other: 'Some of the $songs songs are already in this playlist.',
-      one: 'This song is already in this playlist.',
+      other: 'All $songs songs are already in “$name”.',
+      one: 'This song is already in “$name”.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alreadyInPlaylistOneSome(int held, int songs, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      held,
+      locale: localeName,
+      other: '$held of the $songs songs are already in “$name”.',
+      one: '1 of the $songs songs is already in “$name”.',
     );
     return '$_temp0';
   }
@@ -241,8 +252,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String alreadyInPlaylistRowAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'All $count already in',
+      one: 'Already in',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String alreadyInPlaylistRow(int held, int songs) {
-    return '$held of $songs';
+    return '$held of $songs already in';
   }
 
   @override

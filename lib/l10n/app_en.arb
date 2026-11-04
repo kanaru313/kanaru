@@ -136,11 +136,28 @@
     }
   },
   "alreadyInPlaylistTitle": "Already in playlist",
-  "alreadyInPlaylistOne": "{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}",
-  "@alreadyInPlaylistOne": {
+  "alreadyInPlaylistOneAll": "{songs, plural, =1{This song is already in “{name}”.} other{All {songs} songs are already in “{name}”.}}",
+  "@alreadyInPlaylistOneAll": {
     "placeholders": {
       "songs": {
         "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyInPlaylistOneSome": "{held, plural, =1{1 of the {songs} songs is already in “{name}”.} other{{held} of the {songs} songs are already in “{name}”.}}",
+  "@alreadyInPlaylistOneSome": {
+    "placeholders": {
+      "held": {
+        "type": "int"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
       }
     }
   },
@@ -155,7 +172,15 @@
       }
     }
   },
-  "alreadyInPlaylistRow": "{held} of {songs}",
+  "alreadyInPlaylistRowAll": "{count, plural, =1{Already in} other{All {count} already in}}",
+  "@alreadyInPlaylistRowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alreadyInPlaylistRow": "{held} of {songs} already in",
   "@alreadyInPlaylistRow": {
     "placeholders": {
       "held": {

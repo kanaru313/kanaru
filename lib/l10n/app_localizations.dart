@@ -398,11 +398,17 @@ abstract class AppLocalizations {
   /// **'Already in playlist'**
   String get alreadyInPlaylistTitle;
 
-  /// No description provided for @alreadyInPlaylistOne.
+  /// No description provided for @alreadyInPlaylistOneAll.
   ///
   /// In en, this message translates to:
-  /// **'{songs, plural, =1{This song is already in this playlist.} other{Some of the {songs} songs are already in this playlist.}}'**
-  String alreadyInPlaylistOne(int songs);
+  /// **'{songs, plural, =1{This song is already in “{name}”.} other{All {songs} songs are already in “{name}”.}}'**
+  String alreadyInPlaylistOneAll(int songs, String name);
+
+  /// No description provided for @alreadyInPlaylistOneSome.
+  ///
+  /// In en, this message translates to:
+  /// **'{held, plural, =1{1 of the {songs} songs is already in “{name}”.} other{{held} of the {songs} songs are already in “{name}”.}}'**
+  String alreadyInPlaylistOneSome(int held, int songs, String name);
 
   /// No description provided for @alreadyInPlaylistMany.
   ///
@@ -410,10 +416,16 @@ abstract class AppLocalizations {
   /// **'{songs, plural, =1{This song is already in {count} of the playlists. Your choice applies to all of them.} other{Some of the {songs} songs are already in {count} of the playlists. Your choice applies to all of them.}}'**
   String alreadyInPlaylistMany(int songs, int count);
 
+  /// No description provided for @alreadyInPlaylistRowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already in} other{All {count} already in}}'**
+  String alreadyInPlaylistRowAll(int count);
+
   /// No description provided for @alreadyInPlaylistRow.
   ///
   /// In en, this message translates to:
-  /// **'{held} of {songs}'**
+  /// **'{held} of {songs} already in'**
   String alreadyInPlaylistRow(int held, int songs);
 
   /// No description provided for @alreadyInPlaylistReplace.
