@@ -37,9 +37,11 @@ class PluginConfigSecretField extends ConsumerStatefulWidget {
 
 class _State extends ConsumerState<PluginConfigSecretField>
     with PluginConfigCommit<PluginConfigSecretField> {
-  final TextEditingController _text = TextEditingController();
+  late final TextEditingController _text = TextEditingController()
+    ..addListener(_onTextChanged);
   late final FocusNode _focus = FocusNode()..addListener(_onFocus);
   late bool _hasSecret = widget.hasSavedSecret;
+  late bool _hasText = _text.text.isNotEmpty;
   bool _revealed = false;
 
   @override
@@ -60,9 +62,25 @@ class _State extends ConsumerState<PluginConfigSecretField>
   }
 
   @override
+  void didUpdateWidget(PluginConfigSecretField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hasSavedSecret != widget.hasSavedSecret) {
+      _hasSecret = widget.hasSavedSecret;
+    }
+  }
+
+  void _onTextChanged() {
+    final hasText = _text.text.isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() => _hasText = hasText);
+    }
+  }
+
+  @override
   void onCommitted(Object? payload) {
     setState(() {
       _hasSecret = true;
+      _revealed = false;
       // Text typed during the save stays.
       if (_text.text == payload) _text.clear();
     });
@@ -91,10 +109,41 @@ class _State extends ConsumerState<PluginConfigSecretField>
     if (!mounted) return;
     final message = result.message;
     setState(() {
-      if (message == null) _hasSecret = false;
+      if (message == null) {
+        _hasSecret = false;
+        _revealed = false;
+      }
       commitError = message;
     });
     if (message == null) commitChanged();
+  }
+
+  Widget? _suffixIcon(AppLocalizations l10n) {
+    final showClear = _hasSecret && !_hasText;
+    final showReveal = _hasText;
+    if (!showClear && !showReveal) return null;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showClear)
+          IconButton(
+            tooltip: l10n.pluginSecretClear,
+            icon: const Icon(AppIcons.closeRounded),
+            onPressed: _clearSecret,
+          ),
+        if (showReveal)
+          IconButton(
+            tooltip: _revealed
+                ? l10n.pluginSecretHide
+                : l10n.pluginSecretShow,
+            icon: Icon(
+              _revealed ? AppIcons.visibilityOff : AppIcons.visibility,
+            ),
+            onPressed: () => setState(() => _revealed = !_revealed),
+          ),
+      ],
+    );
   }
 
   @override
@@ -128,27 +177,11 @@ class _State extends ConsumerState<PluginConfigSecretField>
               helperStyle: widget.usingFallback
                   ? TextStyle(color: theme.colorScheme.tertiary)
                   : null,
+              floatingLabelBehavior: _hasSecret
+                  ? FloatingLabelBehavior.always
+                  : FloatingLabelBehavior.auto,
               hintText: _hasSecret ? '••••••••' : widget.field.placeholder,
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_hasSecret)
-                    IconButton(
-                      tooltip: l10n.pluginSecretClear,
-                      icon: const Icon(AppIcons.closeRounded),
-                      onPressed: _clearSecret,
-                    ),
-                  IconButton(
-                    tooltip: _revealed
-                        ? l10n.pluginSecretHide
-                        : l10n.pluginSecretShow,
-                    icon: Icon(
-                      _revealed ? AppIcons.visibilityOff : AppIcons.visibility,
-                    ),
-                    onPressed: () => setState(() => _revealed = !_revealed),
-                  ),
-                ],
-              ),
+              suffixIcon: _suffixIcon(l10n),
             ),
           ),
         ),

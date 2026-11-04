@@ -291,11 +291,17 @@ void main() {
       );
       expect(editable().obscureText, isTrue);
       expect(find.text(en.pluginSecretNote), findsOneWidget);
+      // While empty and unsaved, no suffix icon is shown.
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Cookie'),
         's3cret',
       );
+      await tester.pump();
+      // While typing, the reveal button appears and clear button stays hidden.
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
       await tester.tap(find.byTooltip(en.pluginSecretShow));
       await tester.pump();
       expect(editable().obscureText, isFalse);
@@ -309,6 +315,10 @@ void main() {
       // The value is not kept in the box; the note says it is saved.
       expect(find.text('s3cret'), findsNothing);
       expect(find.text(en.pluginSecretSaved), findsOneWidget);
+      // Once saved and cleared, reveal is hidden and clear button appears.
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      expect(find.byTooltip(en.pluginSecretClear), findsOneWidget);
+      expect(find.text('••••••••'), findsOneWidget);
     });
 
     testWidgets('a saved secret says so and can be removed', (tester) async {
@@ -316,10 +326,30 @@ void main() {
       await open(tester, withConfig, plugins: plugins);
 
       expect(find.text(en.pluginSecretSaved), findsOneWidget);
+      expect(find.text('••••••••'), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretClear), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      final field = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Cookie'),
+      );
+      expect(
+        field.decoration?.floatingLabelBehavior,
+        FloatingLabelBehavior.always,
+      );
+
       await tester.tap(find.byTooltip(en.pluginSecretClear));
       await tester.pumpAndSettle();
       expect(plugins.configWrites, [(idA, 'cookie', '')]);
       expect(find.text(en.pluginSecretNote), findsOneWidget);
+      expect(find.byTooltip(en.pluginSecretClear), findsNothing);
+      expect(find.byTooltip(en.pluginSecretShow), findsNothing);
+      final cleared = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Cookie'),
+      );
+      expect(
+        cleared.decoration?.floatingLabelBehavior,
+        FloatingLabelBehavior.auto,
+      );
     });
 
     testWidgets('without a system keyring the fallback warning replaces it', (
