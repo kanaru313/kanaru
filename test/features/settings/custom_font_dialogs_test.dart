@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/settings/custom_font_dialogs.dart';
 import 'package:kanaru/l10n/l10n.dart';
+import 'package:material_ui/material_ui.dart';
 
 Widget _buildTestApp({required Widget Function(BuildContext) builder}) {
   return MaterialApp(
