@@ -113,6 +113,31 @@ void main() {
     expect(find.text('Songs you like will show up here.'), findsOneWidget);
   });
 
+  testWidgets(
+    'clearing all favorites from the page modal shows the empty message',
+    (tester) async {
+      await openApp(tester, h, ['a', 'b'], location: '/favorites');
+      await like(tester, ['a', 'b']);
+      final paths = await trackPaths(tester, h);
+
+      await openPageModal(tester);
+      await tapModalAction(tester, 'advanced');
+      await tapModalAction(tester, 'clear-favorites');
+      await tester.tap(find.text('Clear'));
+      await settleDb(tester);
+
+      expect(find.text('Songs you like will show up here.'), findsOneWidget);
+      expect(
+        await tester.runAsync(() => h.db.isFavorite(paths['a']!)),
+        isFalse,
+      );
+      expect(
+        await tester.runAsync(() => h.db.isFavorite(paths['b']!)),
+        isFalse,
+      );
+    },
+  );
+
   testWidgets('its playlist URL shows it the same way', (tester) async {
     await openApp(tester, h, ['a']);
     await like(tester, ['a']);

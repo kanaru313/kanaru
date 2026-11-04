@@ -1597,6 +1597,40 @@
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
   },
+  "favoritesClear": "Clear all favorites",
+  "@favoritesClear": {
+    "description": "Row on the Advanced page of the Favorites modal that clears every liked song"
+  },
+  "favoritesClearHint": "Remove every song from Favorites",
+  "@favoritesClearHint": {
+    "description": "Subtitle of the Clear all favorites row"
+  },
+  "favoritesClearTitle": "Clear all favorites?",
+  "@favoritesClearTitle": {
+    "description": "Title of the dialog asking whether to clear all favorites"
+  },
+  "favoritesClearBody": "{count, plural, =1{1 song will be removed from Favorites.} other{{count} songs will be removed from Favorites.}} The songs stay in your library.",
+  "@favoritesClearBody": {
+    "description": "Body of the dialog asking whether to clear all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesClearConfirm": "Clear",
+  "@favoritesClearConfirm": {
+    "description": "Confirm button on the dialog asking whether to clear all favorites"
+  },
+  "favoritesCleared": "{count, plural, =0{No favorites to clear} =1{Cleared 1 song from Favorites} other{Cleared {count} songs from Favorites}}",
+  "@favoritesCleared": {
+    "description": "Snackbar after clearing all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "favoritesCopyDefaultName": "Favorites ({date})",
   "@favoritesCopyDefaultName": {
     "description": "Suggested name of a new playlist copied from Favorites",

@@ -844,6 +844,40 @@
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
   },
+  "favoritesClear": "Xoá hết trong Yêu thích",
+  "@favoritesClear": {
+    "description": "Row on the Advanced page of the Favorites modal that clears every liked song"
+  },
+  "favoritesClearHint": "Bỏ tất cả bài hát khỏi Yêu thích",
+  "@favoritesClearHint": {
+    "description": "Subtitle of the Clear all favorites row"
+  },
+  "favoritesClearTitle": "Xoá tất cả bài hát yêu thích?",
+  "@favoritesClearTitle": {
+    "description": "Title of the dialog asking whether to clear all favorites"
+  },
+  "favoritesClearBody": "{count, plural, other{Tất cả {count} bài hát sẽ bị bỏ khỏi Yêu thích.}} Bài hát vẫn còn trong thư viện.",
+  "@favoritesClearBody": {
+    "description": "Body of the dialog asking whether to clear all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "favoritesClearConfirm": "Xoá hết",
+  "@favoritesClearConfirm": {
+    "description": "Confirm button on the dialog asking whether to clear all favorites"
+  },
+  "favoritesCleared": "{count, plural, =0{Không có gì để xoá} other{Đã xoá {count} bài hát khỏi Yêu thích}}",
+  "@favoritesCleared": {
+    "description": "Snackbar after clearing all favorites",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "favoritesCopyDefaultName": "Yêu thích ({date})",
   "playlistM3uImport": "Nhập M3U…",
   "@playlistM3uImport": {

@@ -2134,6 +2134,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesRemoved => 'Removed from Favorites';
 
   @override
+  String get favoritesClear => 'Clear all favorites';
+
+  @override
+  String get favoritesClearHint => 'Remove every song from Favorites';
+
+  @override
+  String get favoritesClearTitle => 'Clear all favorites?';
+
+  @override
+  String favoritesClearBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs will be removed from Favorites.',
+      one: '1 song will be removed from Favorites.',
+    );
+    return '$_temp0 The songs stay in your library.';
+  }
+
+  @override
+  String get favoritesClearConfirm => 'Clear';
+
+  @override
+  String favoritesCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cleared $count songs from Favorites',
+      one: 'Cleared 1 song from Favorites',
+      zero: 'No favorites to clear',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String favoritesCopyDefaultName(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
     final String dateString = dateDateFormat.format(date);

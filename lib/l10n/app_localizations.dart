@@ -3140,6 +3140,42 @@ abstract class AppLocalizations {
   /// **'Removed from Favorites'**
   String get favoritesRemoved;
 
+  /// Row on the Advanced page of the Favorites modal that clears every liked song
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all favorites'**
+  String get favoritesClear;
+
+  /// Subtitle of the Clear all favorites row
+  ///
+  /// In en, this message translates to:
+  /// **'Remove every song from Favorites'**
+  String get favoritesClearHint;
+
+  /// Title of the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all favorites?'**
+  String get favoritesClearTitle;
+
+  /// Body of the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song will be removed from Favorites.} other{{count} songs will be removed from Favorites.}} The songs stay in your library.'**
+  String favoritesClearBody(int count);
+
+  /// Confirm button on the dialog asking whether to clear all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get favoritesClearConfirm;
+
+  /// Snackbar after clearing all favorites
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No favorites to clear} =1{Cleared 1 song from Favorites} other{Cleared {count} songs from Favorites}}'**
+  String favoritesCleared(int count);
+
   /// Suggested name of a new playlist copied from Favorites
   ///
   /// In en, this message translates to:

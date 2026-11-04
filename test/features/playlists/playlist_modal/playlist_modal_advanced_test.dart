@@ -244,4 +244,69 @@ void main() {
       expect(paths.any((p) => p.contains('gone')), isFalse);
     });
   });
+
+  group('Clear all favorites', () {
+    Future<int> openFavorites(
+      WidgetTester tester, {
+      List<String> titles = const ['a', 'b'],
+    }) async {
+      await insertTracks(tester, h, const [TestTrack('a'), TestTrack('b')]);
+      final id = (await tester.runAsync(
+        () => h.db.ensureFavoritesPlaylist(now: 1),
+      ))!;
+      final paths = await trackPaths(tester, h);
+      for (final title in titles) {
+        await tester.runAsync(
+          () => h.db.setFavorite(paths[title]!, favorite: true, now: 1),
+        );
+      }
+      await pumpModalHost(tester, h, id: id);
+      await openPlaylistModalOf(tester);
+      await tapModalAction(tester, 'advanced');
+      return id;
+    }
+
+    testWidgets('cancelling dialog keeps favorites and leaves modal open', (
+      tester,
+    ) async {
+      final id = await openFavorites(tester);
+      await tapModalAction(tester, 'clear-favorites');
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Clear all favorites?'), findsOneWidget);
+      expect(
+        find.text(
+          '2 songs will be removed from Favorites. The songs stay in your library.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await settleModal(tester);
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(modalAction('clear-favorites'), findsOneWidget);
+      expect(await storedPaths(tester, h, id), hasLength(2));
+    });
+
+    testWidgets(
+      'confirming dialog clears favorites, closes modal, and says so',
+      (tester) async {
+        final id = await openFavorites(tester);
+        await tapModalAction(tester, 'clear-favorites');
+
+        await tester.tap(find.text('Clear'));
+        await settleModal(tester);
+
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(
+          modalAction('clear-favorites'),
+          findsNothing,
+          reason: 'modal closed',
+        );
+        expect(await storedPaths(tester, h, id), isEmpty);
+        expect(find.text('Cleared 2 songs from Favorites'), findsOneWidget);
+      },
+    );
+  });
 }

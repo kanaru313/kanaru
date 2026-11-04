@@ -70,7 +70,8 @@ PlaylistModalData watchPlaylistModalData(
 
 /// What the actions do. Each one runs after the modal has closed, except
 /// [openAdvanced], which pushes a page, [edit], which opens a dialog above
-/// the open modal, and [delete], which closes the modal only once confirmed.
+/// the open modal, and [delete] and [clearFavorites], which close the modal
+/// only once confirmed.
 class PlaylistModalHandlers {
   const PlaylistModalHandlers({
     required this.goToPlaylist,
@@ -86,6 +87,7 @@ class PlaylistModalHandlers {
     required this.removeDuplicates,
     required this.removeMissing,
     this.openAdvanced,
+    this.clearFavorites,
   });
 
   final VoidCallback goToPlaylist;
@@ -103,4 +105,5 @@ class PlaylistModalHandlers {
   final VoidCallback removeDuplicates;
   final VoidCallback removeMissing;
   final void Function(ContextModalNav nav)? openAdvanced;
+  final void Function(ContextModalNav nav)? clearFavorites;
 }

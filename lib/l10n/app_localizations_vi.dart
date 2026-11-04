@@ -2031,6 +2031,39 @@ class AppLocalizationsVi extends AppLocalizations {
   String get favoritesRemoved => 'Đã bỏ khỏi Yêu thích';
 
   @override
+  String get favoritesClear => 'Xoá hết trong Yêu thích';
+
+  @override
+  String get favoritesClearHint => 'Bỏ tất cả bài hát khỏi Yêu thích';
+
+  @override
+  String get favoritesClearTitle => 'Xoá tất cả bài hát yêu thích?';
+
+  @override
+  String favoritesClearBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tất cả $count bài hát sẽ bị bỏ khỏi Yêu thích.',
+    );
+    return '$_temp0 Bài hát vẫn còn trong thư viện.';
+  }
+
+  @override
+  String get favoritesClearConfirm => 'Xoá hết';
+
+  @override
+  String favoritesCleared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Đã xoá $count bài hát khỏi Yêu thích',
+      zero: 'Không có gì để xoá',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String favoritesCopyDefaultName(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
     final String dateString = dateDateFormat.format(date);

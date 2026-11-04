@@ -83,9 +83,10 @@ List<List<ContextModalAction>> playlistModalSections(
   ];
 }
 
-/// The rows of the Advanced page in four groups: Add all to Favorites and
+/// The rows of the Advanced page in groups: Add all to Favorites and
 /// Duplicate; the two M3U exports; the clean-ups, which show only when the
-/// counts read when the modal opened are above zero.
+/// counts read when the modal opened are above zero; Clear all favorites on
+/// Favorites.
 List<List<ContextModalAction>> playlistModalAdvancedSections(
   AppLocalizations l10n,
   PlaylistModalData data,
@@ -140,6 +141,18 @@ List<List<ContextModalAction>> playlistModalAdvancedSections(
           subtitle: l10n.playlistRemoveMissingHint(missing),
           enabled: !data.gone,
           onTap: contextModalCloseThen(h.removeMissing),
+        ),
+    ],
+    [
+      if (data.isFavorites)
+        ContextModalAction(
+          id: 'clear-favorites',
+          icon: AppIcons.deleteOutline,
+          label: l10n.favoritesClear,
+          subtitle: l10n.favoritesClearHint,
+          destructive: true,
+          enabled: data.hasEntries,
+          onTap: h.clearFavorites,
         ),
     ],
   ];
