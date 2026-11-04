@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/fonts/custom_font_providers.dart';
+import '../../core/fonts/custom_font_service.dart';
 import '../../core/settings/app_font.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
@@ -16,6 +18,20 @@ import 'settings_number_presets.dart';
 String appFontLabel(AppLocalizations l10n, AppFont font) {
   if (font.id == systemFontId) return l10n.settingsFontSystem;
   return font.label;
+}
+
+/// Resolves the display label for [fontId], falling back to [customFonts]
+/// metadata when the active font is a user-imported font.
+String currentFontLabel(
+  AppLocalizations l10n,
+  String fontId,
+  List<CustomFontItem> customFonts,
+) {
+  if (isCustomFontId(fontId)) {
+    final match = customFonts.where((c) => c.id == fontId).firstOrNull;
+    if (match != null) return match.label;
+  }
+  return appFontLabel(l10n, appFontFor(fontId));
 }
 
 /// Language names stay in their own language so they can always be found.
@@ -43,6 +59,7 @@ class AppearanceTextSettingRows extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
+    final customFonts = ref.watch(customFontsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     final languageCode = _languages.any((l) => l.$1 == settings.languageCode)
         ? settings.languageCode!
@@ -56,7 +73,7 @@ class AppearanceTextSettingRows extends ConsumerWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             title: Text(l10n.settingsFont),
             subtitle: Text(
-              appFontLabel(l10n, appFontFor(settings.display.fontId)),
+              currentFontLabel(l10n, settings.display.fontId, customFonts),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
