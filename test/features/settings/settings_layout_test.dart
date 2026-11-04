@@ -95,9 +95,9 @@ Future<void> _checkLayout(
   await tester.pumpAndSettle();
   expect(tester.takeException(), isNull);
 
-  // The root: six tiles that fit the window.
+  // The root: seven tiles that fit the window.
   final tiles = find.byType(SettingsCategoryTile);
-  expect(tiles, findsNWidgets(6));
+  expect(tiles, findsNWidgets(7));
   for (final tile in tiles.evaluate()) {
     final rect = tester.getRect(find.byWidget(tile.widget));
     expect(rect.right, lessThanOrEqualTo(size.width));
@@ -171,14 +171,19 @@ Future<void> _checkLayout(
     size,
     [
       (
+        l10n.settingsFadeOnPlay,
+        _inRow(l10n.settingsFadeOnPlay, find.byType(DropdownMenu<int>)),
+        l10n.settingsFadeOnPlayHint,
+      ),
+      (
+        l10n.settingsFadeOnPause,
+        _inRow(l10n.settingsFadeOnPause, find.byType(DropdownMenu<int>)),
+        l10n.settingsFadeOnPauseHint,
+      ),
+      (
         l10n.listenHistoryRecord,
         _inRow(l10n.listenHistoryRecord, find.byType(Switch)),
         l10n.listenHistoryRecordHint,
-      ),
-      (
-        l10n.listenHistoryClear,
-        _inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
-        l10n.settingsClearListenHistoryHint,
       ),
       (
         l10n.settingsTranslationService,
@@ -279,14 +284,34 @@ Future<void> _checkLayout(
         _inRow(l10n.settingsSavedLyrics, find.byType(FilledButton)),
         l10n.settingsSavedLyricsNone,
       ),
+    ],
+    controls: _dataControls,
+    dropdowns: _dataDropdowns,
+  );
+
+  await visit(settingsAdvancedRoute);
+  await _checkRows(
+    tester,
+    size,
+    [
       (
         l10n.settingsOpenLogFolder,
         _inRow(l10n.settingsOpenLogFolder, find.byType(FilledButton)),
         l10n.settingsOpenLogFolderHint,
       ),
+      (
+        l10n.listenHistoryClear,
+        _inRow(l10n.listenHistoryClear, find.byType(FilledButton)),
+        l10n.settingsClearListenHistoryHint,
+      ),
+      (
+        l10n.settingsResetAllTitle,
+        _inRow(l10n.settingsResetAllTitle, find.byType(FilledButton)),
+        l10n.settingsResetAllHint,
+      ),
     ],
-    controls: _dataControls,
-    dropdowns: _dataDropdowns,
+    controls: _advancedControls,
+    dropdowns: _advancedDropdowns,
   );
 
   await visit(settingsAboutRoute);
@@ -297,12 +322,14 @@ Future<void> _checkLayout(
 // narrow rows where choices are dropdowns too, of dropdowns alone, so a control that goes missing or appears twice is caught.
 const _appearanceControls = 5;
 const _appearanceDropdowns = 5;
-const _playbackControls = 12;
-const _playbackDropdowns = 9;
+const _playbackControls = 6;
+const _playbackDropdowns = 6;
 const _libraryControls = 7;
 const _libraryDropdowns = 2;
-const _dataControls = 5;
+const _dataControls = 4;
 const _dataDropdowns = 0;
+const _advancedControls = 8;
+const _advancedDropdowns = 3;
 
 /// Checks the rows of the page shown: every control sits on its label's
 /// line at its right, all [controls] are [settingControlHeight] tall as drawn

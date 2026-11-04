@@ -14,8 +14,10 @@ import 'package:kanaru/features/settings/about_settings_section.dart';
 import 'package:kanaru/features/settings/appearance_layout_setting_rows.dart';
 import 'package:kanaru/features/settings/appearance_text_setting_rows.dart';
 import 'package:kanaru/features/settings/appearance_theme_setting_rows.dart';
+import 'package:kanaru/features/settings/audio_engine_setting_rows.dart';
 import 'package:kanaru/features/settings/backup_settings_section.dart';
 import 'package:kanaru/features/settings/cover_cache_setting_rows.dart';
+import 'package:kanaru/features/settings/danger_zone_setting_rows.dart';
 import 'package:kanaru/features/settings/excluded_folders_list.dart';
 import 'package:kanaru/features/settings/folder_watch_row.dart';
 import 'package:kanaru/features/settings/interface_setting_rows.dart';
@@ -33,6 +35,7 @@ import 'package:kanaru/features/settings/online_lyrics_cache_setting_row.dart';
 import 'package:kanaru/features/settings/online_lyrics_consent_setting_row.dart';
 import 'package:kanaru/features/settings/playback_setting_rows.dart';
 import 'package:kanaru/features/settings/playback_settings_page.dart';
+import 'package:kanaru/features/settings/privacy_network_setting_rows.dart';
 import 'package:kanaru/features/settings/scan_stats_rows.dart';
 import 'package:kanaru/features/settings/separator_setting_rows.dart';
 import 'package:kanaru/features/settings/settings_category_tile.dart';
@@ -82,7 +85,7 @@ Future<void> _back(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Row groups that must each appear exactly once across the five pages.
+/// Row groups that must each appear exactly once across the six pages.
 final _rowTypes = <Type>[
   AppearanceThemeSettingRows,
   AppearanceTextSettingRows,
@@ -93,21 +96,24 @@ final _rowTypes = <Type>[
   LyricsSettingsSection,
   LyricsSettingRows,
   LyricsTranslationSettingRows,
-  OnlineLyricsConsentSettingRow,
   LibraryStatsRow,
   ScanStatsRows,
   LibraryFoldersList,
   ExcludedFoldersList,
   LibraryRescanSettingRows,
-  FolderWatchRow,
-  LibraryScanSettingRows,
-  LibraryOrganizationSettingRows,
-  SeparatorSettingRows,
   BackupSettingsSection,
   CoverCacheSettingRows,
   OnlineLyricsCacheSettingRow,
   TranslationCacheSettingRow,
+  AudioEngineSettingRows,
+  FolderWatchRow,
+  LibraryScanSettingRows,
+  LibraryOrganizationSettingRows,
+  SeparatorSettingRows,
+  PrivacyNetworkSettingRows,
+  OnlineLyricsConsentSettingRow,
   LogFolderSettingRow,
+  DangerZoneSettingRows,
   AboutSettingsSection,
 ];
 
@@ -116,6 +122,7 @@ const _pageRoutes = [
   settingsPlaybackRoute,
   settingsLibraryRoute,
   settingsDataRoute,
+  settingsAdvancedRoute,
   settingsAboutRoute,
 ];
 
@@ -135,7 +142,7 @@ Future<Map<Type, int>> _countRows(WidgetTester tester, List<Type> types) async {
 void main() {
   final l10n = lookupAppLocalizations(const Locale('en'));
 
-  testWidgets('the root lists six tiles in order, with descriptions', (
+  testWidgets('the root lists seven tiles in order, with descriptions', (
     tester,
   ) async {
     await _pumpRoot(tester);
@@ -151,6 +158,7 @@ void main() {
         l10n.settingsLibrary,
         l10n.settingsPlugins,
         l10n.settingsDataStorage,
+        l10n.settingsAdvanced,
         l10n.settingsAbout,
       ],
     );
@@ -162,6 +170,7 @@ void main() {
         l10n.settingsLibraryDescription,
         l10n.settingsPluginsDescription,
         l10n.settingsDataStorageDescription,
+        l10n.settingsAdvancedDescription,
         l10n.settingsAboutDescription,
       ],
     );
@@ -178,6 +187,7 @@ void main() {
       (l10n.settingsPlayback, settingsPlaybackRoute),
       (l10n.settingsLibrary, settingsLibraryRoute),
       (l10n.settingsDataStorage, settingsDataRoute),
+      (l10n.settingsAdvanced, settingsAdvancedRoute),
       (l10n.settingsAbout, settingsAboutRoute),
     ]) {
       await openSettingsPage(tester, tile);
@@ -186,7 +196,7 @@ void main() {
 
       await _back(tester);
       expect(_location(), settingsRoute, reason: tile);
-      expect(find.byType(SettingsCategoryTile), findsNWidgets(6));
+      expect(find.byType(SettingsCategoryTile), findsNWidgets(7));
     }
   });
 

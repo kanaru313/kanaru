@@ -51,6 +51,12 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => context.go(settingsDataRoute),
         ),
         SettingsCategoryTile(
+          icon: AppIcons.settingsAdvanced,
+          title: l10n.settingsAdvanced,
+          description: l10n.settingsAdvancedDescription,
+          onTap: () => context.go(settingsAdvancedRoute),
+        ),
+        SettingsCategoryTile(
           icon: AppIcons.settingsAbout,
           title: l10n.settingsAbout,
           description: l10n.settingsAboutDescription,

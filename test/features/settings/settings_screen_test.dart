@@ -81,8 +81,14 @@ void main() {
     final groups = {
       'Appearance': ['Theme', 'Text', 'Layout'],
       'Playback': ['Playback', 'Lyrics', 'Translation'],
-      'Library': ['Folders', 'Scanning', 'Organization'],
-      'Data & storage': ['Backup and restore', 'Caches', 'Logs'],
+      'Library': ['Overview', 'Folders', 'Scanning', 'Organization'],
+      'Data & storage': ['Backup and restore', 'Caches'],
+      'Advanced': [
+        'Audio engine',
+        'Privacy & network',
+        'Diagnostics',
+        'Danger zone',
+      ],
     };
     await pumpSettings(tester);
     for (final MapEntry(key: page, value: titles) in groups.entries) {
@@ -137,6 +143,7 @@ void main() {
       await pumpSettings(tester, page: 'Library');
 
       _expectAscending([
+        _groupTop(tester, 'Overview'),
         _groupTop(tester, 'Folders'),
         _groupTop(tester, 'Scanning'),
         tester.getTopLeft(find.text('Rescan library')).dy,
