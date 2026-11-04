@@ -41,6 +41,7 @@ class DynamicFontLoader {
     required String family,
     required List<File> fontFiles,
   }) {
+    if (fontFiles.isEmpty) return Future.value();
     if (_loaded.contains(family)) return Future.value();
     return _inFlight.putIfAbsent(family, () async {
       try {

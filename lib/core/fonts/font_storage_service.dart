@@ -109,11 +109,14 @@ class FontStorageService {
         if (name.endsWith('.tmp')) {
           entity.deleteSync(recursive: true);
         } else if (name.endsWith('.old')) {
-          final finalDir =
-              Directory('${dir.path}/${name.substring(0, name.length - 4)}');
-          if (finalDir.existsSync()) {
+          final fontId = name.substring(0, name.length - 4);
+          final finalDir = Directory('${dir.path}/$fontId');
+          if (isCatalogFontInstalled(fontId)) {
             entity.deleteSync(recursive: true);
           } else {
+            if (finalDir.existsSync()) {
+              finalDir.deleteSync(recursive: true);
+            }
             entity.renameSync(finalDir.path);
           }
         }

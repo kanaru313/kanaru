@@ -147,9 +147,10 @@ void main() {
       expect(tmpDir.existsSync(), isFalse);
     });
 
-    test('deletes .old directory if final directory exists', () {
+    test('deletes .old directory if final directory is installed', () {
       final finalDir = storage.fontDirectoryForCatalog('font1')
         ..createSync(recursive: true);
+      File('${finalDir.path}/Font-Regular.ttf').writeAsStringSync('font-data');
       final oldDir = storage.backupDirectoryForCatalog('font1')
         ..createSync(recursive: true);
 

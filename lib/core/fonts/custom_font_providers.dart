@@ -19,7 +19,9 @@ class CustomFontsNotifier extends Notifier<List<CustomFontItem>> {
   /// Returns null when the user cancels. Does not change the active font.
   Future<CustomFontItem?> importFromPicker() async {
     final item = await ref.read(customFontServiceProvider).pickAndImportFont();
-    ref.invalidateSelf();
+    if (item != null) {
+      ref.invalidateSelf();
+    }
     return item;
   }
 

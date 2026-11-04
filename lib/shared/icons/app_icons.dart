@@ -191,6 +191,7 @@ abstract final class AppIcons {
   // Lyrics sources and the plugin store.
   static const IconData extension = FluentIcons.puzzle_piece_24_regular;
   static const IconData download = FluentIcons.arrow_download_24_regular;
+  static const IconData arrowDownload = FluentIcons.arrow_download_24_regular;
   static const IconData updateAvailable =
       FluentIcons.arrow_circle_up_24_regular;
   static const IconData installFromFile = FluentIcons.document_add_24_regular;
