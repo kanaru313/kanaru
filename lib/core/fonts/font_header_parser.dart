@@ -35,20 +35,26 @@ class FontHeaderParser {
 
       final count = data.getUint16(nameOffset + 2);
       final storage = nameOffset + data.getUint16(nameOffset + 4);
+      if (storage > bytes.length) return null;
 
+      // OpenType tables sort records by platformId (0, 1, 3).
+      // Search Platform 3 (Windows) and Platform 0 (Unicode) before Platform 1 (Macintosh)
+      // so a lossy ASCII/MacRoman entry does not shadow a complete UTF-16BE entry.
       for (final wantedId in const [16, 1]) {
-        for (var i = 0; i < count; i++) {
-          final record = nameOffset + 6 + i * 12;
-          if (record + 12 > bytes.length) break;
-          if (data.getUint16(record + 6) != wantedId) continue;
+        for (final wantedPlatform in const [3, 0, 1]) {
+          for (var i = 0; i < count; i++) {
+            final record = nameOffset + 6 + i * 12;
+            if (record + 12 > bytes.length) break;
+            if (data.getUint16(record + 6) != wantedId) continue;
+            if (data.getUint16(record) != wantedPlatform) continue;
 
-          final platformId = data.getUint16(record);
-          final length = data.getUint16(record + 8);
-          final start = storage + data.getUint16(record + 10);
-          if (start + length > bytes.length) continue;
+            final length = data.getUint16(record + 8);
+            final start = storage + data.getUint16(record + 10);
+            if (start + length > bytes.length) continue;
 
-          final name = _decode(platformId, bytes.sublist(start, start + length));
-          if (name != null && name.isNotEmpty) return name;
+            final name = _decode(wantedPlatform, bytes.sublist(start, start + length));
+            if (name != null && name.isNotEmpty) return name;
+          }
         }
       }
     } catch (_) {

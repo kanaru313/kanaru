@@ -5562,4 +5562,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteCustomFontConfirm => 'Delete';
+
+  @override
+  String get settingsFontGroupBuiltIn => 'Built-in';
+
+  @override
+  String get settingsFontGroupCustom => 'Custom';
+
+  @override
+  String get settingsFontGroupCatalog => 'Catalog';
 }

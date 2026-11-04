@@ -5556,5 +5556,11 @@
     "placeholders": { "fontName": { "type": "String" } }
   },
   "deleteCustomFontConfirm": "Delete",
-  "@deleteCustomFontConfirm": { "description": "Confirm button of the delete confirmation" }
+  "@deleteCustomFontConfirm": { "description": "Confirm button of the delete confirmation" },
+  "settingsFontGroupBuiltIn": "Built-in",
+  "@settingsFontGroupBuiltIn": { "description": "Section title for built-in bundled fonts" },
+  "settingsFontGroupCustom": "Custom",
+  "@settingsFontGroupCustom": { "description": "Section title for imported custom fonts" },
+  "settingsFontGroupCatalog": "Catalog",
+  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" }
 }

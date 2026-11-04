@@ -5236,4 +5236,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get deleteCustomFontConfirm => 'Xóa';
+
+  @override
+  String get settingsFontGroupBuiltIn => 'Phông chữ có sẵn';
+
+  @override
+  String get settingsFontGroupCustom => 'Phông chữ tùy chỉnh';
+
+  @override
+  String get settingsFontGroupCatalog => 'Kho phông chữ trực tuyến';
 }

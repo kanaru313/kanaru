@@ -178,4 +178,42 @@ void main() {
       );
     });
   });
+
+  group('security validation (path traversal)', () {
+    test('isValidFontId accepts safe ids and rejects traversal attempts', () {
+      expect(FontStorageService.isValidFontId('roboto'), isTrue);
+      expect(FontStorageService.isValidFontId('be-vietnam-pro'), isTrue);
+      expect(FontStorageService.isValidFontId('custom_my_font_12345678'), isTrue);
+
+      expect(FontStorageService.isValidFontId('../etc/passwd'), isFalse);
+      expect(FontStorageService.isValidFontId('custom_../../dir'), isFalse);
+      expect(FontStorageService.isValidFontId('foo/bar'), isFalse);
+      expect(FontStorageService.isValidFontId(r'foo\bar'), isFalse);
+      expect(FontStorageService.isValidFontId(''), isFalse);
+      expect(FontStorageService.isValidFontId(null), isFalse);
+    });
+
+    test('fontDirectory methods throw ArgumentError on path traversal ids', () {
+      expect(
+        () => storage.fontDirectoryForCatalog('../escape'),
+        throwsArgumentError,
+      );
+      expect(
+        () => storage.fontDirectoryForCustom('custom_../../escape'),
+        throwsArgumentError,
+      );
+      expect(
+        () => storage.stagingDirectoryForCatalog('../escape'),
+        throwsArgumentError,
+      );
+      expect(
+        () => storage.backupDirectoryForCatalog('../escape'),
+        throwsArgumentError,
+      );
+      expect(
+        () => storage.deleteCatalogFont('../escape'),
+        throwsArgumentError,
+      );
+    });
+  });
 }

@@ -19,6 +19,24 @@ class FontStorageService {
     this.baseDirectory,
   }) : _environment = environment ?? Platform.environment;
 
+  static final _validFontIdRegExp = RegExp(r'^[a-zA-Z0-9_-]+$');
+
+  /// Validates font IDs against path traversal and malformed inputs.
+  /// Only alphanumeric characters, hyphens, and underscores are allowed (max length 128).
+  static bool isValidFontId(String? id) =>
+      id != null &&
+      id.isNotEmpty &&
+      id.length <= 128 &&
+      _validFontIdRegExp.hasMatch(id);
+
+  static void _checkValidFontId(String id) {
+    if (!isValidFontId(id)) {
+      throw ArgumentError(
+        'Invalid font ID "$id": must match ^[a-zA-Z0-9_-]+\$ and length <= 128',
+      );
+    }
+  }
+
   final Map<String, String> _environment;
   final Directory? baseDirectory;
 
@@ -31,27 +49,38 @@ class FontStorageService {
 
   Directory get customDirectory => Directory('$_dataRoot/fonts/custom');
 
-  Directory fontDirectoryForCatalog(String id) =>
-      Directory('${catalogDirectory.path}/$id');
+  Directory fontDirectoryForCatalog(String id) {
+    _checkValidFontId(id);
+    return Directory('${catalogDirectory.path}/$id');
+  }
 
-  Directory stagingDirectoryForCatalog(String id) =>
-      Directory('${catalogDirectory.path}/$id.tmp');
+  Directory stagingDirectoryForCatalog(String id) {
+    _checkValidFontId(id);
+    return Directory('${catalogDirectory.path}/$id.tmp');
+  }
 
-  Directory backupDirectoryForCatalog(String id) =>
-      Directory('${catalogDirectory.path}/$id.old');
+  Directory backupDirectoryForCatalog(String id) {
+    _checkValidFontId(id);
+    return Directory('${catalogDirectory.path}/$id.old');
+  }
 
-  Directory fontDirectoryForCustom(String id) =>
-      Directory('${customDirectory.path}/$id');
+  Directory fontDirectoryForCustom(String id) {
+    _checkValidFontId(id);
+    return Directory('${customDirectory.path}/$id');
+  }
 
   List<File> listFontFilesForFamily(String fontId, {bool isCustom = false}) {
+    if (!isValidFontId(fontId)) return const [];
     final dir =
         isCustom ? fontDirectoryForCustom(fontId) : fontDirectoryForCatalog(fontId);
     if (!dir.existsSync()) return const [];
     return dir.listSync().whereType<File>().where(_isFontFile).toList();
   }
 
-  bool isCatalogFontInstalled(String fontId) =>
-      listFontFilesForFamily(fontId).isNotEmpty;
+  bool isCatalogFontInstalled(String fontId) {
+    if (!isValidFontId(fontId)) return false;
+    return listFontFilesForFamily(fontId).isNotEmpty;
+  }
 
   Set<String> listInstalledCatalogFontIds() {
     final dir = catalogDirectory;

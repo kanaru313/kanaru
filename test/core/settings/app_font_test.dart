@@ -39,6 +39,18 @@ void main() {
     expect(isCustomFontId('custom_test'), isTrue);
     expect(isCustomFontId('nunito'), isFalse);
     expect(isCustomFontId('be-vietnam-pro'), isFalse);
+    expect(isCustomFontId('custom_../../path_traversal'), isFalse);
+    expect(isCustomFontId('custom_foo/bar'), isFalse);
+  });
+
+  test('isValidFontId validates safe font identifiers', () {
+    expect(isValidFontId('nunito'), isTrue);
+    expect(isValidFontId('be-vietnam-pro'), isTrue);
+    expect(isValidFontId('custom_abc_123'), isTrue);
+    expect(isValidFontId('../etc/passwd'), isFalse);
+    expect(isValidFontId('foo/bar'), isFalse);
+    expect(isValidFontId(''), isFalse);
+    expect(isValidFontId(null), isFalse);
   });
 
   test('customFontFallbackLabel formats id into readable label', () {
@@ -47,6 +59,11 @@ void main() {
       'my font',
     );
     expect(customFontFallbackLabel('custom_roboto_slab'), 'roboto slab');
+  });
+
+  test('appFontFor rejects path traversal and resolves default font', () {
+    expect(appFontFor('../escape').id, defaultFontId);
+    expect(appFontFor('custom_../../escape').id, defaultFontId);
   });
 
   test('appFontFor resolves catalog font', () {

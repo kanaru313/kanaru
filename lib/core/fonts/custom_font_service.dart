@@ -73,14 +73,44 @@ class CustomFontService {
   File get _manifestFile =>
       File('${storage.customDirectory.path}/custom_fonts.json');
 
+  Map<String, String>? _manifestCache;
+  List<CustomFontItem>? _cachedFonts;
+
   Map<String, String> _readManifest() {
-    if (!_manifestFile.existsSync()) return {};
+    if (_manifestCache != null) {
+      return Map<String, String>.from(_manifestCache!);
+    }
+    if (!_manifestFile.existsSync()) {
+      _manifestCache = {};
+      return {};
+    }
     try {
       final json =
           jsonDecode(_manifestFile.readAsStringSync()) as Map<String, dynamic>;
-      return json.map((k, v) => MapEntry(k, v.toString()));
-    } catch (_) {
-      return {};
+      _manifestCache = json.map((k, v) => MapEntry(k, v.toString()));
+      return Map<String, String>.from(_manifestCache!);
+    } catch (e, st) {
+      _log.severe(
+        'Failed to read font manifest (${_manifestFile.path}). Preserving existing metadata.',
+        e,
+        st,
+      );
+      try {
+        final corruptBackup = File(
+          '${_manifestFile.path}.corrupt.${DateTime.now().millisecondsSinceEpoch}',
+        );
+        _manifestFile.copySync(corruptBackup.path);
+      } catch (backupError) {
+        _log.warning('Failed to backup corrupt font manifest', backupError);
+      }
+
+      // Reconstruct manifest from existing directories to avoid wiping out metadata
+      final reconstructed = <String, String>{};
+      for (final id in storage.listCustomFontIds()) {
+        reconstructed[id] = customFontFallbackLabel(id);
+      }
+      _manifestCache = reconstructed;
+      return Map<String, String>.from(_manifestCache!);
     }
   }
 
@@ -89,10 +119,18 @@ class CustomFontService {
     if (!dir.existsSync()) dir.createSync(recursive: true);
     final tmp = File('${_manifestFile.path}.tmp');
     tmp.writeAsStringSync(jsonEncode(manifest), flush: true);
+    if (Platform.isWindows && _manifestFile.existsSync()) {
+      _manifestFile.deleteSync();
+    }
     tmp.renameSync(_manifestFile.path); // atomic replace
+    _manifestCache = Map<String, String>.from(manifest);
+    _cachedFonts = null;
   }
 
   List<CustomFontItem> listCustomFonts() {
+    if (_cachedFonts != null) {
+      return _cachedFonts!;
+    }
     final manifest = _readManifest();
     final items = [
       for (final id in storage.listCustomFontIds())
@@ -103,6 +141,7 @@ class CustomFontService {
         ),
     ];
     items.sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
+    _cachedFonts = items;
     return items;
   }
 

@@ -8041,6 +8041,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get deleteCustomFontConfirm;
+
+  /// Section title for built-in bundled fonts
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in'**
+  String get settingsFontGroupBuiltIn;
+
+  /// Section title for imported custom fonts
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get settingsFontGroupCustom;
+
+  /// Section title for online open font catalog
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get settingsFontGroupCatalog;
 }
 
 class _AppLocalizationsDelegate

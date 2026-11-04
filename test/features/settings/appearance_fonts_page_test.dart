@@ -14,6 +14,8 @@ import 'package:kanaru/core/fonts/installed_catalog_fonts_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/settings/appearance_fonts_page.dart';
 import 'package:kanaru/features/settings/font_catalog_tile.dart';
+import 'package:kanaru/features/settings/setting_card.dart';
+import 'package:kanaru/features/settings/settings_section.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
@@ -38,12 +40,16 @@ class _TestInstalledCatalogFontsNotifier extends InstalledCatalogFontsNotifier {
   _TestInstalledCatalogFontsNotifier(this._initial);
   final Set<String> _initial;
   final List<String> deleted = [];
+  bool shouldThrowOnDelete = false;
 
   @override
   Set<String> build() => _initial;
 
   @override
   Future<void> deleteCatalogFont(String fontId) async {
+    if (shouldThrowOnDelete) {
+      throw const FileSystemException('Delete error');
+    }
     deleted.add(fontId);
     state = {...state}..remove(fontId);
   }
@@ -56,6 +62,7 @@ class _TestCustomFontsNotifier extends CustomFontsNotifier {
   bool importCalled = false;
   CustomFontItem? toImport;
   bool shouldThrowOnImport = false;
+  bool shouldThrowOnDelete = false;
 
   @override
   List<CustomFontItem> build() => _initial;
@@ -74,6 +81,9 @@ class _TestCustomFontsNotifier extends CustomFontsNotifier {
 
   @override
   Future<void> deleteFont(String fontId) async {
+    if (shouldThrowOnDelete) {
+      throw const FileSystemException('Delete error');
+    }
     deleted.add(fontId);
     state = state.where((f) => f.id != fontId).toList();
   }
@@ -160,6 +170,13 @@ void main() {
         ],
       );
 
+      // Group headers and card wrappers
+      expect(find.byType(SettingsSection), findsNWidgets(3));
+      expect(find.text('Built-in'), findsOneWidget);
+      expect(find.text('Custom'), findsOneWidget);
+      expect(find.text('Catalog'), findsOneWidget);
+      expect(find.byType(SettingCard), findsWidgets);
+
       // Group 1: Built-in fonts
       expect(
         find.descendant(
@@ -190,6 +207,24 @@ void main() {
       for (final font in catalogFontsManifest) {
         expect(find.byKey(ValueKey(font.id)), findsOneWidget);
       }
+    });
+
+    testWidgets('renders 2 font groups when no custom fonts imported', (
+      tester,
+    ) async {
+      await _pumpPage(
+        tester,
+        overrides: [
+          customFontsProvider.overrideWith(
+            () => _TestCustomFontsNotifier([]),
+          ),
+        ],
+      );
+
+      expect(find.byType(SettingsSection), findsNWidgets(2));
+      expect(find.text('Built-in'), findsOneWidget);
+      expect(find.text('Catalog'), findsOneWidget);
+      expect(find.text('Custom'), findsNothing);
     });
 
     testWidgets('selecting an installed font updates settings after ensureLoaded', (
@@ -364,13 +399,14 @@ void main() {
       expect(find.byKey(const ValueKey('custom_1')), findsNothing);
     });
 
-    testWidgets('shows error snackbar when font selection fails', (
+    testWidgets('shows error snackbar when font selection fails and keeps old font', (
       tester,
     ) async {
       final fakeLoader = _FakeDynamicFontLoader()..shouldThrow = true;
 
-      await _pumpPage(
+      final container = await _pumpPage(
         tester,
+        fontId: 'nunito',
         overrides: [
           dynamicFontLoaderProvider.overrideWithValue(fakeLoader),
           installedCatalogFontsProvider.overrideWith(
@@ -383,6 +419,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Could not load Roboto'), findsOneWidget);
+      expect(container.read(settingsProvider).display.fontId, 'nunito');
     });
 
     testWidgets('shows error snackbar when font download fails', (
@@ -409,6 +446,65 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Failed to download Roboto'), findsOneWidget);
+    });
+
+    testWidgets('shows error snackbar when catalog font deletion fails', (
+      tester,
+    ) async {
+      final catalogNotifier =
+          _TestInstalledCatalogFontsNotifier({'roboto'})..shouldThrowOnDelete = true;
+
+      await _pumpPage(
+        tester,
+        fontId: 'nunito',
+        overrides: [
+          installedCatalogFontsProvider.overrideWith(() => catalogNotifier),
+        ],
+      );
+
+      final robotoTile = find.byKey(const ValueKey('roboto'));
+      final deleteBtn = find.descendant(
+        of: robotoTile,
+        matching: find.byIcon(AppIcons.deleteOutline),
+      );
+      await tester.tap(deleteBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not load roboto'), findsOneWidget);
+    });
+
+    testWidgets('shows error snackbar when custom font deletion fails', (
+      tester,
+    ) async {
+      final customItem = CustomFontItem(
+        id: 'custom_1',
+        label: 'My Custom Font',
+        file: File('/tmp/custom.ttf'),
+      );
+      final customNotifier =
+          _TestCustomFontsNotifier([customItem])..shouldThrowOnDelete = true;
+
+      await _pumpPage(
+        tester,
+        fontId: 'nunito',
+        overrides: [
+          customFontsProvider.overrideWith(() => customNotifier),
+        ],
+      );
+
+      final customTile = find.byKey(const ValueKey('custom_1'));
+      final deleteBtn = find.descendant(
+        of: customTile,
+        matching: find.byIcon(AppIcons.deleteOutline),
+      );
+      await tester.tap(deleteBtn);
+      await tester.pumpAndSettle();
+
+      // Confirm dialog
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not load My Custom Font'), findsOneWidget);
     });
 
     testWidgets('shows error snackbar when font import fails', (tester) async {

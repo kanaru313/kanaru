@@ -49,11 +49,14 @@ void main() {
     expect(loader.isFamilyLoaded('X'), isTrue);
   });
 
-  test('ensureLoaded loads catalog font if installed', () async {
+  test('ensureLoaded throws StateError when catalog font is not installed', () async {
     final loader = DynamicFontLoader(registrar: registrar.call);
 
-    // Not installed yet
-    await loader.ensureLoaded('be-vietnam-pro', storage);
+    // Not installed yet -> throws StateError
+    await expectLater(
+      () => loader.ensureLoaded('be-vietnam-pro', storage),
+      throwsStateError,
+    );
     expect(registrar.calls, isEmpty);
 
     // Now install
@@ -63,6 +66,23 @@ void main() {
 
     await loader.ensureLoaded('be-vietnam-pro', storage);
     expect(registrar.calls.single.family, 'Be Vietnam Pro');
+  });
+
+  test('ensureLoaded throws StateError when custom font is missing on disk', () async {
+    final loader = DynamicFontLoader(registrar: registrar.call);
+    const customId = 'custom_missing_12345678';
+    await expectLater(
+      () => loader.ensureLoaded(customId, storage),
+      throwsStateError,
+    );
+  });
+
+  test('ensureLoaded is a no-op for built-in fonts', () async {
+    final loader = DynamicFontLoader(registrar: registrar.call);
+    await loader.ensureLoaded('inter', storage);
+    await loader.ensureLoaded('nunito', storage);
+    await loader.ensureLoaded('system', storage);
+    expect(registrar.calls, isEmpty);
   });
 
   test('ensureLoaded loads custom font if installed', () async {

@@ -72,6 +72,55 @@ Uint8List buildFont(String family, {int nameId = 1, int pad = 0}) {
   return out.toBytes();
 }
 
+/// Multi-record sfnt builder supporting arbitrary platforms and name IDs.
+Uint8List buildMultiRecordFont({
+  List<int> magic = const [0x00, 0x01, 0x00, 0x00],
+  required List<({int nameId, int platformId, List<int> bytes})> names,
+}) {
+  void u16(BytesBuilder b, int v) => b.add([v >> 8, v & 0xFF]);
+  void u32(BytesBuilder b, int v) => b.add([
+        (v >> 24) & 0xFF,
+        (v >> 16) & 0xFF,
+        (v >> 8) & 0xFF,
+        v & 0xFF,
+      ]);
+
+  final table = BytesBuilder();
+  u16(table, 0); // format
+  u16(table, names.length); // count
+  u16(table, 6 + names.length * 12); // string offset
+
+  var stringOffset = 0;
+  for (final entry in names) {
+    u16(table, entry.platformId);
+    u16(table, 1); // encoding
+    u16(table, 0x0409); // language
+    u16(table, entry.nameId);
+    u16(table, entry.bytes.length);
+    u16(table, stringOffset);
+    stringOffset += entry.bytes.length;
+  }
+  for (final entry in names) {
+    table.add(entry.bytes);
+  }
+  final tableBytes = table.toBytes();
+
+  final out = BytesBuilder();
+  out.add(magic);
+  u16(out, names.isEmpty ? 0 : 1); // numTables
+  u16(out, 16); // searchRange
+  u16(out, 0); // entrySelector
+  u16(out, 0); // rangeShift
+  if (names.isNotEmpty) {
+    out.add('name'.codeUnits);
+    out.add([0, 0, 0, 0]); // checksum
+    u32(out, 28); // offset = 12 + 16
+    u32(out, tableBytes.length);
+    out.add(tableBytes);
+  }
+  return out.toBytes();
+}
+
 class FakeRegistrar {
   final calls = <({String family, int fileCount})>[];
   bool fail = false;

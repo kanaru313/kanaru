@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/fonts/custom_font_providers.dart';
@@ -14,7 +15,11 @@ import '../../shared/icons/app_icons.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'custom_font_dialogs.dart';
 import 'font_catalog_tile.dart';
+import 'setting_card.dart';
 import 'settings_page_scaffold.dart';
+import 'settings_section.dart';
+
+final _log = Logger('appearance_fonts_page');
 
 class AppearanceFontsPage extends ConsumerStatefulWidget {
   const AppearanceFontsPage({super.key});
@@ -27,16 +32,22 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
   @override
   void initState() {
     super.initState();
-    _preloadCustomFonts();
+    _preloadActiveFont();
   }
 
-  /// Custom rows preview with the real font, so register them when the page
-  /// opens (catalog rows use SVG and need nothing).
-  Future<void> _preloadCustomFonts() async {
-    final loader = ref.read(dynamicFontLoaderProvider);
-    final storage = ref.read(fontStorageServiceProvider);
-    await loader.loadAllCustomFonts(storage);
-    if (mounted) setState(() {});
+  /// Ensure active custom font is registered with the engine without eagerly
+  /// loading every single imported custom font into memory.
+  Future<void> _preloadActiveFont() async {
+    final activeFontId = ref.read(settingsProvider).display.fontId;
+    if (isCustomFontId(activeFontId)) {
+      final loader = ref.read(dynamicFontLoaderProvider);
+      final storage = ref.read(fontStorageServiceProvider);
+      try {
+        await loader.ensureLoaded(activeFontId, storage);
+      } catch (e, st) {
+        _log.warning('Could not preload active custom font "$activeFontId"', e, st);
+      }
+    }
   }
 
   void _error(String title) {
@@ -52,7 +63,8 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
       await ref
           .read(dynamicFontLoaderProvider)
           .ensureLoaded(fontId, ref.read(fontStorageServiceProvider));
-    } catch (_) {
+    } catch (e, st) {
+      _log.warning('Failed to load font "$fontId" for selection', e, st);
       if (mounted) _error(context.l10n.fontLoadFailed(label));
       return;
     }
@@ -69,7 +81,8 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
     try {
       await ref.read(customFontsProvider.notifier).importFromPicker();
       // The new font appears in the list; the user taps it to apply it.
-    } catch (_) {
+    } catch (e, st) {
+      _log.warning('Failed to import custom font', e, st);
       if (mounted) _error(context.l10n.customFontImportFailed);
     }
   }
@@ -77,18 +90,32 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
   Future<void> _download(CatalogFontItem font) async {
     try {
       await ref.read(fontDownloadNotifierProvider.notifier).downloadFont(font);
-    } catch (_) {
+    } catch (e, st) {
+      _log.warning('Failed to download font "${font.id}"', e, st);
       if (mounted) _error(context.l10n.fontDownloadFailed(font.label));
     }
   }
 
-  Future<void> _deleteCatalog(String fontId) =>
-      ref.read(installedCatalogFontsProvider.notifier).deleteCatalogFont(fontId);
+  Future<void> _deleteCatalog(String fontId) async {
+    try {
+      await ref
+          .read(installedCatalogFontsProvider.notifier)
+          .deleteCatalogFont(fontId);
+    } catch (e, st) {
+      _log.warning('Failed to delete catalog font "$fontId"', e, st);
+      if (mounted) _error(context.l10n.fontLoadFailed(fontId));
+    }
+  }
 
   Future<void> _deleteCustom(CustomFontItem font) async {
     final confirmed = await confirmDeleteCustomFont(context, font.label);
     if (!confirmed || !mounted) return;
-    await ref.read(customFontsProvider.notifier).deleteFont(font.id);
+    try {
+      await ref.read(customFontsProvider.notifier).deleteFont(font.id);
+    } catch (e, st) {
+      _log.warning('Failed to delete custom font "${font.id}"', e, st);
+      if (mounted) _error(context.l10n.fontLoadFailed(font.label));
+    }
   }
 
   @override
@@ -119,57 +146,74 @@ class _AppearanceFontsPageState extends ConsumerState<AppearanceFontsPage> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
-
-        // 1. Built-in fonts
-        for (final font in builtInAppFonts)
-          FontCatalogTile(
-            key: ValueKey(font.id),
-            id: font.id,
-            label: font.id == systemFontId ? l10n.settingsFontSystem : font.label,
-            previewSvgAsset: font.id == systemFontId
-                ? null
-                : 'assets/font_previews/${font.id}.svg',
-            family: font.family,
-            isSelected: selectedFontId == font.id,
-            isInstalled: true,
-            isDownloading: false,
-            onSelect: () => _select(font.id, font.label),
+        SettingsSection(
+          title: l10n.settingsFontGroupBuiltIn,
+          children: [
+            for (final font in builtInAppFonts)
+              SettingCard(
+                child: FontCatalogTile(
+                  key: ValueKey(font.id),
+                  id: font.id,
+                  label: font.id == systemFontId ? l10n.settingsFontSystem : font.label,
+                  previewSvgAsset: font.id == systemFontId
+                      ? null
+                      : 'assets/font_previews/${font.id}.svg',
+                  family: font.family,
+                  isSelected: selectedFontId == font.id,
+                  isInstalled: true,
+                  isDownloading: false,
+                  onSelect: () => _select(font.id, font.label),
+                ),
+              ),
+          ],
+        ),
+        if (customFonts.isNotEmpty)
+          SettingsSection(
+            title: l10n.settingsFontGroupCustom,
+            children: [
+              for (final custom in customFonts)
+                SettingCard(
+                  child: FontCatalogTile(
+                    key: ValueKey(custom.id),
+                    id: custom.id,
+                    label: custom.label,
+                    family: custom.id,
+                    isSelected: selectedFontId == custom.id,
+                    isInstalled: true,
+                    isDownloading: false,
+                    canDelete: selectedFontId != custom.id,
+                    onSelect: () => _select(custom.id, custom.label),
+                    onDelete: () => _deleteCustom(custom),
+                  ),
+                ),
+            ],
           ),
-
-        // 2. Custom (BYOF) fonts
-        for (final custom in customFonts)
-          FontCatalogTile(
-            key: ValueKey(custom.id),
-            id: custom.id,
-            label: custom.label,
-            family: custom.id,
-            isSelected: selectedFontId == custom.id,
-            isInstalled: true,
-            isDownloading: false,
-            canDelete: selectedFontId != custom.id,
-            onSelect: () => _select(custom.id, custom.label),
-            onDelete: () => _deleteCustom(custom),
-          ),
-
-        // 3. Catalog fonts
-        for (final font in catalogFontsManifest)
-          FontCatalogTile(
-            key: ValueKey(font.id),
-            id: font.id,
-            label: font.label,
-            previewSvgAsset: font.previewSvgAsset,
-            family: font.family,
-            formattedSize: font.formattedSize,
-            isSelected: selectedFontId == font.id,
-            isInstalled: installedCatalog.contains(font.id),
-            isDownloading: downloading.containsKey(font.id),
-            downloadProgress: downloading[font.id],
-            canDelete: installedCatalog.contains(font.id) && selectedFontId != font.id,
-            onSelect: () => _select(font.id, font.label),
-            onDownload: () => _download(font),
-            onDelete: () => _deleteCatalog(font.id),
-          ),
+        SettingsSection(
+          title: l10n.settingsFontGroupCatalog,
+          children: [
+            for (final font in catalogFontsManifest)
+              SettingCard(
+                child: FontCatalogTile(
+                  key: ValueKey(font.id),
+                  id: font.id,
+                  label: font.label,
+                  previewSvgAsset: font.previewSvgAsset,
+                  family: font.family,
+                  formattedSize: font.formattedSize,
+                  isSelected: selectedFontId == font.id,
+                  isInstalled: installedCatalog.contains(font.id),
+                  isDownloading: downloading.containsKey(font.id),
+                  downloadProgress: downloading[font.id],
+                  canDelete:
+                      installedCatalog.contains(font.id) && selectedFontId != font.id,
+                  onSelect: () => _select(font.id, font.label),
+                  onDownload: () => _download(font),
+                  onDelete: () => _deleteCatalog(font.id),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }

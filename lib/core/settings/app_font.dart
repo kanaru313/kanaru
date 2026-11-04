@@ -51,12 +51,23 @@ const builtInAppFonts = <AppFont>[
 
 const customFontIdPrefix = 'custom_';
 
-bool isCustomFontId(String id) => id.startsWith(customFontIdPrefix);
+final _validFontIdRegExp = RegExp(r'^[a-zA-Z0-9_-]+$');
+
+/// Validates whether [id] is safe from path traversal and properly formatted.
+bool isValidFontId(String? id) =>
+    id != null &&
+    id.isNotEmpty &&
+    id.length <= 128 &&
+    _validFontIdRegExp.hasMatch(id);
+
+bool isCustomFontId(String id) =>
+    isValidFontId(id) && id.startsWith(customFontIdPrefix);
 
 /// Human readable fallback for a custom id, e.g. `custom_my_font_1a2b3c4d`
 /// becomes `my font`. The real label comes from `custom_fonts.json`
 /// (see Phase 3 §5); this is only used when that entry is missing.
 String customFontFallbackLabel(String id) {
+  if (!id.startsWith(customFontIdPrefix)) return id;
   final body = id.substring(customFontIdPrefix.length);
   return body
       .replaceFirst(RegExp(r'_[0-9a-f]{8}$'), '')
@@ -66,6 +77,9 @@ String customFontFallbackLabel(String id) {
 
 /// The font with [id]; an unknown id gives the default font (Nunito).
 AppFont appFontFor(String id) {
+  if (!isValidFontId(id)) {
+    return builtInAppFonts.firstWhere((f) => f.id == defaultFontId);
+  }
   for (final f in builtInAppFonts) {
     if (f.id == id) return f;
   }

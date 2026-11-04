@@ -85,4 +85,46 @@ void main() {
     expect(service.listCustomFonts(), isEmpty);
     expect(storage.fontDirectoryForCustom(item.id).existsSync(), isFalse);
   });
+
+  test('handles corrupted manifest without wiping metadata and backs up corrupt file', () async {
+    final item = await service.importFontBytes('first.ttf', buildFont('First Font'));
+    final manifestFile = File('${storage.customDirectory.path}/custom_fonts.json');
+    expect(manifestFile.existsSync(), isTrue);
+
+    // Corrupt manifest file
+    manifestFile.writeAsStringSync('{ corrupted json content: }}}');
+
+    // Fresh service instance with no prior in-memory cache
+    final freshService = CustomFontService(
+      storage: storage,
+      fontLoader: DynamicFontLoader(registrar: registrar.call),
+    );
+
+    // listCustomFonts should not throw and should recover font from directory
+    final fonts = freshService.listCustomFonts();
+    expect(fonts, hasLength(1));
+    expect(fonts.first.id, item.id);
+
+    // Check that backup .corrupt file was created
+    final backups = storage.customDirectory
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.contains('custom_fonts.json.corrupt.'));
+    expect(backups, isNotEmpty);
+
+    // Import a second font; should not wipe the first one
+    final item2 = await freshService.importFontBytes('second.ttf', buildFont('Second Font'));
+    final allFonts = freshService.listCustomFonts();
+    expect(allFonts.map((f) => f.id).toSet(), {item.id, item2.id});
+  });
+
+  test('rewriting manifest succeeds when destination file already exists', () async {
+    await service.importFontBytes('first.ttf', buildFont('First Font'));
+    final manifestFile = File('${storage.customDirectory.path}/custom_fonts.json');
+    expect(manifestFile.existsSync(), isTrue);
+
+    // Writing again
+    final item2 = await service.importFontBytes('second.ttf', buildFont('Second Font'));
+    expect(service.listCustomFonts().map((f) => f.id), contains(item2.id));
+  });
 }

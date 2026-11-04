@@ -58,22 +58,28 @@ class DynamicFontLoader {
   }
 
   /// Makes sure the font behind [fontId] is registered. No-op for built-in
-  /// fonts and for fonts that are not installed.
+  /// fonts. Throws [StateError] if the font is not installed on disk.
   Future<void> ensureLoaded(String fontId, FontStorageService storage) async {
+    if (builtInAppFonts.any((f) => f.id == fontId)) return;
+
     final item = catalogFontsManifest.where((c) => c.id == fontId).firstOrNull;
     if (item != null) {
       final files = storage.listFontFilesForFamily(fontId);
-      if (files.isNotEmpty) {
-        await loadFontFamily(family: item.family, fontFiles: files);
+      if (files.isEmpty) {
+        throw StateError('Catalog font "$fontId" is not installed on disk');
       }
+      await loadFontFamily(family: item.family, fontFiles: files);
       return;
     }
     if (isCustomFontId(fontId)) {
       final files = storage.listFontFilesForFamily(fontId, isCustom: true);
-      if (files.isNotEmpty) {
-        await loadFontFamily(family: fontId, fontFiles: files);
+      if (files.isEmpty) {
+        throw StateError('Custom font "$fontId" is not installed on disk');
       }
+      await loadFontFamily(family: fontId, fontFiles: files);
+      return;
     }
+    throw ArgumentError('Unknown font ID: "$fontId"');
   }
 
   /// Registers every imported font so the fonts page can preview them.

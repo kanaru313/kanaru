@@ -2078,5 +2078,8 @@
   "selectedFontSemantics": "Phông chữ đang chọn",
   "deleteCustomFontTitle": "Xóa phông chữ?",
   "deleteCustomFontBody": "\"{fontName}\" sẽ bị xóa khỏi Kanaru. Tệp gốc trên thiết bị của bạn không bị ảnh hưởng.",
-  "deleteCustomFontConfirm": "Xóa"
+  "deleteCustomFontConfirm": "Xóa",
+  "settingsFontGroupBuiltIn": "Phông chữ có sẵn",
+  "settingsFontGroupCustom": "Phông chữ tùy chỉnh",
+  "settingsFontGroupCatalog": "Kho phông chữ trực tuyến"
 }
