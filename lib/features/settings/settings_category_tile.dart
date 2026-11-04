@@ -22,25 +22,22 @@ class SettingsCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: ListTile(
-        minTileHeight: 72,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        leading: CircleAvatar(
-          radius: 20,
-          backgroundColor: scheme.primaryContainer,
-          foregroundColor: scheme.onPrimaryContainer,
-          child: Icon(icon),
-        ),
-        title: Text(title),
-        subtitle: Text(
-          description,
-          style: TextStyle(color: scheme.onSurfaceVariant),
-        ),
-        trailing: const Icon(AppIcons.chevronRight),
-        onTap: onTap,
+    return ListTile(
+      minTileHeight: 72,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      leading: CircleAvatar(
+        radius: 20,
+        backgroundColor: scheme.primaryContainer,
+        foregroundColor: scheme.onPrimaryContainer,
+        child: Icon(icon),
       ),
+      title: Text(title),
+      subtitle: Text(
+        description,
+        style: TextStyle(color: scheme.onSurfaceVariant),
+      ),
+      trailing: const Icon(AppIcons.chevronRight),
+      onTap: onTap,
     );
   }
 }
