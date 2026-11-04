@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../shared/settings_routes.dart';
 import 'about_settings_page.dart';
 import 'advanced_settings_page.dart';
+import 'appearance_fonts_page.dart';
 import 'appearance_settings_page.dart';
 import 'data_storage_settings_page.dart';
 import 'library_settings_page.dart';
@@ -20,6 +21,12 @@ List<RouteBase> settingsSectionRoutes({
   GoRoute(
     path: _relative(settingsAppearanceRoute),
     builder: (context, state) => AppearanceSettingsPage(focus: _focusOf(state)),
+    routes: [
+      GoRoute(
+        path: settingsAppearanceFontsSegment,
+        builder: (context, state) => const AppearanceFontsPage(),
+      ),
+    ],
   ),
   GoRoute(
     path: _relative(settingsPlaybackRoute),

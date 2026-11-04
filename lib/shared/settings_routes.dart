@@ -6,6 +6,9 @@ library;
 const settingsRoute = '/settings';
 
 const settingsAppearanceRoute = '$settingsRoute/appearance';
+const settingsAppearanceFontsSegment = 'fonts';
+const settingsAppearanceFontsRoute =
+    '$settingsAppearanceRoute/$settingsAppearanceFontsSegment';
 const settingsPlaybackRoute = '$settingsRoute/playback';
 const settingsLibraryRoute = '$settingsRoute/library';
 const settingsDataRoute = '$settingsRoute/data';

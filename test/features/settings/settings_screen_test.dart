@@ -117,7 +117,7 @@ void main() {
       _rowTop(tester, 'Animations'),
     ]);
     _expectAscending([
-      _rowTop(tester, 'Font'),
+      tester.getTopLeft(find.widgetWithText(ListTile, 'Font')).dy,
       _rowTop(tester, 'Text size'),
       _rowTop(tester, 'Language'),
     ]);
@@ -131,7 +131,7 @@ void main() {
       _groupTop(tester, 'Theme'),
       _rowTop(tester, 'Theme'),
       _groupTop(tester, 'Text'),
-      _rowTop(tester, 'Font'),
+      tester.getTopLeft(find.widgetWithText(ListTile, 'Font')).dy,
       _groupTop(tester, 'Layout'),
       tester.getTopLeft(find.text('Sidebar tabs')).dy,
     ]);

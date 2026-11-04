@@ -138,11 +138,6 @@ Future<void> _checkLayout(
         l10n.settingsLanguageHint,
       ),
       (
-        l10n.settingsFont,
-        _inRow(l10n.settingsFont, find.byType(SettingDropdown<String>)),
-        l10n.settingsFontHint,
-      ),
-      (
         l10n.settingsFontScale,
         _inRow(l10n.settingsFontScale, find.byType(DropdownMenu<double>)),
         l10n.settingsFontScaleHint,
@@ -320,8 +315,8 @@ Future<void> _checkLayout(
 
 // Counts of controls on each page (buttons, choices and dropdowns) and, in
 // narrow rows where choices are dropdowns too, of dropdowns alone, so a control that goes missing or appears twice is caught.
-const _appearanceControls = 5;
-const _appearanceDropdowns = 5;
+const _appearanceControls = 4;
+const _appearanceDropdowns = 4;
 const _playbackControls = 6;
 const _playbackDropdowns = 6;
 const _libraryControls = 7;

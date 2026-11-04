@@ -2062,5 +2062,21 @@
   "pluginsNeedConfigTitleTwo": "{first} và {second} cần được cấu hình",
   "pluginsNeedConfigTitleMany": "{first}, {second} và {more, plural, other{{more} plugin khác}} cần được cấu hình",
   "pluginOpenConfig": "Mở cấu hình",
-  "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy."
+  "lyricsTranslationFailNeedsConfig": "Plugin dịch này cần được cấu hình trước khi chạy.",
+  "settingsAppearanceFontsTitle": "Phông chữ",
+  "settingsAppearanceFontsSubtitle": "Ký tự CJK và biểu tượng cảm xúc (emoji) sẽ dùng phông chữ hệ thống.",
+  "customFontImportTooltip": "Nhập phông chữ tùy chỉnh (.ttf, .otf)",
+  "customFontDisclaimerTitle": "Nhập phông chữ tùy chỉnh",
+  "customFontDisclaimerBody": "Bạn đang nhập tệp phông chữ từ thiết bị. Vui lòng đảm bảo bạn có giấy phép hoặc quyền hợp pháp để sử dụng phông chữ này. Kanaru không phân phối hay chịu trách nhiệm về các tệp phông chữ do người dùng tự nhập.",
+  "customFontDisclaimerConfirm": "Tôi hiểu & Nhập",
+  "fontDialogCancel": "Hủy",
+  "customFontImportFailed": "Không thể nhập tệp phông chữ. Vui lòng kiểm tra tệp có đúng định dạng TrueType hoặc OpenType hợp lệ.",
+  "downloadFontTooltip": "Tải phông chữ ({size})",
+  "fontDownloadFailed": "Tải phông chữ {fontName} thất bại",
+  "fontLoadFailed": "Không thể nạp phông chữ {fontName}",
+  "deleteFontTooltip": "Xóa phông chữ",
+  "selectedFontSemantics": "Phông chữ đang chọn",
+  "deleteCustomFontTitle": "Xóa phông chữ?",
+  "deleteCustomFontBody": "\"{fontName}\" sẽ bị xóa khỏi Kanaru. Tệp gốc trên thiết bị của bạn không bị ảnh hưởng.",
+  "deleteCustomFontConfirm": "Xóa"
 }

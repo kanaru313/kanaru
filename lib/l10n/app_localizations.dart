@@ -7945,6 +7945,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This translation plugin needs configuration before it can run.'**
   String get lyricsTranslationFailNeedsConfig;
+
+  /// Title of the font management page
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts'**
+  String get settingsAppearanceFontsTitle;
+
+  /// Note about system font fallback
+  ///
+  /// In en, this message translates to:
+  /// **'System font is used for CJK characters and emoji.'**
+  String get settingsAppearanceFontsSubtitle;
+
+  /// Tooltip of the header import button
+  ///
+  /// In en, this message translates to:
+  /// **'Import custom font (.ttf, .otf)'**
+  String get customFontImportTooltip;
+
+  /// Title of the import disclaimer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Import Custom Font'**
+  String get customFontDisclaimerTitle;
+
+  /// Body of the import disclaimer dialog
+  ///
+  /// In en, this message translates to:
+  /// **'You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.'**
+  String get customFontDisclaimerBody;
+
+  /// Confirm button of the import disclaimer
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand & Import'**
+  String get customFontDisclaimerConfirm;
+
+  /// Cancel button of the font dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get fontDialogCancel;
+
+  /// Snackbar when import fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import font file. Verify that the file is a valid TrueType or OpenType font.'**
+  String get customFontImportFailed;
+
+  /// Tooltip of the download button
+  ///
+  /// In en, this message translates to:
+  /// **'Download font ({size})'**
+  String downloadFontTooltip(String size);
+
+  /// Snackbar when a catalog download fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download {fontName}'**
+  String fontDownloadFailed(String fontName);
+
+  /// Snackbar when an installed font cannot be registered
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load {fontName}'**
+  String fontLoadFailed(String fontName);
+
+  /// Tooltip of the delete button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete font'**
+  String get deleteFontTooltip;
+
+  /// Semantics label of the checkmark
+  ///
+  /// In en, this message translates to:
+  /// **'Selected font'**
+  String get selectedFontSemantics;
+
+  /// Title of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete font?'**
+  String get deleteCustomFontTitle;
+
+  /// Body of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'\"{fontName}\" will be removed from Kanaru. The original file on your device is not affected.'**
+  String deleteCustomFontBody(String fontName);
+
+  /// Confirm button of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteCustomFontConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -1,13 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/settings/app_font.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/settings_routes.dart';
+import 'setting_card.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'settings_number_presets.dart';
+
+/// Label of an [AppFont] shown in settings.
+String appFontLabel(AppLocalizations l10n, AppFont font) {
+  if (font.id == systemFontId) return l10n.settingsFontSystem;
+  return font.label;
+}
 
 /// Language names stay in their own language so they can always be found.
 /// A translation missing here is listed by its language code.
@@ -42,24 +51,18 @@ class AppearanceTextSettingRows extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SettingRow.single(
-          title: l10n.settingsFont,
-          subtitle: l10n.settingsFontHint,
-          control: SettingDropdown<String>(
-            options: [
-              for (final font in builtInAppFonts)
-                SettingOption(
-                  value: font.id,
-                  label: font.id == systemFontId
-                      ? l10n.settingsFontSystem
-                      : font.label,
-                  labelStyle: TextStyle(fontFamily: font.family),
-                ),
-            ],
-            // An unknown stored id shows the default font.
-            selected: appFontFor(settings.display.fontId).id,
-            onSelected: (id) =>
-                notifier.setDisplay(settings.display.copyWith(fontId: id)),
+        SettingCard(
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: Text(l10n.settingsFont),
+            subtitle: Text(
+              appFontLabel(l10n, appFontFor(settings.display.fontId)),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: const Icon(AppIcons.chevronRight),
+            onTap: () => context.go(settingsAppearanceFontsRoute),
           ),
         ),
         SettingRow.single(

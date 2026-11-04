@@ -5512,5 +5512,49 @@
   "lyricsTranslationFailNeedsConfig": "This translation plugin needs configuration before it can run.",
   "@lyricsTranslationFailNeedsConfig": {
     "description": "Why a translation failed: a required plugin setting is empty"
-  }
+  },
+  "settingsAppearanceFontsTitle": "Fonts",
+  "@settingsAppearanceFontsTitle": { "description": "Title of the font management page" },
+  "settingsAppearanceFontsSubtitle": "System font is used for CJK characters and emoji.",
+  "@settingsAppearanceFontsSubtitle": { "description": "Note about system font fallback" },
+  "customFontImportTooltip": "Import custom font (.ttf, .otf)",
+  "@customFontImportTooltip": { "description": "Tooltip of the header import button" },
+  "customFontDisclaimerTitle": "Import Custom Font",
+  "@customFontDisclaimerTitle": { "description": "Title of the import disclaimer dialog" },
+  "customFontDisclaimerBody": "You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.",
+  "@customFontDisclaimerBody": { "description": "Body of the import disclaimer dialog" },
+  "customFontDisclaimerConfirm": "I Understand & Import",
+  "@customFontDisclaimerConfirm": { "description": "Confirm button of the import disclaimer" },
+  "fontDialogCancel": "Cancel",
+  "@fontDialogCancel": { "description": "Cancel button of the font dialogs" },
+  "customFontImportFailed": "Failed to import font file. Verify that the file is a valid TrueType or OpenType font.",
+  "@customFontImportFailed": { "description": "Snackbar when import fails" },
+  "downloadFontTooltip": "Download font ({size})",
+  "@downloadFontTooltip": {
+    "description": "Tooltip of the download button",
+    "placeholders": { "size": { "type": "String" } }
+  },
+  "fontDownloadFailed": "Failed to download {fontName}",
+  "@fontDownloadFailed": {
+    "description": "Snackbar when a catalog download fails",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "fontLoadFailed": "Could not load {fontName}",
+  "@fontLoadFailed": {
+    "description": "Snackbar when an installed font cannot be registered",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "deleteFontTooltip": "Delete font",
+  "@deleteFontTooltip": { "description": "Tooltip of the delete button" },
+  "selectedFontSemantics": "Selected font",
+  "@selectedFontSemantics": { "description": "Semantics label of the checkmark" },
+  "deleteCustomFontTitle": "Delete font?",
+  "@deleteCustomFontTitle": { "description": "Title of the delete confirmation" },
+  "deleteCustomFontBody": "\"{fontName}\" will be removed from Kanaru. The original file on your device is not affected.",
+  "@deleteCustomFontBody": {
+    "description": "Body of the delete confirmation",
+    "placeholders": { "fontName": { "type": "String" } }
+  },
+  "deleteCustomFontConfirm": "Delete",
+  "@deleteCustomFontConfirm": { "description": "Confirm button of the delete confirmation" }
 }

@@ -5503,4 +5503,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsTranslationFailNeedsConfig =>
       'This translation plugin needs configuration before it can run.';
+
+  @override
+  String get settingsAppearanceFontsTitle => 'Fonts';
+
+  @override
+  String get settingsAppearanceFontsSubtitle =>
+      'System font is used for CJK characters and emoji.';
+
+  @override
+  String get customFontImportTooltip => 'Import custom font (.ttf, .otf)';
+
+  @override
+  String get customFontDisclaimerTitle => 'Import Custom Font';
+
+  @override
+  String get customFontDisclaimerBody =>
+      'You are importing a font file from your device. Please ensure you have the appropriate license or rights to use this font. Kanaru does not distribute or take responsibility for user-imported font files.';
+
+  @override
+  String get customFontDisclaimerConfirm => 'I Understand & Import';
+
+  @override
+  String get fontDialogCancel => 'Cancel';
+
+  @override
+  String get customFontImportFailed =>
+      'Failed to import font file. Verify that the file is a valid TrueType or OpenType font.';
+
+  @override
+  String downloadFontTooltip(String size) {
+    return 'Download font ($size)';
+  }
+
+  @override
+  String fontDownloadFailed(String fontName) {
+    return 'Failed to download $fontName';
+  }
+
+  @override
+  String fontLoadFailed(String fontName) {
+    return 'Could not load $fontName';
+  }
+
+  @override
+  String get deleteFontTooltip => 'Delete font';
+
+  @override
+  String get selectedFontSemantics => 'Selected font';
+
+  @override
+  String get deleteCustomFontTitle => 'Delete font?';
+
+  @override
+  String deleteCustomFontBody(String fontName) {
+    return '\"$fontName\" will be removed from Kanaru. The original file on your device is not affected.';
+  }
+
+  @override
+  String get deleteCustomFontConfirm => 'Delete';
 }

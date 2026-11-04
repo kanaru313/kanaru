@@ -5177,4 +5177,63 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsTranslationFailNeedsConfig =>
       'Plugin dịch này cần được cấu hình trước khi chạy.';
+
+  @override
+  String get settingsAppearanceFontsTitle => 'Phông chữ';
+
+  @override
+  String get settingsAppearanceFontsSubtitle =>
+      'Ký tự CJK và biểu tượng cảm xúc (emoji) sẽ dùng phông chữ hệ thống.';
+
+  @override
+  String get customFontImportTooltip => 'Nhập phông chữ tùy chỉnh (.ttf, .otf)';
+
+  @override
+  String get customFontDisclaimerTitle => 'Nhập phông chữ tùy chỉnh';
+
+  @override
+  String get customFontDisclaimerBody =>
+      'Bạn đang nhập tệp phông chữ từ thiết bị. Vui lòng đảm bảo bạn có giấy phép hoặc quyền hợp pháp để sử dụng phông chữ này. Kanaru không phân phối hay chịu trách nhiệm về các tệp phông chữ do người dùng tự nhập.';
+
+  @override
+  String get customFontDisclaimerConfirm => 'Tôi hiểu & Nhập';
+
+  @override
+  String get fontDialogCancel => 'Hủy';
+
+  @override
+  String get customFontImportFailed =>
+      'Không thể nhập tệp phông chữ. Vui lòng kiểm tra tệp có đúng định dạng TrueType hoặc OpenType hợp lệ.';
+
+  @override
+  String downloadFontTooltip(String size) {
+    return 'Tải phông chữ ($size)';
+  }
+
+  @override
+  String fontDownloadFailed(String fontName) {
+    return 'Tải phông chữ $fontName thất bại';
+  }
+
+  @override
+  String fontLoadFailed(String fontName) {
+    return 'Không thể nạp phông chữ $fontName';
+  }
+
+  @override
+  String get deleteFontTooltip => 'Xóa phông chữ';
+
+  @override
+  String get selectedFontSemantics => 'Phông chữ đang chọn';
+
+  @override
+  String get deleteCustomFontTitle => 'Xóa phông chữ?';
+
+  @override
+  String deleteCustomFontBody(String fontName) {
+    return '\"$fontName\" sẽ bị xóa khỏi Kanaru. Tệp gốc trên thiết bị của bạn không bị ảnh hưởng.';
+  }
+
+  @override
+  String get deleteCustomFontConfirm => 'Xóa';
 }
