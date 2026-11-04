@@ -88,6 +88,7 @@ flutter:
   assets:
     - assets/fonts/OFL.txt
     - assets/fonts/Nunito-OFL.txt
+    - assets/font_previews/
 
   fonts:
     - family: Inter
