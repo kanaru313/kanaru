@@ -1649,10 +1649,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'Get and install plugins from a repository or a file';
 
   @override
-  String get settingsDataStorageDescription => 'Backup, caches, logs';
+  String get settingsDataStorageDescription => 'Backup, caches';
+
+  @override
+  String get settingsAdvanced => 'Advanced';
+
+  @override
+  String get settingsAdvancedDescription =>
+      'Audio engine, privacy & network, diagnostics, danger zone';
 
   @override
   String get settingsAboutDescription => 'Version, licenses, source code';
+
+  @override
+  String get settingsGroupAudioEngine => 'Audio engine';
+
+  @override
+  String get settingsGroupPrivacyNetwork => 'Privacy & network';
+
+  @override
+  String get settingsGroupDiagnostics => 'Diagnostics';
+
+  @override
+  String get settingsGroupDangerZone => 'Danger zone';
+
+  @override
+  String get settingsResetAllTitle => 'Reset all settings';
+
+  @override
+  String get settingsResetAllHint =>
+      'Restore all preferences to default values';
+
+  @override
+  String get settingsResetAllButton => 'Reset';
+
+  @override
+  String get settingsResetAllConfirmTitle => 'Reset all settings?';
+
+  @override
+  String get settingsResetAllConfirmBody =>
+      'This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.';
+
+  @override
+  String get settingsResetAllSuccess =>
+      'All settings have been reset to defaults';
+
+  @override
+  String get settingsResetAllFailed => 'Could not reset settings';
 
   @override
   String get settingsGroupTheme => 'Theme';
@@ -1662,6 +1705,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGroupLayout => 'Layout';
+
+  @override
+  String get settingsGroupOverview => 'Overview';
 
   @override
   String get settingsGroupFolders => 'Folders';

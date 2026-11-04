@@ -1549,10 +1549,53 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tải và cài plugin từ repository hoặc file';
 
   @override
-  String get settingsDataStorageDescription => 'Sao lưu, bộ nhớ đệm, nhật ký';
+  String get settingsDataStorageDescription => 'Sao lưu, bộ nhớ đệm';
+
+  @override
+  String get settingsAdvanced => 'Nâng cao';
+
+  @override
+  String get settingsAdvancedDescription =>
+      'Bộ phát âm thanh, quyền riêng tư & mạng, chẩn đoán, vùng nguy hiểm';
 
   @override
   String get settingsAboutDescription => 'Phiên bản, giấy phép, mã nguồn';
+
+  @override
+  String get settingsGroupAudioEngine => 'Bộ phát âm thanh';
+
+  @override
+  String get settingsGroupPrivacyNetwork => 'Quyền riêng tư & mạng';
+
+  @override
+  String get settingsGroupDiagnostics => 'Chẩn đoán';
+
+  @override
+  String get settingsGroupDangerZone => 'Vùng nguy hiểm';
+
+  @override
+  String get settingsResetAllTitle => 'Đặt lại toàn bộ cài đặt';
+
+  @override
+  String get settingsResetAllHint =>
+      'Khôi phục toàn bộ tùy chọn về giá trị mặc định';
+
+  @override
+  String get settingsResetAllButton => 'Đặt lại';
+
+  @override
+  String get settingsResetAllConfirmTitle => 'Đặt lại toàn bộ cài đặt?';
+
+  @override
+  String get settingsResetAllConfirmBody =>
+      'Thao tác này sẽ khôi phục tất cả cài đặt về mặc định. Thư viện bài hát, playlist và cấu hình tiện ích (plugin) sẽ không bị xóa.';
+
+  @override
+  String get settingsResetAllSuccess =>
+      'Toàn bộ cài đặt đã được đặt về mặc định';
+
+  @override
+  String get settingsResetAllFailed => 'Không thể đặt lại cài đặt';
 
   @override
   String get settingsGroupTheme => 'Chủ đề';
@@ -1562,6 +1605,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsGroupLayout => 'Bố cục';
+
+  @override
+  String get settingsGroupOverview => 'Tổng quan';
 
   @override
   String get settingsGroupFolders => 'Thư mục';

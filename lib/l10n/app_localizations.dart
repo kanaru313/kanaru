@@ -2417,14 +2417,92 @@ abstract class AppLocalizations {
   /// Description under the Data and storage tile on the Settings root
   ///
   /// In en, this message translates to:
-  /// **'Backup, caches, logs'**
+  /// **'Backup, caches'**
   String get settingsDataStorageDescription;
+
+  /// Title of the Advanced category tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// Description under the Advanced tile on the Settings root
+  ///
+  /// In en, this message translates to:
+  /// **'Audio engine, privacy & network, diagnostics, danger zone'**
+  String get settingsAdvancedDescription;
 
   /// Description under the About tile on the Settings root
   ///
   /// In en, this message translates to:
   /// **'Version, licenses, source code'**
   String get settingsAboutDescription;
+
+  /// Header of the audio engine group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Audio engine'**
+  String get settingsGroupAudioEngine;
+
+  /// Header of the privacy and network group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & network'**
+  String get settingsGroupPrivacyNetwork;
+
+  /// Header of the diagnostics group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get settingsGroupDiagnostics;
+
+  /// Header of the danger zone group on the Advanced settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Danger zone'**
+  String get settingsGroupDangerZone;
+
+  /// Title of the reset all settings row in the danger zone
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all settings'**
+  String get settingsResetAllTitle;
+
+  /// Subtitle of the reset all settings row in the danger zone
+  ///
+  /// In en, this message translates to:
+  /// **'Restore all preferences to default values'**
+  String get settingsResetAllHint;
+
+  /// Button label to reset all settings
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get settingsResetAllButton;
+
+  /// Title of the confirm dialog before resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'Reset all settings?'**
+  String get settingsResetAllConfirmTitle;
+
+  /// Body of the confirm dialog before resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.'**
+  String get settingsResetAllConfirmBody;
+
+  /// Snackbar message shown after resetting all settings
+  ///
+  /// In en, this message translates to:
+  /// **'All settings have been reset to defaults'**
+  String get settingsResetAllSuccess;
+
+  /// Snackbar message shown when resetting all settings fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reset settings'**
+  String get settingsResetAllFailed;
 
   /// Header of the theme group on the Appearance settings page
   ///
@@ -2443,6 +2521,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Layout'**
   String get settingsGroupLayout;
+
+  /// Header of the overview group on the Library settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get settingsGroupOverview;
 
   /// Header of the folders group on the Library settings page
   ///

@@ -1088,13 +1088,65 @@
   "@settingsPluginsDescription": {
     "description": "Description under the Plugins tile on the Settings root"
   },
-  "settingsDataStorageDescription": "Backup, caches, logs",
+  "settingsDataStorageDescription": "Backup, caches",
   "@settingsDataStorageDescription": {
     "description": "Description under the Data and storage tile on the Settings root"
+  },
+  "settingsAdvanced": "Advanced",
+  "@settingsAdvanced": {
+    "description": "Title of the Advanced category tile on the Settings root"
+  },
+  "settingsAdvancedDescription": "Audio engine, privacy & network, diagnostics, danger zone",
+  "@settingsAdvancedDescription": {
+    "description": "Description under the Advanced tile on the Settings root"
   },
   "settingsAboutDescription": "Version, licenses, source code",
   "@settingsAboutDescription": {
     "description": "Description under the About tile on the Settings root"
+  },
+  "settingsGroupAudioEngine": "Audio engine",
+  "@settingsGroupAudioEngine": {
+    "description": "Header of the audio engine group on the Advanced settings page"
+  },
+  "settingsGroupPrivacyNetwork": "Privacy & network",
+  "@settingsGroupPrivacyNetwork": {
+    "description": "Header of the privacy and network group on the Advanced settings page"
+  },
+  "settingsGroupDiagnostics": "Diagnostics",
+  "@settingsGroupDiagnostics": {
+    "description": "Header of the diagnostics group on the Advanced settings page"
+  },
+  "settingsGroupDangerZone": "Danger zone",
+  "@settingsGroupDangerZone": {
+    "description": "Header of the danger zone group on the Advanced settings page"
+  },
+  "settingsResetAllTitle": "Reset all settings",
+  "@settingsResetAllTitle": {
+    "description": "Title of the reset all settings row in the danger zone"
+  },
+  "settingsResetAllHint": "Restore all preferences to default values",
+  "@settingsResetAllHint": {
+    "description": "Subtitle of the reset all settings row in the danger zone"
+  },
+  "settingsResetAllButton": "Reset",
+  "@settingsResetAllButton": {
+    "description": "Button label to reset all settings"
+  },
+  "settingsResetAllConfirmTitle": "Reset all settings?",
+  "@settingsResetAllConfirmTitle": {
+    "description": "Title of the confirm dialog before resetting all settings"
+  },
+  "settingsResetAllConfirmBody": "This will restore all preferences (theme, audio, library scanning, layout) to default values. Your music library database, playlists, and plugin configurations will not be deleted.",
+  "@settingsResetAllConfirmBody": {
+    "description": "Body of the confirm dialog before resetting all settings"
+  },
+  "settingsResetAllSuccess": "All settings have been reset to defaults",
+  "@settingsResetAllSuccess": {
+    "description": "Snackbar message shown after resetting all settings"
+  },
+  "settingsResetAllFailed": "Could not reset settings",
+  "@settingsResetAllFailed": {
+    "description": "Snackbar message shown when resetting all settings fails"
   },
   "settingsGroupTheme": "Theme",
   "@settingsGroupTheme": {
@@ -1107,6 +1159,10 @@
   "settingsGroupLayout": "Layout",
   "@settingsGroupLayout": {
     "description": "Header of the layout group on the Appearance settings page"
+  },
+  "settingsGroupOverview": "Overview",
+  "@settingsGroupOverview": {
+    "description": "Header of the overview group on the Library settings page"
   },
   "settingsGroupFolders": "Folders",
   "@settingsGroupFolders": {
