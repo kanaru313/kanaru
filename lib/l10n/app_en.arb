@@ -1597,6 +1597,16 @@
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
   },
+  "favoritesCopyDefaultName": "Favorites ({date})",
+  "@favoritesCopyDefaultName": {
+    "description": "Suggested name of a new playlist copied from Favorites",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
   "playlistM3uImport": "Import M3U…",
   "@playlistM3uImport": {
     "description": "Button on the playlists page that imports an M3U playlist file"

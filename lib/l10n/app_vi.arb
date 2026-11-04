@@ -844,6 +844,7 @@
   "@favoritesRemoved": {
     "description": "Snackbar after unliking a song from its menu"
   },
+  "favoritesCopyDefaultName": "Yêu thích ({date})",
   "playlistM3uImport": "Nhập M3U…",
   "@playlistM3uImport": {
     "description": "Button on the playlists page that imports an M3U playlist file"

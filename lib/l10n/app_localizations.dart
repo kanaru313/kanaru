@@ -3140,6 +3140,12 @@ abstract class AppLocalizations {
   /// **'Removed from Favorites'**
   String get favoritesRemoved;
 
+  /// Suggested name of a new playlist copied from Favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites ({date})'**
+  String favoritesCopyDefaultName(DateTime date);
+
   /// Button on the playlists page that imports an M3U playlist file
   ///
   /// In en, this message translates to:

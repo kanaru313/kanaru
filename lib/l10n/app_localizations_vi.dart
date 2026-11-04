@@ -2031,6 +2031,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get favoritesRemoved => 'Đã bỏ khỏi Yêu thích';
 
   @override
+  String favoritesCopyDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Yêu thích ($dateString)';
+  }
+
+  @override
   String get playlistM3uImport => 'Nhập M3U…';
 
   @override

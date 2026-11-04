@@ -2134,6 +2134,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesRemoved => 'Removed from Favorites';
 
   @override
+  String favoritesCopyDefaultName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Favorites ($dateString)';
+  }
+
+  @override
   String get playlistM3uImport => 'Import M3U…';
 
   @override

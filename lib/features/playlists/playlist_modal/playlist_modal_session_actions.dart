@@ -27,6 +27,7 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
     final db = this.db;
     final navigator = rootNavigator;
     if (db == null || navigator == null) return;
+    final name = playlistDisplayName(latest, l10n);
     await addTracksToPlaylistWith(
       db: db,
       messenger: openerMessenger,
@@ -37,8 +38,11 @@ extension PlaylistModalSessionActions on PlaylistModalSession {
         await ready();
         return db.playlistEntryPaths(latest.id);
       },
-      label: playlistDisplayName(latest, l10n),
+      label: name,
       excludePlaylistId: latest.id,
+      suggestedName: latest.isFavorites
+          ? l10n.favoritesCopyDefaultName(DateTime.now())
+          : name,
     );
   }
 
