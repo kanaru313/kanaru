@@ -148,6 +148,7 @@ abstract final class AppIcons {
   static const IconData settingsAppearance = FluentIcons.color_24_regular;
   static const IconData settingsPlayback = FluentIcons.play_circle_24_regular;
   static const IconData settingsData = FluentIcons.database_24_regular;
+  static const IconData settingsAdvanced = FluentIcons.wrench_24_regular;
   static const IconData settingsAbout = FluentIcons.info_24_regular;
   static const IconData themeSystem = FluentIcons.desktop_24_regular;
   static const IconData themeLight = FluentIcons.weather_sunny_24_regular;
