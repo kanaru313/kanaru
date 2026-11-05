@@ -3108,20 +3108,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dịch vụ từ chối khóa. Hãy kiểm tra khóa trong Cài đặt › Phát nhạc › Dịch.';
 
   @override
-  String translationNoticeTitle(String service) {
-    return 'Lời bài hát sẽ được gửi tới $service';
-  }
-
-  @override
-  String translationNoticeBody(String service) {
-    return 'Nội dung lời của bài hát này sẽ được gửi tới $service để dịch. Không gửi thông tin nào khác.';
-  }
-
-  @override
-  String get translationNoticeGoogleUnofficial =>
-      'Google được dùng qua một địa chỉ web không chính thức nên có thể ngừng hoạt động bất cứ lúc nào.';
-
-  @override
   String get translationNoticeContinue => 'Tiếp tục';
 
   @override
@@ -3132,10 +3118,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsTranslationService => 'Dịch vụ dịch lời';
-
-  @override
-  String get settingsTranslationServiceGoogleHint =>
-      'Dịch vụ miễn phí, không chính thức; có thể ngừng hoạt động. Lời bài hát được gửi tới dịch vụ này khi bật dịch.';
 
   @override
   String get settingsTranslationTarget => 'Ngôn ngữ dịch mặc định';
@@ -3206,9 +3188,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationMenuSettings => 'Cài đặt dịch';
-
-  @override
-  String get lyricsTranslationBannerOpenKey => 'Mở cài đặt của dịch vụ';
 
   @override
   String get onlineLyricsNoticeOpenSettings => 'Mở cài đặt lời bài hát';
@@ -4858,11 +4837,6 @@ class AppLocalizationsVi extends AppLocalizations {
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ này. Kanaru không kiểm soát cách dịch vụ dùng chúng.';
 
   @override
-  String translationServicePluginSuffix(String name) {
-    return '$name (plugin)';
-  }
-
-  @override
   String translationServiceRemovedSuffix(String name) {
     return '$name (đã gỡ)';
   }
@@ -4876,9 +4850,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerOpenPlugin => 'Mở cài đặt';
-
-  @override
-  String get lyricsTranslationBannerUseGoogle => 'Dịch bằng Google';
 
   @override
   String get settingsTranslationServicePluginHint =>

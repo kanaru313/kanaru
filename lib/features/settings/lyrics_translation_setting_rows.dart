@@ -54,8 +54,8 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
         translationLanguageFor('en')!;
     final target = prefs.targetLanguage;
     final known = target != null && translationLanguageFor(target) != null;
-    // Google and the live translate plugins; disabled while they are not
-    // known, so a stored plugin choice is never overwritten blind.
+    // The live translate plugins; disabled while they are not known, so a
+    // stored plugin choice is never overwritten blind.
     final plugins = ref.watch(translationPluginInfosProvider);
     final choices = ref.watch(translationServiceChoicesProvider);
     final services = choices.services;
@@ -65,9 +65,7 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
       children: [
         SettingRow.single(
           title: l10n.settingsTranslationService,
-          subtitle: choices.selected?.isGoogle == true
-              ? l10n.settingsTranslationServiceGoogleHint
-              : l10n.settingsTranslationServicePluginHint,
+          subtitle: l10n.settingsTranslationServicePluginHint,
           control: SettingDropdown<TranslationServiceId>(
             selected: choices.selected,
             hintText: l10n.translationServiceNotSelected,

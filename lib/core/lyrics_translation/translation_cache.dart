@@ -26,10 +26,10 @@ class CachedTranslation {
   final Map<String, String> lines;
 }
 
-/// Decodes [row]; null for a provider that is neither `google` nor a plugin
-/// id (old `deepl` rows included), invalid JSON or a value that
-/// is not a string-to-string object. Each null result goes through one
-/// warning per run (provider and language only, never content).
+/// Decodes [row]; null for a provider that is not a plugin id (retired
+/// built-in service rows included), invalid JSON or a value that is not a
+/// string-to-string object. Each null result goes through one warning per run
+/// (provider and language only, never content).
 CachedTranslation? decodeTranslationRow(LyricTranslationRow row) {
   final service = TranslationServiceId.tryParse(row.provider);
   if (service != null) {
@@ -63,11 +63,11 @@ String encodeTranslationLines(Map<String, String> lines) => jsonEncode(lines);
 /// Splits [cached] into the [preferred] service's translation and any other
 /// service's, so the caller can offer the other as a fallback.
 ///
-/// Another service's row is offered only when it is Google or one of
-/// [knownPlugins] (every translate plugin that has a record, removed ones
-/// included: their rows are kept and named by the record), and never when
-/// it says the lyrics are already in [target]: that verdict of one service
-/// must not stop a request to the one the user picked.
+/// Another service's row is offered only when it is one of [knownPlugins]
+/// (every translate plugin that has a record, removed ones included: their
+/// rows are kept and named by the record), and never when it says the lyrics
+/// are already in [target]: that verdict of one service must not stop a
+/// request to the one the user picked.
 ({CachedTranslation? current, CachedTranslation? other}) pickCached(
   List<CachedTranslation> cached,
   TranslationServiceId preferred, {
@@ -79,7 +79,7 @@ String encodeTranslationLines(Map<String, String> lines) => jsonEncode(lines);
   for (final c in cached) {
     if (c.service == preferred) {
       current ??= c;
-    } else if (c.service.isGoogle || knownPlugins.contains(c.service)) {
+    } else if (knownPlugins.contains(c.service)) {
       if (target != null && isSameLanguage(c.sourceLang, target)) continue;
       other ??= c;
     }

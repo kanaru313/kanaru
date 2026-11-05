@@ -3,11 +3,10 @@ import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 
 void main() {
-  test('every code is unique and every googleCode is set', () {
+  test('every code is unique and every nameKey is set', () {
     final codes = translationLanguages.map((l) => l.code).toList();
     expect(codes.toSet().length, codes.length);
     for (final language in translationLanguages) {
-      expect(language.googleCode, isNotEmpty, reason: language.code);
       expect(language.nameKey, isNotEmpty, reason: language.code);
     }
   });
@@ -16,19 +15,13 @@ void main() {
     for (final code in ['vi', 'en']) {
       final language = translationLanguageFor(code);
       expect(language, isNotNull, reason: code);
-      expect(language!.googleCode, isNotEmpty);
+      expect(language!.nameKey, isNotEmpty);
     }
   });
 
   test('looks up languages and rejects unknown codes', () {
     expect(translationLanguageFor('vi')?.nameKey, 'vie');
     expect(translationLanguageFor('xx'), isNull);
-  });
-
-  test('maps the special Google codes', () {
-    expect(translationLanguageFor('he')!.googleCode, 'he');
-    expect(translationLanguageFor('zh-Hans')!.googleCode, 'zh-CN');
-    expect(translationLanguageFor('zh-Hant')!.googleCode, 'zh-TW');
   });
 
   test('baseLanguageOf lower-cases and cuts at - or _', () {
@@ -82,16 +75,19 @@ void main() {
   });
 
   test('the service id is what settings and the cache store', () {
-    expect(TranslationServiceId.google.value, 'google');
     expect(
-      TranslationServiceId.tryParse('google'),
-      TranslationServiceId.google,
+      TranslationServiceId.tryParse('plugin-abc123def456')?.value,
+      'plugin-abc123def456',
     );
-    expect(
-      TranslationServiceId.tryParse('plugin-abc123def456')!.isPlugin,
-      true,
-    );
-    for (final bad in ['deepl', 'plugin-short', 'Google', '', null, 3]) {
+    for (final bad in [
+      'google',
+      'deepl',
+      'plugin-short',
+      'Google',
+      '',
+      null,
+      3,
+    ]) {
       expect(TranslationServiceId.tryParse(bad), isNull, reason: '$bad');
     }
   });

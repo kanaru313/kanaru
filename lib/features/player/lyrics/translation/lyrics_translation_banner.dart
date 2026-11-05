@@ -5,12 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_failure.dart';
-import '../../../../core/lyrics_translation/translation_service.dart';
-import '../../../../core/lyrics_translation/translation_service_resolution.dart';
-import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../../shared/settings_routes.dart';
-import '../../../../shared/translation_notice_dialog.dart';
 import '../../../../shared/translation_plugin_routes.dart';
 import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
@@ -26,7 +21,7 @@ bool _isKeyError(TranslationFailureKind kind) =>
 /// Whether the plugin's settings page can fix the failure: its key is
 /// missing, rejected, or cannot be read from a locked key store, or a
 /// required setting is empty.
-bool _isPluginKeyIssue(TranslationFailureKind kind) =>
+bool _opensPluginSettings(TranslationFailureKind kind) =>
     _isKeyError(kind) ||
     kind == TranslationFailureKind.keyStoreLocked ||
     kind == TranslationFailureKind.needsConfig;
@@ -55,27 +50,11 @@ class LyricsTranslationBanner extends ConsumerWidget {
   final String appLang;
 
   /// Closes Now Playing and opens the page of the plugin that failed, where
-  /// its key is set; the translation settings for a built-in service.
+  /// its key or settings live.
   void _openKeySettings(BuildContext context, WidgetRef ref) {
     final router = GoRouter.maybeOf(context);
     ref.read(nowPlayingOpenProvider.notifier).close();
-    router?.go(
-      state.service.isPlugin
-          ? translationPluginRoute(state.service.value)
-          : settingsFocusLocation(SettingsAnchor.playbackTranslation),
-    );
-  }
-
-  /// Switches to Google. Google not accepted yet: its notice comes first and
-  /// Cancel leaves the plugin selected.
-  Future<void> _useGoogle(BuildContext context, WidgetRef ref) async {
-    const google = TranslationServiceId.google;
-    final prefs = ref.read(settingsProvider).translation;
-    if (needsNoticeFor(prefs, google)) {
-      await enableTranslationWithNotice(context, ref, google);
-    } else {
-      ref.read(lyricsTranslationProvider(appLang).notifier).useGoogle();
-    }
+    router?.go(translationPluginRoute(state.service.value));
   }
 
   @override
@@ -89,10 +68,7 @@ class LyricsTranslationBanner extends ConsumerWidget {
       _ => translationFailureMessage(l10n, kind),
     };
     final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-    final isPlugin = state.service.isPlugin;
-    final opensSettings = isPlugin
-        ? _isPluginKeyIssue(kind)
-        : _isKeyError(kind);
+    final opensSettings = _opensPluginSettings(kind);
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
@@ -124,22 +100,13 @@ class LyricsTranslationBanner extends ConsumerWidget {
                             child: Text(
                               kind == TranslationFailureKind.needsConfig
                                   ? l10n.pluginOpenConfig
-                                  : isPlugin
-                                  ? l10n.lyricsTranslationBannerOpenPlugin
-                                  : l10n.lyricsTranslationBannerOpenKey,
+                                  : l10n.lyricsTranslationBannerOpenPlugin,
                             ),
                           ),
                         if (_canRetry(kind))
                           TextButton(
                             onPressed: controller.retry,
                             child: Text(l10n.lyricsTranslationRetry),
-                          ),
-                        // Google is the way out of a plugin that fails; a
-                        // Google failure has no service to switch to.
-                        if (isPlugin)
-                          TextButton(
-                            onPressed: () => _useGoogle(context, ref),
-                            child: Text(l10n.lyricsTranslationBannerUseGoogle),
                           ),
                       ],
                     ),

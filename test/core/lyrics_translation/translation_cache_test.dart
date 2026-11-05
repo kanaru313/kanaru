@@ -21,25 +21,26 @@ CachedTranslation _cached(TranslationServiceId s) => CachedTranslation(
 );
 
 final _plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+final _otherPlugin = TranslationServiceId.tryParse('plugin-111111111111')!;
 final _removed = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
 
 void main() {
   group('decodeTranslationRow', () {
     test('decodes a valid row', () {
-      final c = decodeTranslationRow(_row('google', '{"hi":"chào"}'))!;
-      expect(c.service, TranslationServiceId.google);
+      final c = decodeTranslationRow(_row(_plugin.value, '{"hi":"chào"}'))!;
+      expect(c.service, _plugin);
       expect(c.targetLang, 'vi');
       expect(c.sourceLang, 'en');
       expect(c.lines, {'hi': 'chào'});
     });
 
     test('bad JSON gives null', () {
-      expect(decodeTranslationRow(_row('google', '{oops')), isNull);
+      expect(decodeTranslationRow(_row(_plugin.value, '{oops')), isNull);
     });
 
     test('non-object and non-string values give null', () {
-      expect(decodeTranslationRow(_row('google', '["a"]')), isNull);
-      expect(decodeTranslationRow(_row('google', '{"a":1}')), isNull);
+      expect(decodeTranslationRow(_row(_plugin.value, '["a"]')), isNull);
+      expect(decodeTranslationRow(_row(_plugin.value, '{"a":1}')), isNull);
     });
 
     test('unknown provider gives null', () {
@@ -51,66 +52,66 @@ void main() {
       expect(c.service, _plugin);
     });
 
-    test('a row saved by the removed DeepL client gives null', () {
+    test('a row saved by the removed Google or DeepL client gives null', () {
+      expect(decodeTranslationRow(_row('google', '{"hi":"chào"}')), isNull);
       expect(decodeTranslationRow(_row('deepl', '{"hi":"chào"}')), isNull);
     });
   });
 
   test('decoded lines cannot be modified', () {
-    final c = decodeTranslationRow(_row('google', '{"a":"b"}'))!;
+    final c = decodeTranslationRow(_row(_plugin.value, '{"a":"b"}'))!;
     expect(() => c.lines['x'] = 'y', throwsUnsupportedError);
   });
 
   test('encode then decode round-trips', () {
     final json = encodeTranslationLines({'a': 'b', 'c': 'd'});
-    expect(decodeTranslationRow(_row('google', json))!.lines, {
+    expect(decodeTranslationRow(_row(_plugin.value, json))!.lines, {
       'a': 'b',
       'c': 'd',
     });
   });
 
   group('pickCached', () {
-    final google = _cached(TranslationServiceId.google);
+    final preferred = _cached(_plugin);
 
     test('prefers the current service', () {
-      final r = pickCached([google], TranslationServiceId.google);
-      expect(r.current, same(google));
+      final r = pickCached([preferred], _plugin);
+      expect(r.current, same(preferred));
       expect(r.other, isNull);
     });
 
     test('empty list gives nothing', () {
-      final r = pickCached([], TranslationServiceId.google);
+      final r = pickCached([], _plugin);
       expect((r.current, r.other), (null, null));
     });
 
     test(
-      'offers a known plugin row and Google, skips an id with no record',
+      'offers a known plugin row, skips an id with no record',
       () {
-        final plugin = _cached(_plugin);
+        final other = _cached(_otherPlugin);
         final unknown = _cached(_removed);
         expect(
           pickCached(
-            [unknown, plugin],
-            TranslationServiceId.google,
-            knownPlugins: {_plugin},
+            [unknown, other],
+            _plugin,
+            knownPlugins: {_otherPlugin},
           ).other,
-          same(plugin),
+          same(other),
         );
         expect(
           pickCached(
             [unknown],
-            TranslationServiceId.google,
-            knownPlugins: {_plugin},
+            _plugin,
+            knownPlugins: {_otherPlugin},
           ).other,
           isNull,
         );
-        expect(pickCached([google], _plugin).other, same(google));
       },
     );
 
     test('never offers a same-language row of another service', () {
       final sameRow = CachedTranslation(
-        service: _plugin,
+        service: _otherPlugin,
         targetLang: 'vi',
         sourceLang: 'vi',
         lines: const {},
@@ -119,8 +120,8 @@ void main() {
 
       final r = pickCached(
         [sameRow],
-        TranslationServiceId.google,
-        knownPlugins: {_plugin},
+        _plugin,
+        knownPlugins: {_otherPlugin},
         target: vi,
       );
 
@@ -128,8 +129,8 @@ void main() {
       expect(
         pickCached(
           [sameRow],
-          _plugin,
-          knownPlugins: {_plugin},
+          _otherPlugin,
+          knownPlugins: {_otherPlugin},
           target: vi,
         ).current,
         same(sameRow),

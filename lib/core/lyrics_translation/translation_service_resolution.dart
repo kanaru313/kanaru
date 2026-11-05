@@ -14,7 +14,6 @@ import 'translation_service.dart';
 /// * `null` while the plugin records load;
 /// * `null` when reading plugin records failed or there is no library database;
 /// * `null` when the stored plugin is not installed;
-/// * Google is Google;
 /// * a plugin id is itself when its translate plugin is installed.
 ///
 /// It never writes the settings; `translationServiceSweepProvider` does.
@@ -25,7 +24,6 @@ final effectiveTranslationServiceProvider = Provider<TranslationServiceId?>((
     settingsProvider.select((s) => s.translation.service),
   );
   if (stored == null) return null;
-  if (stored.isGoogle) return stored;
   final records = ref.watch(translatePluginRecordsProvider);
   if (records.hasError || !records.hasValue) return null;
   final installed = records.requireValue.any(

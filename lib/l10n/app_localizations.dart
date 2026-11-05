@@ -4802,24 +4802,6 @@ abstract class AppLocalizations {
   /// **'The service rejected the key. Check the key in Settings › Playback › Translation.'**
   String get lyricsTranslationBannerBadKey;
 
-  /// Title of the dialog asking to send lyrics to a translation service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics will be sent to {service}'**
-  String translationNoticeTitle(String service);
-
-  /// Body of the translation notice dialog; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'The text of this song\'s lyrics is sent to {service} to be translated. Nothing else is sent.'**
-  String translationNoticeBody(String service);
-
-  /// Extra line of the translation notice dialog when the service is Google
-  ///
-  /// In en, this message translates to:
-  /// **'Google is used through an unofficial web address, so it may stop working at any time.'**
-  String get translationNoticeGoogleUnofficial;
-
   /// Button of the translation notice dialog that accepts sending the lyrics
   ///
   /// In en, this message translates to:
@@ -4843,12 +4825,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translation service'**
   String get settingsTranslationService;
-
-  /// No description provided for @settingsTranslationServiceGoogleHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.'**
-  String get settingsTranslationServiceGoogleHint;
 
   /// No description provided for @settingsTranslationTarget.
   ///
@@ -4951,12 +4927,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translation settings'**
   String get lyricsTranslationMenuSettings;
-
-  /// Button on the key error banner that opens the translation settings
-  ///
-  /// In en, this message translates to:
-  /// **'Open the service\'s settings'**
-  String get lyricsTranslationBannerOpenKey;
 
   /// Link in the automatic online lyrics notice that opens Settings at the lyrics group
   ///
@@ -7532,12 +7502,6 @@ abstract class AppLocalizations {
   /// **'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.'**
   String get translationNoticePluginBody;
 
-  /// Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it
-  ///
-  /// In en, this message translates to:
-  /// **'{name} (plugin)'**
-  String translationServicePluginSuffix(String name);
-
   /// Name of an uninstalled translation plugin whose saved translation is still shown
   ///
   /// In en, this message translates to:
@@ -7561,12 +7525,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open settings'**
   String get lyricsTranslationBannerOpenPlugin;
-
-  /// Button on the error banner of a translation plugin that switches to Google
-  ///
-  /// In en, this message translates to:
-  /// **'Translate with Google'**
-  String get lyricsTranslationBannerUseGoogle;
 
   /// Subtitle of the translation service row when a translate plugin is the selected service
   ///

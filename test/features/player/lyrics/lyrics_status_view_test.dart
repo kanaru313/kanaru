@@ -578,7 +578,10 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Lyrics will be sent to Google'), findsNothing);
+      expect(
+        find.text('Lyrics will be sent to the plugin Test Translate'),
+        findsNothing,
+      );
       expect(find.byType(AlertDialog), findsNothing);
       expect(container.read(settingsProvider).translation.show, isFalse);
     });

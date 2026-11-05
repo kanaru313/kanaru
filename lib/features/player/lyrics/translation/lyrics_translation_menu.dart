@@ -69,8 +69,8 @@ List<Widget> lyricsTranslationMenuItems(
     }
   }
 
-  // Google and the live translate plugins; names only. A stored plugin that
-  // is gone is not shown as picked: the one that really runs is.
+  // The live translate plugins; names only. A stored plugin that is gone is
+  // not shown as picked.
   final plugins = ref.watch(translationPluginInfosProvider);
   String serviceName(TranslationServiceId id) =>
       translationServiceName(l10n, plugins, id);

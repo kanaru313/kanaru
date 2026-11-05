@@ -12,13 +12,25 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/lyrics_translation/fake_plugin_runner.dart';
 
-const _google = TranslationServiceId.google;
+const _id = 'plugin-abc123def456';
+final _plugin = TranslationServiceId.tryParse(_id)!;
+final _other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
 
 void main() {
   late ProviderContainer container;
   bool? answer;
 
   TranslationPrefs prefs() => container.read(settingsProvider).translation;
+
+  List<Override> records([String name = 'Gemini']) => [
+    lyricsPluginRecordsProvider.overrideWithValue([
+      translateRecord(
+        _id,
+        name: name,
+        hosts: const ['a.example', 'b.example'],
+      ),
+    ]),
+  ];
 
   /// A button that runs [action] with its own context and ref.
   Future<void> pump(
@@ -27,15 +39,18 @@ void main() {
     Set<TranslationServiceId> acknowledged = const {},
     Locale locale = const Locale('en'),
     Widget Function(Future<void> Function(BuildContext, WidgetRef))? home,
-    List<Override> overrides = const [],
+    List<Override>? overrides,
   }) async {
     answer = null;
     container = ProviderContainer(
       overrides: [
-        ...overrides,
+        ...(overrides ?? records()),
         initialSettingsProvider.overrideWithValue(
           AppSettings(
-            translation: TranslationPrefs(noticeAcknowledged: acknowledged),
+            translation: TranslationPrefs(
+              service: _plugin,
+              noticeAcknowledged: acknowledged,
+            ),
           ),
         ),
       ],
@@ -67,26 +82,11 @@ void main() {
   }
 
   Future<void> confirm(BuildContext c, WidgetRef r) async =>
-      answer = await confirmTranslationNotice(c, r, _google);
+      answer = await confirmTranslationNotice(c, r, _plugin);
 
   group('a plugin service', () {
-    const id = 'plugin-abc123def456';
-    final plugin = TranslationServiceId.tryParse(id)!;
-    Future<void> confirmPlugin(BuildContext c, WidgetRef r) async =>
-        answer = await confirmTranslationNotice(c, r, plugin);
-
-    List<Override> records(String name) => [
-      lyricsPluginRecordsProvider.overrideWithValue([
-        translateRecord(
-          id,
-          name: name,
-          hosts: const ['a.example', 'b.example'],
-        ),
-      ]),
-    ];
-
     testWidgets('names the plugin and lists its hosts', (tester) async {
-      await pump(tester, confirmPlugin, overrides: records('Gemini'));
+      await pump(tester, confirm, overrides: records('Gemini'));
 
       expect(
         find.text('Lyrics will be sent to the plugin Gemini'),
@@ -96,24 +96,15 @@ void main() {
       expect(find.textContaining('does not control'), findsOneWidget);
       expect(find.text('a.example'), findsOneWidget);
       expect(find.text('b.example'), findsOneWidget);
-      expect(find.textContaining('unofficial'), findsNothing);
     });
 
-    testWidgets('a plugin named Google is not shown as Google', (tester) async {
-      await pump(tester, confirmPlugin, overrides: records('Google'));
-
-      expect(
-        find.text('Lyrics will be sent to the plugin Google (plugin)'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('unofficial'), findsNothing);
-    });
-
-    testWidgets('accepting Google does not accept the plugin', (tester) async {
+    testWidgets('accepting another plugin does not accept this one', (
+      tester,
+    ) async {
       await pump(
         tester,
-        confirmPlugin,
-        acknowledged: {_google},
+        confirm,
+        acknowledged: {_other},
         overrides: records('Gemini'),
       );
 
@@ -124,7 +115,7 @@ void main() {
   testWidgets('an accepted service answers true without a dialog', (
     tester,
   ) async {
-    await pump(tester, confirm, acknowledged: {_google});
+    await pump(tester, confirm, acknowledged: {_plugin});
 
     expect(answer, isTrue);
     expect(find.byType(AlertDialog), findsNothing);
@@ -135,12 +126,10 @@ void main() {
   ) async {
     await pump(tester, confirm);
 
-    expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
     expect(
-      find.textContaining('The text of this song\'s lyrics is sent to Google'),
+      find.text('Lyrics will be sent to the plugin Gemini'),
       findsOneWidget,
     );
-    expect(find.textContaining('unofficial'), findsOneWidget);
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
 
@@ -173,13 +162,16 @@ void main() {
   testWidgets('the dialog is in Vietnamese for the vi locale', (tester) async {
     await pump(tester, confirm, locale: const Locale('vi'));
 
-    expect(find.text('Lời bài hát sẽ được gửi tới Google'), findsOneWidget);
+    expect(
+      find.text('Lời bài hát sẽ được gửi tới plugin Gemini'),
+      findsOneWidget,
+    );
     expect(find.text('Tiếp tục'), findsOneWidget);
   });
 
   group('enabling with the notice', () {
     Future<void> enable(BuildContext c, WidgetRef r) =>
-        enableTranslationWithNotice(c, r, _google);
+        enableTranslationWithNotice(c, r, _plugin);
 
     testWidgets('Continue selects the service, accepts it and shows', (
       tester,
@@ -190,8 +182,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(prefs().show, isTrue);
-      expect(prefs().service, _google);
-      expect(prefs().noticeAcknowledged, {_google});
+      expect(prefs().service, _plugin);
+      expect(prefs().noticeAcknowledged, {_plugin});
     });
 
     testWidgets('Cancel leaves the settings as they were', (tester) async {
@@ -201,16 +193,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(prefs().show, isFalse);
-      expect(prefs().service, _google);
+      expect(prefs().service, _plugin);
       expect(prefs().noticeAcknowledged, isEmpty);
     });
 
     testWidgets('an accepted service turns on at once', (tester) async {
-      await pump(tester, enable, acknowledged: {_google});
+      await pump(tester, enable, acknowledged: {_plugin});
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(prefs().show, isTrue);
-      expect(prefs().service, _google);
+      expect(prefs().service, _plugin);
     });
   });
 
@@ -221,7 +213,7 @@ void main() {
     addTearDown(shown.dispose);
     await pump(
       tester,
-      (c, r) => enableTranslationWithNotice(c, r, _google),
+      (c, r) => enableTranslationWithNotice(c, r, _plugin),
       home: (action) => ValueListenableBuilder<bool>(
         valueListenable: shown,
         builder: (context, visible, _) => visible
@@ -243,8 +235,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(prefs().show, isTrue);
-    expect(prefs().service, _google);
-    expect(prefs().noticeAcknowledged, {_google});
+    expect(prefs().service, _plugin);
+    expect(prefs().noticeAcknowledged, {_plugin});
   });
 
   group('language names', () {

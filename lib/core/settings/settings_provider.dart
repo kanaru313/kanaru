@@ -153,8 +153,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     Set<TranslationServiceId> livePlugins,
   ) {
     final current = state.translation;
-    bool dead(TranslationServiceId id) =>
-        id.isPlugin && !livePlugins.contains(id);
+    bool dead(TranslationServiceId id) => !livePlugins.contains(id);
     final serviceLost = current.service != null && dead(current.service!);
     final acknowledged = {
       for (final id in current.noticeAcknowledged)

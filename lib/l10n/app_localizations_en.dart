@@ -3376,20 +3376,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The service rejected the key. Check the key in Settings › Playback › Translation.';
 
   @override
-  String translationNoticeTitle(String service) {
-    return 'Lyrics will be sent to $service';
-  }
-
-  @override
-  String translationNoticeBody(String service) {
-    return 'The text of this song\'s lyrics is sent to $service to be translated. Nothing else is sent.';
-  }
-
-  @override
-  String get translationNoticeGoogleUnofficial =>
-      'Google is used through an unofficial web address, so it may stop working at any time.';
-
-  @override
   String get translationNoticeContinue => 'Continue';
 
   @override
@@ -3400,10 +3386,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTranslationService => 'Translation service';
-
-  @override
-  String get settingsTranslationServiceGoogleHint =>
-      'Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.';
 
   @override
   String get settingsTranslationTarget => 'Default translation language';
@@ -3481,9 +3463,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationMenuSettings => 'Translation settings';
-
-  @override
-  String get lyricsTranslationBannerOpenKey => 'Open the service\'s settings';
 
   @override
   String get onlineLyricsNoticeOpenSettings => 'Open lyrics settings';
@@ -5172,11 +5151,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The lyrics, song title and artist are sent to these hosts. Kanaru does not control how the service uses them.';
 
   @override
-  String translationServicePluginSuffix(String name) {
-    return '$name (plugin)';
-  }
-
-  @override
   String translationServiceRemovedSuffix(String name) {
     return '$name (removed)';
   }
@@ -5190,9 +5164,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationBannerOpenPlugin => 'Open settings';
-
-  @override
-  String get lyricsTranslationBannerUseGoogle => 'Translate with Google';
 
   @override
   String get settingsTranslationServicePluginHint =>

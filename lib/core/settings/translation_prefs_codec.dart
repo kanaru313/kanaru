@@ -58,11 +58,16 @@ const _knownKeys = {
 /// Most acknowledged services kept; a hand-edited file cannot grow the set.
 const _maxAcknowledged = 64;
 
+/// Built-in service ids retired in earlier builds; their consent is dropped on
+/// decode so it does not linger in `extra` when settings are saved again.
+const _retiredServiceIds = {'google'};
+
 (Set<TranslationServiceId>, List<Object?>) _decodeAcknowledged(Object? json) {
   if (json is! List) return (const {}, const []);
   final known = <TranslationServiceId>{};
   final unknown = <Object?>[];
   for (final item in json) {
+    if (_retiredServiceIds.contains(item)) continue;
     final id = TranslationServiceId.tryParse(item);
     if (id == null) {
       unknown.add(item);

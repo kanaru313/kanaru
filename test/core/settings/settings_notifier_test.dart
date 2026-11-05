@@ -55,24 +55,26 @@ void main() {
     expect(stored()['libraryOnboarded'], true);
   });
 
+  final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+
   test('enabling selects the service, acknowledges it and shows', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
     var changes = 0;
     container.listen(settingsProvider, (_, _) => changes++);
 
-    notifier.enableTranslation(TranslationServiceId.google);
+    notifier.enableTranslation(plugin);
     await notifier.flush();
 
     expect(changes, 1);
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isTrue);
-    expect(translation.service, TranslationServiceId.google);
-    expect(translation.noticeAcknowledged, {TranslationServiceId.google});
+    expect(translation.service, plugin);
+    expect(translation.noticeAcknowledged, {plugin});
     final json = stored()['lyricsTranslation']! as Map;
     expect(json['show'], true);
-    expect(json['service'], 'google');
-    expect(json['noticeAcknowledged'], ['google']);
+    expect(json['service'], plugin.value);
+    expect(json['noticeAcknowledged'], [plugin.value]);
   });
 
   test('acknowledging only records the notice', () async {
@@ -80,14 +82,14 @@ void main() {
     final notifier = container.read(settingsProvider.notifier);
 
     notifier.setTranslation(
-      const TranslationPrefs(service: TranslationServiceId.google),
+      TranslationPrefs(service: plugin),
     );
-    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
+    notifier.acknowledgeTranslationNotice(plugin);
 
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isFalse);
     expect(translation.needsNotice, isFalse);
-    expect(translation.noticeAcknowledged, {TranslationServiceId.google});
+    expect(translation.noticeAcknowledged, {plugin});
   });
 
   test('translation never turns on for an unacknowledged service', () async {
@@ -106,9 +108,9 @@ void main() {
     final notifier = container.read(settingsProvider.notifier);
 
     notifier.setTranslation(
-      const TranslationPrefs(
+      TranslationPrefs(
         show: true,
-        noticeAcknowledged: {TranslationServiceId.google},
+        noticeAcknowledged: {plugin},
       ),
     );
 
@@ -122,9 +124,9 @@ void main() {
     final notifier = container.read(settingsProvider.notifier);
 
     notifier.setTranslation(
-      const TranslationPrefs(service: TranslationServiceId.google),
+      TranslationPrefs(service: plugin),
     );
-    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
+    notifier.acknowledgeTranslationNotice(plugin);
     notifier.setTranslation(
       container.read(settingsProvider).translation.withTargetLanguage('vi'),
     );

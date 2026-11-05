@@ -31,8 +31,8 @@ class TranslationPrefs {
 
   final LyricsTranslationDisplay display;
 
-  /// Services (`google` or plugin ids) the user accepted "lyrics will be sent
-  /// to `<service>`" for. Switching to another service asks once more.
+  /// Translate plugin ids the user accepted "lyrics will be sent to
+  /// `<service>`" for. Switching to another service asks once more.
   final Set<TranslationServiceId> noticeAcknowledged;
 
   /// The stored [service] has not been accepted yet. Callers that decide

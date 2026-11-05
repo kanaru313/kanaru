@@ -30,10 +30,11 @@ class _Controller extends Fake implements LyricsPluginsController {
 
 void main() {
   final plugin = TranslationServiceId.tryParse(_id)!;
+  final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
 
   ProviderContainer make({
     required bool needs,
-    TranslationServiceId? service = TranslationServiceId.google,
+    TranslationServiceId? service,
     bool live = true,
     Completer<void>? gate,
   }) {
@@ -88,11 +89,11 @@ void main() {
     expect(notice?.name, 'Gemini');
   });
 
-  test('a plugin that needs nothing, Google and a gone plugin report none', () {
+  test('a plugin that needs nothing and a gone plugin report none', () {
     final ok = make(needs: false);
     pick(ok, plugin);
     final back = make(needs: true, service: plugin);
-    pick(back, TranslationServiceId.google);
+    pick(back, other);
     final gone = make(needs: true, live: false);
     pick(gone, plugin);
     return settle().then((_) {
@@ -107,7 +108,7 @@ void main() {
     final c = make(needs: true, gate: gate);
     pick(c, plugin);
     await settle();
-    pick(c, TranslationServiceId.google);
+    pick(c, other);
     gate.complete();
     await settle();
     expect(c.read(pluginNeedsConfigNoticesProvider), isNull);

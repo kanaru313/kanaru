@@ -348,12 +348,13 @@ void main() {
   });
 
   group('lyricsTranslation group', () {
-    const translated = AppSettings(
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+    final translated = AppSettings(
       translation: TranslationPrefs(
         show: true,
-        service: TranslationServiceId.google,
+        service: plugin,
         targetLanguage: 'vi',
-        noticeAcknowledged: {TranslationServiceId.google},
+        noticeAcknowledged: {plugin},
       ),
     );
 
@@ -361,7 +362,7 @@ void main() {
       final json = encodeSettings(translated);
       final decoded = decodeSettings(json);
 
-      expect((json['lyricsTranslation']! as Map)['service'], 'google');
+      expect((json['lyricsTranslation']! as Map)['service'], plugin.value);
       expect(decoded.settings, translated);
       expect(decoded.unknownKeys, isEmpty);
     });

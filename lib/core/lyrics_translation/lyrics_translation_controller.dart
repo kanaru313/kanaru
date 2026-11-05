@@ -167,19 +167,6 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     await jobs.run(key, uniqueLineTexts(lyrics), target, song: _songContext());
   }
 
-  /// Switches to Google for good (the banner's fallback when a plugin fails):
-  /// the stored service changes, with the notice first when Google was not
-  /// accepted yet, which is the caller's job. Does nothing when Google is
-  /// the service already.
-  void useGoogle() {
-    final settings = ref.read(settingsProvider.notifier);
-    final prefs = ref.read(settingsProvider).translation;
-    if (prefs.service?.isGoogle == true) return;
-    settings.setTranslation(
-      prefs.copyWith(service: TranslationServiceId.google),
-    );
-  }
-
   /// Title and artist of the playing track, read when a request is made. A
   /// title that is only the file name is dropped, as for the lyrics lookup.
   TranslationSongContext? _songContext() {

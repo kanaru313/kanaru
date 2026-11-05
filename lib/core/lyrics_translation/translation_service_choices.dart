@@ -13,9 +13,8 @@ class TranslationServiceChoices {
     required this.ready,
   });
 
-  /// Google and the live translate plugins. While the plugin records are not
-  /// known ([ready] false) the stored plugin is listed too, so it can be
-  /// shown.
+  /// The live translate plugins. While the plugin records are not known
+  /// ([ready] false) the stored plugin is listed too, so it can be shown.
   final List<TranslationServiceId> services;
 
   /// The service in effect; the stored one while it is not known.
@@ -28,8 +27,8 @@ class TranslationServiceChoices {
 }
 
 /// The one list the service pickers use. A stored plugin that is gone shows
-/// Google (the service really used) without a write; while the records load
-/// or cannot be read, the stored plugin shows and nothing can be picked.
+/// `null` without a write; while the records load or cannot be read, the
+/// stored plugin shows and nothing can be picked.
 final translationServiceChoicesProvider = Provider<TranslationServiceChoices>((
   ref,
 ) {
@@ -41,7 +40,6 @@ final translationServiceChoicesProvider = Provider<TranslationServiceChoices>((
   final ready = records.hasValue && !records.hasError;
   final live = records.value ?? const [];
   final services = [
-    TranslationServiceId.google,
     for (final record in live) ?TranslationServiceId.tryParse(record.installId),
   ];
   if (!ready) {

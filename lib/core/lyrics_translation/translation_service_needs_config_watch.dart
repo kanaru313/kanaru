@@ -22,7 +22,7 @@ final translationServiceNeedsConfigWatchProvider = Provider<void>((ref) {
     previous,
     next,
   ) {
-    if (next == null || previous == next || !next.isPlugin) return;
+    if (next == null || previous == next) return;
     _report(ref, next);
   });
 });

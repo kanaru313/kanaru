@@ -12,8 +12,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import 'translation_settings_harness.dart';
 
-const _google = TranslationServiceId.google;
-
 class _NeedsConfig extends Fake implements LyricsPluginsController {
   _NeedsConfig(this.answer);
 
@@ -25,6 +23,17 @@ class _NeedsConfig extends Fake implements LyricsPluginsController {
 
 void main() {
   const rows = LyricsTranslationSettingRows();
+  const id = 'plugin-abc123def456';
+  const otherId = 'plugin-zzzzzzzzzzzz';
+  final plugin = TranslationServiceId.tryParse(id)!;
+  final other = TranslationServiceId.tryParse(otherId)!;
+
+  List<Override> withPlugins(List<LyricsPluginRecord> records) => [
+    lyricsPluginRecordsProvider.overrideWithValue(records),
+    translatePluginRecordsProvider.overrideWithValue(
+      AsyncValue.data(records),
+    ),
+  ];
 
   Future<void> pickLanguage(WidgetTester tester, String label) async {
     await tester.tap(find.byType(DropdownMenu<({String? code})>));
@@ -60,17 +69,21 @@ void main() {
 
   testWidgets('picking the selected service changes nothing', (tester) async {
     final h = TranslationSettingsHarness(
-      settings: const AppSettings(
-        translation: TranslationPrefs(service: _google),
+      settings: AppSettings(
+        translation: TranslationPrefs(service: plugin),
       ),
     );
-    await h.pump(tester, rows);
+    await h.pump(
+      tester,
+      rows,
+      overrides: withPlugins([translateRecord(id, name: 'Gemini')]),
+    );
 
-    await pickService(tester, 'Google');
+    await pickService(tester, 'Gemini');
     await pumpIo(tester);
 
     expect(find.byType(AlertDialog), findsNothing);
-    expect(h.prefs.service, _google);
+    expect(h.prefs.service, plugin);
   });
 
   testWidgets('the default language follows the app or is picked', (
@@ -101,17 +114,7 @@ void main() {
   });
 
   group('translate plugins', () {
-    const id = 'plugin-abc123def456';
-    final plugin = TranslationServiceId.tryParse(id)!;
-
-    List<Override> withPlugins(List<LyricsPluginRecord> records) => [
-      lyricsPluginRecordsProvider.overrideWithValue(records),
-      translatePluginRecordsProvider.overrideWithValue(
-        AsyncValue.data(records),
-      ),
-    ];
-
-    testWidgets('the picker uses a dropdown and lists Google and the plugin', (
+    testWidgets('the picker uses a dropdown and lists the plugin', (
       tester,
     ) async {
       final h = TranslationSettingsHarness();
@@ -129,7 +132,6 @@ void main() {
 
       await tester.tap(find.byType(DropdownMenu<TranslationServiceId>));
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(MenuItemButton, 'Google'), findsWidgets);
       expect(find.widgetWithText(MenuItemButton, 'Gemini'), findsWidgets);
     });
 
@@ -140,7 +142,7 @@ void main() {
         rows,
         overrides: withPlugins([
           translateRecord(id, name: 'Gemini'),
-          translateRecord('plugin-zzzzzzzzzzzz', name: 'Other'),
+          translateRecord(otherId, name: 'Other'),
         ]),
       );
 
@@ -245,11 +247,11 @@ void main() {
 
     testWidgets('Cancel on the notice reports nothing', (tester) async {
       final h = TranslationSettingsHarness(
-        settings: const AppSettings(
+        settings: AppSettings(
           translation: TranslationPrefs(
             show: true,
-            service: _google,
-            noticeAcknowledged: {_google},
+            service: other,
+            noticeAcknowledged: {other},
           ),
         ),
       );
@@ -257,7 +259,10 @@ void main() {
         tester,
         rows,
         overrides: [
-          ...withPlugins([translateRecord(id, name: 'Gemini')]),
+          ...withPlugins([
+            translateRecord(id, name: 'Gemini'),
+            translateRecord(otherId, name: 'Other'),
+          ]),
           lyricsPluginsControllerProvider.overrideWithValue(_NeedsConfig(true)),
         ],
       );
@@ -266,7 +271,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      expect(h.prefs.service, _google);
+      expect(h.prefs.service, other);
       expect(h.container.read(pluginNeedsConfigNoticesProvider), isNull);
     });
 
@@ -274,11 +279,11 @@ void main() {
       tester,
     ) async {
       final h = TranslationSettingsHarness(
-        settings: const AppSettings(
+        settings: AppSettings(
           translation: TranslationPrefs(
             show: true,
-            service: _google,
-            noticeAcknowledged: {_google},
+            service: other,
+            noticeAcknowledged: {other},
           ),
         ),
       );
@@ -287,6 +292,7 @@ void main() {
         rows,
         overrides: withPlugins([
           translateRecord(id, name: 'Gemini', hosts: const ['gemini.example']),
+          translateRecord(otherId, name: 'Other'),
         ]),
       );
 
@@ -297,18 +303,18 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('gemini.example'), findsOneWidget);
-      expect(h.prefs.service, _google);
+      expect(h.prefs.service, other);
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      expect(h.prefs.service, _google);
-      expect(h.prefs.noticeAcknowledged, {_google});
+      expect(h.prefs.service, other);
+      expect(h.prefs.noticeAcknowledged, {other});
 
       await pickService(tester, 'Gemini');
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       expect(h.prefs.service, plugin);
-      expect(h.prefs.noticeAcknowledged, {_google, plugin});
+      expect(h.prefs.noticeAcknowledged, {other, plugin});
     });
 
     testWidgets('picking a plugin while translation is off needs no notice', (
@@ -326,21 +332,6 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
       expect(h.prefs.service, plugin);
       expect(h.prefs.show, isFalse);
-    });
-
-    testWidgets('a plugin named Google shows as Google (plugin)', (
-      tester,
-    ) async {
-      final h = TranslationSettingsHarness();
-      await h.pump(
-        tester,
-        rows,
-        overrides: withPlugins([translateRecord(id, name: 'Google')]),
-      );
-
-      await tester.tap(find.byType(DropdownMenu<TranslationServiceId>));
-      await tester.pumpAndSettle();
-      expect(find.text('Google (plugin)'), findsWidgets);
     });
 
     for (final (label, state) in [

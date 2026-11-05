@@ -4,7 +4,8 @@ import 'package:kanaru/core/settings/translation_prefs.dart';
 import 'package:kanaru/core/settings/translation_prefs_codec.dart';
 
 void main() {
-  const both = {TranslationServiceId.google};
+  final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+  final both = {plugin};
 
   TranslationPrefs decode(Object? json) => decodeTranslationPrefs(json).$1;
 
@@ -18,9 +19,9 @@ void main() {
   });
 
   test('every field round-trips', () {
-    const prefs = TranslationPrefs(
+    final prefs = TranslationPrefs(
       show: true,
-      service: TranslationServiceId.google,
+      service: plugin,
       targetLanguage: 'vi',
       display: LyricsTranslationDisplay.replace,
       noticeAcknowledged: both,
@@ -28,10 +29,10 @@ void main() {
 
     final json = encodeTranslationPrefs(prefs);
 
-    expect(json['service'], 'google');
+    expect(json['service'], plugin.value);
     expect(json['display'], 'replace');
     expect(json['targetLanguage'], 'vi');
-    expect(json['noticeAcknowledged'], ['google']);
+    expect(json['noticeAcknowledged'], [plugin.value]);
     expect(decode(json), prefs);
   });
 
@@ -71,15 +72,22 @@ void main() {
     expect(json['future'], 1);
   });
 
-  test('a saved DeepL service loads as null', () {
-    final prefs = decode(<String, Object?>{'service': 'deepl'});
+  test('a saved DeepL or Google service loads as null with show false', () {
+    for (final legacy in ['deepl', 'google']) {
+      final prefs = decode(<String, Object?>{
+        'show': true,
+        'service': legacy,
+        'noticeAcknowledged': [legacy],
+      });
 
-    expect(prefs.service, isNull);
+      expect(prefs.service, isNull, reason: legacy);
+      expect(prefs.show, isFalse, reason: legacy);
+    }
   });
 
-  test('acknowledged services that are not known are kept', () {
+  test('acknowledged services that are not known are kept, google is dropped', () {
     final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
-      'noticeAcknowledged': ['deepl', 'bing', 7],
+      'noticeAcknowledged': ['google', 'deepl', 'bing', 7],
     });
     final json = encodeTranslationPrefs(prefs, extra: extra);
 
@@ -108,33 +116,31 @@ void main() {
     expect(
       decode(<String, Object?>{
         'show': true,
-        'service': 'deepl',
-        'noticeAcknowledged': ['google'],
-      }).show,
-      isFalse,
-    );
-    expect(
-      decode(<String, Object?>{
-        'show': true,
-        'noticeAcknowledged': ['google'],
-      }).show,
-      isFalse,
-    );
-    expect(
-      decode(<String, Object?>{
-        'show': true,
         'service': 'google',
         'noticeAcknowledged': ['google'],
+      }).show,
+      isFalse,
+    );
+    expect(
+      decode(<String, Object?>{
+        'show': true,
+        'noticeAcknowledged': [plugin.value],
+      }).show,
+      isFalse,
+    );
+    expect(
+      decode(<String, Object?>{
+        'show': true,
+        'service': plugin.value,
+        'noticeAcknowledged': [plugin.value],
       }).show,
       isTrue,
     );
   });
 
   test('prefs with the same acknowledged services are equal', () {
-    const a = TranslationPrefs(noticeAcknowledged: both);
-    const b = TranslationPrefs(
-      noticeAcknowledged: {TranslationServiceId.google},
-    );
+    final a = TranslationPrefs(noticeAcknowledged: both);
+    final b = TranslationPrefs(noticeAcknowledged: {plugin});
 
     expect(a, b);
     expect(a.hashCode, b.hashCode);
@@ -151,7 +157,7 @@ void main() {
   group('plugin ids', () {
     final id = TranslationServiceId.tryParse('plugin-abc123def456')!;
 
-    test('a plugin id is kept as the service and as accepted', () {
+    test('a plugin id is kept as the service and as accepted, google dropped', () {
       final prefs = decode(<String, Object?>{
         'show': true,
         'service': id.value,
@@ -160,21 +166,21 @@ void main() {
 
       expect(prefs.service, id);
       expect(prefs.show, isTrue);
-      expect(prefs.noticeAcknowledged, {TranslationServiceId.google, id});
+      expect(prefs.noticeAcknowledged, {id});
     });
 
-    test('deepl and malformed ids fall back to null, kept in extra', () {
+    test('deepl and malformed ids fall back to null, kept in extra, google dropped', () {
       final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
         'service': 'deepl',
-        'noticeAcknowledged': ['deepl', 'plugin-x', 'google'],
+        'noticeAcknowledged': ['deepl', 'plugin-x', 'google', id.value],
       });
 
       expect(prefs.service, isNull);
-      expect(prefs.noticeAcknowledged, {TranslationServiceId.google});
+      expect(prefs.noticeAcknowledged, {id});
       expect(extra['noticeAcknowledged'], ['deepl', 'plugin-x']);
       final json = encodeTranslationPrefs(prefs, extra: extra);
       expect(json['service'], isNull);
-      expect(json['noticeAcknowledged'], ['google', 'deepl', 'plugin-x']);
+      expect(json['noticeAcknowledged'], [id.value, 'deepl', 'plugin-x']);
     });
 
     test('withoutService clears the service and show, keeps other fields', () {

@@ -27,6 +27,7 @@ import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
@@ -111,6 +112,7 @@ void main() {
         ),
         lrcSidecarReaderProvider.overrideWithValue(sidecar),
         initialSettingsProvider.overrideWithValue(startSettings),
+        ...translatePluginOverrides(),
         ...extraOverrides,
       ],
     );
@@ -534,9 +536,10 @@ void main() {
     testWidgets('narrow: an open translation menu keeps L and T out', (
       tester,
     ) async {
-      startSettings = const AppSettings(
+      startSettings = AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {TranslationServiceId.google},
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
         ),
       );
       extraOverrides = [
@@ -558,9 +561,10 @@ void main() {
     });
 
     testWidgets('narrow: an open source menu keeps T out', (tester) async {
-      startSettings = const AppSettings(
+      startSettings = AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {TranslationServiceId.google},
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
         ),
       );
       await pumpScreen(tester, size: const Size(600, 900));
@@ -574,9 +578,10 @@ void main() {
   });
 
   group('the T key', () {
-    const accepted = AppSettings(
+    final accepted = AppSettings(
       translation: TranslationPrefs(
-        noticeAcknowledged: {TranslationServiceId.google},
+        service: testTranslatePlugin,
+        noticeAcknowledged: {testTranslatePlugin},
       ),
     );
 
@@ -602,11 +607,16 @@ void main() {
     });
 
     testWidgets('the first time asks; Cancel keeps it off', (tester) async {
-      startSettings = const AppSettings();
+      startSettings = AppSettings(
+        translation: TranslationPrefs(service: testTranslatePlugin),
+      );
       await pumpOverlay(tester);
 
       await pressT(tester);
-      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
+      expect(
+        find.text('Lyrics will be sent to the plugin Test Translate'),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
@@ -614,10 +624,10 @@ void main() {
       expect(translation().noticeAcknowledged, isEmpty);
     });
 
-    testWidgets('an uninstalled plugin: T opens the Google notice', (
+    testWidgets('an uninstalled plugin: T turns translation off silently', (
       tester,
     ) async {
-      final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+      final plugin = TranslationServiceId.tryParse('plugin-gone00000001')!;
       startSettings = AppSettings(
         translation: TranslationPrefs(
           show: true,
@@ -625,32 +635,28 @@ void main() {
           noticeAcknowledged: {plugin},
         ),
       );
-      extraOverrides = [
-        translatePluginRecordsProvider.overrideWithValue(
-          const AsyncValue.data([]),
-        ),
-      ];
       await pumpOverlay(tester);
 
       await pressT(tester);
 
-      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(translation().show, isFalse);
       expect(translation().service, plugin);
     });
 
     testWidgets('Continue accepts and turns it on; later presses are silent', (
       tester,
     ) async {
-      startSettings = const AppSettings();
+      startSettings = AppSettings(
+        translation: TranslationPrefs(service: testTranslatePlugin),
+      );
       await pumpOverlay(tester);
 
       await pressT(tester);
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       expect(translation().show, isTrue);
-      expect(translation().noticeAcknowledged, {TranslationServiceId.google});
+      expect(translation().noticeAcknowledged, {testTranslatePlugin});
 
       await pressT(tester);
       await pressT(tester);

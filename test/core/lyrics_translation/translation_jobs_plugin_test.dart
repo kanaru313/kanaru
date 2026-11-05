@@ -48,9 +48,7 @@ void main() {
       db.watchLyricTranslations(hash, 'en').first;
 
   void build({
-    Set<TranslationServiceId> acknowledged = const {
-      TranslationServiceId.google,
-    },
+    Set<TranslationServiceId> acknowledged = const {},
     bool withRunner = true,
     bool ackPlugin = true,
   }) {
@@ -216,6 +214,7 @@ void main() {
   test(
     'a plugin that is not the chosen service, or is gone, is never called',
     () async {
+      final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
       build();
       container
           .read(settingsProvider.notifier)
@@ -223,7 +222,7 @@ void main() {
             container
                 .read(settingsProvider)
                 .translation
-                .copyWith(service: TranslationServiceId.google),
+                .copyWith(service: other),
           );
       await jobs().run(_key, _lines, _en);
       expect(runner.calls, isEmpty);

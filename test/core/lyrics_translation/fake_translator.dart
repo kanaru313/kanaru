@@ -9,12 +9,8 @@ import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
-import 'package:kanaru/core/lyrics_translation/lyrics_translator.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
-import 'package:kanaru/core/lyrics_translation/translation_language.dart';
-import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
-import 'package:kanaru/core/lyrics_translation/translation_song_context.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -23,101 +19,24 @@ import '../lyrics/fake_lyrics_readers.dart';
 import '../player/fake_audio_backend.dart';
 import 'fake_plugin_runner.dart';
 
-/// A translator that records every call and answers from a script.
-class FakeTranslator implements LyricsTranslator {
-  FakeTranslator(
-    this.service, {
-    this.detected = 'ja',
-    this.unsupported = const {},
-  });
-
-  @override
-  final TranslationServiceId service;
-
-  /// Language reported for every line; `null` reports none.
-  String? detected;
-
-  /// Target codes this translator refuses.
-  final Set<String> unsupported;
-
-  @override
-  TranslationChunkLimits chunkLimits = const TranslationChunkLimits(
-    maxLines: 50,
-    maxChars: 4000,
-  );
-
-  /// The song context of each call, in order.
-  final songs = <TranslationSongContext?>[];
-
-  /// The lines of each call, in order.
-  final calls = <List<String>>[];
-
-  /// The target code of each call.
-  final targets = <String>[];
-
-  /// Call index (from 0) to the error that call throws.
-  final errors = <int, Object>{};
-
-  /// Waited for before answering, to hold a job open.
-  Completer<void>? gate;
-
-  /// What a line becomes; an empty string models "no translation".
-  String Function(String line) transform = (line) => 'tr:$line';
-
-  @override
-  bool supports(TranslationLanguage language) =>
-      !unsupported.contains(language.code);
-
-  @override
-  Future<TranslatedLines> translate(
-    List<String> lines,
-    TranslationLanguage target, {
-    TranslationSongContext? song,
-  }) async {
-    songs.add(song);
-    final index = calls.length;
-    calls.add(List.of(lines));
-    targets.add(target.code);
-    await gate?.future;
-    final error = errors[index];
-    if (error != null) throw error;
-    return TranslatedLines(
-      [for (final line in lines) transform(line)],
-      [for (final _ in lines) detected],
-    );
-  }
-}
-
 TranslationException failure(TranslationFailureKind kind) =>
     TranslationException(kind);
 
 LibraryDatabase memoryDb() => LibraryDatabase(NativeDatabase.memory());
 
-/// Settings with translation on and the notice accepted for [acknowledged].
+/// Settings with translation on and the notice accepted for [acknowledged]
+/// (defaulting to [testTranslatePlugin]).
 AppSettings translationSettings({
-  bool show = true,
-  TranslationServiceId service = TranslationServiceId.google,
-  Set<TranslationServiceId> acknowledged = const {TranslationServiceId.google},
-  String? target,
-}) => AppSettings(
-  translation: TranslationPrefs(
-    show: show,
-    service: service,
-    noticeAcknowledged: acknowledged,
-  ).withTargetLanguage(target),
-);
-
-/// Settings with translation on and the notice accepted for the test plugin.
-AppSettings pluginTranslationSettings({
   bool show = true,
   TranslationServiceId? service,
   Set<TranslationServiceId>? acknowledged,
   String? target,
-}) => translationSettings(
-  show: show,
-  service: service ?? testTranslatePlugin,
-  acknowledged: acknowledged ?? {testTranslatePlugin},
-  target: target,
+}) => AppSettings(
+  translation: TranslationPrefs(
+    show: show,
+    service: service ?? testTranslatePlugin,
+    noticeAcknowledged: acknowledged ?? {testTranslatePlugin},
+  ).withTargetLanguage(target),
 );
 
 /// A container that plays local files whose lyrics are in [lyrics] (path to
@@ -125,7 +44,6 @@ AppSettings pluginTranslationSettings({
 ProviderContainer translationContainer({
   required LibraryDatabase? db,
   required FakeEmbeddedLyricsReader lyrics,
-  FakeTranslator? google,
   FakePluginRunner? plugin,
   AppSettings? settings,
   SecretStore? store,
@@ -139,12 +57,8 @@ ProviderContainer translationContainer({
       lrcSidecarReaderProvider.overrideWithValue(FakeLrcSidecarReader()),
       libraryDatabaseProvider.overrideWithValue(db),
       initialSettingsProvider.overrideWithValue(
-        settings ??
-            (plugin != null
-                ? pluginTranslationSettings()
-                : translationSettings()),
+        settings ?? translationSettings(),
       ),
-      if (google != null) googleTranslatorProvider.overrideWithValue(google),
       if (plugin != null)
         for (final o in translatePluginOverrides(runner: plugin))
           if (!overrides.any((existing) => existing.origin == o.origin)) o,

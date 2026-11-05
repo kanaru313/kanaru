@@ -5210,8 +5210,8 @@ class LyricTranslationRow extends DataClass
     implements Insertable<LyricTranslationRow> {
   final String contentHash;
 
-  /// 'google' or a plugin install id; readers skip unknown values, old
-  /// `deepl` rows included.
+  /// A plugin install id; readers skip unknown values, retired built-in rows
+  /// (`deepl`, etc.) included.
   final String provider;
 
   /// Internal language code, for example 'vi' or 'zh-Hans'.
