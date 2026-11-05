@@ -9,6 +9,7 @@ class LanguageSummary {
     required this.name,
     required this.songCount,
     required this.raws,
+    this.durationMs,
   });
 
   /// `languageKey(name)`; identifies the language page.
@@ -22,6 +23,9 @@ class LanguageSummary {
   /// languages in one string counts once for each).
   final int songCount;
 
+  /// Total duration in milliseconds of tracks in this language.
+  final int? durationMs;
+
   /// The stored language strings that name this language, to query its
   /// tracks.
   final List<String> raws;
@@ -32,17 +36,21 @@ class LanguageSummary {
 /// for each; keys in [hiddenLanguageKeys] get no row. Tracks without a
 /// language tag are not in [counts] and appear nowhere.
 List<LanguageSummary> buildLanguageSummaries(
-  List<({String raw, int count})> counts,
+  List<({String raw, int count, int? durationMs})> counts,
 ) {
   final names = <String, String>{};
   final songs = <String, int>{};
+  final durations = <String, int>{};
   final raws = <String, Set<String>>{};
-  for (final (:raw, :count) in counts) {
+  for (final (:raw, :count, :durationMs) in counts) {
     for (final name in splitLanguages(raw)) {
       final key = languageKey(name);
       if (hiddenLanguageKeys.contains(key)) continue;
       names[key] = preferredSpelling(names[key], name);
       songs[key] = (songs[key] ?? 0) + count;
+      if (durationMs != null) {
+        durations[key] = (durations[key] ?? 0) + durationMs;
+      }
       (raws[key] ??= {}).add(raw);
     }
   }
@@ -53,6 +61,7 @@ List<LanguageSummary> buildLanguageSummaries(
         key: key,
         name: names[key]!,
         songCount: songs[key]!,
+        durationMs: durations[key],
         raws: raws[key]!.toList()..sort(compareCodePoints),
       ),
   ];

@@ -36,15 +36,18 @@ ORDER BY t.title_sort, t.id''';
 extension LanguageQueries on LibraryDatabase {
   /// Every stored language string with the tracks holding it. Tracks with no
   /// language tag are left out.
-  Future<List<({String raw, int count})>> languageCounts() =>
+  Future<List<({String raw, int count, int durationMs})>> languageCounts() =>
       customSelect(
-            'SELECT language, count(*) AS n FROM tracks '
-            'WHERE language IS NOT NULL GROUP BY language',
+            'SELECT language, count(*) AS n, COALESCE(sum(duration_ms), 0) AS d '
+            'FROM tracks WHERE language IS NOT NULL GROUP BY language',
             readsFrom: {tracks},
           )
           .map(
-            (row) =>
-                (raw: row.read<String>('language'), count: row.read<int>('n')),
+            (row) => (
+              raw: row.read<String>('language'),
+              count: row.read<int>('n'),
+              durationMs: row.read<int>('d'),
+            ),
           )
           .get();
 

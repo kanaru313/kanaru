@@ -11,6 +11,7 @@ class QueueSnapshotCard {
     required this.savedAt,
     required this.trackCount,
     required this.coverKeys,
+    this.durationMs,
   });
 
   /// The `playlists` row id.
@@ -25,6 +26,10 @@ class QueueSnapshotCard {
 
   /// Collage keys (see `pickCollageKeys`).
   final List<String> coverKeys;
+
+  /// Total duration of all entries whose tracks are in the library, in
+  /// milliseconds.
+  final int? durationMs;
 }
 
 /// Reads of the queue history: the queues the user replaced, kept as
@@ -37,7 +42,11 @@ extension QueueHistoryQueries on LibraryDatabase {
     final rows = await customSelect(
       '''
 SELECT p.id, p.created_at,
-  (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n
+  (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n,
+  (SELECT COALESCE(SUM(t.duration_ms), 0)
+   FROM playlist_entries e
+   JOIN tracks t ON t.path = e.path
+   WHERE e.playlist_id = p.id) AS duration_ms
 FROM playlists p
 WHERE p.kind = ?1
 ORDER BY p.created_at DESC, p.id DESC''',
@@ -51,6 +60,7 @@ ORDER BY p.created_at DESC, p.id DESC''',
           savedAt: row.read<int>('created_at'),
           trackCount: row.read<int>('n'),
           coverKeys: await _snapshotCollage(row.read<int>('id')),
+          durationMs: row.readNullable<int>('duration_ms') ?? 0,
         ),
     ];
   });

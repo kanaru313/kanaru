@@ -36,8 +36,9 @@ class AlbumListTile extends ConsumerWidget {
   /// Picked from the menu of a right click or long press; no menu without it.
   final ValueChanged<QueueAction>? onQueueAction;
 
-  /// False leaves the "N songs • M min" line blank, for lists whose albums
-  /// hold more songs than the list is about; the row keeps its height.
+  /// False shows "Album" instead of the "N songs • M min" line, for lists
+  /// whose albums hold more songs than the list is about; the row keeps its
+  /// height.
   final bool showTotals;
 
   /// Runs the hover play button instead of playing the album, for a list
@@ -71,7 +72,7 @@ class AlbumListTile extends ConsumerWidget {
             if (durationMs != null) l10n.albumsMinutes(rowMinutes(durationMs)),
           ])
         else
-          '',
+          l10n.sortAlbum,
       ],
       onTap: onTap,
       onPlay: onPlay ?? () => unawaited(playAlbum(ref, album.key)),

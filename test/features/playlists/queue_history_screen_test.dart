@@ -71,8 +71,9 @@ void main() {
     final first = tester.getTopLeft(find.text('Oct 22, 2026 · 21:30')).dy;
     final second = tester.getTopLeft(find.text('Mar 4, 2026 · 09:05')).dy;
     expect(first, lessThan(second));
-    expect(find.text('3 songs'), findsOneWidget);
-    expect(find.text('2 songs'), findsOneWidget);
+    expect(find.textContaining('3 songs'), findsOneWidget);
+    expect(find.textContaining('2 songs'), findsOneWidget);
+    expect(find.text('Queue'), findsNWidgets(2));
   });
 
   testWidgets('play replaces the queue with the saved one', (tester) async {
@@ -80,6 +81,12 @@ void main() {
     await seedQueue(tester, ['c', 'a'], extraPaths: ['/gone/x.flac']);
     goTo(tester, h, '/queue-history');
     await settleDb(tester);
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(gesture.removePointer);
+    await gesture.addPointer(location: Offset.zero);
+    await gesture.moveTo(tester.getCenter(row()));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Play'));
     await settleDb(tester);

@@ -152,6 +152,16 @@ void main() {
       expect(listed.map((s) => s.id), [mine]);
     });
 
+    test('queueSnapshots computes total duration of library tracks', () async {
+      await db.upsertTracks([
+        track(root, '/m/a0.flac').copyWith(durationMs: const Value(60000)),
+        track(root, '/m/a1.flac').copyWith(durationMs: const Value(120000)),
+      ]);
+      await db.recordQueueSnapshot(_paths(3), now: 5);
+      final snapshot = (await db.queueSnapshots()).single;
+      expect(snapshot.durationMs, 180000);
+    });
+
     test('newest first, with the collage of library covers', () async {
       await db.upsertTracks([
         track(root, '/m/a0.flac').copyWith(coverKey: const Value('k0')),
