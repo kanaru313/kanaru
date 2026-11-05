@@ -30,7 +30,10 @@ class PluginConfigGroup extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: PluginConfigLabel(field, style: theme.textTheme.titleSmall),
         ),
-        PluginConfigSubtitle(field.subtitle),
+        PluginConfigSubtitle(
+          field.subtitle,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 0), child: child),
         if (errorText != null) PluginConfigErrorText(errorText!),
         const SizedBox(height: 8),

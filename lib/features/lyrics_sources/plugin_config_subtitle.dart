@@ -1,11 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 
-/// The help text a plugin's manifest gives a config field, shown above the
+/// The help text a plugin's manifest gives a config field, shown under the
 /// field (it may hold newlines). Nothing when the field has none.
 class PluginConfigSubtitle extends StatelessWidget {
-  const PluginConfigSubtitle(this.text, {super.key});
+  const PluginConfigSubtitle(
+    this.text, {
+    super.key,
+    this.padding = const EdgeInsets.fromLTRB(16, 0, 16, 8),
+  });
 
   final String? text;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +18,7 @@ class PluginConfigSubtitle extends StatelessWidget {
     if (text == null || text.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: padding,
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: Text(

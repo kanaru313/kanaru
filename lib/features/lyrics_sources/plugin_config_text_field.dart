@@ -160,7 +160,6 @@ class _State extends ConsumerState<PluginConfigTextField>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PluginConfigSubtitle(field.subtitle),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: _isNumeric
@@ -175,6 +174,7 @@ class _State extends ConsumerState<PluginConfigTextField>
                 )
               : box,
         ),
+        PluginConfigSubtitle(field.subtitle),
       ],
     );
   }

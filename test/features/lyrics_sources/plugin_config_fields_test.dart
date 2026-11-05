@@ -159,6 +159,26 @@ void main() {
       expect(plugins.configWrites, hasLength(1));
       expect(find.text(en.pluginConfigInvalidValue), findsOneWidget);
     });
+
+    testWidgets('a text field shows its subtitle under the box', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        const PluginConfigField(
+          key: 'k',
+          title: 'API Key',
+          subtitle: 'Create one in the console.',
+          mode: PluginConfigMode.input,
+          inputFormat: PluginInputFormat.text,
+        ),
+      );
+      expect(find.text('Create one in the console.'), findsOneWidget);
+      final labelY = tester.getTopLeft(find.text('API Key')).dy;
+      final subtitleY =
+          tester.getTopLeft(find.text('Create one in the console.')).dy;
+      expect(subtitleY, greaterThan(labelY));
+    });
   });
 
   group('number and integer', () {
@@ -239,6 +259,27 @@ void main() {
       await tester.tap(find.text('America'));
       await tester.pumpAndSettle();
       expect(find.text('Fast there'), findsOneWidget);
+    });
+
+    testWidgets('a select field shows its subtitle under the box', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        const PluginConfigField(
+          key: 'k',
+          title: 'Thinking',
+          subtitle: 'Minimal or Low answers faster.',
+          mode: PluginConfigMode.select,
+          options: _options,
+          defaultValue: 'us',
+        ),
+      );
+      expect(find.text('Minimal or Low answers faster.'), findsOneWidget);
+      final labelY = tester.getTopLeft(find.text('Thinking')).dy;
+      final subtitleY =
+          tester.getTopLeft(find.text('Minimal or Low answers faster.')).dy;
+      expect(subtitleY, greaterThan(labelY));
     });
 
     testWidgets('a refused choice flips back with an inline error', (

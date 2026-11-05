@@ -72,7 +72,6 @@ class _SelectState extends ConsumerState<PluginConfigSelectField>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PluginConfigSubtitle(widget.field.subtitle),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: InputDecorator(
@@ -120,6 +119,7 @@ class _SelectState extends ConsumerState<PluginConfigSelectField>
             ),
           ),
         ),
+        PluginConfigSubtitle(widget.field.subtitle),
       ],
     );
   }
