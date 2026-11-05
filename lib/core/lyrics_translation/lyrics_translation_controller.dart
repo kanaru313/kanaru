@@ -83,14 +83,12 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     );
     _info = info;
 
-    if (!prefs.show) return TranslationOff(info);
+    if (!prefs.show || prefs.service == null) return TranslationOff(info);
     if (chosen == null) {
-      // The plugin list is not read yet (wait) or could not be read (the
-      // chosen plugin may exist): either way nothing is sent, and the choice
-      // is not replaced by Google.
-      return ref.watch(translatePluginRecordsProvider).hasError
-          ? const TranslationUnavailable()
-          : TranslationLoading(info, prefs.service);
+      final records = ref.watch(translatePluginRecordsProvider);
+      if (records.hasError) return const TranslationUnavailable();
+      if (!records.hasValue) return TranslationLoading(info, prefs.service!);
+      return TranslationOff(info);
     }
     final service = chosen;
     if (needsNoticeFor(prefs, service)) {
@@ -176,7 +174,7 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
   void useGoogle() {
     final settings = ref.read(settingsProvider.notifier);
     final prefs = ref.read(settingsProvider).translation;
-    if (prefs.service.isGoogle) return;
+    if (prefs.service?.isGoogle == true) return;
     settings.setTranslation(
       prefs.copyWith(service: TranslationServiceId.google),
     );

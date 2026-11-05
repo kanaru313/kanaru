@@ -711,47 +711,43 @@ void main() {
     );
 
     test(
-      'a plugin that is gone: Google is used, its notice is asked',
+      'a plugin that is gone: Off, nothing sent',
       () async {
-        final records = [
-          for (final accepted in [true, false])
-            Rig(
-              db,
-              settings: translationSettings(
-                service: plugin,
-                acknowledged: {
-                  plugin,
-                  if (accepted) TranslationServiceId.google,
-                },
-              ),
-              overrides: [
-                translatePluginRecordsProvider.overrideWithValue(
-                  const AsyncValue.data([]),
-                ),
-              ],
+        final rig = Rig(
+          db,
+          settings: translationSettings(
+            service: plugin,
+            acknowledged: {plugin, TranslationServiceId.google},
+          ),
+          overrides: [
+            translatePluginRecordsProvider.overrideWithValue(
+              const AsyncValue.data([]),
             ),
-        ];
-        await records[0].play('/m/a.mp3', _text);
-        await records[0].untilReady();
-        expect(
-          (records[0].state as TranslationReady).service,
-          TranslationServiceId.google,
+          ],
         );
-        expect(records[0].google.calls, hasLength(1));
-
-        await records[1].play('/m/a.mp3', _text);
+        await rig.play('/m/a.mp3', _text);
         await settle(_idle);
-        expect(records[1].state, isA<TranslationNeedsNotice>());
-        expect(
-          (records[1].state as TranslationNeedsNotice).service,
-          TranslationServiceId.google,
-        );
-        expect(records[1].google.calls, isEmpty);
-        for (final r in records) {
-          r.dispose();
-        }
+        expect(rig.state, isA<TranslationOff>());
+        expect(rig.plugin.calls, isEmpty);
+        expect(rig.google.calls, isEmpty);
+        rig.dispose();
       },
     );
+
+    test('stored null with show true built by hand: Off, no call', () async {
+      final rig = Rig(
+        db,
+        settings: const AppSettings(
+          translation: TranslationPrefs(show: true),
+        ),
+      );
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(rig.state, isA<TranslationOff>());
+      expect(rig.plugin.calls, isEmpty);
+      expect(rig.google.calls, isEmpty);
+      rig.dispose();
+    });
 
     test('switching to a song without lyrics drops the next chunk', () async {
       final runner = FakePluginRunner(

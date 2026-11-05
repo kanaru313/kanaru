@@ -26,14 +26,17 @@ const _knownKeys = {
 (TranslationPrefs, Map<String, Object?>) decodeTranslationPrefs(Object? json) {
   final map = objectOrEmpty(json);
   const d = TranslationPrefs();
-  final service = TranslationServiceId.tryParse(map[_serviceKey]) ?? d.service;
+  final service = TranslationServiceId.tryParse(map[_serviceKey]);
   final (acknowledged, unknownNames) = _decodeAcknowledged(
     map[_noticeAcknowledgedKey],
   );
   final target = map[_targetLanguageKey];
   return (
     TranslationPrefs(
-      show: boolOr(map[_showKey], d.show) && acknowledged.contains(service),
+      show:
+          boolOr(map[_showKey], d.show) &&
+          service != null &&
+          acknowledged.contains(service),
       service: service,
       targetLanguage: target is String && translationLanguageFor(target) != null
           ? target
@@ -80,7 +83,7 @@ Map<String, Object?> encodeTranslationPrefs(
   return {
     ...extra,
     _showKey: prefs.show,
-    _serviceKey: prefs.service.value,
+    _serviceKey: prefs.service?.value,
     _targetLanguageKey: prefs.targetLanguage,
     _displayKey: prefs.display.name,
     _noticeAcknowledgedKey: [

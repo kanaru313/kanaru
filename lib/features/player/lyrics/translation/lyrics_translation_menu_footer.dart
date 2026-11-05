@@ -17,7 +17,7 @@ const _maxWidth = 280.0;
 List<Widget> lyricsTranslationMenuFooter(
   BuildContext context,
   LyricsTranslationState state,
-  TranslationServiceId selected,
+  TranslationServiceId? selected,
   LyricsTranslationController controller,
   String Function(TranslationServiceId) serviceName,
 ) {
@@ -74,8 +74,10 @@ List<Widget> lyricsTranslationMenuFooter(
   final (String? text, String? action, VoidCallback? run) = switch (state) {
     TranslationReady(:final service) => (
       l10n.lyricsTranslationSavedFrom(serviceName(service)),
-      l10n.lyricsTranslationRetranslateWith(serviceName(selected)),
-      controller.retranslate,
+      selected == null
+          ? null
+          : l10n.lyricsTranslationRetranslateWith(serviceName(selected)),
+      selected == null ? null : controller.retranslate,
     ),
     TranslationSameLanguage(:final info) => (
       l10n.lyricsTranslationSameLanguage(

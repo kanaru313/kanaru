@@ -1456,6 +1456,7 @@
   "lyricsTranslationDisplayUnder": "Dưới mỗi dòng",
   "lyricsTranslationDisplayReplace": "Thay dòng gốc",
   "lyricsTranslationServiceHeader": "Dịch vụ",
+  "translationServiceNotSelected": "Chưa chọn",
   "lyricsTranslationSaved": "Đã lưu",
   "lyricsTranslationSavedFrom": "Đã lưu từ {service}",
   "lyricsTranslationRetranslate": "Dịch lại",

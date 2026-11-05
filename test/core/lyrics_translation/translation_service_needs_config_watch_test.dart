@@ -33,7 +33,7 @@ void main() {
 
   ProviderContainer make({
     required bool needs,
-    TranslationServiceId service = TranslationServiceId.google,
+    TranslationServiceId? service = TranslationServiceId.google,
     bool live = true,
     Completer<void>? gate,
   }) {
@@ -72,6 +72,15 @@ void main() {
 
   test('picking a plugin that needs config reports it', () async {
     final c = make(needs: true);
+    pick(c, plugin);
+    await settle();
+    final notice = c.read(pluginNeedsConfigNoticesProvider);
+    expect(notice?.installId, _id);
+    expect(notice?.name, 'Gemini');
+  });
+
+  test('picking a plugin from null reports it', () async {
+    final c = make(needs: true, service: null);
     pick(c, plugin);
     await settle();
     final notice = c.read(pluginNeedsConfigNoticesProvider);

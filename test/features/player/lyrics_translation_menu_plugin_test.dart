@@ -99,6 +99,7 @@ void main() {
       tester,
       settings: const TranslationPrefs(
         show: true,
+        service: _google,
         noticeAcknowledged: {_google},
       ),
     );
@@ -134,7 +135,7 @@ void main() {
     expect(prefs().service, plugin);
   });
 
-  testWidgets('a stored plugin that is gone shows Google as picked', (
+  testWidgets('a stored plugin that is gone shows Not selected, no checkmark', (
     tester,
   ) async {
     await pump(
@@ -144,14 +145,22 @@ void main() {
       ),
     );
 
+    expect(find.text('Not selected'), findsOneWidget);
     expect(
       find.descendant(
         of: radio('Google'),
         matching: find.byIcon(AppIcons.check),
       ),
-      findsOneWidget,
+      findsNothing,
     );
-    expect(prefs().service.value, 'plugin-zzzzzzzzzzzz');
+    expect(
+      find.descendant(
+        of: radio('Gemini'),
+        matching: find.byIcon(AppIcons.check),
+      ),
+      findsNothing,
+    );
+    expect(prefs().service?.value, 'plugin-zzzzzzzzzzzz');
   });
 
   testWidgets('Cancel on the notice changes nothing', (tester) async {
@@ -159,6 +168,7 @@ void main() {
       tester,
       settings: const TranslationPrefs(
         show: true,
+        service: _google,
         noticeAcknowledged: {_google},
       ),
     );
@@ -193,6 +203,7 @@ void main() {
       tester,
       settings: const TranslationPrefs(
         show: true,
+        service: _google,
         noticeAcknowledged: {_google},
       ),
       needsConfig: true,

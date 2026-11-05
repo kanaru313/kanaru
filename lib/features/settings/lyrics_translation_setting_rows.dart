@@ -63,17 +63,16 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SettingRow(
+        SettingRow.single(
           title: l10n.settingsTranslationService,
-          subtitle: choices.selected.isGoogle
+          subtitle: choices.selected?.isGoogle == true
               ? l10n.settingsTranslationServiceGoogleHint
               : l10n.settingsTranslationServicePluginHint,
-          control: (compact) => SettingChoice<TranslationServiceId>(
-            compact: compact || services.length > 2,
+          control: SettingDropdown<TranslationServiceId>(
             selected: choices.selected,
-            onSelected: choices.ready
-                ? (service) => _pickService(context, ref, service)
-                : null,
+            hintText: l10n.translationServiceNotSelected,
+            enabled: choices.ready && services.isNotEmpty,
+            onSelected: (service) => _pickService(context, ref, service),
             options: [
               for (final service in services)
                 SettingOption(

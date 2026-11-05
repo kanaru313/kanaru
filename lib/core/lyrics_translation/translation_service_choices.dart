@@ -19,7 +19,7 @@ class TranslationServiceChoices {
   final List<TranslationServiceId> services;
 
   /// The service in effect; the stored one while it is not known.
-  final TranslationServiceId selected;
+  final TranslationServiceId? selected;
 
   /// The plugin records are read, so a pick means what it says. When false
   /// the pickers are disabled: a tap would overwrite a stored plugin choice
@@ -37,14 +37,19 @@ final translationServiceChoicesProvider = Provider<TranslationServiceChoices>((
     settingsProvider.select((s) => s.translation.service),
   );
   final effective = ref.watch(effectiveTranslationServiceProvider);
-  final live = ref.watch(translatePluginRecordsProvider).value ?? const [];
+  final records = ref.watch(translatePluginRecordsProvider);
+  final ready = records.hasValue && !records.hasError;
+  final live = records.value ?? const [];
   final services = [
     TranslationServiceId.google,
     for (final record in live) ?TranslationServiceId.tryParse(record.installId),
   ];
-  if (effective == null) {
+  if (!ready) {
     return TranslationServiceChoices(
-      services: [...services, if (!services.contains(stored)) stored],
+      services: [
+        ...services,
+        if (stored != null && !services.contains(stored)) stored,
+      ],
       selected: stored,
       ready: false,
     );

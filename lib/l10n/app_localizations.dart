@@ -4652,6 +4652,12 @@ abstract class AppLocalizations {
   /// **'Service'**
   String get lyricsTranslationServiceHeader;
 
+  /// Label and hint text shown when no translation service is currently selected
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get translationServiceNotSelected;
+
   /// Status on the right of the Retranslate row of the translation menu when a saved translation shows
   ///
   /// In en, this message translates to:

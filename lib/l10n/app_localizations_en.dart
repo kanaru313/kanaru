@@ -3278,6 +3278,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationServiceHeader => 'Service';
 
   @override
+  String get translationServiceNotSelected => 'Not selected';
+
+  @override
   String get lyricsTranslationSaved => 'Saved';
 
   @override

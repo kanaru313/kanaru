@@ -28,6 +28,7 @@ void main() {
     WidgetTester tester,
     LyricsTranslationState state, {
     TranslationPrefs settings = const TranslationPrefs(
+      service: _google,
       noticeAcknowledged: {_google},
     ),
     bool followSettings = false,
@@ -119,6 +120,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'without a service selected, shows Not selected and no checkmark',
+    (tester) async {
+      await pump(
+        tester,
+        TranslationOff(fakeTranslationInfo()),
+        settings: const TranslationPrefs(),
+      );
+
+      expect(find.text('Not selected'), findsOneWidget);
+
+      await openServiceSubmenu(tester);
+      expect(
+        find.descendant(
+          of: serviceRadio('Google'),
+          matching: find.byIcon(AppIcons.check),
+        ),
+        findsNothing,
+      );
+    },
+  );
+
   testWidgets('the switch turns translation on and the menu stays open', (
     tester,
   ) async {
@@ -178,7 +201,7 @@ void main() {
     await pump(
       tester,
       TranslationNeedsNotice(fakeTranslationInfo(), _google),
-      settings: const TranslationPrefs(show: true),
+      settings: const TranslationPrefs(show: true, service: _google),
     );
 
     expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
@@ -460,6 +483,7 @@ void main() {
       followSettings: true,
       settings: const TranslationPrefs(
         show: true,
+        service: _google,
         noticeAcknowledged: {_google},
       ),
     );
@@ -485,7 +509,11 @@ void main() {
     testWidgets('the first switch-on asks; Cancel changes nothing', (
       tester,
     ) async {
-      await pump(tester, off, settings: const TranslationPrefs());
+      await pump(
+        tester,
+        off,
+        settings: const TranslationPrefs(service: _google),
+      );
 
       await tester.tap(find.text('Show translation'));
       await tester.pumpAndSettle();
@@ -500,7 +528,11 @@ void main() {
     testWidgets('Continue accepts and turns it on; the second time is silent', (
       tester,
     ) async {
-      await pump(tester, off, settings: const TranslationPrefs());
+      await pump(
+        tester,
+        off,
+        settings: const TranslationPrefs(service: _google),
+      );
 
       await tester.tap(find.text('Show translation'));
       await tester.pumpAndSettle();
@@ -518,7 +550,7 @@ void main() {
     });
 
     testWidgets(
-      'an uninstalled plugin: the switch asks for the Google notice',
+      'an uninstalled plugin: the switch turns it off without asking for Google',
       (tester) async {
         final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
         await pump(
@@ -539,11 +571,9 @@ void main() {
         await tester.tap(find.text('Show translation'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-        expect(prefs().service, _google);
-        expect(prefs().noticeAcknowledged, contains(_google));
+        expect(find.text('Lyrics will be sent to Google'), findsNothing);
+        expect(prefs().show, isFalse);
+        expect(prefs().service, plugin);
       },
     );
   });

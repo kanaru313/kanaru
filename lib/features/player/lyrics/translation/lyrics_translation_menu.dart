@@ -107,7 +107,7 @@ List<Widget> lyricsTranslationMenuItems(
   final scheme = Theme.of(context).colorScheme;
   Widget radio<T>({
     required T value,
-    required T groupValue,
+    required T? groupValue,
     required VoidCallback? onChanged,
     required String label,
   }) {
@@ -186,7 +186,9 @@ List<Widget> lyricsTranslationMenuItems(
         trailingIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: Text(
-            serviceName(shown),
+            shown == null
+                ? l10n.translationServiceNotSelected
+                : serviceName(shown),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

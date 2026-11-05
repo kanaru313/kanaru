@@ -2868,6 +2868,10 @@
   "@lyricsTranslationServiceHeader": {
     "description": "Heading of the translation service choices in the lyrics translation menu"
   },
+  "translationServiceNotSelected": "Not selected",
+  "@translationServiceNotSelected": {
+    "description": "Label and hint text shown when no translation service is currently selected"
+  },
   "lyricsTranslationSaved": "Saved",
   "@lyricsTranslationSaved": {
     "description": "Status on the right of the Retranslate row of the translation menu when a saved translation shows"

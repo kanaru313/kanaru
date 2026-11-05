@@ -20,7 +20,7 @@ final _other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
 const _google = TranslationServiceId.google;
 
 AppSettings _settings(
-  TranslationServiceId service,
+  TranslationServiceId? service,
   Set<TranslationServiceId> acknowledged, {
   bool show = true,
 }) => AppSettings(
@@ -79,6 +79,16 @@ void main() {
       AsyncValue.data([for (final id in ids) translateRecord(id)]);
 
   group('effectiveTranslationServiceProvider', () {
+    test('stored null resolves to null', () {
+      final c = make(_settings(null, {}), live([]));
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
+    });
+
+    test('two plugins installed and the default removed resolves to null', () {
+      final c = make(_settings(null, {}), live([_plugin.value, _other.value]));
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
+    });
+
     test('google is google whatever the plugin list does', () {
       final c = make(_settings(_google, {_google}), const AsyncValue.loading());
       expect(c.read(effectiveTranslationServiceProvider), _google);
@@ -102,11 +112,11 @@ void main() {
       expect(c.read(effectiveTranslationServiceProvider), _plugin);
     });
 
-    test('a plugin that is gone, or another one is installed: google', () {
+    test('a plugin that is gone, or another one is installed: null', () {
       final c = make(_settings(_plugin, {_plugin}), live([_other.value]));
-      expect(c.read(effectiveTranslationServiceProvider), _google);
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
       final empty = make(_settings(_plugin, {_plugin}), live([]));
-      expect(empty.read(effectiveTranslationServiceProvider), _google);
+      expect(empty.read(effectiveTranslationServiceProvider), isNull);
     });
 
     test('it never writes the settings', () {
@@ -128,7 +138,7 @@ void main() {
       await settle();
     }
 
-    test('a dead selected plugin becomes google, its ack is dropped', () async {
+    test('a dead selected plugin becomes null and off, its ack is dropped', () async {
       final c = make(
         _settings(_plugin, {_plugin, _google, _other}),
         live([_other.value]),
@@ -136,23 +146,23 @@ void main() {
       await sweep(c);
 
       final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, _google);
+      expect(prefs.service, isNull);
       expect(prefs.noticeAcknowledged, {_google, _other});
-      expect(prefs.show, isTrue);
+      expect(prefs.show, isFalse);
     });
 
-    test('show goes off when google was never accepted', () async {
+    test('show goes off and service becomes null when plugin is uninstalled', () async {
       final c = make(_settings(_plugin, {_plugin}), live([]));
       await sweep(c);
 
       final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, _google);
+      expect(prefs.service, isNull);
       expect(prefs.noticeAcknowledged, isEmpty);
       expect(prefs.show, isFalse);
     });
 
     test(
-      'a restart after the sweep keeps translation on with google',
+      'a restart after the sweep keeps translation off with null service',
       () async {
         final c = make(_settings(_plugin, {_plugin, _google}), live([]));
         await sweep(c);
@@ -162,8 +172,8 @@ void main() {
           File('${root.path}/settings.json').readAsStringSync(),
         ) as Map<String, Object?>;
         final json = stored['lyricsTranslation'] as Map<String, Object?>;
-        expect(json['service'], 'google');
-        expect(json['show'], isTrue);
+        expect(json['service'], isNull);
+        expect(json['show'], isFalse);
         expect(json['noticeAcknowledged'], ['google']);
       },
     );
@@ -219,7 +229,8 @@ void main() {
       c.read(records.notifier).set(live([]));
       await settle();
       expect(writes, 1);
-      expect(c.read(settingsProvider).translation.service, _google);
+      expect(c.read(settingsProvider).translation.service, isNull);
+      expect(c.read(settingsProvider).translation.show, isFalse);
       await settle();
       expect(writes, 1);
     });

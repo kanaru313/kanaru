@@ -3012,6 +3012,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationServiceHeader => 'Dịch vụ';
 
   @override
+  String get translationServiceNotSelected => 'Chưa chọn';
+
+  @override
   String get lyricsTranslationSaved => 'Đã lưu';
 
   @override
