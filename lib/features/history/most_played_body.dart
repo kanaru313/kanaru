@@ -20,7 +20,6 @@ class MostPlayedBody extends StatelessWidget {
     required this.failed,
     required this.rows,
     required this.ranks,
-    required this.capped,
     required this.query,
   });
 
@@ -28,7 +27,6 @@ class MostPlayedBody extends StatelessWidget {
   final bool failed;
   final List<HistoryTopRow>? rows;
   final List<int> ranks;
-  final bool capped;
   final String query;
 
   @override
@@ -50,7 +48,6 @@ class MostPlayedBody extends StatelessWidget {
     return MostPlayedList(
       rows: [for (final i in ranks) rows[i]],
       ranks: [for (final i in ranks) i + 1],
-      capped: capped,
     );
   }
 }

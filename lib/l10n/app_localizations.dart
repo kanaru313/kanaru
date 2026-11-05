@@ -3158,6 +3158,30 @@ abstract class AppLocalizations {
   /// **'Showing first {count}'**
   String historyTopCapped(int count);
 
+  /// Label of a ranking top limit option or button
+  ///
+  /// In en, this message translates to:
+  /// **'Top {limit}'**
+  String historyTopLimitOption(int limit);
+
+  /// Menu entry in the top limit dropdown that opens the custom limit dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom...'**
+  String get historyTopCustomOption;
+
+  /// Title of the dialog that sets a custom limit for the Most played list
+  ///
+  /// In en, this message translates to:
+  /// **'Custom ranking limit'**
+  String get historyTopCustomDialogTitle;
+
+  /// Field label in the custom ranking limit dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Limit (1 – 1000)'**
+  String get historyTopCustomInputLabel;
+
   /// Button that plays the Most played list from the top
   ///
   /// In en, this message translates to:

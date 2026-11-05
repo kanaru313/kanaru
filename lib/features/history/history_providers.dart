@@ -7,7 +7,6 @@ import '../../shared/library_browse_refresh.dart';
 import 'history_days.dart';
 import 'history_error_log.dart';
 import 'history_plays_version.dart';
-import 'history_range.dart' show historyTopLimit;
 import 'history_tracks_version.dart';
 
 /// Reads are not retried by Riverpod's default back-off: a failed read shows
@@ -101,11 +100,13 @@ final historyPlayedRangeProvider =
     }, retry: _noRetry);
 
 /// The most played songs in `[start, end)` (all time when both are null),
-/// at most `historyTopLimit + 1` (the extra row tells the page the list was
-/// cut). It reads again after a change to the plays and,
+/// at most `window.limit` rows. It reads again after a change to the plays and,
 /// at most once per browse interval, after a scan.
 final historyTopProvider = StreamProvider.autoDispose
-    .family<List<HistoryTopRow>, ({int? start, int? end})>((ref, window) {
+    .family<List<HistoryTopRow>, ({int? start, int? end, int limit})>((
+      ref,
+      window,
+    ) {
       final db = ref.watch(libraryDatabaseProvider);
       ref.watch(historyPlaysVersionProvider);
       if (db == null) return Stream.value(const <HistoryTopRow>[]);
@@ -114,7 +115,7 @@ final historyTopProvider = StreamProvider.autoDispose
           return await db.historyTopPlays(
             start: window.start,
             end: window.end,
-            limit: historyTopLimit + 1,
+            limit: window.limit,
           );
         } on Object catch (error) {
           logHistoryError('Reading the most played failed', error);

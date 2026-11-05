@@ -2040,6 +2040,20 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String historyTopLimitOption(int limit) {
+    return 'Top $limit';
+  }
+
+  @override
+  String get historyTopCustomOption => 'Tuỳ chọn...';
+
+  @override
+  String get historyTopCustomDialogTitle => 'Số bài xếp hạng tuỳ chọn';
+
+  @override
+  String get historyTopCustomInputLabel => 'Giới hạn (1 – 1000)';
+
+  @override
   String get historyPlayAll => 'Phát tất cả';
 
   @override

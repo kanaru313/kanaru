@@ -10,14 +10,12 @@ import '../../shared/song_modal/song_modal_extras.dart';
 import '../../shared/widgets/queue_actions_menu.dart';
 import '../../shared/widgets/song_card.dart';
 import 'history_missing_play_modal.dart';
-import 'history_range.dart';
 import 'history_routes.dart';
 import 'history_song_modal_extras.dart';
 import 'history_top_queue.dart';
 import 'most_played_row_tile.dart';
 
-/// The ranked songs of the Most played page, one fixed-height song row each,
-/// and at the end a line saying the list was cut at [historyTopLimit].
+/// The ranked songs of the Most played page, one fixed-height song row each.
 ///
 /// [rows] are the songs on show in rank order and [ranks] their places in the
 /// ranking (from 1), which differ from `1..n` while a filter hides rows. A tap
@@ -27,14 +25,10 @@ class MostPlayedList extends ConsumerStatefulWidget {
     super.key,
     required this.rows,
     required this.ranks,
-    required this.capped,
   }) : assert(rows.length == ranks.length);
 
   final List<HistoryTopRow> rows;
   final List<int> ranks;
-
-  /// More songs were played than the ranking holds.
-  final bool capped;
 
   @override
   ConsumerState<MostPlayedList> createState() => _MostPlayedListState();
@@ -91,19 +85,8 @@ class _MostPlayedListState extends ConsumerState<MostPlayedList> {
     final rows = widget.rows;
     return ListView.builder(
       itemExtent: extent,
-      itemCount: rows.length + (widget.capped ? 1 : 0),
+      itemCount: rows.length,
       itemBuilder: (context, i) {
-        if (i == rows.length) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(32, 12, 32, 4),
-            child: Text(
-              context.l10n.historyTopCapped(historyTopLimit),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          );
-        }
         return MostPlayedRowTile(
           key: ValueKey(rows[i].path),
           rank: widget.ranks[i],

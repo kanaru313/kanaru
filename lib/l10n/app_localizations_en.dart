@@ -2149,6 +2149,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String historyTopLimitOption(int limit) {
+    return 'Top $limit';
+  }
+
+  @override
+  String get historyTopCustomOption => 'Custom...';
+
+  @override
+  String get historyTopCustomDialogTitle => 'Custom ranking limit';
+
+  @override
+  String get historyTopCustomInputLabel => 'Limit (1 – 1000)';
+
+  @override
   String get historyPlayAll => 'Play all';
 
   @override

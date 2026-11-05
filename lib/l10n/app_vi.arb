@@ -777,6 +777,27 @@
       }
     }
   },
+  "historyTopLimitOption": "Top {limit}",
+  "@historyTopLimitOption": {
+    "description": "Label of a ranking top limit option or button",
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "historyTopCustomOption": "Tuỳ chọn...",
+  "@historyTopCustomOption": {
+    "description": "Menu entry in the top limit dropdown that opens the custom limit dialog"
+  },
+  "historyTopCustomDialogTitle": "Số bài xếp hạng tuỳ chọn",
+  "@historyTopCustomDialogTitle": {
+    "description": "Title of the dialog that sets a custom limit for the Most played list"
+  },
+  "historyTopCustomInputLabel": "Giới hạn (1 – 1000)",
+  "@historyTopCustomInputLabel": {
+    "description": "Field label in the custom ranking limit dialog"
+  },
   "historyPlayAll": "Phát tất cả",
   "@historyPlayAll": {
     "description": "Button that plays the Most played list from the top"
