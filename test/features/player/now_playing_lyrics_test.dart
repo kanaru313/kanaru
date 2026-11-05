@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/shell/window/desktop_window.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_screen.dart';
@@ -13,6 +12,7 @@ import 'package:kanaru/features/player/track_artwork.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
@@ -177,11 +177,12 @@ void main() {
         size: narrow,
         overrides: [
           customTitleBarProvider.overrideWithValue(true),
+          ...translatePluginOverrides(),
           fakeTranslationOverride(
             FakeTranslationController(
               TranslationReady(
                 fakeTranslationInfo(),
-                TranslationServiceId.google,
+                testTranslatePlugin,
                 'ja',
                 const [],
                 false,
@@ -193,12 +194,12 @@ void main() {
 
       expect(
         find.ancestor(
-          of: find.byTooltip('Translated by Google · English'),
+          of: find.byTooltip('Translated by Test Translate · English'),
           matching: find.byType(IconButton),
         ),
         findsOneWidget,
       );
-      expect(find.text('Google · English'), findsNothing);
+      expect(find.text('Test Translate · English'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

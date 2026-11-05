@@ -13,6 +13,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import 'fake_translation_controller.dart';
 
 /// Now Playing, already open.
@@ -37,11 +38,16 @@ void main() {
     container = ProviderContainer(
       overrides: [
         nowPlayingOpenProvider.overrideWith(_OpenNowPlaying.new),
+        ...translatePluginOverrides(),
         ...overrides,
         initialSettingsProvider.overrideWithValue(
-          const AppSettings(
+          AppSettings(
             translation: TranslationPrefs(
-              noticeAcknowledged: {TranslationServiceId.google},
+              service: testTranslatePlugin,
+              noticeAcknowledged: {
+                testTranslatePlugin,
+                testTranslatePlugin,
+              },
             ),
           ),
         ),
@@ -90,7 +96,7 @@ void main() {
     final fake = FakeTranslationController(
       TranslationReady(
         fakeTranslationInfo(),
-        TranslationServiceId.google,
+        testTranslatePlugin,
         'ja',
         const [],
         false,

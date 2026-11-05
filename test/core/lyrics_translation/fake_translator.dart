@@ -21,6 +21,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
 import '../player/fake_audio_backend.dart';
+import 'fake_plugin_runner.dart';
 
 /// A translator that records every call and answers from a script.
 class FakeTranslator implements LyricsTranslator {
@@ -106,12 +107,26 @@ AppSettings translationSettings({
   ).withTargetLanguage(target),
 );
 
+/// Settings with translation on and the notice accepted for the test plugin.
+AppSettings pluginTranslationSettings({
+  bool show = true,
+  TranslationServiceId? service,
+  Set<TranslationServiceId>? acknowledged,
+  String? target,
+}) => translationSettings(
+  show: show,
+  service: service ?? testTranslatePlugin,
+  acknowledged: acknowledged ?? {testTranslatePlugin},
+  target: target,
+);
+
 /// A container that plays local files whose lyrics are in [lyrics] (path to
 /// plain text) and translates with the fakes only.
 ProviderContainer translationContainer({
   required LibraryDatabase? db,
   required FakeEmbeddedLyricsReader lyrics,
   FakeTranslator? google,
+  FakePluginRunner? plugin,
   AppSettings? settings,
   SecretStore? store,
   List<Override> overrides = const [],
@@ -124,9 +139,15 @@ ProviderContainer translationContainer({
       lrcSidecarReaderProvider.overrideWithValue(FakeLrcSidecarReader()),
       libraryDatabaseProvider.overrideWithValue(db),
       initialSettingsProvider.overrideWithValue(
-        settings ?? translationSettings(),
+        settings ??
+            (plugin != null
+                ? pluginTranslationSettings()
+                : translationSettings()),
       ),
       if (google != null) googleTranslatorProvider.overrideWithValue(google),
+      if (plugin != null)
+        for (final o in translatePluginOverrides(runner: plugin))
+          if (!overrides.any((existing) => existing.origin == o.origin)) o,
       secretStoreProvider.overrideWith(
         (ref) async => ResolvedSecretStore(
           store ?? MemorySecretStore(),

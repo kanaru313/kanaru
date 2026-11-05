@@ -15,17 +15,18 @@ import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_pla
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
-const _google = TranslationServiceId.google;
+final _testPlugin = testTranslatePlugin;
 const _synced = Track(uri: '/m/synced.flac', title: 'Synced');
 const _plain = Track(uri: '/m/plain.flac', title: 'Plain');
 
 TranslationReady _ready({
-  TranslationServiceId service = _google,
+  TranslationServiceId? service,
   List<String?> lines = const ['Dòng một', 'Dòng hai'],
-}) => TranslationReady(fakeTranslationInfo(), service, 'ja', lines, false);
+}) => TranslationReady(fakeTranslationInfo(), service ?? _testPlugin, 'ja', lines, false);
 
 void main() {
   late ProviderContainer container;
@@ -35,10 +36,7 @@ void main() {
     WidgetTester tester,
     LyricsTranslationState state, {
     Track track = _synced,
-    TranslationPrefs settings = const TranslationPrefs(
-      show: true,
-      noticeAcknowledged: {_google},
-    ),
+    TranslationPrefs? settings,
     bool reduceMotion = false,
   }) async {
     tester.view.physicalSize = const Size(800, 900);
@@ -65,8 +63,16 @@ void main() {
                 '[00:00.00]First words\n[00:05.00]More words'
             ..byPath['/m/plain.flac'] = 'First words\nMore words',
         ),
+        ...translatePluginOverrides(),
         initialSettingsProvider.overrideWithValue(
-          AppSettings(translation: settings),
+          AppSettings(
+            translation: settings ??
+                TranslationPrefs(
+                  show: true,
+                  service: _testPlugin,
+                  noticeAcknowledged: {_testPlugin},
+                ),
+          ),
         ),
       ],
     );
@@ -97,10 +103,11 @@ void main() {
       tester,
       _ready(),
       track: _plain,
-      settings: const TranslationPrefs(
+      settings: TranslationPrefs(
         show: true,
         display: LyricsTranslationDisplay.replace,
-        noticeAcknowledged: {_google},
+        service: _testPlugin,
+        noticeAcknowledged: {_testPlugin},
       ),
     );
     final big = tester.widget<Text>(find.text('Dòng một'));
@@ -115,7 +122,7 @@ void main() {
   testWidgets('loading: a bar under each non-blank line, pulsing', (
     tester,
   ) async {
-    await pump(tester, TranslationLoading(fakeTranslationInfo(), _google));
+    await pump(tester, TranslationLoading(fakeTranslationInfo(), _testPlugin));
     expect(find.byType(LyricsTranslationPlaceholder), findsNWidgets(2));
     expect(tester.hasRunningAnimations, isTrue);
     // The pulse stops once the translation is there.
@@ -132,7 +139,7 @@ void main() {
   ) async {
     await pump(
       tester,
-      TranslationLoading(fakeTranslationInfo(), _google),
+      TranslationLoading(fakeTranslationInfo(), _testPlugin),
       reduceMotion: true,
     );
     expect(find.byType(LyricsTranslationPlaceholder), findsNWidgets(2));
@@ -145,7 +152,7 @@ void main() {
       tester,
       TranslationFailed(
         fakeTranslationInfo(),
-        _google,
+        _testPlugin,
         TranslationFailureKind.quotaExceeded,
       ),
     );
@@ -162,7 +169,7 @@ void main() {
       tester,
       TranslationFailed(
         fakeTranslationInfo(),
-        _google,
+        _testPlugin,
         TranslationFailureKind.badKey,
       ),
     );
@@ -179,7 +186,7 @@ void main() {
       tester,
       TranslationFailed(
         fakeTranslationInfo(),
-        _google,
+        _testPlugin,
         TranslationFailureKind.tooLong,
       ),
     );
@@ -189,7 +196,7 @@ void main() {
   testWidgets('same language: no translation lines and no note', (
     tester,
   ) async {
-    await pump(tester, TranslationSameLanguage(fakeTranslationInfo(), _google));
+    await pump(tester, TranslationSameLanguage(fakeTranslationInfo(), _testPlugin));
     expect(find.text('Lyrics are already in English'), findsNothing);
     expect(find.byType(LyricsTranslationPlaceholder), findsNothing);
     expect(find.textContaining('Translated by'), findsNothing);
@@ -215,7 +222,7 @@ void main() {
       tester,
       TranslationReady(
         fakeTranslationInfo(songOverride: 'ar'),
-        _google,
+        _testPlugin,
         'en',
         const ['مرحبا', 'وداعا'],
         false,
@@ -235,7 +242,7 @@ void main() {
       tester,
       TranslationFailed(
         fakeTranslationInfo(),
-        _google,
+        _testPlugin,
         TranslationFailureKind.network,
       ),
       track: _plain,

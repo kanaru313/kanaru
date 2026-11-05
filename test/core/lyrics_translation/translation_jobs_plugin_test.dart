@@ -16,7 +16,7 @@ import '../lyrics/fake_lyrics_readers.dart';
 import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
-final _plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+final _plugin = testTranslatePlugin;
 final _en = translationLanguageFor('en')!;
 final _key = TranslationJobKey('hash', 'en', _plugin);
 final _otherKey = TranslationJobKey('hash2', 'en', _plugin);
