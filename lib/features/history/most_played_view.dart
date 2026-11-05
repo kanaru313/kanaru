@@ -18,6 +18,7 @@ import 'history_range_span.dart';
 import 'history_two_column_layout.dart';
 import 'most_played_actions.dart';
 import 'most_played_body.dart';
+import 'most_played_limit.dart';
 import 'most_played_range.dart';
 import 'most_played_range_picker.dart';
 import 'most_played_side_pane.dart';
@@ -71,6 +72,7 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
     final l10n = context.l10n;
     final range = ref.watch(mostPlayedRangeProvider);
     final rangeNotifier = ref.read(mostPlayedRangeProvider.notifier);
+    final topLimit = ref.watch(mostPlayedTopLimitProvider);
     final now = ref.watch(historyNowProvider)();
     final played = ref.watch(historyPlayedRangeProvider);
     final playedRange = played.value;
@@ -87,8 +89,8 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
       final top = ref.watch(
         historyTopProvider(
           window == null
-              ? (start: null, end: null)
-              : (start: window.start, end: window.end),
+              ? (start: null, end: null, limit: topLimit)
+              : (start: window.start, end: window.end, limit: topLimit),
         ),
       );
       if (top.hasValue) _shown.keep(top.value!);
@@ -169,11 +171,13 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
                   state: range,
                   now: now,
                   canPickCustom: playedRange != null,
+                  topLimit: topLimit,
                   onPreset: rangeNotifier.withPreset,
                   onCustom: () =>
                       unawaited(pickMostPlayedCustom(context, ref, now)),
                   onShift: (d) =>
                       d < 0 ? rangeNotifier.previous() : rangeNotifier.next(),
+                  onTopLimit: ref.read(mostPlayedTopLimitProvider.notifier).set,
                 ),
                 SizedBox(
                   height: 2,
@@ -185,7 +189,6 @@ class _MostPlayedViewState extends ConsumerState<MostPlayedView>
                     failed: failed,
                     rows: rows,
                     ranks: ranks,
-                    capped: _shown.capped,
                     query: _filter.query,
                   ),
                 ),
