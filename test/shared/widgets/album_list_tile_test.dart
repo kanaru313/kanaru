@@ -75,6 +75,7 @@ void main() {
     final withoutTotals = await heightOf(showTotals: false);
 
     expect(find.text('Blue'), findsOneWidget);
+    expect(find.text('Album'), findsOneWidget);
     expect(find.textContaining('songs'), findsNothing);
     expect(find.textContaining('min'), findsNothing);
     expect(withTotals, expected);
