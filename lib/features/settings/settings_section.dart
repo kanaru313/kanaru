@@ -34,6 +34,7 @@ class SettingsSection extends StatelessWidget {
             ),
           ),
         ...children,
+        const SizedBox(height: 12),
       ],
     );
   }

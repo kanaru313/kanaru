@@ -103,6 +103,19 @@ void main() {
     );
   });
 
+  testWidgets('a section has a bottom spacer after its children', (
+    tester,
+  ) async {
+    await _pump(tester);
+
+    final titled = find.byWidgetPredicate(
+      (w) => w is SettingsSection && w.title == 'First',
+    );
+    final sectionRect = tester.getRect(titled);
+    final rowRect = tester.getRect(find.text('row one'));
+    expect(sectionRect.bottom - rowRect.bottom, 12);
+  });
+
   testWidgets('no warning when settings are writable', (tester) async {
     await _pump(tester);
 
