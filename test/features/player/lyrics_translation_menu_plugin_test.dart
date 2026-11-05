@@ -8,6 +8,7 @@ import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service_needs_config_watch.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics_translation/fake_plugin_runner.dart';
@@ -77,7 +78,7 @@ void main() {
   }
 
   Finder radio(String name) =>
-      find.widgetWithText(RadioMenuButton<TranslationServiceId>, name);
+      find.widgetWithText(MenuItemButton, name);
 
   testWidgets('the service submenu lists Google and plugins by name', (
     tester,
@@ -143,10 +144,13 @@ void main() {
       ),
     );
 
-    final google = tester.widget<RadioMenuButton<TranslationServiceId>>(
-      radio('Google'),
+    expect(
+      find.descendant(
+        of: radio('Google'),
+        matching: find.byIcon(AppIcons.check),
+      ),
+      findsOneWidget,
     );
-    expect(google.groupValue, _google);
     expect(prefs().service.value, 'plugin-zzzzzzzzzzzz');
   });
 
@@ -232,15 +236,18 @@ void main() {
           recordsState: state,
         );
 
-        final selected = tester.widget<RadioMenuButton<TranslationServiceId>>(
-          find.byType(RadioMenuButton<TranslationServiceId>).first,
+        expect(
+          find.descendant(
+            of: radio('Gemini'),
+            matching: find.byIcon(AppIcons.check),
+          ),
+          findsOneWidget,
         );
-        expect(selected.groupValue, plugin);
-        for (final r
-            in tester.widgetList<RadioMenuButton<TranslationServiceId>>(
-              find.byType(RadioMenuButton<TranslationServiceId>),
-            )) {
-          expect(r.onChanged, isNull);
+        for (final r in [
+          tester.widget<MenuItemButton>(radio('Google')),
+          tester.widget<MenuItemButton>(radio('Gemini')),
+        ]) {
+          expect(r.onPressed, isNull);
         }
         await tester.tap(radio('Google'), warnIfMissed: false);
         await tester.pumpAndSettle();

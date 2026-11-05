@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -83,10 +85,15 @@ List<Widget> lyricsTranslationMenuItems(
   final container = ProviderScope.containerOf(context);
 
   Future<void> pickService(TranslationServiceId service) async {
+    final previous = prefs.service;
     if (prefs.show && needsNoticeFor(prefs, service)) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
+    }
+    final current = ref.read(settingsProvider).translation;
+    if (current.show && current.service != previous) {
+      unawaited(controller.retranslate());
     }
   }
 
@@ -95,28 +102,41 @@ List<Widget> lyricsTranslationMenuItems(
     router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));
   }
 
-  // A radio row of a submenu; the one in effect is tinted like the lyrics
-  // source menu's.
+  // A choice row of a submenu; the one in effect is tinted like the lyrics
+  // source menu's and has a checkmark at the end. It stays open on click.
   final scheme = Theme.of(context).colorScheme;
   Widget radio<T>({
     required T value,
     required T groupValue,
     required VoidCallback? onChanged,
     required String label,
-  }) => menuRowSpaced(
-    RadioMenuButton<T>(
-      style: menuRowStyle(
-        background: value == groupValue ? menuRowSelectedTint(scheme) : null,
+  }) {
+    final isSelected = value == groupValue;
+    return menuRowSpaced(
+      MenuItemButton(
+        closeOnActivate: false,
+        style: menuRowStyle(
+          background: isSelected ? menuRowSelectedTint(scheme) : null,
+        ),
+        onPressed: onChanged == null ? null : () => onChanged(),
+        trailingIcon: isSelected
+            ? Icon(AppIcons.check, size: 18, color: scheme.primary)
+            : const SizedBox(width: 18, height: 18),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: _optionMinWidth),
+          child: Text(
+            label,
+            style: isSelected
+                ? TextStyle(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w600,
+                  )
+                : null,
+          ),
+        ),
       ),
-      value: value,
-      groupValue: groupValue,
-      onChanged: onChanged == null ? null : (_) => onChanged(),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: _optionMinWidth),
-        child: Text(label),
-      ),
-    ),
-  );
+    );
+  }
 
   return [
     lyricsTranslationSwitchRow(

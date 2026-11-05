@@ -79,7 +79,7 @@ void main() {
   }
 
   Finder serviceRadio(String name) =>
-      find.widgetWithText(RadioMenuButton<TranslationServiceId>, name);
+      find.widgetWithText(MenuItemButton, name);
 
   testWidgets('items come in order and the first three work while off', (
     tester,
@@ -224,14 +224,19 @@ void main() {
       await tester.tap(find.text('Translate to: Japanese'));
       await tester.pumpAndSettle();
 
-      RadioMenuButton<String> radio(String text) =>
-          tester.widget<RadioMenuButton<String>>(
-            find.widgetWithText(RadioMenuButton<String>, text),
-          );
-      expect(radio('Japanese').value, radio('Japanese').groupValue);
       expect(
-        radio('Default (English)').value,
-        isNot(radio('Default (English)').groupValue),
+        find.descendant(
+          of: find.widgetWithText(MenuItemButton, 'Japanese'),
+          matching: find.byIcon(AppIcons.check),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.widgetWithText(MenuItemButton, 'Default (English)'),
+          matching: find.byIcon(AppIcons.check),
+        ),
+        findsNothing,
       );
     });
 
@@ -337,22 +342,27 @@ void main() {
   });
 
   group('the service submenu', () {
-    testWidgets('lists Google, checks it, a pick closes', (tester) async {
+    testWidgets('lists Google, checks it, a pick leaves menu open', (
+      tester,
+    ) async {
       await pump(tester, TranslationOff(fakeTranslationInfo()));
 
       await openServiceSubmenu(tester);
       expect(serviceRadio('Google'), findsOneWidget);
-      final google = tester.widget<RadioMenuButton<TranslationServiceId>>(
-        serviceRadio('Google'),
+      expect(
+        find.descendant(
+          of: serviceRadio('Google'),
+          matching: find.byIcon(AppIcons.check),
+        ),
+        findsOneWidget,
       );
-      expect(google.value, google.groupValue);
 
       await tester.tap(serviceRadio('Google'));
       await tester.pumpAndSettle();
       expect(prefs().service, _google);
       expect(prefs().show, isFalse);
       expect(fake.songTargets, isEmpty);
-      expect(find.text('Show translation'), findsNothing);
+      expect(find.text('Show translation'), findsOneWidget);
     });
   });
 
