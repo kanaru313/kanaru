@@ -37,8 +37,9 @@ void main() {
     // Three genres, then the song with no genre tag.
     expect(find.byType(GenreTile), findsNWidgets(4));
     expect(find.text('Rock'), findsOneWidget, reason: 'spellings merge');
-    expect(find.text('3 songs'), findsOneWidget);
-    expect(find.text('1 song'), findsNWidgets(3));
+    expect(find.textContaining('3 songs'), findsOneWidget);
+    expect(find.textContaining('1 song'), findsNWidgets(3));
+    expect(find.text('Genre'), findsNWidgets(4));
     expect(top('Jazz'), lessThan(top('Pop')));
     expect(top('Pop'), lessThan(top('Rock')));
     expect(top('Rock'), lessThan(top('Unknown genre')));
@@ -109,6 +110,35 @@ void main() {
     await tester.tap(find.text('Rock'), buttons: kSecondaryButton);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Play next'));
+    await settleIo(tester, h);
+
+    expect(
+      [
+        for (final t in h.container.read(playerServiceProvider).queue.tracks)
+          t.title,
+      ],
+      ['r1', 'r2', 'rp'],
+    );
+  });
+
+  testWidgets('hovering a genre row reveals play button and plays the genre', (
+    tester,
+  ) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
+    await openWithTracks(tester, h, _tracks, location: '/genres');
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(gesture.removePointer);
+    await gesture.addPointer(location: Offset.zero);
+    await gesture.moveTo(tester.getCenter(find.text('Rock')));
+    await tester.pumpAndSettle();
+
+    final playButton = find.descendant(
+      of: find.widgetWithText(GenreTile, 'Rock'),
+      matching: find.byTooltip('Play'),
+    );
+    expect(playButton, findsOneWidget);
+    await tester.tap(playButton);
     await settleIo(tester, h);
 
     expect(

@@ -23,6 +23,7 @@ void main() {
     String? language,
     String? album,
     String? albumArtist,
+    int? durationMs,
   }) => db.upsertTracks([
     TracksCompanion.insert(
       rootId: rootId,
@@ -33,20 +34,24 @@ void main() {
       language: Value(language),
       album: Value(album),
       albumArtist: Value(albumArtist),
+      durationMs: Value(durationMs),
       addedAt: 1,
       updatedAt: 1,
     ),
   ]);
 
   test('counts every stored string and skips untagged tracks', () async {
-    await store('a', language: 'eng');
-    await store('b', language: 'eng');
-    await store('c', language: 'en');
+    await store('a', language: 'eng', durationMs: 100000);
+    await store('b', language: 'eng', durationMs: 200000);
+    await store('c', language: 'en', durationMs: 50000);
     await store('d');
 
     final counts = await db.languageCounts();
 
-    expect({for (final c in counts) c.raw: c.count}, {'eng': 2, 'en': 1});
+    expect({for (final c in counts) c.raw: (c.count, c.durationMs)}, {
+      'eng': (2, 300000),
+      'en': (1, 50000),
+    });
   });
 
   test('tracks of the given strings come by title', () async {

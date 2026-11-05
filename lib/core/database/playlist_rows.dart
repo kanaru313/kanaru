@@ -9,6 +9,7 @@ class PlaylistSummary {
     required this.name,
     required this.createdAt,
     required this.entryCount,
+    this.durationMs,
     this.isFavorites = false,
     this.description = '',
   });
@@ -19,6 +20,10 @@ class PlaylistSummary {
   /// Milliseconds since the epoch.
   final int createdAt;
   final int entryCount;
+
+  /// Total duration of all entries whose tracks are in the library, in
+  /// milliseconds.
+  final int? durationMs;
 
   /// Whether this is the Favorites playlist (`kind = 'favorites'`): shown
   /// with the localized name, never renamed or deleted.
@@ -34,12 +39,13 @@ class PlaylistSummary {
       other.name == name &&
       other.createdAt == createdAt &&
       other.entryCount == entryCount &&
+      other.durationMs == durationMs &&
       other.isFavorites == isFavorites &&
       other.description == description;
 
   @override
   int get hashCode =>
-      Object.hash(id, name, createdAt, entryCount, isFavorites, description);
+      Object.hash(id, name, createdAt, entryCount, durationMs, isFavorites, description);
 }
 
 /// Whether [a] and [b] hold equal summaries in the same order.

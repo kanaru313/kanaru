@@ -40,6 +40,23 @@ void main() {
       expect((await db.watchPlaylistSummaries().first).single.entryCount, 3);
     });
 
+    test(
+      'summaries aggregate duration of tracks in library, skipping missing',
+      () async {
+        await db.upsertTracks([
+          track(root, '/m/a').copyWith(durationMs: const Value(120000)),
+          track(root, '/m/b').copyWith(durationMs: const Value(180000)),
+        ]);
+        final id = await db.createPlaylist(
+          'A',
+          now: 1,
+          paths: ['/m/a', '/m/b', '/m/c', '/m/a'],
+        );
+        final summary = await db.playlistSummary(id);
+        expect(summary!.durationMs, 120000 + 180000 + 120000);
+      },
+    );
+
     test('summary carries the description, empty by default', () async {
       final id = await db.createPlaylist('A', now: 1);
       expect((await db.playlistSummary(id))!.description, '');

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/features/library/languages/language_grid_tile.dart';
 import 'package:kanaru/features/library/languages/language_tile.dart';
@@ -28,13 +29,33 @@ void main() {
     // English (region merged), Vietnamese, No lyrics.
     expect(find.byType(LanguageTile), findsNWidgets(3));
     expect(find.text('English'), findsOneWidget);
-    expect(find.text('3 songs'), findsOneWidget);
+    expect(find.textContaining('3 songs'), findsOneWidget);
     expect(find.text('Vietnamese'), findsOneWidget);
-    expect(find.text('2 songs'), findsOneWidget);
+    expect(find.textContaining('2 songs'), findsOneWidget);
     expect(find.text('No lyrics'), findsOneWidget);
-    expect(find.text('1 song'), findsOneWidget);
+    expect(find.textContaining('1 song'), findsOneWidget);
+    expect(find.text('Language'), findsNWidgets(3));
     expect(find.textContaining('nknown'), findsNothing);
     expect(find.text('UND'), findsNothing);
+  });
+
+  testWidgets('hovering a language tile reveals play button', (
+    tester,
+  ) async {
+    final h = LibraryHarness(overrides: [listViewModesOverride]);
+    await openWithLanguages(tester, h, _tracks, location: languagesPath);
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(gesture.removePointer);
+    await gesture.addPointer(location: Offset.zero);
+    await gesture.moveTo(tester.getCenter(find.text('Vietnamese')));
+    await tester.pumpAndSettle();
+
+    final playButton = find.descendant(
+      of: find.widgetWithText(LanguageTile, 'Vietnamese'),
+      matching: find.byTooltip('Play'),
+    );
+    expect(playButton, findsOneWidget);
   });
 
   testWidgets('opens as a grid by default and the toggle shows the list', (

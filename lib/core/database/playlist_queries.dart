@@ -14,7 +14,11 @@ export 'playlist_writes.dart';
 
 const _summarySql = '''
 SELECT p.id, p.name, p.created_at, p.kind, p.description,
-  (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n
+  (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlist_id = p.id) AS n,
+  (SELECT COALESCE(SUM(t.duration_ms), 0)
+   FROM playlist_entries e
+   JOIN tracks t ON t.path = e.path
+   WHERE e.playlist_id = p.id) AS duration_ms
 FROM playlists p''';
 
 /// Lists leave out the Favorites playlist, which has its own page and nav
@@ -86,6 +90,7 @@ PlaylistSummary _summary(QueryRow row) => PlaylistSummary(
   name: row.read<String>('name'),
   createdAt: row.read<int>('created_at'),
   entryCount: row.read<int>('n'),
+  durationMs: row.readNullable<int>('duration_ms') ?? 0,
   isFavorites: row.readNullable<String>('kind') == favoritesKind,
   description: row.read<String>('description'),
 );

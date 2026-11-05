@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/playlist_writes.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
-import 'package:kanaru/features/playlists/collage_list_row.dart';
 import 'package:kanaru/features/playlists/playlists_grid.dart';
 import 'package:kanaru/features/playlists/playlists_list.dart';
+import 'package:kanaru/shared/widgets/library_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../library/browse_test_data.dart' show goTo, location;
@@ -130,8 +130,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PlaylistsGrid), findsNothing);
-      expect(find.byType(CollageListRow<void>), findsNWidgets(2));
-      expect(inList(find.text('2 songs')), findsOneWidget);
+      expect(find.byType(LibraryPlayableRow), findsNWidgets(2));
+      expect(inList(find.textContaining('2 songs')), findsOneWidget);
       expect(inList(find.text('No songs')), findsOneWidget);
       // Newest first.
       expect(

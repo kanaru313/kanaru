@@ -42,15 +42,17 @@ String _placeholders(int count) => List.filled(count, '?').join(', ');
 extension GenreQueries on LibraryDatabase {
   /// Every stored genre string with the tracks holding it; the group of
   /// tracks without a genre has a null `raw`.
-  Future<List<({String? raw, int count})>> genreCounts() =>
+  Future<List<({String? raw, int count, int durationMs})>> genreCounts() =>
       customSelect(
-            'SELECT genre, count(*) AS n FROM tracks GROUP BY genre',
+            'SELECT genre, count(*) AS n, COALESCE(sum(duration_ms), 0) AS d '
+            'FROM tracks GROUP BY genre',
             readsFrom: {tracks},
           )
           .map(
             (row) => (
               raw: row.readNullable<String>('genre'),
               count: row.read<int>('n'),
+              durationMs: row.read<int>('d'),
             ),
           )
           .get();

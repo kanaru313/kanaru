@@ -14,6 +14,7 @@ class GenreSummary {
     required this.raws,
     this.withoutGenre = false,
     this.coverKeys = const [],
+    this.durationMs,
   });
 
   /// `genreKey(name)`; identifies the genre page. [unknownGenreKey] for the
@@ -27,6 +28,9 @@ class GenreSummary {
   /// Tracks whose stored genre names this genre (a track with several
   /// genres in one string counts once for each).
   final int songCount;
+
+  /// Total duration in milliseconds of tracks in this genre.
+  final int? durationMs;
 
   /// The stored genre strings that name this genre, to query its tracks.
   final List<String> raws;
@@ -45,6 +49,7 @@ class GenreSummary {
     key: key,
     name: name,
     songCount: songCount,
+    durationMs: durationMs,
     raws: raws,
     withoutGenre: withoutGenre,
     coverKeys: coverKeys,
@@ -57,6 +62,7 @@ class GenreSummary {
           other.key == key &&
           other.name == name &&
           other.songCount == songCount &&
+          other.durationMs == durationMs &&
           other.withoutGenre == withoutGenre &&
           listEquals(other.raws, raws) &&
           listEquals(other.coverKeys, coverKeys);
@@ -66,6 +72,7 @@ class GenreSummary {
     key,
     name,
     songCount,
+    durationMs,
     withoutGenre,
     Object.hashAll(raws),
     Object.hashAll(coverKeys),
@@ -77,19 +84,23 @@ class GenreSummary {
 /// (no tag, or a string that names no genre) last, when there are any. A
 /// string naming several genres counts for each. [rules] split the strings.
 List<GenreSummary> buildGenreSummaries(
-  List<({String? raw, int count})> counts, {
+  List<({String? raw, int count, int? durationMs})> counts, {
   SplitRules rules = defaultGenreRules,
 }) {
   final names = <String, String>{};
   final songs = <String, int>{};
+  final durations = <String, int>{};
   final raws = <String, Set<String>>{};
   var unknownSongs = 0;
+  var unknownDuration = 0;
   var unknownNull = false;
   final unknownRaws = <String>{};
-  for (final (:raw, :count) in counts) {
+  for (final (:raw, :count, :durationMs) in counts) {
+    final d = durationMs ?? 0;
     final genres = splitGenres(raw, rules: rules);
     if (genres.isEmpty) {
       unknownSongs += count;
+      unknownDuration += d;
       if (raw == null) {
         unknownNull = true;
       } else {
@@ -101,6 +112,7 @@ List<GenreSummary> buildGenreSummaries(
       final key = genreKey(name);
       names[key] = preferredSpelling(names[key], name);
       songs[key] = (songs[key] ?? 0) + count;
+      durations[key] = (durations[key] ?? 0) + d;
       (raws[key] ??= {}).add(raw!);
     }
   }
@@ -111,6 +123,7 @@ List<GenreSummary> buildGenreSummaries(
         key: key,
         name: names[key]!,
         songCount: songs[key]!,
+        durationMs: durations[key],
         raws: raws[key]!.toList()..sort(compareCodePoints),
       ),
     if (unknownSongs > 0)
@@ -118,6 +131,7 @@ List<GenreSummary> buildGenreSummaries(
         key: unknownGenreKey,
         name: '',
         songCount: unknownSongs,
+        durationMs: unknownDuration > 0 ? unknownDuration : null,
         raws: unknownRaws.toList()..sort(compareCodePoints),
         withoutGenre: unknownNull,
       ),

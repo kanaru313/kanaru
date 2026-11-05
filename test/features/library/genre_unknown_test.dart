@@ -33,8 +33,8 @@ void main() {
     final tiles = tester.widgetList<GenreTile>(find.byType(GenreTile)).toList();
     expect([for (final t in tiles) t.genre.key], ['rock', unknownGenreKey]);
     expect(find.text('Unknown genre'), findsOneWidget);
-    expect(find.text('3 songs'), findsOneWidget);
-    expect(find.text('1 song'), findsOneWidget);
+    expect(find.textContaining('3 songs'), findsOneWidget);
+    expect(find.textContaining('1 song'), findsOneWidget);
   });
 
   testWidgets('the grid shows it too', (tester) async {
