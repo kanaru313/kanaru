@@ -12,6 +12,7 @@ import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_card.dart';
 import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
@@ -171,27 +172,29 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 32),
             children: [
-              ListTile(
-                leading: PluginIcon(record: record, size: 48),
-                title: Text(
-                  record.name,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                subtitle: Text(pluginByline(l10n, record)),
-                // Only a lyrics source can be switched off.
-                trailing: entry == null
-                    ? null
-                    : Semantics(
-                        label: record.name,
-                        child: Switch(
-                          value: entry.enabled,
-                          onChanged: controller == null
-                              ? null
-                              : (on) => unawaited(
-                                  setLyricsSourceOn(controller, _id, on),
-                                ),
+              PluginCard(
+                child: ListTile(
+                  leading: PluginIcon(record: record, size: 48),
+                  title: Text(
+                    record.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  subtitle: Text(pluginByline(l10n, record)),
+                  // Only a lyrics source can be switched off.
+                  trailing: entry == null
+                      ? null
+                      : Semantics(
+                          label: record.name,
+                          child: Switch(
+                            value: entry.enabled,
+                            onChanged: controller == null
+                                ? null
+                                : (on) => unawaited(
+                                    setLyricsSourceOn(controller, _id, on),
+                                  ),
+                          ),
                         ),
-                      ),
+                ),
               ),
               PluginUpdateBanner(record: record),
               PluginInfoSection(record: record),

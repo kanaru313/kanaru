@@ -7,6 +7,7 @@ import '../../core/database/lyrics_plugin_spec.dart'
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_card.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import '../../shared/widgets/confirm_dialog.dart';
@@ -67,66 +68,80 @@ class PluginDataRows extends ConsumerWidget {
     final songs = stats?.foundCount ?? 0;
     final theme = Theme.of(context);
     final canWrite = ref.watch(lyricsPluginsControllerProvider) != null;
+    final isTranslate = record.kind == PluginKind.translate;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PluginSectionTitle(l10n.pluginDataTitle),
-        ListTile(
-          title: Text(l10n.pluginStorageTitle),
-          subtitle: Text(
-            l10n.pluginStorageUsage(
-              pluginSizeText(l10n, storage),
-              pluginSizeText(l10n, lyricsPluginDataMaxBytes),
-            ),
-          ),
-          trailing: TextButton(
-            onPressed: !canWrite || storage == 0
-                ? null
-                : () => _clear(
-                    context,
-                    ref,
-                    title: l10n.pluginStorageClearTitle,
-                    body: l10n.pluginStorageClearBody,
-                    done: l10n.pluginStorageCleared,
-                    run: (c) async =>
-                        switch (await c.clearStorage(record.installId)) {
-                          LyricsPluginWrite.written => true,
-                          LyricsPluginWrite.skipped => null,
-                          LyricsPluginWrite.tooLarge => false,
-                        },
+        PluginCard(
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(l10n.pluginStorageTitle),
+                subtitle: Text(
+                  l10n.pluginStorageUsage(
+                    pluginSizeText(l10n, storage),
+                    pluginSizeText(l10n, lyricsPluginDataMaxBytes),
                   ),
-            child: Text(l10n.pluginDataClear),
+                ),
+                trailing: TextButton(
+                  onPressed: !canWrite || storage == 0
+                      ? null
+                      : () => _clear(
+                          context,
+                          ref,
+                          title: l10n.pluginStorageClearTitle,
+                          body: l10n.pluginStorageClearBody,
+                          done: l10n.pluginStorageCleared,
+                          run: (c) async =>
+                              switch (await c.clearStorage(record.installId)) {
+                                LyricsPluginWrite.written => true,
+                                LyricsPluginWrite.skipped => null,
+                                LyricsPluginWrite.tooLarge => false,
+                              },
+                        ),
+                  child: Text(l10n.pluginDataClear),
+                ),
+              ),
+              if (!isTranslate) ...[
+                Divider(
+                  height: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: theme.colorScheme.outlineVariant,
+                ),
+                ListTile(
+                  title: Text(l10n.pluginSavedLyricsTitle),
+                  subtitle: Text(
+                    songs == 0
+                        ? l10n.pluginSavedLyricsNone
+                        : l10n.pluginSavedLyricsSummary(
+                            songs,
+                            pluginSizeText(l10n, stats?.textBytes ?? 0),
+                          ),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  trailing: TextButton(
+                    onPressed: !canWrite || songs == 0
+                        ? null
+                        : () => _clear(
+                            context,
+                            ref,
+                            title: l10n.pluginSavedLyricsClearTitle,
+                            body: l10n.pluginSavedLyricsClearBody,
+                            done: l10n.pluginSavedLyricsCleared,
+                            run: (c) async {
+                              await c.clearSavedLyrics(record.installId);
+                              return true;
+                            },
+                          ),
+                    child: Text(l10n.pluginDataClear),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-        if (record.kind != PluginKind.translate)
-          ListTile(
-            title: Text(l10n.pluginSavedLyricsTitle),
-            subtitle: Text(
-              songs == 0
-                  ? l10n.pluginSavedLyricsNone
-                  : l10n.pluginSavedLyricsSummary(
-                      songs,
-                      pluginSizeText(l10n, stats?.textBytes ?? 0),
-                    ),
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            trailing: TextButton(
-              onPressed: !canWrite || songs == 0
-                  ? null
-                  : () => _clear(
-                      context,
-                      ref,
-                      title: l10n.pluginSavedLyricsClearTitle,
-                      body: l10n.pluginSavedLyricsClearBody,
-                      done: l10n.pluginSavedLyricsCleared,
-                      run: (c) async {
-                        await c.clearSavedLyrics(record.installId);
-                        return true;
-                      },
-                    ),
-              child: Text(l10n.pluginDataClear),
-            ),
-          ),
       ],
     );
   }

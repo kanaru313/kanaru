@@ -5,11 +5,12 @@ import '../../core/database/lyrics_plugin_spec.dart' show PluginKind;
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_card.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_providers.dart';
 import 'store_row_icon.dart';
-import '../../shared/icons/app_icons.dart';
 
 /// The page of one plugin a repository offers: who wrote it, its version,
 /// description, repository, the hosts it may reach, and "Cài".
@@ -34,16 +35,14 @@ class CatalogItemPage extends ConsumerStatefulWidget {
 }
 
 class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
-  LyricsPluginRecord? _installed(PluginStoreInput input) {
-    for (final r in input.records) {
-      if (!r.isRemoved &&
-          r.repoUrl == widget.repoUrl &&
-          r.repoSlug == widget.slug) {
-        return r;
-      }
-    }
-    return null;
-  }
+  LyricsPluginRecord? _installed(PluginStoreInput input) => input.records
+      .where(
+        (r) =>
+            !r.isRemoved &&
+            r.repoUrl == widget.repoUrl &&
+            r.repoSlug == widget.slug,
+      )
+      .firstOrNull;
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +55,9 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
       );
     }
     final installed = _installed(input);
-    PluginRepo? repo;
-    for (final r in input.repos) {
-      if (r.url == widget.repoUrl) repo = r;
-    }
+    final repo = input.repos
+        .where((r) => r.url == widget.repoUrl)
+        .firstOrNull;
     final entry = repo?.entry(widget.slug);
     if (repo == null || entry == null) {
       return PageScaffold(
@@ -84,6 +82,18 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
         .contains(pendingInstallKey(repo.url, entry.slug));
     final repoName = repo.name;
     final repoUrl = repo.url;
+    final fields = [
+      if (entry.description.isNotEmpty)
+        _Field(
+          label: l10n.lyricsStoreItemDescription,
+          lines: [entry.description],
+        ),
+      _Field(
+        label: l10n.lyricsStoreItemRepo,
+        lines: [repoName, repoUrl],
+      ),
+      _Field(label: l10n.lyricsStoreItemHosts, lines: entry.hosts),
+    ];
     return PageScaffold(
       title: l10n.pluginDetailsTitle,
       body: Align(
@@ -93,45 +103,47 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 32),
             children: [
-              ListTile(
-                leading: StoreRowIcon(row: row, repo: repo, size: 48),
-                title: Text(entry.name, style: theme.textTheme.titleLarge),
-                subtitle: Text('$author · v${entry.version}'),
-                trailing: installed != null
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Chip(label: Text(l10n.lyricsStoreItemInstalled)),
-                          const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: () => widget.onOpenInstalled(
-                              installed.installId,
-                              installed.kind,
-                            ),
-                            child: Text(l10n.lyricsStoreItemOpenInstalled),
-                          ),
-                        ],
-                      )
-                    : FilledButton.icon(
-                        icon: pending
-                            ? const SizedBox.square(
-                                dimension: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(AppIcons.download),
-                        label: Text(l10n.lyricsStoreItemInstall),
-                        onPressed: pending
-                            ? null
-                            : () => PluginStoreActions(context).install(
-                                repoUrl: repoUrl,
-                                slug: entry.slug,
-                                name: entry.name,
-                                repoName: repoName,
-                                entry: entry,
+              PluginCard(
+                child: ListTile(
+                  leading: StoreRowIcon(row: row, repo: repo, size: 48),
+                  title: Text(entry.name, style: theme.textTheme.titleLarge),
+                  subtitle: Text('$author · v${entry.version}'),
+                  trailing: installed != null
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Chip(label: Text(l10n.lyricsStoreItemInstalled)),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              onPressed: () => widget.onOpenInstalled(
+                                installed.installId,
+                                installed.kind,
                               ),
-                      ),
+                              child: Text(l10n.lyricsStoreItemOpenInstalled),
+                            ),
+                          ],
+                        )
+                      : FilledButton.icon(
+                          icon: pending
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(AppIcons.download),
+                          label: Text(l10n.lyricsStoreItemInstall),
+                          onPressed: pending
+                              ? null
+                              : () => PluginStoreActions(context).install(
+                                  repoUrl: repoUrl,
+                                  slug: entry.slug,
+                                  name: entry.name,
+                                  repoName: repoName,
+                                  entry: entry,
+                                ),
+                        ),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -142,16 +154,24 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
                   ),
                 ),
               ),
-              if (entry.description.isNotEmpty)
-                _Field(
-                  label: l10n.lyricsStoreItemDescription,
-                  lines: [entry.description],
+              PluginCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < fields.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: theme.colorScheme.outlineVariant,
+                        ),
+                      fields[i],
+                    ],
+                  ],
                 ),
-              _Field(
-                label: l10n.lyricsStoreItemRepo,
-                lines: [repoName, repoUrl],
               ),
-              _Field(label: l10n.lyricsStoreItemHosts, lines: entry.hosts),
             ],
           ),
         ),

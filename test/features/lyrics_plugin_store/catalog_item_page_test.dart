@@ -1,6 +1,6 @@
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart' show Locale, Widget;
+import 'package:material_ui/material_ui.dart' show Card, Locale, Widget;
 import 'package:kanaru/core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import 'package:kanaru/features/lyrics_plugin_store/catalog_item_page.dart';
 
@@ -39,6 +39,7 @@ void main() {
   testWidgets('shows the details of the catalog entry', (tester) async {
     await pumpStore(tester, _Opened().page(), repos: [repo]);
     // The name is in the header card only; the app bar is generic.
+    expect(find.byType(Card), findsNWidgets(2));
     expect(find.text('Plain'), findsOneWidget);
     expect(find.text(en.pluginDetailsTitle), findsOneWidget);
     expect(find.text('hieu05 (self-declared) · v7'), findsOneWidget);

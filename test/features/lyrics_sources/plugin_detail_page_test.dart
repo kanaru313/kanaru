@@ -92,6 +92,7 @@ void main() {
       tester,
       testRecord(idA, name: 'Gem', pluginKind: PluginKind.translate),
     );
+    expect(find.byType(Card), findsNWidgets(3));
     expect(find.text('Gem'), findsOneWidget);
     expect(find.byType(Switch), findsNothing);
     expect(find.text(en.pluginSavedLyricsTitle), findsNothing);
@@ -144,6 +145,7 @@ void main() {
       tester,
     ) async {
       await openTranslate(tester);
+      expect(find.byType(Card), findsNWidgets(4));
       expect(find.text('Gem'), findsOneWidget);
       // The only switch is the Fast mode field; the header has none.
       expect(find.byType(Switch), findsOneWidget);

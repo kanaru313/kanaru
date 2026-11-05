@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_card.dart';
 import 'plugin_config_choice_fields.dart';
 import 'plugin_config_list_field.dart';
 import 'plugin_config_map_field.dart';
@@ -38,18 +39,29 @@ class PluginConfigForm extends ConsumerWidget {
       children: [
         PluginSectionTitle(context.l10n.pluginConfigTitle),
         if (state.hasError)
-          _LoadFailed(
-            onRetry: () => ref.invalidate(
-              pluginConfigStateProvider((
-                installId: record.installId,
-                updatedAt: record.updatedAt,
-              )),
+          PluginCard(
+            padding: const EdgeInsets.all(16),
+            child: _LoadFailed(
+              onRetry: () => ref.invalidate(
+                pluginConfigStateProvider((
+                  installId: record.installId,
+                  updatedAt: record.updatedAt,
+                )),
+              ),
             ),
           )
         else if (values == null)
-          const SizedBox(height: 56)
+          const PluginCard(child: SizedBox(height: 56))
         else
-          for (final field in record.config) _fieldFor(field, values),
+          PluginCard(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final field in record.config) _fieldFor(field, values),
+              ],
+            ),
+          ),
       ],
     );
   }
