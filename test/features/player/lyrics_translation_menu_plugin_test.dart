@@ -75,7 +75,8 @@ void main() {
     await tester.tap(find.byType(IconButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    if (openService) {
+    if (openService &&
+        find.widgetWithText(MenuItemButton, pluginName).evaluate().isEmpty) {
       await tester.tap(find.text('Service'));
       await tester.pumpAndSettle();
     }
@@ -186,6 +187,37 @@ void main() {
     expect(prefs().service, other);
     expect(prefs().noticeAcknowledged, {other});
   });
+
+  testWidgets(
+    'picking a plugin from null asks the notice and turns translation on; Cancel leaves it null',
+    (tester) async {
+      await pump(
+        tester,
+        settings: const TranslationPrefs(),
+      );
+
+      await tester.tap(radio('Gemini'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Lyrics will be sent to the plugin Gemini'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(prefs().service, isNull);
+      expect(prefs().show, isFalse);
+
+      await tester.tap(radio('Gemini'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(prefs().service, plugin);
+      expect(prefs().show, isTrue);
+      expect(prefs().noticeAcknowledged, {plugin});
+    },
+  );
 
   testWidgets('picking a plugin that needs config reports it', (tester) async {
     await pump(

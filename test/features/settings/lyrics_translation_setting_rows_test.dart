@@ -219,7 +219,11 @@ void main() {
         'picking a plugin ${needs ? 'that needs' : 'that does not need'} '
         'config ${needs ? 'reports it, and keeps it selected' : 'reports nothing'}',
         (tester) async {
-          final h = TranslationSettingsHarness();
+          final h = TranslationSettingsHarness(
+            settings: AppSettings(
+              translation: TranslationPrefs(noticeAcknowledged: {plugin}),
+            ),
+          );
           await h.pump(
             tester,
             rows,
@@ -235,6 +239,7 @@ void main() {
 
           final notice = h.container.read(pluginNeedsConfigNoticesProvider);
           expect(h.prefs.service, plugin);
+          expect(h.prefs.show, isTrue);
           if (needs) {
             expect(notice?.installId, id);
             expect(notice?.name, 'Gemini');
@@ -317,22 +322,77 @@ void main() {
       expect(h.prefs.noticeAcknowledged, {other, plugin});
     });
 
-    testWidgets('picking a plugin while translation is off needs no notice', (
-      tester,
-    ) async {
-      final h = TranslationSettingsHarness();
-      await h.pump(
-        tester,
-        rows,
-        overrides: withPlugins([translateRecord(id, name: 'Gemini')]),
-      );
+    testWidgets(
+      'switching plugins while translation is off needs no notice',
+      (tester) async {
+        final h = TranslationSettingsHarness(
+          settings: AppSettings(
+            translation: TranslationPrefs(service: other),
+          ),
+        );
+        await h.pump(
+          tester,
+          rows,
+          overrides: withPlugins([
+            translateRecord(id, name: 'Gemini'),
+            translateRecord(otherId, name: 'Other'),
+          ]),
+        );
 
-      await pickService(tester, 'Gemini');
+        await pickService(tester, 'Gemini');
 
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(h.prefs.service, plugin);
-      expect(h.prefs.show, isFalse);
-    });
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(h.prefs.service, plugin);
+        expect(h.prefs.show, isFalse);
+      },
+    );
+
+    testWidgets(
+      'picking a plugin from null asks the notice and turns translation on; Cancel leaves it null',
+      (tester) async {
+        final h = TranslationSettingsHarness();
+        await h.pump(
+          tester,
+          rows,
+          overrides: withPlugins([
+            translateRecord(id, name: 'Gemini', hosts: const ['gemini.example']),
+          ]),
+        );
+
+        await pickService(tester, 'Gemini');
+        expect(
+          find.text('Lyrics will be sent to the plugin Gemini'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        expect(h.prefs.service, isNull);
+        expect(h.prefs.show, isFalse);
+
+        await pickService(tester, 'Gemini');
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+        expect(h.prefs.service, plugin);
+        expect(h.prefs.show, isTrue);
+        expect(h.prefs.noticeAcknowledged, {plugin});
+      },
+    );
+
+    testWidgets(
+      '0 plugins: the service dropdown is disabled and shows Not selected',
+      (tester) async {
+        final h = TranslationSettingsHarness();
+        await h.pump(tester, rows, overrides: withPlugins(const []));
+
+        final picker = tester.widget<DropdownMenu<TranslationServiceId>>(
+          find.byType(DropdownMenu<TranslationServiceId>),
+        );
+        expect(picker.enabled, isFalse);
+        expect(picker.initialSelection, isNull);
+        expect(find.text('Not selected'), findsOneWidget);
+      },
+    );
 
     for (final (label, state) in [
       ('loading', const AsyncValue<List<LyricsPluginRecord>>.loading()),

@@ -104,18 +104,17 @@ void main() {
   void makeContainer() {
     sidecar = FakeLrcSidecarReader()
       ..byPath['/m/sung.flac'] = '[00:00.00]First words\n[00:05.00]More words';
-    container = ProviderContainer(
-      overrides: [
-        audioBackendProvider.overrideWithValue(FakeAudioBackend()),
-        embeddedLyricsReaderProvider.overrideWithValue(
-          FakeEmbeddedLyricsReader(),
-        ),
-        lrcSidecarReaderProvider.overrideWithValue(sidecar),
-        initialSettingsProvider.overrideWithValue(startSettings),
-        ...translatePluginOverrides(),
-        ...extraOverrides,
-      ],
-    );
+    final overridesList = [
+      audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+      embeddedLyricsReaderProvider.overrideWithValue(
+        FakeEmbeddedLyricsReader(),
+      ),
+      lrcSidecarReaderProvider.overrideWithValue(sidecar),
+      initialSettingsProvider.overrideWithValue(startSettings),
+      if (extraOverrides.isEmpty) ...translatePluginOverrides(),
+      ...extraOverrides,
+    ];
+    container = ProviderContainer(overrides: overridesList);
     addTearDown(container.dispose);
   }
 
@@ -734,6 +733,7 @@ void main() {
       // A fresh notifier each time: the button's provider is recreated when
       // the header is rebuilt.
       extraOverrides = [
+        ...translatePluginOverrides(),
         lyricsTranslationProvider.overrideWith2(
           (_) =>
               FakeTranslationController(TranslationOff(fakeTranslationInfo())),
@@ -748,6 +748,63 @@ void main() {
 
       expect(translation().show, isFalse);
     });
+
+    testWidgets(
+      '0 plugins and no service: T shows the no-plugin snackbar twice without losing focus',
+      (tester) async {
+        startSettings = const AppSettings();
+        extraOverrides = translatePluginOverrides(records: const []);
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(
+          find.text('Install a translation plugin to translate lyrics'),
+          findsOneWidget,
+        );
+        expect(find.text('Open plugin store'), findsOneWidget);
+        expect(translation().show, isFalse);
+
+        await pressT(tester);
+        expect(
+          find.text('Install a translation plugin to translate lyrics'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'plugins installed and no service: T shows the choose-service snackbar',
+      (tester) async {
+        startSettings = const AppSettings();
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(
+          find.text('Choose a translation service first'),
+          findsOneWidget,
+        );
+        expect(find.text('Choose service'), findsOneWidget);
+        expect(translation().show, isFalse);
+      },
+    );
+
+    testWidgets(
+      'while plugin records load: T shows no snackbar and changes nothing',
+      (tester) async {
+        startSettings = const AppSettings();
+        extraOverrides = [
+          translatePluginRecordsProvider.overrideWithValue(
+            const AsyncValue.loading(),
+          ),
+          lyricsPluginRecordsProvider.overrideWithValue(const []),
+        ];
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(find.byType(SnackBar), findsNothing);
+        expect(translation().show, isFalse);
+      },
+    );
   });
 
   group('the switch', () {

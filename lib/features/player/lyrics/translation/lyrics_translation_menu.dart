@@ -48,6 +48,7 @@ List<Widget> lyricsTranslationMenuItems(
   LyricsTranslationState state,
   String appLang, {
   FocusNode? firstItemFocus,
+  MenuController? serviceMenu,
 }) {
   final info = translationInfoOf(state);
   if (info == null) return const [];
@@ -61,14 +62,6 @@ List<Widget> lyricsTranslationMenuItems(
   final on =
       prefs.show && (effective == null || !needsNoticeFor(prefs, effective));
 
-  void toggle() {
-    if (on) {
-      settings.toggleLyricsTranslation();
-    } else if (effective != null) {
-      enableTranslationWithNotice(context, ref, effective);
-    }
-  }
-
   // The live translate plugins; names only. A stored plugin that is gone is
   // not shown as picked.
   final plugins = ref.watch(translationPluginInfosProvider);
@@ -78,6 +71,16 @@ List<Widget> lyricsTranslationMenuItems(
   final services = choices.services;
   final shown = choices.selected;
 
+  void toggle() {
+    if (on) {
+      settings.toggleLyricsTranslation();
+    } else if (effective != null) {
+      enableTranslationWithNotice(context, ref, effective);
+    } else if (choices.ready) {
+      serviceMenu?.open();
+    }
+  }
+
   // The router and container are taken now: Now Playing closes, and with it
   // the tree this menu hangs from.
   final router = GoRouter.maybeOf(context);
@@ -86,7 +89,8 @@ List<Widget> lyricsTranslationMenuItems(
 
   Future<void> pickService(TranslationServiceId service) async {
     final previous = prefs.service;
-    if (prefs.show && needsNoticeFor(prefs, service)) {
+    if (prefs.service == null ||
+        (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
@@ -181,6 +185,7 @@ List<Widget> lyricsTranslationMenuItems(
     ),
     menuRowSpaced(
       SubmenuButton(
+        controller: serviceMenu,
         style: menuRowStyle(),
         // A gap before the arrow.
         trailingIcon: Padding(

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_service.dart';
+import '../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../core/settings/settings_provider.dart';
 import '../../../../l10n/l10n.dart';
@@ -13,6 +14,7 @@ import '../../playback_controls.dart';
 import 'lyrics_translation_labels.dart';
 import 'lyrics_translation_menu.dart';
 import 'lyrics_translation_pill.dart';
+import 'translation_service_missing_snack_bar.dart';
 
 /// Size of the dot that marks a failed translation.
 const _dotSize = 8.0;
@@ -53,6 +55,7 @@ class LyricsTranslationButton extends ConsumerStatefulWidget {
 class _LyricsTranslationButtonState
     extends ConsumerState<LyricsTranslationButton> {
   final _menu = MenuController();
+  final _serviceMenu = MenuController();
   final _firstItem = FocusNode(debugLabel: 'Lyrics translation: first item');
   bool _open = false;
 
@@ -78,6 +81,7 @@ class _LyricsTranslationButtonState
     // Watched so a changed setting rebuilds the open menu.
     ref.watch(settingsProvider.select((s) => s.translation));
     final plugins = ref.watch(translationPluginInfosProvider);
+    final choices = ref.watch(translationServiceChoicesProvider);
     String serviceName(TranslationServiceId id) =>
         translationServiceName(l10n, plugins, id);
     final active = translationIsActive(state);
@@ -98,7 +102,13 @@ class _LyricsTranslationButtonState
         // The open menu holds the focus, so Escape closes it and not the
         // screen behind it.
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _menu.isOpen) _firstItem.requestFocus();
+          if (!mounted || !_menu.isOpen) return;
+          _firstItem.requestFocus();
+          if (choices.ready &&
+              choices.selected == null &&
+              choices.services.isNotEmpty) {
+            _serviceMenu.open();
+          }
         });
       },
       onClose: () => _setOpen(false),
@@ -108,10 +118,24 @@ class _LyricsTranslationButtonState
         state,
         appLang,
         firstItemFocus: _firstItem,
+        serviceMenu: _serviceMenu,
       ),
       builder: (context, controller, _) {
-        void toggle() =>
-            controller.isOpen ? controller.close() : controller.open();
+        void toggle() {
+          if (controller.isOpen) {
+            controller.close();
+          } else if (choices.ready &&
+              choices.services.isEmpty &&
+              choices.selected == null) {
+            showTranslationServiceMissingSnackBar(
+              context,
+              ref,
+              hasPlugins: false,
+            );
+          } else {
+            controller.open();
+          }
+        }
         final room = widget.maxLabelWidth ?? 0;
         if (state is TranslationReady &&
             room >= lyricsTranslationMinLabelWidth) {

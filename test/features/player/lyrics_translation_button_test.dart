@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
@@ -24,15 +25,22 @@ void main() {
     LyricsTranslationState state, {
     bool enabled = true,
     double? maxLabelWidth,
+    TranslationPrefs? settings,
+    List<Override>? pluginOverrides,
   }) async {
     menuEvents = [];
     container = ProviderContainer(
       overrides: [
         fakeTranslationOverride(fake = FakeTranslationController(state)),
-        ...translatePluginOverrides(),
+        ...(pluginOverrides ?? translatePluginOverrides()),
         initialSettingsProvider.overrideWithValue(
           AppSettings(
-            translation: TranslationPrefs(noticeAcknowledged: {_testPlugin}),
+            translation:
+                settings ??
+                TranslationPrefs(
+                  service: _testPlugin,
+                  noticeAcknowledged: {_testPlugin},
+                ),
           ),
         ),
       ],
@@ -125,6 +133,50 @@ void main() {
     expect(container.read(settingsProvider), before);
     expect(container.read(settingsProvider).translation.show, isFalse);
   });
+
+  testWidgets(
+    '0 plugins and no service: a tap shows the snackbar and keeps the menu closed',
+    (tester) async {
+      await pump(
+        tester,
+        TranslationOff(_info),
+        settings: const TranslationPrefs(),
+        pluginOverrides: translatePluginOverrides(records: const []),
+      );
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Install a translation plugin to translate lyrics'),
+        findsOneWidget,
+      );
+      expect(find.text('Open plugin store'), findsOneWidget);
+      expect(find.text('Show translation'), findsNothing);
+      expect(menuEvents, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'plugins installed and no service: a tap opens the menu with the service submenu open',
+    (tester) async {
+      await pump(
+        tester,
+        TranslationOff(_info),
+        settings: const TranslationPrefs(),
+      );
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Show translation'), findsOneWidget);
+      expect(
+        find.widgetWithText(MenuItemButton, 'Test Translate'),
+        findsOneWidget,
+      );
+      expect(menuEvents, [true]);
+    },
+  );
 
   testWidgets('reports the menu opening and closing', (tester) async {
     await pump(tester, TranslationOff(_info));

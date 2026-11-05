@@ -5150,6 +5150,22 @@
   "@settingsTranslationServicePluginHint": {
     "description": "Subtitle of the translation service row when a translate plugin is the selected service"
   },
+  "lyricsTranslationNeedsPlugin": "Install a translation plugin to translate lyrics",
+  "@lyricsTranslationNeedsPlugin": {
+    "description": "Snackbar shown when the user tries to translate lyrics with no translation plugin installed"
+  },
+  "lyricsTranslationOpenPluginStore": "Open plugin store",
+  "@lyricsTranslationOpenPluginStore": {
+    "description": "Action button on the snackbar when no translation plugin is installed"
+  },
+  "lyricsTranslationChooseServiceFirst": "Choose a translation service first",
+  "@lyricsTranslationChooseServiceFirst": {
+    "description": "Snackbar shown when pressing T to turn translation on while no translation service is selected"
+  },
+  "lyricsTranslationChooseService": "Choose service",
+  "@lyricsTranslationChooseService": {
+    "description": "Action button on the snackbar when no translation service is selected"
+  },
   "playlistEditTitle": "Edit playlist",
   "@playlistEditTitle": {
     "description": "Title of the dialog that edits a playlist's name and description"

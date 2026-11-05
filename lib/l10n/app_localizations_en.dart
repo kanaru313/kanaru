@@ -5170,6 +5170,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
 
   @override
+  String get lyricsTranslationNeedsPlugin =>
+      'Install a translation plugin to translate lyrics';
+
+  @override
+  String get lyricsTranslationOpenPluginStore => 'Open plugin store';
+
+  @override
+  String get lyricsTranslationChooseServiceFirst =>
+      'Choose a translation service first';
+
+  @override
+  String get lyricsTranslationChooseService => 'Choose service';
+
+  @override
   String get playlistEditTitle => 'Edit playlist';
 
   @override

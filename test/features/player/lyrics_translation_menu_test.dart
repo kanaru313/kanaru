@@ -128,7 +128,7 @@ void main() {
   });
 
   testWidgets(
-    'without a service selected, shows Not selected and no checkmark',
+    'without a service selected, shows Not selected, opens the service submenu, and has no checkmark',
     (tester) async {
       await pump(
         tester,
@@ -137,8 +137,6 @@ void main() {
       );
 
       expect(find.text('Not selected'), findsOneWidget);
-
-      await openServiceSubmenu(tester);
       expect(
         find.descendant(
           of: serviceRadio(_pluginName),
@@ -146,6 +144,26 @@ void main() {
         ),
         findsNothing,
       );
+    },
+  );
+
+  testWidgets(
+    'without a service selected, the switch row opens the service submenu',
+    (tester) async {
+      await pump(
+        tester,
+        TranslationOff(fakeTranslationInfo()),
+        settings: const TranslationPrefs(),
+      );
+      // Close the auto-opened service submenu first by tapping Service.
+      await openServiceSubmenu(tester);
+      expect(serviceRadio(_pluginName), findsNothing);
+
+      await tester.tap(find.text('Show translation'));
+      await tester.pumpAndSettle();
+
+      expect(serviceRadio(_pluginName), findsOneWidget);
+      expect(prefs().show, isFalse);
     },
   );
 
@@ -562,7 +580,7 @@ void main() {
     testWidgets(
       'an uninstalled plugin: the switch turns it off without asking',
       (tester) async {
-        final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+        final plugin = TranslationServiceId.tryParse('plugin-gone00000001')!;
         await pump(
           tester,
           off,
@@ -571,11 +589,6 @@ void main() {
             service: plugin,
             noticeAcknowledged: {plugin},
           ),
-          overrides: [
-            translatePluginRecordsProvider.overrideWithValue(
-              const AsyncValue.data([]),
-            ),
-          ],
         );
 
         await tester.tap(find.text('Show translation'));

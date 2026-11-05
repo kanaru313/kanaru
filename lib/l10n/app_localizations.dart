@@ -7532,6 +7532,30 @@ abstract class AppLocalizations {
   /// **'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.'**
   String get settingsTranslationServicePluginHint;
 
+  /// Snackbar shown when the user tries to translate lyrics with no translation plugin installed
+  ///
+  /// In en, this message translates to:
+  /// **'Install a translation plugin to translate lyrics'**
+  String get lyricsTranslationNeedsPlugin;
+
+  /// Action button on the snackbar when no translation plugin is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Open plugin store'**
+  String get lyricsTranslationOpenPluginStore;
+
+  /// Snackbar shown when pressing T to turn translation on while no translation service is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a translation service first'**
+  String get lyricsTranslationChooseServiceFirst;
+
+  /// Action button on the snackbar when no translation service is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Choose service'**
+  String get lyricsTranslationChooseService;
+
   /// Title of the dialog that edits a playlist's name and description
   ///
   /// In en, this message translates to:

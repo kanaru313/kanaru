@@ -4856,6 +4856,20 @@ class AppLocalizationsVi extends AppLocalizations {
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
 
   @override
+  String get lyricsTranslationNeedsPlugin =>
+      'Cần cài plugin dịch để dịch lời bài hát';
+
+  @override
+  String get lyricsTranslationOpenPluginStore => 'Mở kho plugin';
+
+  @override
+  String get lyricsTranslationChooseServiceFirst =>
+      'Hãy chọn dịch vụ dịch trước';
+
+  @override
+  String get lyricsTranslationChooseService => 'Chọn dịch vụ';
+
+  @override
   String get playlistEditTitle => 'Sửa danh sách phát';
 
   @override

@@ -34,9 +34,11 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     TranslationServiceId service,
   ) async {
     final prefs = ref.read(settingsProvider).translation;
-    // While translation is on, a service never agreed to needs the notice
-    // first; Cancel keeps the old service.
-    if (prefs.show && needsNoticeFor(prefs, service)) {
+    // Picking from null, or switching while translation is on to a service
+    // never agreed to, asks the notice if needed and turns translation on;
+    // Cancel leaves the settings unchanged.
+    if (prefs.service == null ||
+        (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       ref
