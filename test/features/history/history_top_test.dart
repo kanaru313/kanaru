@@ -115,7 +115,7 @@ void main() {
 
   setUp(() => h = historyHarness());
 
-  group('cap', () {
+  group('limit', () {
     Future<void> openWith(WidgetTester tester, int songs) async {
       await openHistory(
         tester,
@@ -125,24 +125,17 @@ void main() {
       );
     }
 
-    historyTestWidgets('exactly the limit shows no note', (tester) async {
-      await openWith(tester, 500);
+    historyTestWidgets('more songs than the limit queries at most the limit', (
+      tester,
+    ) async {
+      await openWith(tester, 101);
+
       await tester.drag(find.byType(MostPlayedList), const Offset(0, -100000));
       await tester.pumpAndSettle();
 
       expect(find.byType(MostPlayedRowTile).last, findsOneWidget);
-      expect(find.text('Showing first 500'), findsNothing);
-    });
-
-    historyTestWidgets('one more than the limit shows the note', (
-      tester,
-    ) async {
-      await openWith(tester, 501);
-
-      // The line is the last of the list.
-      await tester.drag(find.byType(MostPlayedList), const Offset(0, -100000));
-      await tester.pumpAndSettle();
-      expect(find.text('Showing first 500'), findsOneWidget);
+      expect(find.text('Showing first 100'), findsNothing);
+      expect(find.text('100 songs'), findsOneWidget);
     });
   });
 

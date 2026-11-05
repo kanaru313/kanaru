@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/history_queries.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/features/history/history_range.dart';
+import 'package:kanaru/features/history/history_range_bar.dart';
 import 'package:kanaru/features/history/history_routes.dart';
 import 'package:kanaru/features/history/most_played_list.dart';
 import 'package:kanaru/features/history/most_played_row_tile.dart';
@@ -377,5 +379,153 @@ void main() {
       expect(find.byType(MostPlayedRowTile), findsNothing);
       expect(find.text('No songs match “zzz”'), findsOneWidget);
     });
+  });
+
+  group('top limit', () {
+    Future<void> openWithMany(WidgetTester tester, int count) => openHistory(
+      tester,
+      h,
+      tracks: [for (var i = 0; i < count; i++) song('s$i')],
+      plays: [for (var i = 0; i < count; i++) ('s$i', _at(10, 20, i % 24))],
+      page: mostPlayedPath,
+    );
+
+    historyTestWidgets('default renders with Top 100 label', (tester) async {
+      await open(tester);
+      expect(find.text('Top 100'), findsOneWidget);
+    });
+
+    historyTestWidgets(
+      'tapping Top 10 limits rows, updates count, and playback queues only 10',
+      (tester) async {
+        await openWithMany(tester, 30);
+
+        expect(find.text('Top 100'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(TracksToolbar),
+            matching: find.text('30 songs'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byType(MostPlayedRowTile), findsWidgets);
+
+        // Open dropdown and pick Top 10.
+        await tester.tap(find.text('Top 100'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Top 5'), findsOneWidget);
+        expect(find.text('Top 10'), findsOneWidget);
+        expect(find.text('Top 50'), findsOneWidget);
+        expect(find.text('Custom...'), findsOneWidget);
+
+        await tester.tap(find.text('Top 10'));
+        await settleHistory(tester);
+
+        expect(find.text('Top 10'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(TracksToolbar),
+            matching: find.text('10 songs'),
+          ),
+          findsOneWidget,
+        );
+
+        // No cap note at bottom.
+        await tester.drag(find.byType(MostPlayedList), const Offset(0, -100000));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Showing first'), findsNothing);
+
+        // Shuffle queues only the 10 shown songs.
+        await tester.tap(inPane(find.byTooltip('Shuffle')));
+        await tester.pump();
+        expect(_queue(h).length, 10);
+      },
+    );
+
+    historyTestWidgets(
+      'custom dialog sets custom limit 25 and clamps 2000 to 1000',
+      (tester) async {
+        await openWithMany(tester, 30);
+
+        // Open dropdown and pick Custom...
+        await tester.tap(find.text('Top 100'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Custom...'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Custom ranking limit'), findsOneWidget);
+        final field = find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        );
+        expect(field, findsOneWidget);
+
+        // Entering 25 limits rows to 25 and updates label to Top 25.
+        await tester.enterText(field, '25');
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+        await settleHistory(tester);
+
+        expect(find.text('Top 25'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(TracksToolbar),
+            matching: find.text('25 songs'),
+          ),
+          findsOneWidget,
+        );
+
+        // Entering 2000 clamps to 1000.
+        await tester.tap(find.text('Top 25'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Custom...'));
+        await tester.pumpAndSettle();
+
+        final dialogField = find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        );
+        await tester.enterText(dialogField, '2000');
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+        await settleHistory(tester);
+
+        expect(find.text('Top 1000'), findsOneWidget);
+      },
+    );
+
+    historyTestWidgets(
+      'at 400 px width a long range label does not overlap dropdown',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SizedBox(
+                width: 400,
+                child: HistoryRangeBar(
+                  state: const HistoryRangeState(
+                    preset: HistoryRangePreset.days30,
+                  ),
+                  now: historyTestNow,
+                  canPickCustom: true,
+                  topLimit: 100,
+                  onPreset: (_) {},
+                  onCustom: () {},
+                  onShift: (_) {},
+                  onTopLimit: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byType(HistoryTopLimitDropdown), findsOneWidget);
+        expect(find.text('Top 100'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
