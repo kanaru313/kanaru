@@ -1,5 +1,4 @@
 import '../../../../core/lyrics/lyrics.dart';
-import '../../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../core/lyrics/online/playing_lyrics_status.dart';
@@ -29,10 +28,7 @@ String lyricsSourceLabel(
         lyricsSourceNameText(l10n, names, origin.providerId),
       );
     case LyricsFound():
-      final detail = lyricsSourceDetail(l10n, status, names);
-      return source.effective == LyricsChoice.auto
-          ? l10n.lyricsSourceAuto(detail)
-          : detail;
+      return lyricsSourceDetail(l10n, status, names);
     case LyricsNone():
       return l10n.lyricsSourceNone;
   }

@@ -39,7 +39,7 @@ void main() {
 
   OnlineLyricsActions actions() =>
       rig.container.read(onlineLyricsActionsProvider);
-  Future<LyricsChoice> choice() async => parseLyricsChoice(
+  Future<LyricsChoice?> choice() async => parseLyricsChoice(
     (await rig.h.db.watchLyricsPin(target.trackKey).first)?.mode,
   );
 
@@ -50,7 +50,7 @@ void main() {
     await rig.settle();
   }
 
-  test('saving a pick writes the file and goes back to automatic', () async {
+  test('saving a pick writes the file and keeps the pick', () async {
     await show();
     await actions().pick(target, picked);
     rig.sidecar.byPath['/m/a.flac'] = _body.syncedLrc!;
@@ -60,10 +60,29 @@ void main() {
     expect(outcome, (result: LrcWriteResult.written, kept: null));
     expect(rig.writer.writes.single.$1, '/m/a.flac');
     expect(rig.writer.replaces, [false]);
-    expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
+    final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+    expect(pin!.mode, 'online');
+    expect(pin.remoteId, 'pick');
+    await rig.until(() => foundWithOrigin(hasOrigin: true));
   });
 
-  test('saving an automatic match also clears the choice', () async {
+  test('saving twice reports identical, and rejecting drops the pin', () async {
+    await show();
+    await actions().pick(target, picked);
+    rig.sidecar.byPath['/m/a.flac'] = _body.syncedLrc!;
+    await actions().save(target, origin);
+    await rig.until(() => rig.status is LyricsFound);
+    rig.writer.result = LrcWriteResult.identical;
+
+    final again = await actions().save(target, origin);
+    expect(again, (result: LrcWriteResult.identical, kept: null));
+
+    await actions().reject(target, origin, (rig.status as LyricsFound).lyrics);
+    expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
+    await rig.until(() => foundWithOrigin(hasOrigin: false));
+  });
+
+  test('saving an automatic match leaves no choice', () async {
     rig = await createStatusRig();
     rig.fake.lookupResult = fakeCandidate(remoteId: 'auto', body: _body);
     rig.watch();
@@ -78,10 +97,10 @@ void main() {
     expect(outcome.result, LrcWriteResult.written);
     expect(outcome.kept, isNull);
     expect(rig.writer.replaces, [true]);
-    expect(await choice(), LyricsChoice.auto);
+    expect(await choice(), isNull);
   });
 
-  test('identical clears the choice as well', () async {
+  test('identical keeps the pick as well', () async {
     await show();
     await actions().pick(target, picked);
     rig.writer.result = LrcWriteResult.identical;
@@ -90,7 +109,7 @@ void main() {
     final outcome = await actions().save(target, origin);
 
     expect(outcome, (result: LrcWriteResult.identical, kept: null));
-    expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
+    expect(await choice(), LyricsChoice.online);
   });
 
   test('a refusal keeps the pick and reports the result', () async {
@@ -186,7 +205,7 @@ void main() {
     expect(rig.writer.writes, isEmpty);
   });
 
-  test('tag lyrics win when they are preferred: the choice stays', () async {
+  test('tag lyrics preferred: a pinned save gives no reason', () async {
     rig = await createStatusRig(autoFetch: false);
     rig.container
         .read(settingsProvider.notifier)
@@ -205,25 +224,37 @@ void main() {
 
     final outcome = await actions().save(target, origin);
 
-    expect(outcome, (
-      result: LrcWriteResult.written,
-      kept: LyricsChoiceKept.tagPreferred,
-    ));
+    // The pick is the saved record and keeps showing: no reason to give.
+    expect(outcome, (result: LrcWriteResult.written, kept: null));
     expect(await choice(), LyricsChoice.online);
   });
 
-  test('another lyrics file being read keeps the choice', () async {
-    await show();
-    await actions().pick(target, picked);
+  test('another file read after saving an automatic match says so', () async {
+    rig = await createStatusRig();
+    rig.fake.lookupResult = fakeCandidate(remoteId: 'auto', body: _body);
+    rig.watch();
+    await rig.play([song]);
+    await rig.until(() => rig.status is LyricsFound);
+    final auto = (rig.status as LyricsFound).origin!;
     // The file Kanaru reads holds other words than the saved ones.
     rig.sidecar.byPath['/m/a.flac'] = '[00:01.00] different';
 
-    final outcome = await actions().save(target, origin);
+    final outcome = await actions().save(target, auto);
 
     expect(outcome, (
       result: LrcWriteResult.written,
       kept: LyricsChoiceKept.otherFile,
     ));
+  });
+
+  test('another file being read: a pinned save gives no reason', () async {
+    await show();
+    await actions().pick(target, picked);
+    rig.sidecar.byPath['/m/a.flac'] = '[00:01.00] different';
+
+    final outcome = await actions().save(target, origin);
+
+    expect(outcome, (result: LrcWriteResult.written, kept: null));
     expect(await choice(), LyricsChoice.online);
   });
 
@@ -263,6 +294,8 @@ void main() {
 
       expect(outcome, (result: LrcWriteResult.written, kept: null));
       expect(File('${tmp.path}/library/a.lrc').existsSync(), isTrue);
+      // The pick keeps showing; choosing the file reads the saved .lrc.
+      await actions().choose(realTarget, LyricsChoice.local);
       await rig.until(() => foundWithOrigin(hasOrigin: false));
       final after = lyricsContentHashOf((rig.status as LyricsFound).lyrics);
       expect(after, before);

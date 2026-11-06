@@ -168,7 +168,7 @@ void main() {
       final bare = (await settled(lyricsPinProvider('/b.flac')))!;
 
       expect(pick.hasPick, isTrue);
-      expect(pick.choice, LyricsChoice.auto);
+      expect(pick.choice, isNull);
       expect(pick.lyrics!.lines.single.text, 'pinned');
       expect(bare.hasPick, isFalse);
       expect(bare.lyrics, isNull);

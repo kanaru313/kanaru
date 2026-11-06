@@ -32,17 +32,19 @@ String? storedLyricsText({String? synced, String? plain}) =>
 class LyricsPinEntry {
   const LyricsPinEntry({
     required this.pinnedAt,
-    this.choice = LyricsChoice.auto,
+    this.choice,
     this.providerId,
     this.remoteId,
     this.lyrics,
     this.instrumental = false,
     this.remoteDurationMs,
+    this.offFromLocal = false,
   });
 
   factory LyricsPinEntry.fromRow(LyricsPinRow row) => LyricsPinEntry(
     pinnedAt: row.pinnedAt,
     choice: parseLyricsChoice(row.mode),
+    offFromLocal: row.mode == offFromLocalMode,
     providerId: row.providerId,
     remoteId: row.remoteId,
     lyrics: parseStoredLyrics(synced: row.syncedText, plain: row.plainText),
@@ -51,7 +53,10 @@ class LyricsPinEntry {
   );
 
   final int pinnedAt;
-  final LyricsChoice choice;
+  final LyricsChoice? choice;
+
+  /// Off, remembering a `local` choice that turning on restores.
+  final bool offFromLocal;
   final String? providerId;
   final String? remoteId;
 

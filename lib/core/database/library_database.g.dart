@@ -6541,7 +6541,8 @@ class LyricsPinRow extends DataClass implements Insertable<LyricsPinRow> {
   final String trackKey;
   final String? providerId;
 
-  /// The lyrics choice: `local`, `online` or `off`; null = auto.
+  /// The lyrics choice: `local`, `online`, `off` or `off:local`; null = no
+  /// choice.
   final String? mode;
 
   /// Null = no pick stored.

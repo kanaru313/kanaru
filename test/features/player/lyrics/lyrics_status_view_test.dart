@@ -56,6 +56,10 @@ class _RecordingActions extends OnlineLyricsActions {
       log.add('choose ${choice.name} ${target.trackKey}');
 
   @override
+  Future<void> turnOn(LyricsTarget target) async =>
+      log.add('turnOn ${target.trackKey}');
+
+  @override
   Future<void> retry(LyricsTarget target) async =>
       log.add('retry ${target.trackKey}');
 }
@@ -313,9 +317,7 @@ void main() {
       expect(find.textContaining('busy'), findsNothing);
     });
 
-    statusTest('off: the title, and Turn back on returns to automatic', (
-      tester,
-    ) async {
+    statusTest('off: the title, and Turn back on turns it on', (tester) async {
       await pumpStatus(tester, const LyricsNone(_uri, LyricsNoneReason.off));
       expect(find.text('Lyrics are off for this song'), findsOneWidget);
       expect(findOnline, findsNothing);
@@ -323,10 +325,10 @@ void main() {
 
       await tester.tap(find.text('Turn back on'));
       await tester.pump();
-      expect(calls, ['choose auto $_uri']);
+      expect(calls, ['turnOn $_uri']);
     });
 
-    statusTest('off with a stored pick: Turn back on restores that pick', (
+    statusTest('off with a stored pick: Turn back on turns it on', (
       tester,
     ) async {
       await pumpStatus(
@@ -336,10 +338,10 @@ void main() {
       );
       await tester.tap(find.text('Turn back on'));
       await tester.pump();
-      expect(calls, ['choose online $_uri']);
+      expect(calls, ['turnOn $_uri']);
     });
 
-    statusTest('off with a pin but no pick: Turn back on goes to automatic', (
+    statusTest('off with a pin but no pick: Turn back on turns it on', (
       tester,
     ) async {
       await pumpStatus(
@@ -349,7 +351,7 @@ void main() {
       );
       await tester.tap(find.text('Turn back on'));
       await tester.pump();
-      expect(calls, ['choose auto $_uri']);
+      expect(calls, ['turnOn $_uri']);
     });
 
     statusTest('paused: the resume time follows an extended pause', (

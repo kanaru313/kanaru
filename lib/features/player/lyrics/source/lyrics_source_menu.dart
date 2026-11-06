@@ -5,7 +5,6 @@ import '../../../../core/lyrics/lyrics.dart';
 import '../../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../../core/lyrics/online/lyrics_source_names.dart';
-import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../core/player/local_path_of.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/format_duration.dart';
@@ -39,7 +38,6 @@ List<Widget> lyricsSourceMenuItems(
   if (source == null || runner.target == null) return const [];
   final l10n = context.l10n;
   final status = source.status;
-  final found = status is LyricsFound ? status : null;
   final origin = runner.origin;
   final pin = source.pin;
   final hasPick = pin?.hasPick ?? false;
@@ -51,13 +49,7 @@ List<Widget> lyricsSourceMenuItems(
   VoidCallback? when(bool enabled, VoidCallback action) =>
       enabled ? action : null;
 
-  final autoText = found != null && effective == LyricsChoice.auto
-      ? l10n.lyricsSourceAutoNow(lyricsSourceDetail(l10n, found, names))
-      // No source names: the list grows with every plugin, and the
-      // Sources page shows their order.
-      : providers.isEmpty
-      ? l10n.lyricsSourceAutoHintLocalOnly
-      : l10n.lyricsSourceAutoHint;
+  final showLocal = source.hasLocal || source.chosen == LyricsChoice.local;
   final pickKind = pin?.lyrics?.synced;
   final pickLength = pin?.remoteDurationMs;
   final pickSubtitle = [
@@ -66,6 +58,14 @@ List<Widget> lyricsSourceMenuItems(
         ? null
         : formatDuration(Duration(milliseconds: pickLength))),
   ];
+
+  // The first item that shows takes [firstItemFocus].
+  var focusPending = firstItemFocus;
+  FocusNode? firstFocus() {
+    final node = focusPending;
+    focusPending = null;
+    return node;
+  }
 
   // With lyrics off the choices stay, dimmed: pressing one turns them on.
   Widget choice(Widget item) =>
@@ -87,20 +87,11 @@ List<Widget> lyricsSourceMenuItems(
         ),
       ),
     ),
-    choice(
-      lyricsSourceMenuItem(
-        context,
-        focusNode: firstItemFocus,
-        title: l10n.lyricsSourceAutoItem,
-        subtitle: autoText,
-        checked: effective == LyricsChoice.auto,
-        onPressed: when(canChoose, () => runner.choose(LyricsChoice.auto)),
-      ),
-    ),
-    if (source.hasLocal || source.chosen == LyricsChoice.local)
+    if (showLocal)
       choice(
         lyricsSourceMenuItem(
           context,
+          focusNode: firstFocus(),
           title: l10n.lyricsSourceLocalItem,
           subtitle: !source.hasLocal
               ? l10n.lyricsSourceLocalMissing
@@ -126,6 +117,7 @@ List<Widget> lyricsSourceMenuItems(
         };
         return lyricsSourceMenuItem(
           context,
+          focusNode: firstFocus(),
           title: l10n.lyricsSourceOnlineVersion,
           subtitleWidget: lyricsSourcePickSubtitle(
             context,
@@ -134,7 +126,8 @@ List<Widget> lyricsSourceMenuItems(
             detail: detail,
           ),
           tooltip: lyricsSourceNameText(l10n, names, pin?.providerId ?? ''),
-          checked: effective == LyricsChoice.online,
+          checked:
+              effective == LyricsChoice.online && (origin?.pinned ?? false),
           onPressed: when(canChoose, () => runner.choose(LyricsChoice.online)),
         );
       }()),
@@ -143,6 +136,7 @@ List<Widget> lyricsSourceMenuItems(
     if (origin != null && !origin.pinned)
       lyricsSourceMenuItem(
         context,
+        focusNode: firstFocus(),
         icon: AppIcons.lyricsKeep,
         title: l10n.lyricsSourceKeep,
         onPressed: when(canChoose, runner.keep),
@@ -150,12 +144,14 @@ List<Widget> lyricsSourceMenuItems(
     if (providers.isNotEmpty && canChoose)
       lyricsSourceMenuItem(
         context,
+        focusNode: firstFocus(),
         icon: AppIcons.search,
         title: l10n.lyricsFindOnline,
         onPressed: runner.findOnline,
       ),
     lyricsSourceMenuItem(
       context,
+      focusNode: firstFocus(),
       icon: AppIcons.lyricsSave,
       title: l10n.lyricsSourceSave,
       onPressed: when(canChoose && origin != null, runner.save),
@@ -172,9 +168,8 @@ List<Widget> lyricsSourceMenuItems(
       context,
       title: l10n.lyricsSourceSwitch,
       on: effective != LyricsChoice.off,
-      // Turning it back on goes to Automatic, whatever was chosen before.
       onChanged: canChoose
-          ? (on) => runner.choose(on ? LyricsChoice.auto : LyricsChoice.off)
+          ? (on) => on ? runner.turnOn() : runner.choose(LyricsChoice.off)
           : null,
     ),
   ];

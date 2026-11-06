@@ -27,7 +27,7 @@ void main() {
   String label(
     AppLocalizations l10n,
     PlayingLyricsStatus status, {
-    LyricsChoice effective = LyricsChoice.auto,
+    LyricsChoice? effective,
   }) => lyricsSourceLabel(
     l10n,
     fakeResolution(status, effective: effective),
@@ -61,29 +61,20 @@ void main() {
         );
       });
 
-      test(
-        'the song\'s own lyrics, with "Auto" only when nothing was chosen',
-        () {
-          final file = LyricsFound(_uri, _lyrics());
-          expect(
-            label(l10n, file),
-            pick('Auto · .lrc file', 'Tự động · File .lrc'),
-          );
-          expect(
-            label(l10n, file, effective: LyricsChoice.local),
-            pick('.lrc file', 'File .lrc'),
-          );
-          final tag = LyricsFound(_uri, _lyrics(source: LyricsSource.embedded));
-          expect(
-            label(l10n, tag),
-            pick('Auto · Tag lyrics', 'Tự động · Lời trong tag'),
-          );
-          expect(
-            label(l10n, tag, effective: LyricsChoice.local),
-            pick('Tag lyrics', 'Lời trong tag'),
-          );
-        },
-      );
+      test('the song\'s own lyrics are named plainly, chosen or not', () {
+        final file = LyricsFound(_uri, _lyrics());
+        expect(label(l10n, file), pick('.lrc file', 'File .lrc'));
+        expect(
+          label(l10n, file, effective: LyricsChoice.local),
+          pick('.lrc file', 'File .lrc'),
+        );
+        final tag = LyricsFound(_uri, _lyrics(source: LyricsSource.embedded));
+        expect(label(l10n, tag), pick('Tag lyrics', 'Lời trong tag'));
+        expect(
+          label(l10n, tag, effective: LyricsChoice.local),
+          pick('Tag lyrics', 'Lời trong tag'),
+        );
+      });
 
       test(
         'online lyrics: chosen names the kind, automatic only the service',

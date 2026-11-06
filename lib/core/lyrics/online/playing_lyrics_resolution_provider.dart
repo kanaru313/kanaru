@@ -75,7 +75,7 @@ class PlayingLyricsResolutionNotifier
         local.isLoading ||
         song == null ||
         song.trackKey != trackKey) {
-      return _result(LyricsReading(uri), pin.value, LyricsChoice.auto, false);
+      return _result(LyricsReading(uri), pin.value, null, false);
     }
 
     final localLyrics = _ownLyrics(uri, local);
@@ -98,10 +98,10 @@ class PlayingLyricsResolutionNotifier
   LyricsSourceResolution _result(
     PlayingLyricsStatus status,
     LyricsPinEntry? pin,
-    LyricsChoice effective,
+    LyricsChoice? effective,
     bool hasLocal,
   ) => (
-    chosen: pin?.choice ?? LyricsChoice.auto,
+    chosen: pin?.choice,
     effective: effective,
     pin: pin,
     hasLocal: hasLocal,
@@ -118,7 +118,7 @@ class PlayingLyricsResolutionNotifier
     AsyncValue<PlayingLyrics?> local,
   ) {
     if (local.isLoading) {
-      return _result(LyricsReading(uri), null, LyricsChoice.auto, false);
+      return _result(LyricsReading(uri), null, null, false);
     }
     final own = _ownLyrics(uri, local);
     return _result(
@@ -126,7 +126,7 @@ class PlayingLyricsResolutionNotifier
           ? LyricsFound(uri, own)
           : LyricsNone(uri, LyricsNoneReason.noLyrics),
       null,
-      LyricsChoice.auto,
+      null,
       own != null,
     );
   }

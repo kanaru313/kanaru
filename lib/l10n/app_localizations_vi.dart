@@ -3484,21 +3484,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsSourceAutoItem => 'Tự động';
-
-  @override
-  String lyricsSourceAutoNow(String label) {
-    return 'Đang dùng: $label';
-  }
-
-  @override
-  String get lyricsSourceAutoHintLocalOnly => 'Chỉ file hoặc tag';
-
-  @override
-  String get lyricsSourceAutoHint =>
-      'File hoặc tag trước, sau đó các nguồn trực tuyến';
-
-  @override
   String get lyricsSourceLocalItem => 'Lời trong file';
 
   @override

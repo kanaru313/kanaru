@@ -24,10 +24,11 @@ import 'package:drift/drift.dart';
 //    removed. There is no CHECK constraint, so a newer build's rows do not
 //    break an older one.
 // 6. `remote_id` is null exactly when `status` is `not_found`. In
-//    `lyrics_pins`, `mode` is the song's lyrics choice: `local`, `online` or
-//    `off`. Null or an unknown value (from a newer build) reads as auto and
-//    the row is kept. `online` implies a pick is present. A null `remote_id`
-//    means no pick is stored. A pin carries its own text and never reads
+//    `lyrics_pins`, `mode` is the song's lyrics choice: `local`, `online`,
+//    `off` or `off:local` (off, remembering `local`). Null or an unknown
+//    value (from a newer build) reads as no choice and the row is kept.
+//    `online` implies a pick is present. A null `remote_id` means no pick
+//    is stored. A pin carries its own text and never reads
 //    `online_lyrics`.
 // 7. "Clear online lyrics" empties all three tables. It never touches `.lrc`
 //    files.
@@ -70,7 +71,8 @@ class LyricsPins extends Table {
 
   TextColumn get providerId => text().nullable()();
 
-  /// The lyrics choice: `local`, `online` or `off`; null = auto.
+  /// The lyrics choice: `local`, `online`, `off` or `off:local`; null = no
+  /// choice.
   TextColumn get mode => text().nullable()();
 
   /// Null = no pick stored.

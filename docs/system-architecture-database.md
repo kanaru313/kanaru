@@ -10,7 +10,7 @@ Invariants (`online_lyrics_tables.dart`):
 
 - A rejected match is never stored as found for its key again, and neither is a record whose text hash equals a rejected `content_hash`; lookups drop both before ranking.
 - `remote_id` NULL means no pick is stored. A `local` or `off` choice may have no pick.
-- `mode` `online` implies a pick is present. A null or unknown `mode` (from a newer build) reads as auto and the row is kept.
+- `mode` `online` implies a pick is present. `mode` is `local`, `online`, `off` or `off:local` (off, remembering `local`). A null or unknown `mode` (from a newer build) reads as no choice and the row is kept; a null `mode` with a pick shows the pick.
 - Resolving which lyrics to show never writes; only user actions and lookups do.
 
 Queries: `online_lyrics_queries.dart` (cache rows, stats, clear) and `lyrics_choice_queries.dart` (choice, pick, reject, stored text). Stats (`watchOnlineLyricsStats`) are `found`, `notFound`, `picks` (pins with a pick), `choices` (`local` or `off` pins without a pick), `rejects` and `bytes`; there is no skip count.
@@ -157,7 +157,7 @@ erDiagram
     }
     LYRICS_PINS {
         text track_key PK "local path, else uri"
-        text mode "local, online or off; NULL = auto"
+        text mode "local, online, off or off:local; NULL = no choice"
         text provider_id "NULL when no pick"
         text remote_id "NULL when no pick"
         text synced_text

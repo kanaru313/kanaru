@@ -64,27 +64,27 @@ void main() {
       expect(rig.requests, 0);
     });
 
-    test('automatic keeps the pick, and online brings it back', () async {
+    test('local keeps the pick, and online brings it back', () async {
       await show();
       await actions().pick(target, picked);
       await rig.until(() => found().origin != null);
 
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.local);
       await rig.until(() => found().origin == null);
 
       final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
-      expect(pin!.mode, isNull);
+      expect(pin!.mode, 'local');
       expect(pin.remoteId, 'pick');
-      expect(source().chosen, LyricsChoice.auto);
-      expect(source().effective, LyricsChoice.auto);
+      expect(source().chosen, LyricsChoice.local);
+      expect(source().effective, LyricsChoice.local);
       expect(source().pin!.hasPick, isTrue);
       expect(source().hasLocal, isTrue);
 
-      // Choosing automatic again writes nothing.
+      // Choosing local again writes nothing.
       final writes = <Object?>[];
       final sub = rig.h.db.tableUpdates().listen(writes.add);
       addTearDown(sub.cancel);
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.local);
       await rig.settle();
       expect(writes, isEmpty);
 
@@ -94,7 +94,7 @@ void main() {
       expect(source().chosen, LyricsChoice.online);
     });
 
-    test('online without a pick does nothing', () async {
+    test('online without a pick and without a row writes nothing', () async {
       await show();
 
       await actions().choose(target, LyricsChoice.online);
@@ -104,16 +104,35 @@ void main() {
       expect(found().origin, isNull);
     });
 
-    test('online on a row that has only a choice does nothing', () async {
+    test('online on a row with only a choice deletes the row', () async {
       await show();
-      await actions().choose(target, LyricsChoice.off);
-      await rig.until(() => rig.status is LyricsNone);
+      await actions().choose(target, LyricsChoice.local);
+      await rig.until(() => source().chosen == LyricsChoice.local);
 
       await actions().choose(target, LyricsChoice.online);
       await rig.settle();
 
-      final pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+      expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
+      expect(source().chosen, isNull);
+    });
+
+    test('off after local stores off:local, else off', () async {
+      await show();
+      await actions().choose(target, LyricsChoice.off);
+      await rig.until(() => rig.status is LyricsNone);
+      var pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
       expect(pin!.mode, 'off');
+
+      await actions().turnOn(target);
+      await rig.settle();
+      await actions().choose(target, LyricsChoice.local);
+      await rig.settle();
+      await actions().choose(target, LyricsChoice.off);
+      await rig.until(() => rig.status is LyricsNone);
+      pin = await rig.h.db.watchLyricsPin(target.trackKey).first;
+      expect(pin!.mode, 'off:local');
+      expect(source().chosen, LyricsChoice.off);
+      expect(source().pin!.offFromLocal, isTrue);
     });
 
     test('off shows no lyrics and asks for nothing', () async {
@@ -133,13 +152,13 @@ void main() {
       expect(source().effective, LyricsChoice.off);
       expect(rig.requests, requests);
 
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().turnOn(target);
       await rig.until(() => rig.status is LyricsFound);
       expect(rig.requests, requests);
     });
 
     test(
-      'local without local lyrics resolves as auto and writes nothing',
+      'local without local lyrics resolves to no choice and writes nothing',
       () async {
         await show(local: false);
         await actions().pick(target, picked);
@@ -156,7 +175,7 @@ void main() {
 
         expect(none().reason, LyricsNoneReason.noLyrics);
         expect(source().chosen, LyricsChoice.local);
-        expect(source().effective, LyricsChoice.auto);
+        expect(source().effective, isNull);
         expect(source().hasLocal, isFalse);
         expect(await rig.h.db.watchLyricsPin(target.trackKey).first, before);
         expect(writes, isEmpty);
@@ -164,14 +183,14 @@ void main() {
       },
     );
 
-    test('automatic and local read the song\'s lyrics again', () async {
+    test('online and local read the song\'s lyrics again', () async {
       await show(local: false);
       await actions().choose(target, LyricsChoice.local);
       await rig.settle();
       expect(none().reason, LyricsNoneReason.noLyrics);
 
       rig.sidecar.byPath['/m/a.flac'] = _lrc;
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.online);
       await rig.until(() => rig.status is LyricsFound);
 
       expect(found().lyrics.lines.single.text, 'local');
@@ -201,10 +220,10 @@ void main() {
       expect(writes, isEmpty);
       expect(found().lyrics.lines.single.text, 'local');
 
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.online);
       await rig.settle();
       writes.clear();
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.online);
       expect(writes, isEmpty);
       expect(seen.every((v) => v!.hasLocal), isTrue);
       expect(lyrics, isNotNull);
@@ -233,25 +252,25 @@ void main() {
       expect(writes, isEmpty);
     });
 
-    test('automatic with no row reads a new .lrc', () async {
+    test('online with no row reads a new .lrc', () async {
       await show(local: false);
       expect(none().reason, LyricsNoneReason.noLyrics);
 
       rig.sidecar.byPath['/m/a.flac'] = _lrc;
-      await actions().choose(target, LyricsChoice.auto);
+      await actions().choose(target, LyricsChoice.online);
       await rig.until(() => rig.status is LyricsFound);
 
       expect(found().lyrics.lines.single.text, 'local');
       expect(await rig.h.db.watchLyricsPin(target.trackKey).first, isNull);
     });
 
-    for (final (name, from, to) in [
-      ('local', LyricsChoice.auto, LyricsChoice.local),
-      ('automatic', LyricsChoice.local, LyricsChoice.auto),
+    for (final (name, from, to) in <(String, LyricsChoice?, LyricsChoice)>[
+      ('local', null, LyricsChoice.local),
+      ('online', LyricsChoice.local, LyricsChoice.online),
     ]) {
       test('the source never flips while choosing $name', () async {
         await show();
-        if (from != LyricsChoice.auto) {
+        if (from != null) {
           await actions().choose(target, from);
           await rig.settle();
         }
@@ -266,20 +285,23 @@ void main() {
         await actions().choose(target, to);
         await rig.settle();
 
-        expect(values.last.chosen, to);
+        // Online without a pick drops the row: no choice, local lyrics win.
+        expect(values.last.chosen, to == LyricsChoice.local ? to : null);
         // After the first value (before the choice), every value is already
         // the final one: no momentary fallback while the lyrics are re-read.
         for (final v in values.skip(1)) {
-          expect(v.effective, to);
+          expect(v.effective, LyricsChoice.local);
           expect(v.hasLocal, isTrue);
           expect(v.status, isA<LyricsFound>());
         }
       });
     }
 
-    test('an unknown stored mode reads as automatic', () async {
-      expect(parseLyricsChoice('later'), LyricsChoice.auto);
-      expect(parseLyricsChoice(null), LyricsChoice.auto);
+    test('an unknown stored mode reads as no choice', () async {
+      expect(parseLyricsChoice('later'), isNull);
+      expect(parseLyricsChoice(null), isNull);
+      expect(parseLyricsChoice('off:local'), LyricsChoice.off);
+      expect(parseLyricsChoice('off:later'), LyricsChoice.off);
     });
   });
 
@@ -307,9 +329,9 @@ void main() {
 
       final first = values.firstWhere((v) => v?.status.uri == '/m/b.flac')!;
       expect(first.status, isA<LyricsReading>());
-      expect(first.chosen, LyricsChoice.auto);
+      expect(first.chosen, isNull);
       expect(first.hasLocal, isFalse);
-      expect(first.effective, LyricsChoice.auto);
+      expect(first.effective, isNull);
       rig.sidecar.gates['/m/b.flac']!.complete();
     });
   });
