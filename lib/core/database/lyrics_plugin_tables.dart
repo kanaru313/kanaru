@@ -25,20 +25,22 @@ import 'package:drift/drift.dart';
 // 3. `(repo_url, repo_slug)` is unique among records with a `repo_url`; file
 //    installs have none. Removed records count, so a revive finds its record.
 // 4. `package_dir` is the relative directory of the current package. A new
-//    version switches `package_dir`, `version`, `hosts`, `config_schema` and
-//    `updated_at` in one statement; config values, storage and preferences
-//    are kept. Directories no record points to are swept at startup.
+//    version switches `package_dir`, `version`, `hosts`, `config_schema`,
+//    `translate_spec` and `updated_at` in one statement; config values,
+//    storage and preferences are kept. Directories no record points to are swept at startup.
 // 5. `updated_at` changes on every install, revive and package switch. A
 //    script run remembers it and writes its storage back only while it still
 //    matches (`setLyricsPluginStorage`), so a run that outlived an uninstall
 //    or an update writes nothing.
-// 6. `hosts` and `config_schema` are JSON text the plugin layer owns; this
-//    layer stores them as given. Secret config values are never stored here.
+// 6. `hosts`, `config_schema` and `translate_spec` are JSON text the plugin
+//    layer owns; this layer stores them as given. Secret config values are
+//    never stored here.
 // 7. `lyrics_plugin_data` holds one row per live plugin: non-secret config
 //    values and the script's localStorage, both JSON objects (default `{}`),
 //    each at most 64 KiB. No source list or lyrics stream watches the table,
-//    so a config or storage write never rebuilds them. The row goes with the
-//    plugin on uninstall.
+//    so a config or storage write never rebuilds them. Only the config forms
+//    watch `config_values`, through a distinct stream of that text. The row
+//    goes with the plugin on uninstall.
 // 8. `lyrics_source_prefs` has one row per lyrics source the user changed or
 //    ordered. A source with no row is enabled and goes after the rows. Rows
 //    for ids with no plugin record are ignored. Translate plugins never get a
@@ -48,8 +50,10 @@ import 'package:drift/drift.dart';
 //    `last_fetched_at` is the last successful fetch.
 // 10. No foreign keys and no CHECK constraints: readers skip values they do
 //    not know, so a newer build's rows do not break an older one.
-// 11. `kind` is `lyrics` or `translate`, set at first install and never
-//    changed by an update; only a revive of a removed record may write it.
+// 11. `kind` is `lyrics`, `translate` or `ai-translate`, set at first
+//    install. An update may change it only within the translation family
+//    (`translate` and `ai-translate`); lyrics to translation is refused.
+//    A revive of a removed record may write any kind.
 //    A revive that changes the kind keeps the old saved lyrics, pins and
 //    rejects under the id: they stay named and go only with the global
 //    clear. Lists skip kinds they do not know.
@@ -79,6 +83,11 @@ class LyricsPlugins extends Table {
   /// JSON text of the config form the package declares.
   TextColumn get configSchema => text()();
 
+  /// JSON of the `translate` block (`PluginTranslateSpec.toJson`) for
+  /// translation plugins; null for lyrics plugins, and for a translation
+  /// plugin installed before the column existed until the startup backfill.
+  TextColumn get translateSpec => text().nullable()();
+
   /// Relative directory of the current package.
   TextColumn get packageDir => text()();
 
@@ -96,8 +105,8 @@ class LyricsPlugins extends Table {
 
   IntColumn get updatedAt => integer()();
 
-  /// `lyrics` or `translate`; see invariant 11. Rows from before the column
-  /// existed read as `lyrics` through the SQL default.
+  /// `lyrics`, `translate` or `ai-translate`; see invariant 11. Rows from
+  /// before the column existed read as `lyrics` through the SQL default.
   TextColumn get kind => text().withDefault(const Constant('lyrics'))();
 
   /// Set while the record is only a name for saved lyrics.

@@ -17,6 +17,7 @@ import 'plugin_storage_writeback.dart';
 import 'store/lyrics_plugin_dirs.dart';
 import 'store/plugin_config_required.dart';
 import 'store/plugin_config_schema_codec.dart';
+import 'store/plugin_config_values.dart' show combinedInstruction;
 
 final _log = Logger('lyrics_plugins');
 
@@ -51,7 +52,8 @@ class PluginRunOutcome {
       result = null,
       stopped = false,
       requests = const [],
-      config = const {};
+      config = const {},
+      logConfig = const {};
 
   const PluginRunOutcome.setupFailed({
     required LyricsPluginRow this.row,
@@ -62,7 +64,8 @@ class PluginRunOutcome {
        result = null,
        stopped = false,
        requests = const [],
-       config = const {};
+       config = const {},
+       logConfig = const {};
 
   const PluginRunOutcome.needsConfig({required LyricsPluginRow this.row})
     : state = PluginRunState.needsConfig,
@@ -72,7 +75,8 @@ class PluginRunOutcome {
       result = null,
       stopped = false,
       requests = const [],
-      config = const {};
+      config = const {},
+      logConfig = const {};
 
   const PluginRunOutcome.finished({
     required LyricsPluginRow this.row,
@@ -81,6 +85,7 @@ class PluginRunOutcome {
     required this.stopped,
     required this.requests,
     required this.config,
+    required this.logConfig,
   }) : state = PluginRunState.finished,
        reason = '',
        secret = null;
@@ -111,6 +116,10 @@ class PluginRunOutcome {
   /// The config the run saw (secrets included): only for hiding values in
   /// the log.
   final PluginConfigMap config;
+
+  /// [config] plus the values the script was given on top of it (see
+  /// `PluginRunCore.run`'s `configAppend`): what the log hides values by.
+  final PluginConfigMap logConfig;
 }
 
 /// The part of a script run that does not depend on what the script is for:
@@ -160,7 +169,10 @@ class PluginRunCore {
 
   /// Runs the script [entry] picks from the package of [installId], which
   /// must be of [kind]. [input] is the script's argument; [http] answers its
-  /// `fetch` calls and is made once the record is read. [timeout] is the
+  /// `fetch` calls and is made once the record is read. [configAppend] adds
+  /// text to string config values in the request only, after the required
+  /// check (see `combinedInstruction`); the run's own config, which the
+  /// outcome reports and the log hides values by, is not changed. [timeout] is the
   /// script's wall time (null: the runtime default); [deadline] replaces
   /// [outerDeadline] for this run.
   Future<PluginRunOutcome> run({
@@ -169,6 +181,7 @@ class PluginRunCore {
     required String? Function(LoadedPluginPackage package) entry,
     required Object? input,
     required LyricsHttp Function(LyricsPluginRow row) http,
+    Map<String, String> configAppend = const {},
     Duration? timeout,
     Duration? deadline,
   }) async {
@@ -185,6 +198,7 @@ class PluginRunCore {
         timeout,
         deadline ?? outerDeadline,
         cancel,
+        configAppend,
       );
     } finally {
       unregister();
@@ -200,9 +214,10 @@ class PluginRunCore {
     Duration? timeout,
     Duration outer,
     PluginCancel cancel,
+    Map<String, String> configAppend,
   ) async {
     final row = await db.lyricsPluginById(installId);
-    if (row == null || row.removedAt != null || row.kind != kind.value) {
+    if (row == null || row.removedAt != null || !kind.accepts(row.kind)) {
       return const PluginRunOutcome.skipped();
     }
     PluginRunOutcome failedSetup(
@@ -258,6 +273,13 @@ class PluginRunCore {
       }
       return PluginRunOutcome.needsConfig(row: row);
     }
+    // What the script reads; the outcome keeps the plain config for the
+    // empty-secret check and lists the joined values for the log to hide.
+    final sent = {
+      ...config,
+      for (final e in configAppend.entries)
+        e.key: combinedInstruction(config[e.key] as String? ?? '', e.value),
+    };
     final bridge = PluginFetchBridge(makeHttp(row));
     final left = outer - clock.elapsed;
     final (:result, :timedOut) = await runWithDeadline(
@@ -267,7 +289,7 @@ class PluginRunCore {
         entry: entryName,
         inputJson: jsonEncode(input),
         timeout: timeout,
-        config: config,
+        config: sent,
         storageJson: setup.storageJson,
       ),
       fetch: bridge.call,
@@ -286,6 +308,10 @@ class PluginRunCore {
       stopped: stopped,
       requests: bridge.requests,
       config: config,
+      logConfig: {
+        ...config,
+        for (final e in configAppend.keys) '$e#sent': sent[e]!,
+      },
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/plugins/package/plugin_manifest.dart';
+import '../../../core/lyrics/plugins/package/plugin_manifest.dart';
 
 /// The title of a config field; a required one ends with a `*`.
 class PluginConfigLabel extends StatelessWidget {

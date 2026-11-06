@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:kanaru/core/lyrics/plugins/package/plugin_number_text.dart';
+import '../../../core/lyrics/plugins/package/plugin_number_text.dart';
 
 /// A string that tells two payloads apart, for "is this already saved".
 /// Never throws: a value JSON cannot hold (NaN, Infinity) falls back to its

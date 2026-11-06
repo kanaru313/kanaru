@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../shared/settings_routes.dart';
 import '../../../../../shared/translation_plugin_routes.dart';
 import '../../../now_playing/now_playing_open_provider.dart';
@@ -47,4 +48,19 @@ void openTranslationStore(BuildContext context) {
   closeTranslationModalStack(context);
   container.read(nowPlayingOpenProvider.notifier).close();
   router?.go(translationPluginsRoute);
+}
+
+/// Closes the translation modal stack that contains [context] (the parent
+/// modal's context, so a child modal above it closes too), closes Now
+/// Playing, and navigates to the page of the translation plugin [service].
+///
+/// The router and provider container are captured before popping so navigation
+/// still runs after the modal routes leave the tree.
+void openTranslationPlugin(BuildContext context, TranslationServiceId service) {
+  if (!context.mounted) return;
+  final router = GoRouter.maybeOf(context);
+  final container = ProviderScope.containerOf(context, listen: false);
+  closeTranslationModalStack(context);
+  container.read(nowPlayingOpenProvider.notifier).close();
+  router?.go(translationPluginRoute(service.value));
 }

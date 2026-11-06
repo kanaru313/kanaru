@@ -41,12 +41,26 @@ enum LyricsPluginSourceKind {
 /// What a plugin does (`lyrics_plugins.kind`).
 enum PluginKind {
   lyrics('lyrics'),
-  translate('translate');
+  translate('translate'),
+  aiTranslate('ai-translate');
 
   const PluginKind(this.value);
 
   /// The text stored in the column.
   final String value;
+
+  /// Whether this kind belongs to the translation family.
+  bool get isTranslation => this == translate || this == aiTranslate;
+
+  /// Whether a record stored with [stored] kind satisfies a request expecting
+  /// this kind.
+  ///
+  /// Matches exact kinds, or allows either translation kind to fulfill
+  /// translation requests.
+  bool accepts(String stored) {
+    final k = fromValue(stored);
+    return k == this || (isTranslation && (k?.isTranslation ?? false));
+  }
 
   /// The kind stored as [text]; null for text this build does not know.
   static PluginKind? fromValue(String text) {
@@ -69,6 +83,7 @@ class LyricsPluginSpec {
     required this.apiVersion,
     required this.hosts,
     required this.configSchema,
+    this.translateSpec,
     required this.packageDir,
     this.sourceKind = LyricsPluginSourceKind.file,
     required this.sourceName,
@@ -76,8 +91,8 @@ class LyricsPluginSpec {
     this.repoSlug,
   });
 
-  /// Written by an insert and a revive only; a package switch keeps the
-  /// stored kind.
+  /// Written by an insert, a revive and a package switch (the caller only
+  /// switches within the translation family).
   final PluginKind kind;
   final String name;
   final String? author;
@@ -90,6 +105,9 @@ class LyricsPluginSpec {
 
   /// JSON text, stored as given.
   final String configSchema;
+
+  /// JSON of the `translate` block; null for lyrics plugins.
+  final String? translateSpec;
   final String packageDir;
   final LyricsPluginSourceKind sourceKind;
   final String sourceName;

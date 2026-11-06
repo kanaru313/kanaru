@@ -547,6 +547,24 @@ void main() {
       expect(manifest.config.single.subtitle, 'one\nper line');
     });
 
+    test(
+      'an ai-translate manifest is accepted with PluginKind.aiTranslate',
+      () {
+        final manifest = parse(
+          translateManifest((j) {
+            (j['metadata'] as Map)['type'] = 'ai-translate';
+            j['config'] = aiTuneConfig();
+          }),
+        );
+        expect(manifest.kind, PluginKind.aiTranslate);
+        expect(manifest.translateScript, 'translate.js');
+        expect(manifest.searchScript, isNull);
+        expect(manifest.lyricsScript, isNull);
+        expect(manifest.entryScripts, ['translate.js']);
+        expect(manifest.translate!.languages, ['vi', 'en']);
+      },
+    );
+
     test('a lyrics manifest still has no translate block', () {
       final manifest = parse(validManifest());
       expect(manifest.kind, PluginKind.lyrics);

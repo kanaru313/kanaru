@@ -43,6 +43,17 @@ void main() {
     expect(find.textContaining(en.pluginUninstallKeepLyrics(2)), findsNothing);
   });
 
+  testWidgets('an ai-translate plugin says its translations stay', (
+    tester,
+  ) async {
+    await open(tester, PluginKind.aiTranslate);
+    expect(
+      find.textContaining(en.pluginUninstallKeepTranslations),
+      findsOneWidget,
+    );
+    expect(find.textContaining(en.pluginUninstallKeepLrc), findsNothing);
+  });
+
   testWidgets('a lyrics plugin keeps the lyrics lines', (tester) async {
     await open(tester, PluginKind.lyrics);
     expect(

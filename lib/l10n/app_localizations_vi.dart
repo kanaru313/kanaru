@@ -3009,6 +3009,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguageFrom(String language, String service) {
+    return 'Lời bài hát đã là $language (theo $service)';
+  }
+
+  @override
   String get lyricsTranslationLoading => 'Đang dịch…';
 
   @override
@@ -3946,6 +3951,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreKindTranslate => 'Dịch';
+
+  @override
+  String get lyricsStoreKindAiTranslate => 'Dịch AI';
 
   @override
   String get lyricsStoreFromFile => 'Từ file';
@@ -5127,6 +5135,31 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pluginConfigMapValueLabel => 'Giá trị';
 
   @override
+  String get pluginConfigCustomModelTag => 'Tự thêm';
+
+  @override
+  String get pluginConfigRemoveCustomModel => 'Xóa model này';
+
+  @override
+  String get pluginConfigAddModel => 'Thêm model…';
+
+  @override
+  String get pluginConfigAddModelTitle => 'Thêm model';
+
+  @override
+  String get pluginConfigAddModelName => 'Tên model, đúng như máy chủ yêu cầu';
+
+  @override
+  String get pluginConfigAddModelNote =>
+      'Ghi chú (tùy chọn), ví dụ: Ollama máy nhà';
+
+  @override
+  String get pluginConfigAddAndSelect => 'Thêm và chọn';
+
+  @override
+  String get pluginConfigNoModel => 'Chưa có model';
+
+  @override
   String pluginNeedsConfigTitle(String name) {
     return '$name cần được cấu hình';
   }
@@ -5391,4 +5424,63 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsSourceButtonHint =>
       'Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L';
+
+  @override
+  String get lyricsTranslationModalTitle => 'Dịch lời';
+
+  @override
+  String get translationAiBadge => 'AI';
+
+  @override
+  String get translationAiTuneRow => 'Tinh chỉnh AI';
+
+  @override
+  String get translationAiModel => 'Model';
+
+  @override
+  String get translationAiStyle => 'Phong cách';
+
+  @override
+  String get translationSongInstruction => 'Lời dặn cho bài này';
+
+  @override
+  String translationAiTuneHint(String name) {
+    return 'Do plugin $name khai báo. Lựa chọn được nhớ cho plugin này.';
+  }
+
+  @override
+  String get translationAiTuneDone => 'Xong';
+
+  @override
+  String translationAiOptionGone(String value) {
+    return '$value (không còn hỗ trợ)';
+  }
+
+  @override
+  String get translationAiNotChosen => 'Chưa chọn';
+
+  @override
+  String get translationAiNoModels => 'Chưa có model nào';
+
+  @override
+  String get translationAiOpenPluginSettings => 'Mở cài đặt plugin';
+
+  @override
+  String translationAiTuneChanged(String changes) {
+    return 'Khác bản đang hiện: $changes';
+  }
+
+  @override
+  String get translationAiEditedNote => 'Đổi lời dặn';
+
+  @override
+  String get translationAiTuneLater => 'Để sau';
+
+  @override
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  ) {
+    return 'Dịch bởi $service · $style';
+  }
 }

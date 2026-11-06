@@ -119,7 +119,7 @@ final translatePluginRecordsProvider =
           .whenData(
             (input) => List.unmodifiable([
               for (final record in input.records)
-                if (!record.isRemoved && record.kind == PluginKind.translate)
+                if (!record.isRemoved && record.kind?.isTranslation == true)
                   record,
             ]),
           );

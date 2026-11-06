@@ -22,6 +22,7 @@ Map<String, Object?> pluginConfigToJson(List<PluginConfigField> fields) => {
       if (field.subtitle != null) 'subtitle': field.subtitle,
       if (field.required) 'required': true,
       if (field.formatName.isNotEmpty) 'format': field.formatName,
+      if (field.custom) 'custom': true,
       if (field.mode == PluginConfigMode.select)
         'options': [
           for (final o in field.options)

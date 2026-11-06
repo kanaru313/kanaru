@@ -1,0 +1,6 @@
+{
+  "metadata": {"apiVersion": 1, "type": "ai-translate", "name": "QA AI Custom Model", "version": 1, "hosts": ["example.invalid"], "author": "QA", "description": "Offline manual-check plugin, no network."},
+  "script": {"translate": "translate.js"},
+  "translate": {"languages": ["vi", "en", "ja", "ko", "zh-Hans"]},
+  "config": {"model":{"title":"Model","mode":"select","custom":true,"required":true,"options":[]},"style":{"title":"Style","mode":"select","options":[{"value":"natural","title":"Natural","subtitle":"Reads like native lyrics"},{"value":"literal","title":"Literal","subtitle":"Close to the source words"},{"value":"poetic","title":"Poetic","subtitle":"Keeps rhythm and imagery"}]},"customInstruction":{"title":"Custom instruction","mode":"input"}}
+}

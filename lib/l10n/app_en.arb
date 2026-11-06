@@ -2864,6 +2864,18 @@
       }
     }
   },
+  "lyricsTranslationSameLanguageFrom": "Lyrics are already in {language} (per {service})",
+  "@lyricsTranslationSameLanguageFrom": {
+    "description": "Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "service": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsTranslationLoading": "Translating…",
   "@lyricsTranslationLoading": {
     "description": "Footer of the lyrics translation menu while a translation is being fetched"
@@ -3881,6 +3893,10 @@
   "lyricsStoreKindTranslate": "Translate",
   "@lyricsStoreKindTranslate": {
     "description": "Translation plugin kind: Type filter value and tag on store rows"
+  },
+  "lyricsStoreKindAiTranslate": "AI translate",
+  "@lyricsStoreKindAiTranslate": {
+    "description": "AI translation plugin kind: Type filter value and tag on store rows"
   },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
@@ -5410,6 +5426,14 @@
   "pluginConfigRemoveItem": "Remove",
   "pluginConfigMapKeyLabel": "Name",
   "pluginConfigMapValueLabel": "Value",
+  "pluginConfigCustomModelTag": "Custom",
+  "pluginConfigRemoveCustomModel": "Remove this model",
+  "pluginConfigAddModel": "Add model…",
+  "pluginConfigAddModelTitle": "Add model",
+  "pluginConfigAddModelName": "Model name, exactly as the server expects",
+  "pluginConfigAddModelNote": "Note (optional), e.g. Ollama at home",
+  "pluginConfigAddAndSelect": "Add and select",
+  "pluginConfigNoModel": "No model yet",
   "pluginNeedsConfigTitle": "{name} needs configuration",
   "@pluginNeedsConfigTitle": {
     "description": "Snack bar: a plugin has an empty required setting and was not run",
@@ -5756,5 +5780,92 @@
   "lyricsSourceButtonHint": "Click: lyrics options · Right-click: turn on/off · L",
   "@lyricsSourceButtonHint": {
     "description": "Second line of the lyrics button tooltip: what a click and a right click do"
+  },
+  "lyricsTranslationModalTitle": "Lyrics translation",
+  "@lyricsTranslationModalTitle": {
+    "description": "Title of the lyrics translation modal header (next to the settings and close buttons)"
+  },
+  "translationAiBadge": "AI",
+  "@translationAiBadge": {
+    "description": "Small badge on a translation service that translates with an AI model"
+  },
+  "translationAiTuneRow": "AI tuning",
+  "@translationAiTuneRow": {
+    "description": "Title of the row (and of the child modal it opens) that tunes the AI translation service: model, style and a note for the song"
+  },
+  "translationAiModel": "Model",
+  "@translationAiModel": {
+    "description": "Label of the AI model choice in the AI tuning modal"
+  },
+  "translationAiStyle": "Style",
+  "@translationAiStyle": {
+    "description": "Label of the translation style choice in the AI tuning modal"
+  },
+  "translationSongInstruction": "Note for this song",
+  "@translationSongInstruction": {
+    "description": "Label of the box in the AI tuning modal where the user writes a note that only applies to the current song's translation"
+  },
+  "translationAiTuneHint": "Set by the plugin {name}. Saved for this plugin.",
+  "@translationAiTuneHint": {
+    "description": "Note under the AI tuning modal's fields",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiTuneDone": "Done",
+  "@translationAiTuneDone": {
+    "description": "Button that closes the AI tuning modal"
+  },
+  "translationAiOptionGone": "{value} (no longer supported)",
+  "@translationAiOptionGone": {
+    "description": "Shown for a saved model or style that the plugin no longer offers",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiNotChosen": "Not chosen",
+  "@translationAiNotChosen": {
+    "description": "Shown in the AI tuning modal when a model or style has no value"
+  },
+  "translationAiNoModels": "No models yet",
+  "@translationAiNoModels": {
+    "description": "Shown in the AI tuning modal when the plugin has no model to pick yet"
+  },
+  "translationAiOpenPluginSettings": "Open plugin settings",
+  "@translationAiOpenPluginSettings": {
+    "description": "Button in the AI tuning modal that opens the translation plugin's settings page"
+  },
+  "translationAiTuneChanged": "Differs from the version shown: {changes}",
+  "@translationAiTuneChanged": {
+    "description": "Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiEditedNote": "Changed the note",
+  "@translationAiEditedNote": {
+    "description": "Part of the 'differs from the version shown' line: the note for the AI changed"
+  },
+  "translationAiTuneLater": "Later",
+  "@translationAiTuneLater": {
+    "description": "Button of the AI tuning modal that closes it without translating again"
+  },
+  "lyricsTranslationModalTranslatedByWithStyle": "Translated by {service} · {style}",
+  "@lyricsTranslationModalTranslatedByWithStyle": {
+    "description": "Credit line under the preview card naming the AI service and the style the translation was made with",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      },
+      "style": {
+        "type": "String"
+      }
+    }
   }
 }

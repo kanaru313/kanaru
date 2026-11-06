@@ -41,6 +41,7 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
   required TranslationTargetInfo info,
   required TranslationServiceId service,
   Set<TranslationServiceId> knownPlugins = const {},
+  Set<TranslationServiceId> livePlugins = const {},
   required Lyrics lyrics,
   required List<CachedTranslation> rows,
   required TranslationJobStatus? job,
@@ -53,7 +54,7 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
     ],
     service,
     knownPlugins: knownPlugins,
-    target: target,
+    livePlugins: livePlugins,
   );
   TranslationLoading loading() => TranslationLoading(info, service);
   LyricsTranslationState fromRow(
@@ -62,7 +63,13 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
     bool refreshing = false,
     TranslationFailureKind? failure,
   }) => isSameLanguage(row.sourceLang, target)
-      ? TranslationSameLanguage(info, row.service)
+      ? TranslationSameLanguage(
+          info,
+          row.service,
+          fromOtherService: other,
+          refreshing: refreshing,
+          retranslateFailure: failure,
+        )
       : TranslationReady(
           info,
           row.service,
@@ -71,6 +78,7 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
           other,
           refreshing: refreshing,
           retranslateFailure: failure,
+          settingsJson: row.settingsJson,
         );
 
   final current = picked.current;
@@ -86,7 +94,9 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
   }
   final saved = job?.saved;
   if (saved != null &&
-      (current == null || linesFingerprint(current.lines) != saved)) {
+      (current == null ||
+          translationFingerprint(current.lines, current.settingsJson) !=
+              saved)) {
     // The job saved a row the stream has not shown yet; what is shown now is
     // the row it replaced, or the other service's. If the row was deleted
     // since, the request is made again.

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/library_startup.dart';
-import '../database/lyrics_plugin_spec.dart';
 import '../database/lyric_translation_queries.dart';
 import '../lyrics/lyrics.dart';
 import '../lyrics/online/lyrics_target.dart';
@@ -110,14 +109,20 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     if (!rows.hasValue) return TranslationLoading(info, service);
     final job = ref.watch(translationJobsProvider.select((m) => m[key]));
 
+    final records = ref.watch(lyricsPluginRecordsProvider);
     final derived = deriveTranslation(
       info: info,
       service: service,
       lyrics: lyrics,
       rows: rows.requireValue,
       knownPlugins: {
-        for (final r in ref.watch(lyricsPluginRecordsProvider))
-          if (r.kind == PluginKind.translate)
+        for (final r in records)
+          if (r.kind?.isTranslation == true)
+            ?TranslationServiceId.tryParse(r.installId),
+      },
+      livePlugins: {
+        for (final r in records)
+          if (r.kind?.isTranslation == true && !r.isRemoved)
             ?TranslationServiceId.tryParse(r.installId),
       },
       job: job,

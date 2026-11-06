@@ -16,8 +16,9 @@ import 'package:kanaru/l10n/app_localizations.dart';
 TranslationTargetInfo fakeTranslationInfo({
   String? songOverride,
   String defaultCode = 'en',
+  String hash = 'hash',
 }) => TranslationTargetInfo(
-  hash: 'hash',
+  hash: hash,
   effective: translationLanguageFor(songOverride ?? defaultCode)!,
   songOverride: songOverride,
   defaultTarget: translationLanguageFor(defaultCode)!,

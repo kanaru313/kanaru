@@ -99,6 +99,19 @@ void main() {
     expect(find.text(en.pluginStorageTitle), findsOneWidget);
   });
 
+  testWidgets('an ai-translate plugin opens like a translate plugin', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      testRecord(idA, name: 'Gem', pluginKind: PluginKind.aiTranslate),
+    );
+    expect(find.text('Gem'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
+    expect(find.text(en.pluginSavedLyricsTitle), findsNothing);
+    expect(find.text(en.pluginStorageTitle), findsOneWidget);
+  });
+
   group('a translate plugin at its own route', () {
     final translate = testRecord(
       idA,

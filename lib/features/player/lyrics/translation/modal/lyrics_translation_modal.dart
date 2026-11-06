@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../l10n/l10n.dart';
@@ -12,6 +13,7 @@ import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/layered_modal/layered_modal_route.dart';
 import '../lyrics_translation_labels.dart';
 import 'translation_action_bar.dart';
+import 'translation_ai_tune_changes.dart';
 import 'translation_background_retranslate.dart';
 import 'translation_language_row.dart';
 import 'translation_modal_header.dart';
@@ -75,6 +77,9 @@ class _LyricsTranslationModalState
     extends ConsumerState<LyricsTranslationModal> {
   bool _closing = false;
 
+  // The lyrics hash the modal opened on; another song closes the stack.
+  String? _openedHash;
+
   void _scheduleCloseStack() {
     if (_closing) return;
     _closing = true;
@@ -96,34 +101,65 @@ class _LyricsTranslationModalState
   }
 
   Widget? _buildActionBar(BuildContext context, LyricsTranslationState state) {
-    if (state case TranslationReady(
-      :final service,
-      fromOtherService: true,
-      refreshing: false,
-      retranslateFailure: null,
-    )) {
-      final selected = ref.watch(
-        translationServiceChoicesProvider.select((c) => c.selected),
-      );
-      if (selected == null) return null;
-      final l10n = context.l10n;
-      final plugins = ref.watch(translationPluginInfosProvider);
-      final shownName = translationServiceName(l10n, plugins, service);
-      final selectedName = translationServiceName(l10n, plugins, selected);
-      return TranslationActionBar(
-        text: l10n.lyricsTranslationModalShowingOther(shownName),
-        actionLabel: l10n.lyricsTranslationModalTranslateWith(selectedName),
-        onPressed: _retranslate,
-      );
+    final service = switch (state) {
+      TranslationReady(
+        :final service,
+        fromOtherService: true,
+        refreshing: false,
+        retranslateFailure: null,
+      ) ||
+      TranslationSameLanguage(
+        :final service,
+        fromOtherService: true,
+        refreshing: false,
+        retranslateFailure: null,
+      ) => service,
+      _ => null,
+    };
+    if (service == null) return _buildChangedBar(context, state);
+    final selected = ref.watch(
+      translationServiceChoicesProvider.select((c) => c.selected),
+    );
+    if (selected == null) return null;
+    final l10n = context.l10n;
+    final plugins = ref.watch(translationPluginInfosProvider);
+    final shownName = translationServiceName(l10n, plugins, service);
+    final selectedName = translationServiceName(l10n, plugins, selected);
+    return TranslationActionBar(
+      text: l10n.lyricsTranslationModalShowingOther(shownName),
+      actionLabel: l10n.lyricsTranslationModalTranslateWith(selectedName),
+      onPressed: _retranslate,
+    );
+  }
+
+  // The AI settings differ from the version on screen: offer to translate
+  // again. Nothing is sent until the user asks.
+  Widget? _buildChangedBar(BuildContext context, LyricsTranslationState state) {
+    final changes = watchAiTuneChanges(ref, state, _openedHash);
+    // A failed retranslation has its error card with Retry.
+    if (changes.isEmpty ||
+        state is! TranslationReady ||
+        state.retranslateFailure != null) {
+      return null;
     }
-    return null;
+    final values = ref.watch(aiTuneValuesProvider(state.service)).value;
+    if (values == null) return null;
+    final l10n = context.l10n;
+    return TranslationActionBar(
+      text: l10n.translationAiTuneChanged(
+        aiTuneChangesText(l10n, values.tune, values.stored, changes),
+      ),
+      actionLabel: l10n.lyricsTranslationRetranslate,
+      onPressed: _retranslate,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(lyricsTranslationProvider(widget.appLang));
     final info = translationInfoOf(state);
-    if (info == null) {
+    _openedHash ??= info?.hash;
+    if (info == null || info.hash != _openedHash) {
       _scheduleCloseStack();
       return const SizedBox.shrink();
     }
@@ -154,7 +190,11 @@ class _LyricsTranslationModalState
           info: info,
           appLang: widget.appLang,
         ),
-        TranslationServiceSection(state: state),
+        TranslationServiceSection(
+          state: state,
+          appLang: widget.appLang,
+          onRetranslate: _retranslate,
+        ),
         TranslationStatusLine(
           state: state,
           appLang: widget.appLang,

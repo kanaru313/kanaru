@@ -85,6 +85,38 @@ void main() {
       expect(await countRows(db, 'online_lyrics'), 1);
     });
 
+    test('insert, revive and switch each write translate_spec', () async {
+      const first = '{"languages":["vi"]}';
+      const second = '{"languages":["en"]}';
+      const third = '{"languages":["ja"]}';
+      await db.insertLyricsPlugin(
+        'plugin-a',
+        pluginSpec(kind: PluginKind.translate, translateSpec: first),
+        now: 1,
+      );
+      expect((await db.lyricsPluginById('plugin-a'))!.translateSpec, first);
+
+      await db.switchLyricsPluginPackage(
+        'plugin-a',
+        pluginSpec(kind: PluginKind.aiTranslate, translateSpec: second),
+        now: 2,
+      );
+      expect((await db.lyricsPluginById('plugin-a'))!.translateSpec, second);
+
+      await seedPluginReferences(db, 'plugin-a');
+      await db.uninstallLyricsPlugin('plugin-a', now: 3);
+      await db.reviveLyricsPlugin(
+        'plugin-a',
+        pluginSpec(kind: PluginKind.translate, translateSpec: third),
+        now: 4,
+      );
+      expect((await db.lyricsPluginById('plugin-a'))!.translateSpec, third);
+
+      await db.uninstallLyricsPlugin('plugin-a', now: 5);
+      await db.reviveLyricsPlugin('plugin-a', pluginSpec(), now: 6);
+      expect((await db.lyricsPluginById('plugin-a'))!.translateSpec, isNull);
+    });
+
     test('revive of a live or missing record writes nothing', () async {
       await db.insertLyricsPlugin('plugin-a', pluginSpec(), now: 1);
       expect(
@@ -215,6 +247,15 @@ void main() {
       expect(row.hosts, '["b.example.com"]');
       expect(row.updatedAt, 200);
       expect(row.installedAt, 100);
+    });
+
+    test('writes the kind of the new package', () async {
+      await db.switchLyricsPluginPackage(
+        'plugin-a',
+        pluginSpec(kind: PluginKind.aiTranslate, version: 2),
+        now: 200,
+      );
+      expect((await db.lyricsPluginById('plugin-a'))!.kind, 'ai-translate');
     });
 
     test('keeps config, storage and preferences', () async {

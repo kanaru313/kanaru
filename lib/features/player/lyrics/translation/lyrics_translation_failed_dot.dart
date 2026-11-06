@@ -9,7 +9,8 @@ const _dotSize = 8.0;
 /// or a shown translation whose retranslate failed.
 bool translationShowsFailure(LyricsTranslationState state) =>
     state is TranslationFailed ||
-    (state is TranslationReady && state.retranslateFailure != null);
+    (state is TranslationReady && state.retranslateFailure != null) ||
+    (state is TranslationSameLanguage && state.retranslateFailure != null);
 
 /// The error dot at a corner of the header button; place it inside a [Stack].
 class LyricsTranslationFailedDot extends StatelessWidget {

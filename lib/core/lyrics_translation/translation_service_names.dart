@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../lyrics/plugins/lyrics_sources_provider.dart';
-import '../database/lyrics_plugin_spec.dart';
 
 /// What is known about one translate plugin, for naming it on screen and in
 /// the consent notice.
@@ -28,7 +27,7 @@ final translationPluginInfosProvider =
     Provider<Map<String, TranslationPluginInfo>>((ref) {
       return Map.unmodifiable({
         for (final record in ref.watch(lyricsPluginRecordsProvider))
-          if (record.kind == PluginKind.translate)
+          if (record.kind?.isTranslation == true)
             record.installId: TranslationPluginInfo(
               name: record.name,
               hosts: record.hosts,

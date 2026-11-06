@@ -4,10 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'plugin_config_commit_mixin.dart';
-import 'plugin_config_label.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_label.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_subtitle.dart';
 import 'plugin_config_save.dart';
-import 'plugin_config_subtitle.dart';
 
 /// A secret `input` field: hidden, with a reveal toggle. It saves when the
 /// user presses Enter or leaves the field.
@@ -134,9 +134,7 @@ class _State extends ConsumerState<PluginConfigSecretField>
           ),
         if (showReveal)
           IconButton(
-            tooltip: _revealed
-                ? l10n.pluginSecretHide
-                : l10n.pluginSecretShow,
+            tooltip: _revealed ? l10n.pluginSecretHide : l10n.pluginSecretShow,
             icon: Icon(
               _revealed ? AppIcons.visibilityOff : AppIcons.visibility,
             ),

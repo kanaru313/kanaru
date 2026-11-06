@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_ai_badge.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:kanaru/shared/lyrics_plugins/plugin_icon.dart';
@@ -24,6 +25,9 @@ void main() {
   testWidgets('translation on: the service row is shown', (tester) async {
     await pumpTranslationModal(tester, settings: onPrefs);
     expect(find.text('Test Translate'), findsOneWidget);
+    // A plain translate plugin has no AI badge and no tuning row.
+    expect(find.byType(TranslationAiBadge), findsNothing);
+    expect(find.text('AI tuning'), findsNothing);
   });
 
   testWidgets('selected service row draws that plugin\'s own icon', (

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/store/plugin_config_values.dart';
-import 'package:kanaru/features/lyrics_sources/plugin_config_value_messages.dart';
+import 'package:kanaru/shared/lyrics_plugins/config/plugin_config_value_messages.dart';
 
 import 'lyrics_sources_harness.dart';
 

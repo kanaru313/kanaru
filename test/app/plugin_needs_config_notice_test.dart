@@ -161,6 +161,19 @@ void main() {
     expect(container.read(nowPlayingOpenProvider), isFalse);
   });
 
+  testWidgets('an ai-translate plugin: the action opens its translation page', (
+    tester,
+  ) async {
+    await pump(tester);
+    report(PluginKind.aiTranslate);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open config'));
+    await tester.pumpAndSettle();
+
+    expect(location(), translationPluginRoute(_id));
+  });
+
   // Another feature's snack bar, shown through the same messenger.
   void showForeign(WidgetTester tester) {
     ScaffoldMessenger.of(tester.element(find.text('home')))

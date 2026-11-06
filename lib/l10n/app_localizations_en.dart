@@ -3276,6 +3276,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguageFrom(String language, String service) {
+    return 'Lyrics are already in $language (per $service)';
+  }
+
+  @override
   String get lyricsTranslationLoading => 'Translating…';
 
   @override
@@ -4256,6 +4261,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreKindTranslate => 'Translate';
+
+  @override
+  String get lyricsStoreKindAiTranslate => 'AI translate';
 
   @override
   String get lyricsStoreFromFile => 'From file';
@@ -5465,6 +5473,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pluginConfigMapValueLabel => 'Value';
 
   @override
+  String get pluginConfigCustomModelTag => 'Custom';
+
+  @override
+  String get pluginConfigRemoveCustomModel => 'Remove this model';
+
+  @override
+  String get pluginConfigAddModel => 'Add model…';
+
+  @override
+  String get pluginConfigAddModelTitle => 'Add model';
+
+  @override
+  String get pluginConfigAddModelName =>
+      'Model name, exactly as the server expects';
+
+  @override
+  String get pluginConfigAddModelNote => 'Note (optional), e.g. Ollama at home';
+
+  @override
+  String get pluginConfigAddAndSelect => 'Add and select';
+
+  @override
+  String get pluginConfigNoModel => 'No model yet';
+
+  @override
   String pluginNeedsConfigTitle(String name) {
     return '$name needs configuration';
   }
@@ -5743,4 +5776,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsSourceButtonHint =>
       'Click: lyrics options · Right-click: turn on/off · L';
+
+  @override
+  String get lyricsTranslationModalTitle => 'Lyrics translation';
+
+  @override
+  String get translationAiBadge => 'AI';
+
+  @override
+  String get translationAiTuneRow => 'AI tuning';
+
+  @override
+  String get translationAiModel => 'Model';
+
+  @override
+  String get translationAiStyle => 'Style';
+
+  @override
+  String get translationSongInstruction => 'Note for this song';
+
+  @override
+  String translationAiTuneHint(String name) {
+    return 'Set by the plugin $name. Saved for this plugin.';
+  }
+
+  @override
+  String get translationAiTuneDone => 'Done';
+
+  @override
+  String translationAiOptionGone(String value) {
+    return '$value (no longer supported)';
+  }
+
+  @override
+  String get translationAiNotChosen => 'Not chosen';
+
+  @override
+  String get translationAiNoModels => 'No models yet';
+
+  @override
+  String get translationAiOpenPluginSettings => 'Open plugin settings';
+
+  @override
+  String translationAiTuneChanged(String changes) {
+    return 'Differs from the version shown: $changes';
+  }
+
+  @override
+  String get translationAiEditedNote => 'Changed the note';
+
+  @override
+  String get translationAiTuneLater => 'Later';
+
+  @override
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  ) {
+    return 'Translated by $service · $style';
+  }
 }

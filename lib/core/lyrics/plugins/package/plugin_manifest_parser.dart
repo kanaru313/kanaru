@@ -55,6 +55,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
   final kind = switch (metadata['type']) {
     'lyrics' => PluginKind.lyrics,
     'translate' => PluginKind.translate,
+    'ai-translate' => PluginKind.aiTranslate,
     _ => null,
   };
   if (kind == null) {
@@ -89,7 +90,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
   final script = json['script'];
   if (script is! Map<String, dynamic>) throw _invalid('script');
   PluginTranslateSpec? translate;
-  if (kind == PluginKind.translate) {
+  if (kind.isTranslation) {
     try {
       final parsed = parsePluginTranslateSpec(json['translate']);
       translate = parsed.spec;
@@ -103,6 +104,9 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
       throw _invalid(error.field);
     }
   }
+  final config = parsePluginConfig(json['config']);
+  _checkCustomFields(kind, config);
+  if (kind == PluginKind.aiTranslate) _requireTuneFields(config);
   final isLyrics = kind == PluginKind.lyrics;
   return PluginManifest(
     kind: kind,
@@ -120,11 +124,52 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
     lyricsScript: isLyrics
         ? _scriptRef(script['lyrics'], 'script.lyrics')
         : null,
-    translateScript: isLyrics
-        ? null
-        : _scriptRef(script['translate'], 'script.translate'),
-    config: parsePluginConfig(json['config']),
+    translateScript: kind.isTranslation
+        ? _scriptRef(script['translate'], 'script.translate')
+        : null,
+    config: config,
   );
+}
+
+/// `custom` is for the `model` select of an `ai-translate` plugin only.
+void _checkCustomFields(PluginKind kind, List<PluginConfigField> config) {
+  for (final field in config) {
+    if (field.custom &&
+        !(kind == PluginKind.aiTranslate && field.key == 'model')) {
+      throw _invalid('config.${field.key}.custom');
+    }
+  }
+}
+
+/// The fields an `ai-translate` plugin must declare: `model` and `style`
+/// (single selects) and `customInstruction` (a plain text input). A custom
+/// `model` must be required, so an empty list reads as needing setup.
+void _requireTuneFields(List<PluginConfigField> config) {
+  PluginConfigField? find(String key) {
+    for (final field in config) {
+      if (field.key == key) return field;
+    }
+    return null;
+  }
+
+  for (final key in const ['model', 'style']) {
+    final field = find(key);
+    if (field == null ||
+        field.mode != PluginConfigMode.select ||
+        field.formatName != PluginSelectFormat.single.name ||
+        (field.options.isEmpty && !field.custom)) {
+      throw _invalid('config.$key');
+    }
+  }
+  if (find('model')!.custom && !find('model')!.required) {
+    throw _invalid('config.model.required');
+  }
+  final instruction = find('customInstruction');
+  if (instruction == null ||
+      instruction.mode != PluginConfigMode.input ||
+      instruction.formatName != PluginInputFormat.text.name) {
+    throw _invalid('config.customInstruction');
+  }
 }
 
 /// A string field with control characters removed and edges trimmed, then

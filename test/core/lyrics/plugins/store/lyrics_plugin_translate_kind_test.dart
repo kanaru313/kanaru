@@ -154,4 +154,47 @@ void main() {
     expect(prefs.single.providerId, first.installId);
     expect(prefs.single.enabled, isTrue);
   });
+
+  test('install, update and revive write the translate block', () async {
+    final record = await env.controller.installPackage(
+      testPackage(kind: PluginKind.translate),
+      testRepoSource,
+    );
+    Future<String?> stored() async =>
+        (await env.db.lyricsPluginById(record.installId))!.translateSpec;
+    expect(
+      jsonDecode((await stored())!),
+      containsPair('languages', ['vi', 'en']),
+    );
+    expect(record.translate!.languages, ['vi', 'en']);
+
+    await env.db.customStatement(
+      'UPDATE lyrics_plugins SET translate_spec = NULL',
+    );
+    await env.controller.updatePackage(
+      record.installId,
+      testPackage(kind: PluginKind.translate, version: 2),
+    );
+    expect(await stored(), isNotNull);
+
+    await insertTranslation(env.db, record.installId);
+    await env.controller.uninstall(record.installId);
+    await env.controller.installPackage(
+      testPackage(kind: PluginKind.translate, version: 3),
+      testRepoSource,
+    );
+    expect(await stored(), isNotNull);
+  });
+
+  test('a lyrics install has no translate block', () async {
+    final record = await env.controller.installPackage(
+      testPackage(),
+      const PluginInstallSource.file('a.zip'),
+    );
+    expect(
+      (await env.db.lyricsPluginById(record.installId))!.translateSpec,
+      isNull,
+    );
+    expect(record.translate, isNull);
+  });
 }

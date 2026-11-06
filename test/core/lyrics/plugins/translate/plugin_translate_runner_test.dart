@@ -91,10 +91,11 @@ void main() {
   Future<LyricsPluginRecord> install({
     int timeoutSec = 15,
     List<PluginConfigField> config = const [],
+    PluginKind kind = PluginKind.translate,
   }) => store.controller.installPackage(
     PluginPackage(
       manifest: PluginManifest(
-        kind: PluginKind.translate,
+        kind: kind,
         apiVersion: 1,
         name: 'Tr',
         version: 1,
@@ -140,6 +141,150 @@ void main() {
     allowed: allowed ?? () => true,
     stillWanted: stillWanted,
   );
+
+  test('an ai-translate plugin runs and reports its spec', () async {
+    // The package is read back through the manifest parser, so it must
+    // declare the standard settings.
+    const select = [PluginConfigOption(value: 'a', title: 'A')];
+    final ai = await install(
+      kind: PluginKind.aiTranslate,
+      config: const [
+        PluginConfigField(
+          key: 'model',
+          title: 'Model',
+          mode: PluginConfigMode.select,
+          options: select,
+        ),
+        PluginConfigField(
+          key: 'style',
+          title: 'Style',
+          mode: PluginConfigMode.select,
+          options: select,
+        ),
+        PluginConfigField(
+          key: 'customInstruction',
+          title: 'Instruction',
+          mode: PluginConfigMode.input,
+        ),
+      ],
+    );
+    expect(ai.kind, PluginKind.aiTranslate);
+    runtime.handlers['translate.js'] = (_, _, _) => _ok(['x', 'y']);
+    expect(await translate(id: ai.installId), hasLength(2));
+    expect((await runner.spec(ai.installId)).spec.languages, ['vi', 'en']);
+  });
+
+  group('instruction of the song', () {
+    const select = [PluginConfigOption(value: 'a', title: 'A')];
+    Future<LyricsPluginRecord> installAi({
+      bool required = false,
+      int? maxLength,
+    }) => install(
+      kind: PluginKind.aiTranslate,
+      config: [
+        const PluginConfigField(
+          key: 'model',
+          title: 'Model',
+          mode: PluginConfigMode.select,
+          options: select,
+          defaultValue: 'a',
+        ),
+        const PluginConfigField(
+          key: 'style',
+          title: 'Style',
+          mode: PluginConfigMode.select,
+          options: select,
+          defaultValue: 'a',
+        ),
+        PluginConfigField(
+          key: 'customInstruction',
+          title: 'Instruction',
+          mode: PluginConfigMode.input,
+          required: required,
+          maxLength: maxLength,
+        ),
+      ],
+    );
+
+    Future<void> send(LyricsPluginRecord ai, Map<String, String> append) =>
+        runner.translateChunk(
+          ai.installId,
+          const ['a', 'b'],
+          'vi',
+          _song,
+          allowed: () => true,
+          configAppend: append,
+        );
+
+    setUp(
+      () => runtime.handlers['translate.js'] = (_, _, _) => _ok(['x', 'y']),
+    );
+
+    test('the script gets the shared text, a newline and the note', () async {
+      final ai = await installAi();
+      await store.controller.setConfigValue(
+        ai.installId,
+        'customInstruction',
+        'A',
+      );
+      await send(ai, {'customInstruction': 'B'});
+      expect(runtime.requests.last.config['customInstruction'], 'A\nB');
+      await send(ai, const {});
+      expect(runtime.requests.last.config['customInstruction'], 'A');
+    });
+
+    test('the note alone is the instruction when none is shared', () async {
+      final ai = await installAi();
+      await send(ai, {'customInstruction': 'B'});
+      expect(runtime.requests.last.config['customInstruction'], 'B');
+    });
+
+    test('a required instruction is checked on the shared text only', () async {
+      final ai = await installAi(required: true);
+      expect(
+        await _error(send(ai, {'customInstruction': 'B'})),
+        _failure(TranslationFailureKind.needsConfig),
+      );
+      expect(runtime.requests, isEmpty);
+    });
+
+    test('the log hides the shared text and the note', () async {
+      final ai = await installAi();
+      await store.controller.setConfigValue(
+        ai.installId,
+        'customInstruction',
+        'shared words here',
+      );
+      runtime.handlers['translate.js'] = (request, _, _) => PluginRunResult(
+        status: PluginRunStatus.scriptError,
+        errorKind: PluginRunErrorKind.quota,
+        errorMessage: 'quota for ${request.config['customInstruction']}',
+        logs: ['echo ${request.config['customInstruction']}'],
+      );
+      expect(
+        await _error(send(ai, {'customInstruction': 'private note text'})),
+        _failure(TranslationFailureKind.quotaExceeded),
+      );
+      await PluginRunLog.idle();
+      final text = [
+        for (final e in _events(store.logs, ai.installId)) jsonEncode(e),
+      ].join();
+      expect(text, isNot(contains('shared words')));
+      expect(text, isNot(contains('private note')));
+      expect(text, contains('***'));
+    });
+
+    test('the joined text is not held to the field maxLength', () async {
+      final ai = await installAi(maxLength: 3);
+      await store.controller.setConfigValue(
+        ai.installId,
+        'customInstruction',
+        'abc',
+      );
+      await send(ai, {'customInstruction': 'defgh'});
+      expect(runtime.requests.last.config['customInstruction'], 'abc\ndefgh');
+    });
+  });
 
   test(
     'an empty required field fails needsConfig, no script, no log',
@@ -520,7 +665,7 @@ void main() {
     expect(info.hosts, ['api.example.com']);
   });
 
-  test('spec errors: missing, other kind, unreadable package', () async {
+  test('spec errors: missing, other kind', () async {
     expect(
       await _error(runner.spec('missing')),
       _failure(TranslationFailureKind.server),
@@ -533,13 +678,27 @@ void main() {
       await _error(runner.spec(lyrics.installId)),
       _failure(TranslationFailureKind.server),
     );
+  });
+
+  test('spec comes from the record, not from the package files', () async {
     store.packageDir(record.packageDir).deleteSync(recursive: true);
+    final info = await runner.spec(record.installId);
+    expect(info.spec.languages, ['vi', 'en']);
+  });
+
+  test('spec of a record with no translate spec is invalidResponse', () async {
+    await store.db.customStatement(
+      'UPDATE lyrics_plugins SET translate_spec = NULL WHERE install_id = ?',
+      [record.installId],
+    );
     expect(
       await _error(runner.spec(record.installId)),
       _failure(TranslationFailureKind.invalidResponse),
     );
     await PluginRunLog.idle();
-    expect(_events(store.logs, record.installId), hasLength(1));
+    final events = _events(store.logs, record.installId);
+    expect(events, hasLength(1));
+    expect(jsonEncode(events.single), contains('no translate spec'));
   });
 
   test('an uninstall during a run cancels it', () async {

@@ -14,6 +14,16 @@ final songTranslationTargetProvider = StreamProvider.autoDispose
           : db.watchSongTranslationTarget(hash);
     }, retry: (_, _) => null);
 
+/// The note written for the lyrics text [hash] only, or `null`. Emits `null`
+/// when the library database is unavailable.
+final songTranslationInstructionProvider = StreamProvider.autoDispose
+    .family<String?, String>((ref, hash) {
+      final db = ref.watch(libraryDatabaseProvider);
+      return db == null
+          ? Stream<String?>.value(null)
+          : db.watchSongTranslationInstruction(hash);
+    }, retry: (_, _) => null);
+
 /// Cached translations of (lyrics hash, target language code) by any
 /// service, unreadable rows left out.
 final cachedTranslationsProvider = StreamProvider.autoDispose

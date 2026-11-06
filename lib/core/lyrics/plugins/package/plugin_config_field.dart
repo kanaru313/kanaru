@@ -32,10 +32,15 @@ class PluginConfigOption {
     required this.value,
     required this.title,
     this.subtitle,
+    this.custom = false,
   });
 
   final String value;
   final String title;
+
+  /// Added by the user, not declared by the plugin; only the effective field
+  /// of a `custom` select has any.
+  final bool custom;
 
   /// Optional second line under the title.
   final String? subtitle;
@@ -54,6 +59,7 @@ class PluginConfigField {
     this.selectFormat,
     this.listFormat,
     this.options = const [],
+    this.custom = false,
     this.placeholder,
     this.minLength,
     this.maxLength,
@@ -89,6 +95,10 @@ class PluginConfigField {
   /// Set for `select` fields only.
   final List<PluginConfigOption> options;
 
+  /// Set for a single `select` only: the user may add choices of their own,
+  /// so [options] may be empty.
+  final bool custom;
+
   final String? placeholder;
   final int? minLength;
   final int? maxLength;
@@ -116,7 +126,18 @@ class PluginConfigField {
   final Object? defaultValue;
 
   /// This field with [value] as its default; every other attribute stays.
-  PluginConfigField withDefault(Object? value) => PluginConfigField(
+  PluginConfigField withDefault(Object? value) =>
+      _copy(newDefault: true, defaultValue: value);
+
+  /// This field with [value] as its options; every other attribute stays.
+  PluginConfigField withOptions(List<PluginConfigOption> value) =>
+      _copy(options: value);
+
+  PluginConfigField _copy({
+    List<PluginConfigOption>? options,
+    bool newDefault = false,
+    Object? defaultValue,
+  }) => PluginConfigField(
     key: key,
     title: title,
     mode: mode,
@@ -125,7 +146,8 @@ class PluginConfigField {
     inputFormat: inputFormat,
     selectFormat: selectFormat,
     listFormat: listFormat,
-    options: options,
+    options: options ?? this.options,
+    custom: custom,
     placeholder: placeholder,
     minLength: minLength,
     maxLength: maxLength,
@@ -135,7 +157,7 @@ class PluginConfigField {
     step: step,
     minItems: minItems,
     maxItems: maxItems,
-    defaultValue: value,
+    defaultValue: newDefault ? defaultValue : this.defaultValue,
   );
 
   /// The normalized format: `text`, `multiline`, `number`, `integer`,

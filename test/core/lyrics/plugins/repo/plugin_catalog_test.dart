@@ -216,6 +216,16 @@ void main() {
       expect(catalog.dropped, 1);
     });
 
+    test('type ai-translate is kept as PluginKind.aiTranslate', () {
+      final catalog = parse(
+        _catalog([
+          _entry({'type': 'ai-translate'}),
+        ]),
+      );
+      expect(catalog.entries.single.kind, PluginKind.aiTranslate);
+      expect(catalog.dropped, 0);
+    });
+
     test('invalid fields drop the entry', () {
       final bad = <Map<String, Object?>>[
         {'name': ''},

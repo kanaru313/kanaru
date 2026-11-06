@@ -5,7 +5,7 @@ import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../core/lyrics/plugins/store/plugin_config_value_rules.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_commit_mixin.dart';
 import 'plugin_config_group.dart';
 import 'plugin_config_row_box.dart';
 
@@ -71,6 +71,32 @@ class _State extends ConsumerState<PluginConfigMapField>
       if (!row.isBlank) out.putIfAbsent(row.key.text, () => row.value.text);
     }
     return out;
+  }
+
+  @override
+  void didUpdateWidget(PluginConfigMapField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    commitExternal({
+      for (final e in widget.initialEntries.entries)
+        if (e.key.isNotEmpty || e.value.isNotEmpty) e.key: e.value,
+    });
+  }
+
+  @override
+  void onExternalValue(Object? payload) {
+    final old = [..._rows];
+    _rows
+      ..clear()
+      ..addAll([
+        if (payload is Map)
+          for (final e in payload.entries) _newRow('${e.key}', '${e.value}'),
+      ]);
+    // The old boxes are still in this frame's tree.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final row in old) {
+        row.dispose();
+      }
+    });
   }
 
   _Row _newRow(String key, String value) => _Row(key, value, commitOnBlur);

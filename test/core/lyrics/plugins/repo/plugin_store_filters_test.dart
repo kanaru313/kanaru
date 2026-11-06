@@ -33,8 +33,14 @@ void main() {
   test('initial: null is empty, a kind is picked', () {
     expect(PluginStoreFilters.initial(null).isEmpty, isTrue);
     final f = PluginStoreFilters.initial(PluginKind.translate);
-    expect(f.selected(StoreFacet.kind), {'translate'});
+    expect(f.selected(StoreFacet.kind), {'translate', 'ai-translate'});
     expect(f.activeCount, 1);
+    final lyrics = PluginStoreFilters.initial(PluginKind.lyrics);
+    expect(lyrics.selected(StoreFacet.kind), {'lyrics'});
+    expect(lyrics.activeCount, 1);
+    final ai = PluginStoreFilters.initial(PluginKind.aiTranslate);
+    expect(ai.selected(StoreFacet.kind), {'translate', 'ai-translate'});
+    expect(ai.activeCount, 1);
   });
 
   test('toggle adds and removes; cleared empties one group', () {

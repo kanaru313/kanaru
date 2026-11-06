@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/lyrics_translation/translation_cache.dart';
-import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 
 LyricTranslationRow _row(String provider, String json) => LyricTranslationRow(
@@ -32,6 +31,24 @@ void main() {
       expect(c.targetLang, 'vi');
       expect(c.sourceLang, 'en');
       expect(c.lines, {'hi': 'chào'});
+    });
+
+    test('keeps the settings snapshot of the row', () {
+      final row = LyricTranslationRow(
+        contentHash: 'h',
+        provider: _plugin.value,
+        targetLang: 'vi',
+        sourceLang: 'en',
+        linesJson: '{"hi":"chào"}',
+        settingsJson: '{"model":"pro"}',
+        createdAt: 1,
+      );
+      expect(decodeTranslationRow(row)!.settingsJson, '{"model":"pro"}');
+      expect(
+        decodeTranslationRow(_row(_plugin.value, '{"hi":"chào"}'))!
+            .settingsJson,
+        isNull,
+      );
     });
 
     test('bad JSON gives null', () {
@@ -102,29 +119,52 @@ void main() {
       );
     });
 
-    test('never offers a same-language row of another service', () {
-      final sameRow = CachedTranslation(
-        service: _otherPlugin,
-        targetLang: 'vi',
-        sourceLang: 'vi',
-        lines: const {},
-      );
-      final vi = translationLanguageFor('vi')!;
+    CachedTranslation sameRowOf(TranslationServiceId s) => CachedTranslation(
+      service: s,
+      targetLang: 'vi',
+      sourceLang: 'vi',
+      lines: const {},
+    );
 
+    test('another service same-language row loses to one with lines', () {
+      final sameRow = sameRowOf(_otherPlugin);
+      final withLines = _cached(_removed);
+      final r = pickCached(
+        [sameRow, withLines],
+        _plugin,
+        knownPlugins: {_otherPlugin, _removed},
+        livePlugins: {_otherPlugin},
+      );
+      expect(r.other, same(withLines));
+    });
+
+    test('a removed plugin same-language row is not a fallback', () {
+      final r = pickCached(
+        [sameRowOf(_otherPlugin)],
+        _plugin,
+        knownPlugins: {_otherPlugin},
+      );
+      expect(r.other, isNull);
+    });
+
+    test('a live plugin same-language row is a fallback', () {
+      final sameRow = sameRowOf(_otherPlugin);
       final r = pickCached(
         [sameRow],
         _plugin,
         knownPlugins: {_otherPlugin},
-        target: vi,
+        livePlugins: {_otherPlugin},
       );
+      expect(r.other, same(sameRow));
+    });
 
-      expect(r.other, isNull);
+    test('the selected service same-language row is current', () {
+      final sameRow = sameRowOf(_otherPlugin);
       expect(
         pickCached(
           [sameRow],
           _otherPlugin,
           knownPlugins: {_otherPlugin},
-          target: vi,
         ).current,
         same(sameRow),
       );

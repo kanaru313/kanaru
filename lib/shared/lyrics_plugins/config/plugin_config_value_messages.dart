@@ -1,6 +1,6 @@
-import '../../core/lyrics/plugins/package/plugin_config_field.dart';
-import '../../core/lyrics/plugins/store/plugin_config_values.dart';
-import '../../l10n/l10n.dart';
+import '../../../core/lyrics/plugins/package/plugin_config_field.dart';
+import '../../../core/lyrics/plugins/store/plugin_config_values.dart';
+import '../../../l10n/l10n.dart';
 
 /// A number as the user types it: no trailing `.0` on a whole value.
 String pluginNumberText(num value) =>

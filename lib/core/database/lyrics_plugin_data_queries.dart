@@ -17,6 +17,21 @@ extension LyricsPluginDataQueries on LibraryDatabase {
     lyricsPluginData,
   )..where((t) => t.installId.equals(installId))).getSingleOrNull();
 
+  /// The plugin's non-secret config values as JSON text (`{}` while there is
+  /// no row), emitted again only when the text changes: a write to the
+  /// script's storage does not emit.
+  Stream<String> watchLyricsPluginConfigValuesText(String installId) {
+    // Only this column: a storage write of any plugin re-runs the query, and
+    // the storage text (up to 64 KiB) is not read.
+    final values = lyricsPluginData.configValues;
+    return (selectOnly(lyricsPluginData)
+          ..addColumns([values])
+          ..where(lyricsPluginData.installId.equals(installId)))
+        .watchSingleOrNull()
+        .map((row) => row?.read(values) ?? '{}')
+        .distinct();
+  }
+
   /// Replaces the plugin's non-secret config values. Writes only while the
   /// record exists and is not removed; over 64 KiB is `tooLarge`.
   Future<LyricsPluginWrite> setLyricsPluginConfigValues(

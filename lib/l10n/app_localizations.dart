@@ -4646,6 +4646,12 @@ abstract class AppLocalizations {
   /// **'Lyrics are already in {language}'**
   String lyricsTranslationSameLanguage(String language);
 
+  /// Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are already in {language} (per {service})'**
+  String lyricsTranslationSameLanguageFrom(String language, String service);
+
   /// Footer of the lyrics translation menu while a translation is being fetched
   ///
   /// In en, this message translates to:
@@ -6139,6 +6145,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translate'**
   String get lyricsStoreKindTranslate;
+
+  /// AI translation plugin kind: Type filter value and tag on store rows
+  ///
+  /// In en, this message translates to:
+  /// **'AI translate'**
+  String get lyricsStoreKindAiTranslate;
 
   /// Source filter value and row subtitle of a plugin installed from a zip file
   ///
@@ -7874,6 +7886,54 @@ abstract class AppLocalizations {
   /// **'Value'**
   String get pluginConfigMapValueLabel;
 
+  /// No description provided for @pluginConfigCustomModelTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get pluginConfigCustomModelTag;
+
+  /// No description provided for @pluginConfigRemoveCustomModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this model'**
+  String get pluginConfigRemoveCustomModel;
+
+  /// No description provided for @pluginConfigAddModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add model…'**
+  String get pluginConfigAddModel;
+
+  /// No description provided for @pluginConfigAddModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add model'**
+  String get pluginConfigAddModelTitle;
+
+  /// No description provided for @pluginConfigAddModelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name, exactly as the server expects'**
+  String get pluginConfigAddModelName;
+
+  /// No description provided for @pluginConfigAddModelNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional), e.g. Ollama at home'**
+  String get pluginConfigAddModelNote;
+
+  /// No description provided for @pluginConfigAddAndSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Add and select'**
+  String get pluginConfigAddAndSelect;
+
+  /// No description provided for @pluginConfigNoModel.
+  ///
+  /// In en, this message translates to:
+  /// **'No model yet'**
+  String get pluginConfigNoModel;
+
   /// Snack bar: a plugin has an empty required setting and was not run
   ///
   /// In en, this message translates to:
@@ -8287,6 +8347,105 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Click: lyrics options · Right-click: turn on/off · L'**
   String get lyricsSourceButtonHint;
+
+  /// Title of the lyrics translation modal header (next to the settings and close buttons)
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation'**
+  String get lyricsTranslationModalTitle;
+
+  /// Small badge on a translation service that translates with an AI model
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get translationAiBadge;
+
+  /// Title of the row (and of the child modal it opens) that tunes the AI translation service: model, style and a note for the song
+  ///
+  /// In en, this message translates to:
+  /// **'AI tuning'**
+  String get translationAiTuneRow;
+
+  /// Label of the AI model choice in the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get translationAiModel;
+
+  /// Label of the translation style choice in the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get translationAiStyle;
+
+  /// Label of the box in the AI tuning modal where the user writes a note that only applies to the current song's translation
+  ///
+  /// In en, this message translates to:
+  /// **'Note for this song'**
+  String get translationSongInstruction;
+
+  /// Note under the AI tuning modal's fields
+  ///
+  /// In en, this message translates to:
+  /// **'Set by the plugin {name}. Saved for this plugin.'**
+  String translationAiTuneHint(String name);
+
+  /// Button that closes the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get translationAiTuneDone;
+
+  /// Shown for a saved model or style that the plugin no longer offers
+  ///
+  /// In en, this message translates to:
+  /// **'{value} (no longer supported)'**
+  String translationAiOptionGone(String value);
+
+  /// Shown in the AI tuning modal when a model or style has no value
+  ///
+  /// In en, this message translates to:
+  /// **'Not chosen'**
+  String get translationAiNotChosen;
+
+  /// Shown in the AI tuning modal when the plugin has no model to pick yet
+  ///
+  /// In en, this message translates to:
+  /// **'No models yet'**
+  String get translationAiNoModels;
+
+  /// Button in the AI tuning modal that opens the translation plugin's settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Open plugin settings'**
+  String get translationAiOpenPluginSettings;
+
+  /// Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with
+  ///
+  /// In en, this message translates to:
+  /// **'Differs from the version shown: {changes}'**
+  String translationAiTuneChanged(String changes);
+
+  /// Part of the 'differs from the version shown' line: the note for the AI changed
+  ///
+  /// In en, this message translates to:
+  /// **'Changed the note'**
+  String get translationAiEditedNote;
+
+  /// Button of the AI tuning modal that closes it without translating again
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get translationAiTuneLater;
+
+  /// Credit line under the preview card naming the AI service and the style the translation was made with
+  ///
+  /// In en, this message translates to:
+  /// **'Translated by {service} · {style}'**
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  );
 }
 
 class _AppLocalizationsDelegate

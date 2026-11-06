@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../package/plugin_config_field.dart';
 import 'plugin_config_value_rules.dart';
 
@@ -178,4 +180,91 @@ PluginValueProblem? _map(PluginConfigField field, Object? value) {
     }
   }
   return null;
+}
+
+/// The key under which the user's own choices of a `custom` select are kept
+/// among the stored values (`model.custom`). It holds a list of
+/// `{value, subtitle?}` and never reaches a script.
+String pluginCustomChoicesKey(String fieldKey) => '$fieldKey.custom';
+
+/// [field] as it is for the user: a `custom` single select gains the choices
+/// the user added (stored under [pluginCustomChoicesKey]) after the plugin's
+/// own options. Any other field is returned as is. Entries that are not a
+/// well-formed `{value: String}`, repeat an option, or pass the item cap are
+/// ignored.
+PluginConfigField pluginEffectiveField(
+  PluginConfigField field,
+  Map<String, Object?> stored,
+) {
+  final raw = stored[pluginCustomChoicesKey(field.key)];
+  if (!field.custom || raw is! List) return field;
+  final options = [...field.options];
+  final seen = {for (final o in options) o.value};
+  for (final item in raw) {
+    if (options.length >= pluginConfigMaxItems) break;
+    if (item is! Map) continue;
+    final value = item['value'];
+    final subtitle = item['subtitle'];
+    if (value is! String || value.isEmpty || !seen.add(value)) continue;
+    options.add(
+      PluginConfigOption(
+        value: value,
+        title: value,
+        subtitle: subtitle is String && subtitle.isNotEmpty ? subtitle : null,
+        custom: true,
+      ),
+    );
+  }
+  return field.withOptions(options);
+}
+
+/// What a run reads for a non-secret [field]: the stored value, else the
+/// default, and null when that does not fit the field (it never falls back to
+/// the default then). The same rule as `configForRun`, so a comparison with
+/// what a run used does not see a difference that is not one. [field] should
+/// come from [pluginEffectiveField] for a select.
+Object? pluginEffectiveValue(
+  PluginConfigField field,
+  Map<String, Object?> stored,
+) {
+  final value = stored[field.key] ?? field.defaultValue;
+  return value != null && pluginValueFits(field, value) ? value : null;
+}
+
+/// Longest instruction a script is given (code points): the shared text and
+/// the song's note, each held to [pluginConfigMaxText] when stored, and one
+/// separator. A field's own `required` / `maxLength` apply to the stored
+/// shared value only; the joined text is passed unchecked, only held to this
+/// bound so a damaged stored value cannot grow a request without limit.
+const aiInstructionMaxRunes = 2 * pluginConfigMaxText + 1;
+
+/// The instruction a script receives: the shared text, then the song's note,
+/// on separate lines, either left out when empty, held to
+/// [aiInstructionMaxRunes].
+String combinedInstruction(String shared, String? song) {
+  final text = [shared, song ?? ''].where((s) => s.isNotEmpty).join('\n');
+  final runes = text.runes;
+  return runes.length <= aiInstructionMaxRunes
+      ? text
+      : String.fromCharCodes(runes.take(aiInstructionMaxRunes));
+}
+
+/// The key of the standard model select of an `ai-translate` plugin, the one
+/// field that may be `custom`.
+const pluginModelKey = 'model';
+
+/// Longest name of a model the user adds, and its note (code points).
+const pluginCustomChoiceMaxValue = 200;
+const pluginCustomChoiceMaxSubtitle = 300;
+
+/// The values stored as JSON text, decoded. Unreadable text, or text that is
+/// not an object, counts as no values.
+Map<String, Object?> decodeStoredPluginConfig(String text) {
+  try {
+    final value = jsonDecode(text);
+    if (value is Map<String, dynamic>) return {...value};
+  } on FormatException {
+    // Unreadable text counts as no values.
+  }
+  return {};
 }

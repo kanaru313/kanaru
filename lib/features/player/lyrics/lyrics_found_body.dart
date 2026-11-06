@@ -48,17 +48,19 @@ class LyricsFoundBody extends ConsumerWidget {
               kind: state.kind,
               appLang: appLang,
             ),
-            TranslationReady(:final retranslateFailure?) =>
-              LyricsTranslationBanner(
-                // The failed run is the selected service's, not the one whose
-                // version is shown.
-                service:
-                    ref.watch(effectiveTranslationServiceProvider) ??
-                    state.service,
-                kind: retranslateFailure,
-                appLang: appLang,
-                keepsOld: true,
-              ),
+            TranslationReady(:final service, :final retranslateFailure?) ||
+            TranslationSameLanguage(
+              :final service,
+              :final retranslateFailure?,
+            ) => LyricsTranslationBanner(
+              // The failed run is the selected service's, not the one whose
+              // version is shown.
+              service:
+                  ref.watch(effectiveTranslationServiceProvider) ?? service,
+              kind: retranslateFailure,
+              appLang: appLang,
+              keepsOld: true,
+            ),
             _ => const SizedBox.shrink(),
           },
           Expanded(

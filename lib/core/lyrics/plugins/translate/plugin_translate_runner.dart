@@ -13,7 +13,6 @@ import '../package/plugin_translate_spec.dart';
 import '../plugin_failure_log.dart';
 import '../plugin_fetch_bridge.dart';
 import '../plugin_output_reader.dart';
-import '../plugin_package_loader.dart';
 import '../plugin_run_core.dart';
 import '../plugin_run_deadline.dart';
 import '../plugin_run_log.dart';
@@ -106,31 +105,26 @@ class PluginTranslateRunner {
   /// How long a run may wait for a free worker before its own wall time.
   final Duration _queueAllowance;
 
-  /// What the plugin declares, from the shared package cache. Throws
-  /// [TranslationException]: `server` for a plugin that is missing, removed
-  /// or not a translate plugin, `invalidResponse` for a package that cannot
-  /// be read (also written to the plugin log).
+  /// What the plugin declares, from its database record (the package is read
+  /// only for the script). Throws [TranslationException]: `server` for a
+  /// plugin that is missing, removed or not a translate plugin,
+  /// `invalidResponse` for a record with no translate spec (also written to
+  /// the plugin log).
   Future<PluginTranslateInfo> spec(String installId) async {
     final row = await _core.db.lyricsPluginById(installId);
     if (row == null ||
         row.removedAt != null ||
-        row.kind != PluginKind.translate.value) {
+        PluginKind.fromValue(row.kind)?.isTranslation != true) {
       throw const TranslationException(TranslationFailureKind.server);
     }
     final record = LyricsPluginRecord.fromRow(row);
-    final PluginTranslateSpec? declared;
-    try {
-      declared = (await _core.loadPackage(row)).translate;
-    } on PluginPackageUnreadable catch (e) {
-      _record(row, const {}, TranslationFailureKind.invalidResponse, e.reason);
-      throw const TranslationException(TranslationFailureKind.invalidResponse);
-    }
+    final declared = record.translate;
     if (declared == null) {
       _record(
         row,
         const {},
         TranslationFailureKind.invalidResponse,
-        'the package has no translate block',
+        'the plugin record has no translate spec',
       );
       throw const TranslationException(TranslationFailureKind.invalidResponse);
     }
@@ -142,6 +136,8 @@ class PluginTranslateRunner {
   /// starts and before every send (nothing goes out when it is false).
   /// [stillWanted] is asked once the chunk reaches the front of the line;
   /// when false, [TranslationSuperseded] is thrown and nothing is sent.
+  /// [configAppend] is the song's note for `customInstruction` (see
+  /// `PluginRunCore.run`).
   Future<List<PluginTranslatedLine>> translateChunk(
     String installId,
     List<String> lines,
@@ -149,6 +145,7 @@ class PluginTranslateRunner {
     PluginTranslateSong? song, {
     required bool Function() allowed,
     bool Function()? stillWanted,
+    Map<String, String> configAppend = const {},
   }) async {
     final info = await spec(installId);
     final timeout = Duration(seconds: info.spec.timeoutSec);
@@ -173,6 +170,7 @@ class PluginTranslateRunner {
         kind: PluginKind.translate,
         entry: (package) => package.translateScript,
         input: input,
+        configAppend: configAppend,
         timeout: timeout,
         // Counted from here: the gate was passed.
         deadline: _queueAllowance + timeout,
@@ -238,7 +236,7 @@ class PluginTranslateRunner {
     if (!skipped) {
       _record(
         row,
-        config,
+        outcome.logConfig,
         failure,
         problem.isNotEmpty
             ? problem

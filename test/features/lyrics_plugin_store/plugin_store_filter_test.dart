@@ -154,6 +154,30 @@ void main() {
       expect(_badge(tester), isNull);
     });
 
+    testWidgets('translate and ai-translate rows both carry a kind tag', (
+      tester,
+    ) async {
+      await pumpStore(
+        tester,
+        _page(initialKind: PluginKind.translate),
+        repos: [
+          repoOf(
+            repoA,
+            'Kho A',
+            entries: [
+              _entry('tr', 'Plain Tr', kind: PluginKind.translate),
+              _entry('ai', 'Smart Tr', kind: PluginKind.aiTranslate),
+            ],
+          ),
+        ],
+        records: const [],
+        size: const Size(1000, 1600),
+      );
+      expect(find.text('Plain Tr'), findsOneWidget);
+      expect(find.text('Smart Tr'), findsOneWidget);
+      expect(find.byType(PluginStoreKindTag), findsNWidgets(2));
+    });
+
     testWidgets('picks add up and unpick back to all', (tester) async {
       await pump(tester);
       await _openModal(tester);

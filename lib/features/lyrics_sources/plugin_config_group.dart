@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
-import 'plugin_config_error_text.dart';
-import 'plugin_config_label.dart';
-import 'plugin_config_subtitle.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_error_text.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_label.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_subtitle.dart';
 
 /// The frame of a config field with no text box of its own (chips, a list, a
 /// map): title with its `*`, the manifest's help text, the editor, and the

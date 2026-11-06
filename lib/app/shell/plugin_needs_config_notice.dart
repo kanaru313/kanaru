@@ -177,11 +177,11 @@ String _title(AppLocalizations l10n, List<String> names) => switch (names) {
 String _route(List<_Entry> entries) {
   if (entries.length == 1) {
     final e = entries.single;
-    return e.kind == PluginKind.translate
+    return e.kind?.isTranslation == true
         ? translationPluginRoute(e.installId)
         : lyricsPluginRoute(e.installId);
   }
-  return entries.every((e) => e.kind == PluginKind.translate)
+  return entries.every((e) => e.kind?.isTranslation == true)
       ? settingsFocusLocation(SettingsAnchor.playbackTranslation)
       : lyricsSourcesRoute;
 }

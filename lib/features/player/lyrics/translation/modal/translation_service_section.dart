@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/database/lyrics_plugin_spec.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../core/settings/settings_provider.dart';
@@ -14,6 +16,8 @@ import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../lyrics_translation_labels.dart';
+import 'translation_ai_badge.dart';
+import 'translation_ai_tune_row.dart';
 import 'translation_modal_navigation.dart';
 import 'translation_pickers.dart';
 
@@ -28,9 +32,18 @@ const Duration _serviceMarqueeDelay = Duration(milliseconds: 300);
 /// no translate plugin is installed, or the service row that opens
 /// [openServicePicker] when plugins exist.
 class TranslationServiceSection extends ConsumerWidget {
-  const TranslationServiceSection({super.key, required this.state});
+  const TranslationServiceSection({
+    super.key,
+    required this.state,
+    required this.appLang,
+    required this.onRetranslate,
+  });
 
   final LyricsTranslationState state;
+  final String appLang;
+
+  /// Called when the AI tuning modal asks for a retranslation.
+  final VoidCallback onRetranslate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +56,25 @@ class TranslationServiceSection extends ConsumerWidget {
     if (choices.ready && choices.services.isEmpty && choices.selected == null) {
       return const _NoPluginsCard();
     }
-    return _ServiceRow(choices: choices);
+    final selected = choices.selected;
+    final tune = choices.ready && selected != null
+        ? ref.watch(translationAiTunesProvider)[selected]
+        : null;
+    final hash = translationInfoOf(state)?.hash;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ServiceRow(choices: choices),
+        if (tune != null && selected != null && hash != null)
+          TranslationAiTuneRow(
+            service: selected,
+            hash: hash,
+            appLang: appLang,
+            onRetranslate: onRetranslate,
+          ),
+      ],
+    );
   }
 }
 
@@ -176,6 +207,10 @@ class _ServiceRow extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (record?.kind == PluginKind.aiTranslate) ...[
+                    const SizedBox(width: 8),
+                    const TranslationAiBadge(),
+                  ],
                   const SizedBox(width: 16),
                   Icon(AppIcons.chevronRight, color: colors.outline),
                 ],

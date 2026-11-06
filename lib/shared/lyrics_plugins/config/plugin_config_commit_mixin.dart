@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
-import '../../core/lyrics/plugins/package/plugin_manifest.dart';
-import '../../core/lyrics/plugins/store/plugin_config_values.dart';
-import '../../core/lyrics_translation/translation_jobs.dart';
-import '../../l10n/l10n.dart';
+import '../../../core/lyrics/plugins/lyrics_plugins_provider.dart';
+import '../../../core/lyrics/plugins/package/plugin_manifest.dart';
+import '../../../core/lyrics/plugins/store/plugin_config_values.dart';
+import '../../../core/lyrics_translation/translation_jobs.dart';
+import '../../../l10n/l10n.dart';
+import 'plugin_config_flush_group.dart';
 import 'plugin_config_payload_checks.dart';
 import 'plugin_config_save.dart';
 import 'plugin_config_value_messages.dart';
@@ -24,9 +25,14 @@ final _log = Logger('lyrics_sources');
 /// value twice or one the store refused, and at teardown saves the last edit,
 /// best effort.
 ///
+/// An editor in a [PluginConfigFlushGroup] ([commitFlushGroup]) can be asked
+/// whether it holds an unsaved edit ([commitDirty]) and to save it and wait
+/// ([commitFlush]).
+///
 /// An empty string is the way to remove a saved value; a list or map that is
 /// empty is a value of its own.
-mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
+mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W>
+    implements PluginConfigFlushable {
   PluginConfigField get commitField;
   String get commitInstallId;
 
@@ -54,6 +60,28 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   /// set: show [lastSaved] again (a string, number, list or map, as saved).
   void onCommitRefused(Object? lastSaved) {}
 
+  /// Whether a saved value makes the translations that failed for this plugin
+  /// start over. Settings does; an editor beside a translation under way
+  /// turns it off.
+  bool get commitForgetsFailures => true;
+
+  /// The group this editor saves with, or null.
+  PluginConfigFlushGroup? get commitFlushGroup => null;
+
+  /// Whether the editor holds something not saved: a save under way or
+  /// waiting, or content that differs from the saved value.
+  bool get commitDirty =>
+      _saving ||
+      _queued ||
+      (_signature(commitPayload) != _saved &&
+          !(commitSkipsEmpty && pluginPayloadIsEmptyText(commitPayload)));
+
+  @override
+  bool get dirty => commitDirty;
+
+  @override
+  Future<bool> flush() => commitFlush();
+
   /// Whether the user has left the field; no error shows before.
   bool commitTouched = false;
 
@@ -61,6 +89,8 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   String? commitError;
 
   String _saved = '';
+  // The last saved value the parent passed to [commitExternal].
+  String _parentSig = '';
   Object? _savedPayload = '';
   String? _inFlight;
   String? _refused;
@@ -69,16 +99,53 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   String? _failedSig;
   bool _saving = false;
   bool _queued = false;
+  Completer<void>? _idle;
 
   // Kept for the save at teardown, when the context can no longer be asked.
   LyricsPluginsController? _plugins;
   AppLocalizations? _l10n;
   TranslationJobs? _jobs;
 
+  /// Sets the editor's content to [payload] (a string, number, bool, list or
+  /// map, as [commitPayload] would give it). Called by [commitExternal] from
+  /// `didUpdateWidget`, so no `setState` is needed.
+  void onExternalValue(Object? payload) {}
+
+  /// Call from `didUpdateWidget` with the saved payload the parent now passes.
+  /// What this editor saved itself comes back the same way (the stored values
+  /// are live) and is ignored: while a save runs or waits, and when the value
+  /// is the one already saved, so a save never rebuilds or resets its editor.
+  /// Any other value was written elsewhere: it becomes the saved value and the
+  /// editor shows it.
+  void commitExternal(Object? payload) {
+    final sig = _signature(payload);
+    // The parent also rebuilds with the same value (a reload in between):
+    // only a value that differs from the last one it passed is news.
+    if (sig == _parentSig) return;
+    _parentSig = sig;
+    if (sig == _saved || sig == _inFlight || _saving || _queued) return;
+    // A cleared value is removed from the store, and the parent then passes
+    // the field's default: the same state, shown as the empty box and its hint.
+    if (_saved == _signature('') &&
+        sig == _signature(commitField.defaultValue)) {
+      return;
+    }
+    _saved = sig;
+    _savedPayload = payload;
+    _refused = null;
+    _failedSig = null;
+    commitError = null;
+    onExternalValue(payload);
+    // The group's listeners must not be told in the middle of a build.
+    scheduleMicrotask(() => commitFlushGroup?.refresh());
+  }
+
   /// Tells the mixin what is already saved; call from `initState`.
   void commitStart(Object? saved) {
     _saved = _signature(saved);
+    _parentSig = _saved;
     _savedPayload = saved;
+    commitFlushGroup?.register(this);
   }
 
   @override
@@ -126,6 +193,7 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
   /// Re-checks the content after an edit; only once the field was left does
   /// this show or clear the error.
   void commitChanged() {
+    commitFlushGroup?.refresh();
     if (!commitTouched || !mounted) return;
     setState(() => commitError = _display(context.l10n, commitPayload));
   }
@@ -153,6 +221,7 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
     final l10n = context.l10n;
     final payload = commitPayload;
     setState(() => commitError = _display(l10n, payload));
+    commitFlushGroup?.refresh();
     if (_blocking(l10n, payload) != null) return;
     if (_saving) {
       _queued = true;
@@ -162,6 +231,7 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
     final sig = _signature(payload);
     _saving = true;
     _inFlight = sig;
+    commitFlushGroup?.refresh();
     final PluginConfigSaveResult result;
     try {
       result = await savePluginConfigValue(
@@ -170,12 +240,18 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
         commitInstallId,
         commitField.key,
         payload,
+        forgetFailures: commitForgetsFailures,
       );
     } finally {
       _saving = false;
       _inFlight = null;
     }
-    if (!mounted) return;
+    if (!mounted) {
+      // Nothing waits for a save of an editor that is gone.
+      _queued = false;
+      _signalIdle();
+      return;
+    }
     final message = result.message;
     // A refusal that may pass later is not remembered: the same value can be
     // sent again. Choice editors never remember one: a queued pick of the
@@ -207,12 +283,43 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
       _queued = false;
       unawaited(commit());
     }
+    commitFlushGroup?.refresh();
+    _signalIdle();
+  }
+
+  // Wakes [commitFlush] once no save is under way or waiting.
+  void _signalIdle() {
+    if (_saving || _queued) return;
+    final idle = _idle;
+    _idle = null;
+    if (idle != null && !idle.isCompleted) idle.complete();
+  }
+
+  /// Saves what the editor holds now and waits until that save, and any save
+  /// queued behind it, is done. True when the editor holds nothing unsaved
+  /// and shows no error; false when the value was refused, is invalid, or the
+  /// editor is gone. The caller bounds the wait (a hung keyring never ends it).
+  Future<bool> commitFlush() async {
+    if (!mounted) return false;
+    await commit();
+    while (mounted && (_saving || _queued)) {
+      await (_idle ??= Completer<void>()).future;
+    }
+    if (!mounted) return false;
+    final payload = commitPayload;
+    final saved =
+        _signature(payload) == _saved ||
+        (commitSkipsEmpty && pluginPayloadIsEmptyText(payload));
+    return commitError == null && saved;
   }
 
   /// Call from `dispose` before the editor's controllers are disposed:
   /// leaving the page with the field still focused does not blur it, so the
   /// last edit is saved here. A refusal is only logged.
   void commitTeardown() {
+    commitFlushGroup?.unregister(this);
+    _queued = false;
+    _signalIdle();
     final plugins = _plugins;
     final l10n = _l10n;
     if (plugins == null || l10n == null) return;
@@ -225,7 +332,7 @@ mixin PluginConfigCommit<W extends ConsumerStatefulWidget> on ConsumerState<W> {
         installId: commitInstallId,
         key: commitField.key,
         value: payload,
-        onSaved: _jobs == null
+        onSaved: _jobs == null || !commitForgetsFailures
             ? null
             : () => forgetTranslationFailures(_jobs!, commitInstallId),
       ).then((result) {

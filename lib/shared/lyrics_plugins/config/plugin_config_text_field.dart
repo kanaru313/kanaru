@@ -2,8 +2,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/plugins/package/plugin_manifest.dart';
+import '../../../core/lyrics/plugins/package/plugin_manifest.dart';
 import 'plugin_config_commit_mixin.dart';
+import 'plugin_config_flush_group.dart';
 import 'plugin_config_label.dart';
 import 'plugin_config_payload_checks.dart';
 import 'plugin_config_subtitle.dart';
@@ -23,6 +24,9 @@ class PluginConfigTextField extends ConsumerStatefulWidget {
     required this.installId,
     required this.field,
     required this.initialText,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    this.forgetsFailures = true,
+    this.flushGroup,
   });
 
   final String installId;
@@ -30,6 +34,16 @@ class PluginConfigTextField extends ConsumerStatefulWidget {
 
   /// Saved value, else the manifest's default, as text.
   final String initialText;
+
+  /// Space around the box.
+  final EdgeInsetsGeometry padding;
+
+  /// Whether a saved value makes the failed translations of the plugin start
+  /// over (see [PluginConfigCommit.commitForgetsFailures]).
+  final bool forgetsFailures;
+
+  /// The group that saves this box together with others, if any.
+  final PluginConfigFlushGroup? flushGroup;
 
   @override
   ConsumerState<PluginConfigTextField> createState() => _State();
@@ -53,16 +67,36 @@ class _State extends ConsumerState<PluginConfigTextField>
   PluginConfigField get commitField => widget.field;
   @override
   String get commitInstallId => widget.installId;
+  @override
+  bool get commitForgetsFailures => widget.forgetsFailures;
+  @override
+  PluginConfigFlushGroup? get commitFlushGroup => widget.flushGroup;
 
   @override
-  Object? get commitPayload {
-    final text = _text.text;
+  Object? get commitPayload => _payloadOf(_text.text);
+
+  Object _payloadOf(String text) {
     if (!_isNumeric || text.isEmpty) return text;
     return pluginParseFinite(
           text,
           whole: _format == PluginInputFormat.integer,
         ) ??
         text;
+  }
+
+  @override
+  void didUpdateWidget(PluginConfigTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    commitExternal(_payloadOf(widget.initialText));
+  }
+
+  @override
+  void onExternalValue(Object? payload) {
+    final text = payload is num ? pluginNumberText(payload) : '$payload';
+    _text.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   @override
@@ -161,7 +195,7 @@ class _State extends ConsumerState<PluginConfigTextField>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: widget.padding,
           child: _isNumeric
               ? CallbackShortcuts(
                   bindings: {

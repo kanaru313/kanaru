@@ -26,6 +26,7 @@ class SelectionRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.details,
+    this.badge,
     this.focusNode,
     this.autofocus = false,
   });
@@ -44,6 +45,10 @@ class SelectionRow extends StatelessWidget {
   /// Drawn under the subtitle, for content a plain string cannot hold such as
   /// coloured badges.
   final Widget? details;
+
+  /// Small tag after the title block (before the check slot), such as an
+  /// "AI" chip. The row is laid out as without it when null.
+  final Widget? badge;
   final bool selected;
 
   /// Called when the row is tapped or activated with Enter or Space; `null`
@@ -68,6 +73,7 @@ class SelectionRow extends StatelessWidget {
     final leading = this.leading;
     final trailing = this.trailing;
     final details = this.details;
+    final badge = this.badge;
 
     return Semantics(
       container: true,
@@ -127,6 +133,7 @@ class SelectionRow extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (badge != null) ...[const SizedBox(width: 8), badge],
                       const SizedBox(width: 14),
                       ConstrainedBox(
                         constraints: const BoxConstraints(

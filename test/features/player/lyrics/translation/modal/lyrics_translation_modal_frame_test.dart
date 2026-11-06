@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_language_row.dart';
@@ -39,20 +38,23 @@ void main() {
   });
 
   testWidgets(
-    'header displays track metadata, has no marquee for short text, and close button dismisses',
+    'header has only the title, the settings button and the close button',
     (tester) async {
       await pumpTranslationModal(tester);
 
-      expect(find.byType(CoverArt), findsOneWidget);
-      expect(find.text('First Love'), findsOneWidget);
-      expect(find.text('Utada Hikaru'), findsOneWidget);
+      final header = find.byType(TranslationModalHeader);
       expect(
-        find.descendant(
-          of: find.byType(TranslationModalHeader),
-          matching: find.byType(ShaderMask),
-        ),
-        findsNothing,
+        find.descendant(of: header, matching: find.text('Lyrics translation')),
+        findsOneWidget,
       );
+      expect(find.byType(CoverArt), findsNothing);
+      expect(find.text('First Love'), findsNothing);
+      expect(find.text('Utada Hikaru'), findsNothing);
+      expect(
+        find.descendant(of: header, matching: find.byType(IconButton)),
+        findsNWidgets(2),
+      );
+      expect(find.byTooltip('Translation settings'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Close'));
       await settleModal(tester);
@@ -122,28 +124,6 @@ void main() {
     },
   );
 
-  testWidgets('long track title activates marquee fade in header', (
-    tester,
-  ) async {
-    await pumpTranslationModal(
-      tester,
-      track: const Track(
-        uri: '/m/long.flac',
-        title: 'An Extraordinarily Long Track Title That Overflows The Header Area Clearly',
-        artist: 'Utada Hikaru',
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 500));
-
-    expect(
-      find.descendant(
-        of: find.byType(TranslationModalHeader),
-        matching: find.byType(ShaderMask),
-      ),
-      findsOneWidget,
-    );
-  });
-
   testWidgets('renders localized Vietnamese labels across the modal', (
     tester,
   ) async {
@@ -164,6 +144,7 @@ void main() {
       ),
     );
 
+    expect(find.text('Dịch lời'), findsOneWidget);
     expect(find.text('XEM TRƯỚC'), findsOneWidget);
     expect(find.text('Dưới dòng'), findsOneWidget);
     expect(find.text('Thay dòng'), findsOneWidget);

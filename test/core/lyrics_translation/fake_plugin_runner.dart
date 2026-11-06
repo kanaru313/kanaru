@@ -43,6 +43,7 @@ LyricsPluginRecord translateRecord(
   PluginKind kind = PluginKind.translate,
   String? name,
   List<String> hosts = const ['api.example.com'],
+  List<PluginConfigField> config = const [],
 }) => LyricsPluginRecord(
   kind: kind,
   installId: id,
@@ -50,7 +51,7 @@ LyricsPluginRecord translateRecord(
   version: 1,
   apiVersion: 1,
   hosts: hosts,
-  config: const [],
+  config: config,
   packageDir: '$id/v1-1',
   sourceKind: LyricsPluginSourceKind.file,
   sourceName: 'x.zip',
@@ -66,6 +67,7 @@ class FakePluginRunner implements PluginTranslateRunner {
     PluginTranslateSpec? spec_,
     PluginTranslateGate? gate,
     this.detected = 'ja',
+    this.config = const [],
   }) : spec_ =
            spec_ ??
            PluginTranslateSpec(
@@ -78,6 +80,9 @@ class FakePluginRunner implements PluginTranslateRunner {
   final PluginTranslateSpec spec_;
   final PluginTranslateGate gate;
 
+  /// The config form `spec` reports.
+  final List<PluginConfigField> config;
+
   /// Language reported for every line; `null` reports none.
   String? detected;
 
@@ -89,6 +94,9 @@ class FakePluginRunner implements PluginTranslateRunner {
 
   /// The target code of each chunk that went out.
   final targets = <String>[];
+
+  /// The `configAppend` of each chunk that went out.
+  final appends = <Map<String, String>>[];
 
   /// Chunk index (from 0) to the error that chunk throws.
   final errors = <int, Object>{};
@@ -103,11 +111,8 @@ class FakePluginRunner implements PluginTranslateRunner {
   String Function(String line) transform = (line) => 'tr:$line';
 
   @override
-  Future<PluginTranslateInfo> spec(String installId) async => (
-    spec: spec_,
-    hosts: const ['api.example.com'],
-    config: <PluginConfigField>[],
-  );
+  Future<PluginTranslateInfo> spec(String installId) async =>
+      (spec: spec_, hosts: const ['api.example.com'], config: config);
 
   @override
   Future<List<PluginTranslatedLine>> translateChunk(
@@ -117,6 +122,7 @@ class FakePluginRunner implements PluginTranslateRunner {
     PluginTranslateSong? song, {
     required bool Function() allowed,
     bool Function()? stillWanted,
+    Map<String, String> configAppend = const {},
   }) => gate.run(stillWanted ?? () => true, () async {
     if (!allowed()) {
       throw const TranslationException(TranslationFailureKind.blocked);
@@ -124,6 +130,7 @@ class FakePluginRunner implements PluginTranslateRunner {
     final index = calls.length;
     calls.add(List.of(lines));
     targets.add(to);
+    appends.add(configAppend);
     songs.add(song);
     onSend?.call(index);
     await hold?.future;

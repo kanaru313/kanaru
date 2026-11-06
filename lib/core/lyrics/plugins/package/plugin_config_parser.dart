@@ -6,7 +6,8 @@ final _configKey = RegExp(r'^[A-Za-z0-9_]{1,40}$');
 
 /// Parses the optional `config` object (at most 20 fields, kept in manifest
 /// order). Throws `invalidManifest` naming `config.<key>.<attr>`. Attributes
-/// that do not apply to a field's mode and format are ignored.
+/// that do not apply to a field's mode and format are ignored, except
+/// `custom`, which any field but a `select` refuses.
 List<PluginConfigField> parsePluginConfig(Object? value) {
   if (value == null) return const [];
   if (value is! Map<String, dynamic> || value.length > pluginConfigMaxFields) {
@@ -21,6 +22,9 @@ PluginConfigField _field(String key, Object? raw) {
   final path = 'config.$key';
   if (!_configKey.hasMatch(key)) throw invalidConfig(path);
   if (raw is! Map<String, dynamic>) throw invalidConfig(path);
+  if (raw['custom'] != null && raw['mode'] != 'select') {
+    throw invalidConfig('$path.custom');
+  }
   final title = configTitle(raw['title'], '$path.title');
   final subtitle = configSubtitle(raw['subtitle'], '$path.subtitle');
   final required = switch (raw['required']) {

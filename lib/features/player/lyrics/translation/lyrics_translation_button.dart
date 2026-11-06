@@ -127,7 +127,8 @@ class _LyricsTranslationButtonState
     final failed = translationShowsFailure(state);
     final busy =
         state is TranslationLoading ||
-        (state is TranslationReady && state.refreshing);
+        (state is TranslationReady && state.refreshing) ||
+        (state is TranslationSameLanguage && state.refreshing);
     final room = widget.maxLabelWidth ?? 0;
 
     final child =

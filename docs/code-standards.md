@@ -94,7 +94,7 @@ Five constants tell the app to redo work on existing libraries. Bump only the on
 
 Other version numbers that must stay in step:
 
-- `schemaVersion` in `core/database/library_database.dart` (currently `12`). After bumping it, run `make migrations`.
+- `schemaVersion` in `core/database/library_database.dart` (currently `15`). After bumping it, run `make migrations`.
 - `flutter_rust_bridge` (Dart package, crate, and codegen binary) are pinned to `2.13.0`. Change all three together.
 - `KANARU_VERSION` is passed at build time with `--dart-define` (see [deployment-guide.md](./deployment-guide.md#build-a-release-bundle)).
 

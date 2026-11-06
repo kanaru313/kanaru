@@ -17,6 +17,7 @@ import 'store/lyrics_plugin_config_store.dart';
 import 'store/lyrics_plugin_dirs.dart';
 import 'store/lyrics_plugin_installer.dart';
 import 'store/lyrics_plugin_sweep.dart';
+import 'store/lyrics_plugin_translate_spec_backfill.dart';
 import 'store/lyrics_plugin_uninstaller.dart';
 import 'store/plugin_config_required.dart';
 import 'store/plugin_config_schema_codec.dart';
@@ -66,7 +67,10 @@ class LyricsPluginsController {
       logDir: _logDir,
       clock: clock,
     );
-    _ready = _queue.run(() => sweepLyricsPlugins(_db, _dirs, _logDir));
+    _ready = _queue.run(() async {
+      await sweepLyricsPlugins(_db, _dirs, _logDir);
+      await backfillTranslateSpecs(_db, _dirs);
+    });
   }
 
   final LibraryDatabase _db;
@@ -86,7 +90,8 @@ class LyricsPluginsController {
   final void Function(String installId, String name, PluginKind? kind)?
   onNeedsConfig;
 
-  /// Completes when the startup sweep has finished.
+  /// Completes when the startup sweep and the translate spec backfill have
+  /// finished.
   Future<void> get ready => _ready;
 
   /// Every record, removed ones included, oldest install first.
@@ -229,6 +234,32 @@ class LyricsPluginsController {
     String key,
     Object? value,
   ) => _queue.run(() => _config.setValue(installId, key, value));
+
+  /// Adds a model to the plugin's `custom` model select and selects it; see
+  /// [LyricsPluginConfigStore.addCustomModel].
+  Future<PluginConfigWrite> addCustomModel(
+    String installId,
+    String value, {
+    String? subtitle,
+  }) => _queue.run(
+    () => _config.addCustomModel(installId, value, subtitle: subtitle),
+  );
+
+  /// Removes a model the user added; see
+  /// [LyricsPluginConfigStore.removeCustomModel]. When no model is left to
+  /// select, a plugin that is on and now lacks a required value is reported.
+  Future<PluginConfigWrite> removeCustomModel(
+    String installId,
+    String value,
+  ) async {
+    final result = await _queue.run(
+      () => _config.removeCustomModel(installId, value),
+    );
+    if (result == PluginConfigWrite.written) {
+      unawaited(_reportIfNeedsConfig(installId));
+    }
+    return result;
+  }
 
   /// What a script run reads as `localConfig`, secrets included.
   Future<PluginConfigMap> configForRun(String installId) =>

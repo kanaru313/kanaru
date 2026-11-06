@@ -80,8 +80,8 @@ PluginPackage testPackage({
     hosts: const ['api.example.com'],
     searchScript: kind == PluginKind.lyrics ? 'search.js' : null,
     lyricsScript: kind == PluginKind.lyrics ? 'lyrics.js' : null,
-    translateScript: kind == PluginKind.translate ? 'translate.js' : null,
-    translate: kind == PluginKind.translate
+    translateScript: kind.isTranslation ? 'translate.js' : null,
+    translate: kind.isTranslation
         ? const PluginTranslateSpec(languages: ['vi', 'en'])
         : null,
     author: 'someone',
@@ -89,7 +89,7 @@ PluginPackage testPackage({
   ),
   files:
       files ??
-      (kind == PluginKind.translate
+      (kind.isTranslation
           ? {'translate.js': '// translate'}
           : {'search.js': '// search', 'lyrics.js': '// lyrics'}),
   icon: icon == null ? null : Uint8List.fromList(icon),

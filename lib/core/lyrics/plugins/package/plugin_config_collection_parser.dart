@@ -16,7 +16,16 @@ PluginConfigField parseSelectField({
     'multiple' => PluginSelectFormat.multiple,
     _ => throw invalidConfig('$path.format'),
   };
-  final options = _options(raw['options'], '$path.options');
+  final custom = switch (raw['custom']) {
+    null => false,
+    final bool flag => flag,
+    _ => throw invalidConfig('$path.custom'),
+  };
+  // The user adds the choices of a custom select, so the plugin may list none.
+  if (custom && format == PluginSelectFormat.multiple) {
+    throw invalidConfig('$path.custom');
+  }
+  final options = _options(raw['options'], '$path.options', allowEmpty: custom);
   final multiple = format == PluginSelectFormat.multiple;
   final (minItems, maxItems) = multiple
       ? _itemBounds(raw, path, options.length)
@@ -30,6 +39,7 @@ PluginConfigField parseSelectField({
       mode: PluginConfigMode.select,
       selectFormat: format,
       options: options,
+      custom: custom,
       minItems: minItems,
       maxItems: maxItems,
       defaultValue: raw['default'],
@@ -134,8 +144,16 @@ PluginConfigField _checked(PluginConfigField field, String path) {
   return field.withDefault(typed);
 }
 
-List<PluginConfigOption> _options(Object? value, String field) {
-  if (value is! List || value.isEmpty || value.length > pluginConfigMaxItems) {
+List<PluginConfigOption> _options(
+  Object? value,
+  String field, {
+  bool allowEmpty = false,
+}) {
+  // A custom select may leave `options` out too.
+  if (allowEmpty && value == null) return const [];
+  if (value is! List ||
+      (value.isEmpty && !allowEmpty) ||
+      value.length > pluginConfigMaxItems) {
     throw invalidConfig(field);
   }
   final options = <PluginConfigOption>[];
