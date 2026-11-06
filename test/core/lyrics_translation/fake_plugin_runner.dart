@@ -1,13 +1,39 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart'
     show PluginConfigField;
 import 'package:kanaru/core/lyrics/plugins/package/plugin_translate_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_gate.dart';
 import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner.dart';
+import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_provider.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
+import 'package:kanaru/core/lyrics_translation/translation_language.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+
+const testTranslatePluginId = 'plugin-abc123def456';
+final testTranslatePlugin = TranslationServiceId.tryParse(
+  testTranslatePluginId,
+)!;
+
+/// Riverpod overrides for translate plugins in tests.
+List<Override> translatePluginOverrides({
+  List<LyricsPluginRecord>? records,
+  PluginTranslateRunner? runner,
+}) {
+  final list =
+      records ??
+      [translateRecord(testTranslatePluginId, name: 'Test Translate')];
+  return [
+    translatePluginRecordsProvider.overrideWithValue(AsyncValue.data(list)),
+    lyricsPluginRecordsProvider.overrideWithValue(list),
+    if (runner != null) pluginTranslateRunnerProvider.overrideWithValue(runner),
+  ];
+}
 
 /// A live translate plugin record.
 LyricsPluginRecord translateRecord(
@@ -37,18 +63,32 @@ LyricsPluginRecord translateRecord(
 /// gate, asks `allowed` like the real one and answers from a script.
 class FakePluginRunner implements PluginTranslateRunner {
   FakePluginRunner({
-    this.spec_ = const PluginTranslateSpec(languages: ['en', 'vi', 'ja']),
+    PluginTranslateSpec? spec_,
     PluginTranslateGate? gate,
-  }) : gate = gate ?? PluginTranslateGate();
+    this.detected = 'ja',
+  }) : spec_ =
+           spec_ ??
+           PluginTranslateSpec(
+             languages: [for (final l in translationLanguages) l.code],
+             maxLines: 50,
+             maxChars: 4000,
+           ),
+       gate = gate ?? PluginTranslateGate();
 
   final PluginTranslateSpec spec_;
   final PluginTranslateGate gate;
+
+  /// Language reported for every line; `null` reports none.
+  String? detected;
 
   /// The lines of each chunk that went out, in order.
   final calls = <List<String>>[];
 
   /// The song of each chunk that went out.
   final songs = <PluginTranslateSong?>[];
+
+  /// The target code of each chunk that went out.
+  final targets = <String>[];
 
   /// Chunk index (from 0) to the error that chunk throws.
   final errors = <int, Object>{};
@@ -83,12 +123,15 @@ class FakePluginRunner implements PluginTranslateRunner {
     }
     final index = calls.length;
     calls.add(List.of(lines));
+    targets.add(to);
     songs.add(song);
     onSend?.call(index);
     await hold?.future;
     final error = errors[index];
     if (error != null) throw error;
-    return [for (final line in lines) (text: transform(line), detected: 'ja')];
+    return [
+      for (final line in lines) (text: transform(line), detected: detected),
+    ];
   });
 
   @override

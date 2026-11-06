@@ -58,30 +58,17 @@ class _TranslationNoticeDialog extends ConsumerWidget {
     final plugins = ref.watch(translationPluginInfosProvider);
     final name = translationServiceName(l10n, plugins, service);
     // The hosts are always listed for a plugin: that is where the lyrics go.
-    final hosts = service.isPlugin
-        ? plugins[service.value]?.hosts ?? const <String>[]
-        : const <String>[];
+    final hosts = plugins[service.value]?.hosts ?? const <String>[];
     return AlertDialog(
-      title: Text(
-        service.isPlugin
-            ? l10n.translationNoticePluginTitle(name)
-            : l10n.translationNoticeTitle(name),
-      ),
+      title: Text(l10n.translationNoticePluginTitle(name)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (service.isPlugin) ...[
-              Text(l10n.translationNoticePluginBody),
-              const SizedBox(height: 8),
-              for (final host in hosts) SelectableText(host),
-            ] else
-              Text(l10n.translationNoticeBody(name)),
-            if (service.isGoogle) ...[
-              const SizedBox(height: 12),
-              Text(l10n.translationNoticeGoogleUnofficial),
-            ],
+            Text(l10n.translationNoticePluginBody),
+            const SizedBox(height: 8),
+            for (final host in hosts) SelectableText(host),
           ],
         ),
       ),

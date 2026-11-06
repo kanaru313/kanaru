@@ -78,13 +78,15 @@ class SettingDropdown<T> extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onSelected,
+    this.hintText,
     this.leadingIcon,
     this.enabled = true,
   });
 
   final List<SettingOption<T>> options;
-  final T selected;
+  final T? selected;
   final ValueChanged<T> onSelected;
+  final String? hintText;
   final IconData? leadingIcon;
 
   /// `false` draws and announces the dropdown as disabled.
@@ -111,13 +113,13 @@ class SettingDropdown<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => DropdownMenu<T>(
         width: constraints.hasBoundedWidth ? constraints.maxWidth : null,
-        // Rebuilt when the UI language changes, so the shown label follows it.
-        // Not keyed on the value: remounting on a choice would drop keyboard
-        // focus; the menu follows a new initialSelection by itself. Changing
-        // the language does remount it (the labels change), so focus is not
-        // kept for that one case; accepted.
-        key: ValueKey(Localizations.localeOf(context)),
+        // Rebuilt when the UI language changes, or when the selection flips
+        // between null and non-null (so a selection dropped by sweep clears
+        // the text field). Not keyed on each value: remounting on a choice
+        // would drop keyboard focus.
+        key: ValueKey((Localizations.localeOf(context), selected == null)),
         initialSelection: selected,
+        hintText: hintText,
         enabled: enabled,
         requestFocusOnTap: false,
         enableFilter: false,

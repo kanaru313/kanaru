@@ -2868,6 +2868,10 @@
   "@lyricsTranslationServiceHeader": {
     "description": "Heading of the translation service choices in the lyrics translation menu"
   },
+  "translationServiceNotSelected": "Not selected",
+  "@translationServiceNotSelected": {
+    "description": "Label and hint text shown when no translation service is currently selected"
+  },
   "lyricsTranslationSaved": "Saved",
   "@lyricsTranslationSaved": {
     "description": "Status on the right of the Retranslate row of the translation menu when a saved translation shows"
@@ -2995,28 +2999,6 @@
   "@lyricsTranslationBannerBadKey": {
     "description": "Lyrics translation error banner: the service did not accept the saved key"
   },
-  "translationNoticeTitle": "Lyrics will be sent to {service}",
-  "@translationNoticeTitle": {
-    "description": "Title of the dialog asking to send lyrics to a translation service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
-  "translationNoticeBody": "The text of this song's lyrics is sent to {service} to be translated. Nothing else is sent.",
-  "@translationNoticeBody": {
-    "description": "Body of the translation notice dialog; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
-  "translationNoticeGoogleUnofficial": "Google is used through an unofficial web address, so it may stop working at any time.",
-  "@translationNoticeGoogleUnofficial": {
-    "description": "Extra line of the translation notice dialog when the service is Google"
-  },
   "translationNoticeContinue": "Continue",
   "@translationNoticeContinue": {
     "description": "Button of the translation notice dialog that accepts sending the lyrics"
@@ -3030,7 +3012,6 @@
     "description": "Name of Traditional Chinese as a translation language"
   },
   "settingsTranslationService": "Translation service",
-  "settingsTranslationServiceGoogleHint": "Free, unofficial service; may stop working. Lyrics text is sent to it when translation is on.",
   "settingsTranslationTarget": "Default translation language",
   "settingsTranslationTargetHint": "Used for songs that have no language of their own.",
   "settingsTranslationTargetFollow": "Follow app language ({language})",
@@ -3095,10 +3076,6 @@
   "lyricsTranslationMenuSettings": "Translation settings",
   "@lyricsTranslationMenuSettings": {
     "description": "Item at the end of the lyrics translation menu that opens Settings at the translation group"
-  },
-  "lyricsTranslationBannerOpenKey": "Open the service's settings",
-  "@lyricsTranslationBannerOpenKey": {
-    "description": "Button on the key error banner that opens the translation settings"
   },
   "onlineLyricsNoticeOpenSettings": "Open lyrics settings",
   "@onlineLyricsNoticeOpenSettings": {
@@ -5148,15 +5125,6 @@
   "@translationNoticePluginBody": {
     "description": "Body of the translation notice dialog for a plugin; the hosts are listed under it"
   },
-  "translationServicePluginSuffix": "{name} (plugin)",
-  "@translationServicePluginSuffix": {
-    "description": "Name of a translation plugin that has the name of a built-in service, so it is not mistaken for it",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "translationServiceRemovedSuffix": "{name} (removed)",
   "@translationServiceRemovedSuffix": {
     "description": "Name of an uninstalled translation plugin whose saved translation is still shown",
@@ -5178,13 +5146,25 @@
   "@lyricsTranslationBannerOpenPlugin": {
     "description": "Button on the error banner of a translation plugin that opens the plugin's page"
   },
-  "lyricsTranslationBannerUseGoogle": "Translate with Google",
-  "@lyricsTranslationBannerUseGoogle": {
-    "description": "Button on the error banner of a translation plugin that switches to Google"
-  },
   "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
   "@settingsTranslationServicePluginHint": {
     "description": "Subtitle of the translation service row when a translate plugin is the selected service"
+  },
+  "lyricsTranslationNeedsPlugin": "Install a translation plugin to translate lyrics",
+  "@lyricsTranslationNeedsPlugin": {
+    "description": "Snackbar shown when the user tries to translate lyrics with no translation plugin installed"
+  },
+  "lyricsTranslationOpenPluginStore": "Open plugin store",
+  "@lyricsTranslationOpenPluginStore": {
+    "description": "Action button on the snackbar when no translation plugin is installed"
+  },
+  "lyricsTranslationChooseServiceFirst": "Choose a translation service first",
+  "@lyricsTranslationChooseServiceFirst": {
+    "description": "Snackbar shown when pressing T to turn translation on while no translation service is selected"
+  },
+  "lyricsTranslationChooseService": "Choose service",
+  "@lyricsTranslationChooseService": {
+    "description": "Action button on the snackbar when no translation service is selected"
   },
   "playlistEditTitle": "Edit playlist",
   "@playlistEditTitle": {

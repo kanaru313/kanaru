@@ -34,9 +34,11 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     TranslationServiceId service,
   ) async {
     final prefs = ref.read(settingsProvider).translation;
-    // While translation is on, a service never agreed to needs the notice
-    // first; Cancel keeps the old service.
-    if (prefs.show && needsNoticeFor(prefs, service)) {
+    // Picking from null, or switching while translation is on to a service
+    // never agreed to, asks the notice if needed and turns translation on;
+    // Cancel leaves the settings unchanged.
+    if (prefs.service == null ||
+        (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       ref
@@ -54,8 +56,8 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
         translationLanguageFor('en')!;
     final target = prefs.targetLanguage;
     final known = target != null && translationLanguageFor(target) != null;
-    // Google and the live translate plugins; disabled while they are not
-    // known, so a stored plugin choice is never overwritten blind.
+    // The live translate plugins; disabled while they are not known, so a
+    // stored plugin choice is never overwritten blind.
     final plugins = ref.watch(translationPluginInfosProvider);
     final choices = ref.watch(translationServiceChoicesProvider);
     final services = choices.services;
@@ -63,17 +65,14 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SettingRow(
+        SettingRow.single(
           title: l10n.settingsTranslationService,
-          subtitle: choices.selected.isGoogle
-              ? l10n.settingsTranslationServiceGoogleHint
-              : l10n.settingsTranslationServicePluginHint,
-          control: (compact) => SettingChoice<TranslationServiceId>(
-            compact: compact || services.length > 2,
+          subtitle: l10n.settingsTranslationServicePluginHint,
+          control: SettingDropdown<TranslationServiceId>(
             selected: choices.selected,
-            onSelected: choices.ready
-                ? (service) => _pickService(context, ref, service)
-                : null,
+            hintText: l10n.translationServiceNotSelected,
+            enabled: choices.ready && services.isNotEmpty,
+            onSelected: (service) => _pickService(context, ref, service),
             options: [
               for (final service in services)
                 SettingOption(

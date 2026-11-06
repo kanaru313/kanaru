@@ -27,6 +27,7 @@ import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
@@ -103,17 +104,17 @@ void main() {
   void makeContainer() {
     sidecar = FakeLrcSidecarReader()
       ..byPath['/m/sung.flac'] = '[00:00.00]First words\n[00:05.00]More words';
-    container = ProviderContainer(
-      overrides: [
-        audioBackendProvider.overrideWithValue(FakeAudioBackend()),
-        embeddedLyricsReaderProvider.overrideWithValue(
-          FakeEmbeddedLyricsReader(),
-        ),
-        lrcSidecarReaderProvider.overrideWithValue(sidecar),
-        initialSettingsProvider.overrideWithValue(startSettings),
-        ...extraOverrides,
-      ],
-    );
+    final overridesList = [
+      audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+      embeddedLyricsReaderProvider.overrideWithValue(
+        FakeEmbeddedLyricsReader(),
+      ),
+      lrcSidecarReaderProvider.overrideWithValue(sidecar),
+      initialSettingsProvider.overrideWithValue(startSettings),
+      if (extraOverrides.isEmpty) ...translatePluginOverrides(),
+      ...extraOverrides,
+    ];
+    container = ProviderContainer(overrides: overridesList);
     addTearDown(container.dispose);
   }
 
@@ -534,9 +535,10 @@ void main() {
     testWidgets('narrow: an open translation menu keeps L and T out', (
       tester,
     ) async {
-      startSettings = const AppSettings(
+      startSettings = AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {TranslationServiceId.google},
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
         ),
       );
       extraOverrides = [
@@ -558,9 +560,10 @@ void main() {
     });
 
     testWidgets('narrow: an open source menu keeps T out', (tester) async {
-      startSettings = const AppSettings(
+      startSettings = AppSettings(
         translation: TranslationPrefs(
-          noticeAcknowledged: {TranslationServiceId.google},
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
         ),
       );
       await pumpScreen(tester, size: const Size(600, 900));
@@ -574,9 +577,10 @@ void main() {
   });
 
   group('the T key', () {
-    const accepted = AppSettings(
+    final accepted = AppSettings(
       translation: TranslationPrefs(
-        noticeAcknowledged: {TranslationServiceId.google},
+        service: testTranslatePlugin,
+        noticeAcknowledged: {testTranslatePlugin},
       ),
     );
 
@@ -602,11 +606,16 @@ void main() {
     });
 
     testWidgets('the first time asks; Cancel keeps it off', (tester) async {
-      startSettings = const AppSettings();
+      startSettings = AppSettings(
+        translation: TranslationPrefs(service: testTranslatePlugin),
+      );
       await pumpOverlay(tester);
 
       await pressT(tester);
-      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
+      expect(
+        find.text('Lyrics will be sent to the plugin Test Translate'),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
@@ -614,10 +623,10 @@ void main() {
       expect(translation().noticeAcknowledged, isEmpty);
     });
 
-    testWidgets('an uninstalled plugin: T opens the Google notice', (
+    testWidgets('an uninstalled plugin: T turns translation off silently', (
       tester,
     ) async {
-      final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+      final plugin = TranslationServiceId.tryParse('plugin-gone00000001')!;
       startSettings = AppSettings(
         translation: TranslationPrefs(
           show: true,
@@ -625,32 +634,28 @@ void main() {
           noticeAcknowledged: {plugin},
         ),
       );
-      extraOverrides = [
-        translatePluginRecordsProvider.overrideWithValue(
-          const AsyncValue.data([]),
-        ),
-      ];
       await pumpOverlay(tester);
 
       await pressT(tester);
 
-      expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(translation().show, isFalse);
       expect(translation().service, plugin);
     });
 
     testWidgets('Continue accepts and turns it on; later presses are silent', (
       tester,
     ) async {
-      startSettings = const AppSettings();
+      startSettings = AppSettings(
+        translation: TranslationPrefs(service: testTranslatePlugin),
+      );
       await pumpOverlay(tester);
 
       await pressT(tester);
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       expect(translation().show, isTrue);
-      expect(translation().noticeAcknowledged, {TranslationServiceId.google});
+      expect(translation().noticeAcknowledged, {testTranslatePlugin});
 
       await pressT(tester);
       await pressT(tester);
@@ -728,6 +733,7 @@ void main() {
       // A fresh notifier each time: the button's provider is recreated when
       // the header is rebuilt.
       extraOverrides = [
+        ...translatePluginOverrides(),
         lyricsTranslationProvider.overrideWith2(
           (_) =>
               FakeTranslationController(TranslationOff(fakeTranslationInfo())),
@@ -742,6 +748,60 @@ void main() {
 
       expect(translation().show, isFalse);
     });
+
+    testWidgets(
+      '0 plugins and no service: T shows the no-plugin snackbar twice without losing focus',
+      (tester) async {
+        startSettings = const AppSettings();
+        extraOverrides = translatePluginOverrides(records: const []);
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(
+          find.text('Install a translation plugin to translate lyrics'),
+          findsOneWidget,
+        );
+        expect(find.text('Open plugin store'), findsOneWidget);
+        expect(translation().show, isFalse);
+
+        await pressT(tester);
+        expect(
+          find.text('Install a translation plugin to translate lyrics'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'plugins installed and no service: T shows the choose-service snackbar',
+      (tester) async {
+        startSettings = const AppSettings();
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(find.text('Choose a translation service first'), findsOneWidget);
+        expect(find.text('Choose service'), findsOneWidget);
+        expect(translation().show, isFalse);
+      },
+    );
+
+    testWidgets(
+      'while plugin records load: T shows no snackbar and changes nothing',
+      (tester) async {
+        startSettings = const AppSettings();
+        extraOverrides = [
+          translatePluginRecordsProvider.overrideWithValue(
+            const AsyncValue.loading(),
+          ),
+          lyricsPluginRecordsProvider.overrideWithValue(const []),
+        ];
+        await pumpOverlay(tester);
+
+        await pressT(tester);
+        expect(find.byType(SnackBar), findsNothing);
+        expect(translation().show, isFalse);
+      },
+    );
   });
 
   group('the switch', () {

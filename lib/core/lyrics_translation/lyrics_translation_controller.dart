@@ -83,14 +83,12 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     );
     _info = info;
 
-    if (!prefs.show) return TranslationOff(info);
+    if (!prefs.show || prefs.service == null) return TranslationOff(info);
     if (chosen == null) {
-      // The plugin list is not read yet (wait) or could not be read (the
-      // chosen plugin may exist): either way nothing is sent, and the choice
-      // is not replaced by Google.
-      return ref.watch(translatePluginRecordsProvider).hasError
-          ? const TranslationUnavailable()
-          : TranslationLoading(info, prefs.service);
+      final records = ref.watch(translatePluginRecordsProvider);
+      if (records.hasError) return const TranslationUnavailable();
+      if (!records.hasValue) return TranslationLoading(info, prefs.service!);
+      return TranslationOff(info);
     }
     final service = chosen;
     if (needsNoticeFor(prefs, service)) {
@@ -167,19 +165,6 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     if (key == null || lyrics == null || target == null) return;
     final jobs = ref.read(translationJobsProvider.notifier)..clearFailure(key);
     await jobs.run(key, uniqueLineTexts(lyrics), target, song: _songContext());
-  }
-
-  /// Switches to Google for good (the banner's fallback when a plugin fails):
-  /// the stored service changes, with the notice first when Google was not
-  /// accepted yet, which is the caller's job. Does nothing when Google is
-  /// the service already.
-  void useGoogle() {
-    final settings = ref.read(settingsProvider.notifier);
-    final prefs = ref.read(settingsProvider).translation;
-    if (prefs.service.isGoogle) return;
-    settings.setTranslation(
-      prefs.copyWith(service: TranslationServiceId.google),
-    );
   }
 
   /// Title and artist of the playing track, read when a request is made. A

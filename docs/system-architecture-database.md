@@ -134,7 +134,7 @@ erDiagram
     }
     LYRIC_TRANSLATIONS {
         text content_hash PK
-        text provider PK "google or plugin-... (old deepl rows are skipped)"
+        text provider PK "plugin-... (old google and deepl rows are skipped)"
         text target_lang PK
         text source_lang
         text lines_json "source line to translation"

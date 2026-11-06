@@ -18,7 +18,6 @@ import 'translation_failure.dart';
 import 'translation_job_work.dart';
 import 'translation_language.dart';
 import 'plugin_translator.dart';
-import 'translation_providers.dart';
 import 'translation_service.dart';
 import 'translation_service_resolution.dart';
 import 'translation_song_context.dart';
@@ -110,7 +109,7 @@ class TranslationJobs
   /// effective one or has no accepted notice, when the library database is
   /// unavailable, or (without [force]) when a usable row is saved already.
   /// [force] (Retranslate) also starts over instead of resuming the chunks
-  /// done before a failure. [song] is context for plugins; Google ignores it.
+  /// done before a failure. [song] is context for plugins.
   ///
   /// A plugin chunk dropped because the screen moved on ends the run without
   /// a failure; the chunks done stay for when the user comes back.
@@ -218,15 +217,13 @@ class TranslationJobs
   }
 
   /// The translator of the key's service, and the version of the plugin it
-  /// runs (its `updatedAt`; `null` for Google). A plugin that is missing is
-  /// a `server` failure.
+  /// runs (its `updatedAt`). A plugin that is missing is a `server` failure.
   Future<(LyricsTranslator, int?)> _translatorFor(
     TranslationJobKey key,
     List<String> uniqueLines, {
     required bool force,
   }) async {
     final service = key.service;
-    if (service.isGoogle) return (ref.read(googleTranslatorProvider), null);
     final runner = ref.read(pluginTranslateRunnerProvider);
     final record = ref
         .read(translatePluginRecordsProvider)

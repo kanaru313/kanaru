@@ -5,7 +5,6 @@ import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -16,6 +15,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/fake_lyrics_readers.dart';
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import 'fake_translation_controller.dart';
 
@@ -39,10 +39,12 @@ void main() {
           FakeLrcSidecarReader()
             ..byPath['/m/sung.flac'] = '[00:00.00]First words',
         ),
+        ...translatePluginOverrides(),
         initialSettingsProvider.overrideWithValue(
-          const AppSettings(
+          AppSettings(
             translation: TranslationPrefs(
-              noticeAcknowledged: {TranslationServiceId.google},
+              service: testTranslatePlugin,
+              noticeAcknowledged: {testTranslatePlugin},
             ),
           ),
         ),

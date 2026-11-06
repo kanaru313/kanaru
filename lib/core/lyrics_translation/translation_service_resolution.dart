@@ -8,15 +8,13 @@ import '../settings/settings_provider.dart';
 import 'translation_service.dart';
 
 /// The service a request would use right now, or `null` while that is not
-/// known.
+/// known or none is chosen.
 ///
-/// * Google is Google;
-/// * a plugin id is itself when its translate plugin is installed, and
-///   Google once the plugin records were read and it is not there (the
-///   consent for Google is still asked: [needsNoticeFor]);
-/// * `null` while the records load, when reading them failed or when there
-///   is no library database. The user did not pick Google, so nothing is
-///   sent to it meanwhile.
+/// * `null` when no service is selected in settings;
+/// * `null` while the plugin records load;
+/// * `null` when reading plugin records failed or there is no library database;
+/// * `null` when the stored plugin is not installed;
+/// * a plugin id is itself when its translate plugin is installed.
 ///
 /// It never writes the settings; `translationServiceSweepProvider` does.
 final effectiveTranslationServiceProvider = Provider<TranslationServiceId?>((
@@ -25,13 +23,13 @@ final effectiveTranslationServiceProvider = Provider<TranslationServiceId?>((
   final stored = ref.watch(
     settingsProvider.select((s) => s.translation.service),
   );
-  if (stored.isGoogle) return stored;
+  if (stored == null) return null;
   final records = ref.watch(translatePluginRecordsProvider);
   if (records.hasError || !records.hasValue) return null;
   final installed = records.requireValue.any(
     (r) => r.installId == stored.value,
   );
-  return installed ? stored : TranslationServiceId.google;
+  return installed ? stored : null;
 });
 
 /// The one consent rule: [service] was not accepted yet, so nothing may be

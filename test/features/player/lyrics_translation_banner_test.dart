@@ -14,7 +14,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'fake_translation_controller.dart';
 
-const _google = TranslationServiceId.google;
 const _id = 'plugin-abc123def456';
 
 class _OpenNowPlaying extends NowPlayingOpen {
@@ -27,13 +26,11 @@ void main() {
   late ProviderContainer container;
   late GoRouter router;
 
-  TranslationPrefs prefs() => container.read(settingsProvider).translation;
-
   Future<void> pump(
     WidgetTester tester,
     TranslationServiceId service,
     TranslationFailureKind kind, {
-    Set<TranslationServiceId> acknowledged = const {_google},
+    Set<TranslationServiceId> acknowledged = const {},
   }) async {
     tester.view.physicalSize = const Size(800, 900);
     tester.view.devicePixelRatio = 1;
@@ -134,59 +131,20 @@ void main() {
     expect(location(), translationPluginRoute(_id));
   });
 
-  testWidgets('a plugin failure offers Translate with Google', (tester) async {
-    await pump(tester, plugin, TranslationFailureKind.server);
-
-    expect(find.text('Open settings'), findsNothing);
-    await tester.tap(find.text('Translate with Google'));
-    await tester.pumpAndSettle();
-
-    expect(prefs().service, _google);
-    expect(find.byType(AlertDialog), findsNothing);
-  });
-
-  testWidgets('Google not accepted yet: its notice comes first', (
+  testWidgets('quota, rate limit, and network failures offer Retry only', (
     tester,
   ) async {
-    await pump(
-      tester,
-      plugin,
-      TranslationFailureKind.badKey,
-      acknowledged: const {},
-    );
+    for (final kind in [
+      TranslationFailureKind.quotaExceeded,
+      TranslationFailureKind.rateLimited,
+      TranslationFailureKind.network,
+      TranslationFailureKind.server,
+    ]) {
+      await pump(tester, plugin, kind);
 
-    await tester.tap(find.text('Translate with Google'));
-    await tester.pumpAndSettle();
-    expect(find.text('Lyrics will be sent to Google'), findsOneWidget);
-    expect(prefs().service, plugin);
-
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(prefs().service, plugin);
-    expect(prefs().noticeAcknowledged, isNot(contains(_google)));
-
-    await tester.tap(find.text('Translate with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-    expect(prefs().service, _google);
-    expect(prefs().noticeAcknowledged, contains(_google));
-  });
-
-  testWidgets('quota and rate limit keep Retry next to the switch', (
-    tester,
-  ) async {
-    await pump(tester, plugin, TranslationFailureKind.quotaExceeded);
-
-    expect(find.text('Retry'), findsOneWidget);
-    expect(find.text('Translate with Google'), findsOneWidget);
-  });
-
-  testWidgets('a Google failure has no service switch', (tester) async {
-    await pump(tester, _google, TranslationFailureKind.network);
-
-    expect(find.text('Retry'), findsOneWidget);
-    expect(find.text('Translate with Google'), findsNothing);
-    expect(find.text('Open settings'), findsNothing);
+      expect(find.text('Retry'), findsOneWidget);
+      expect(find.text('Open settings'), findsNothing);
+      expect(find.text('Open config'), findsNothing);
+    }
   });
 }

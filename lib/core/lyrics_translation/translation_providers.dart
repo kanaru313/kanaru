@@ -1,25 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/library_startup.dart';
 import '../database/lyric_translation_queries.dart';
-import 'google_translator.dart';
-import 'lyrics_translator.dart';
 import 'translation_cache.dart';
-
-/// The one HTTP client of every translation request. Tests override it.
-final translationHttpClientProvider = Provider<HttpClient>((ref) {
-  final client = HttpClient()
-    ..connectionTimeout = const Duration(seconds: 10)
-    ..userAgent = 'Kanaru';
-  ref.onDispose(() => client.close(force: true));
-  return client;
-});
-
-final googleTranslatorProvider = Provider<LyricsTranslator>(
-  (ref) => GoogleTranslator(ref.watch(translationHttpClientProvider)),
-);
 
 /// The language picked for the lyrics text [hash] only, or `null`. Emits
 /// `null` when the library database is unavailable.

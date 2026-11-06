@@ -29,10 +29,9 @@ void main() {
   String name(Map<String, TranslationPluginInfo> m, String id) =>
       translationServiceName(l10n, m, TranslationServiceId.tryParse(id)!);
 
-  test('Google is Google and a plugin shows its record name', () {
+  test('a plugin shows its record name', () {
     final m = infos([translateRecord(_id)]);
 
-    expect(name(m, 'google'), 'Google');
     expect(name(m, _id), 'Plugin $_id');
     expect(m[_id]!.hosts, ['api.example.com']);
   });
@@ -48,21 +47,5 @@ void main() {
 
     expect(m, isEmpty);
     expect(name(m, _id), _id);
-  });
-
-  test('a plugin named like a built-in service is marked as a plugin', () {
-    for (final shown in [
-      'Google',
-      ' google ',
-      'GOO GLE',
-      'Google Translate Pro',
-      'Not Google',
-    ]) {
-      final record = translateRecord(_id, name: shown);
-      final m = infos([record]);
-      expect(name(m, _id), '$shown (plugin)', reason: shown);
-      expect(isBuiltInServiceName(shown), isTrue);
-    }
-    expect(isBuiltInServiceName('Gemini'), isFalse);
   });
 }

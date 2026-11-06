@@ -55,38 +55,42 @@ void main() {
     expect(stored()['libraryOnboarded'], true);
   });
 
+  final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+
   test('enabling selects the service, acknowledges it and shows', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
     var changes = 0;
     container.listen(settingsProvider, (_, _) => changes++);
 
-    notifier.enableTranslation(TranslationServiceId.google);
+    notifier.enableTranslation(plugin);
     await notifier.flush();
 
     expect(changes, 1);
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isTrue);
-    expect(translation.service, TranslationServiceId.google);
-    expect(translation.noticeAcknowledged, {TranslationServiceId.google});
+    expect(translation.service, plugin);
+    expect(translation.noticeAcknowledged, {plugin});
     final json = stored()['lyricsTranslation']! as Map;
     expect(json['show'], true);
-    expect(json['service'], 'google');
-    expect(json['noticeAcknowledged'], ['google']);
+    expect(json['service'], plugin.value);
+    expect(json['noticeAcknowledged'], [plugin.value]);
   });
 
   test('acknowledging only records the notice', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
+    notifier.setTranslation(TranslationPrefs(service: plugin));
+    notifier.acknowledgeTranslationNotice(plugin);
 
     final translation = container.read(settingsProvider).translation;
     expect(translation.show, isFalse);
     expect(translation.needsNotice, isFalse);
+    expect(translation.noticeAcknowledged, {plugin});
   });
 
-  test('translation never turns on for an unacknowledged service', () async {
+  test('translation never turns on without a service', () {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
@@ -97,15 +101,24 @@ void main() {
     expect(container.read(settingsProvider).translation.show, isFalse);
   });
 
+  test('translation never turns on for a service without the notice', () {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setTranslation(TranslationPrefs(show: true, service: plugin));
+    expect(container.read(settingsProvider).translation.show, isFalse);
+    expect(container.read(settingsProvider).translation.service, plugin);
+
+    notifier.toggleLyricsTranslation();
+    expect(container.read(settingsProvider).translation.show, isFalse);
+  });
+
   test('setTranslation cannot add an acknowledgment', () {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
     notifier.setTranslation(
-      const TranslationPrefs(
-        show: true,
-        noticeAcknowledged: {TranslationServiceId.google},
-      ),
+      TranslationPrefs(show: true, noticeAcknowledged: {plugin}),
     );
 
     final translation = container.read(settingsProvider).translation;
@@ -117,7 +130,8 @@ void main() {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.acknowledgeTranslationNotice(TranslationServiceId.google);
+    notifier.setTranslation(TranslationPrefs(service: plugin));
+    notifier.acknowledgeTranslationNotice(plugin);
     notifier.setTranslation(
       container.read(settingsProvider).translation.withTargetLanguage('vi'),
     );
@@ -127,6 +141,45 @@ void main() {
     expect(container.read(settingsProvider).translation.show, isTrue);
     expect((stored()['lyricsTranslation']! as Map)['targetLanguage'], 'vi');
     expect((stored()['lyricsTranslation']! as Map)['show'], true);
+  });
+
+  test('dropUninstalledTranslationServices sets gone plugin service to null and show to false', () async {
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+    final kept = TranslationServiceId.tryParse('plugin-keep12345678')!;
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.enableTranslation(plugin);
+    notifier.acknowledgeTranslationNotice(kept);
+    await notifier.flush();
+
+    expect(container.read(settingsProvider).translation.show, isTrue);
+    expect(container.read(settingsProvider).translation.service, plugin);
+
+    notifier.dropUninstalledTranslationServices({kept});
+    await notifier.flush();
+
+    final translation = container.read(settingsProvider).translation;
+    expect(translation.service, isNull);
+    expect(translation.show, isFalse);
+    expect(translation.noticeAcknowledged, {kept});
+  });
+
+  test('dropUninstalledTranslationServices does nothing when service and notices are live', () async {
+    final plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.enableTranslation(plugin);
+    await notifier.flush();
+
+    var writes = 0;
+    container.listen(settingsProvider, (_, _) => writes++);
+
+    notifier.dropUninstalledTranslationServices({plugin});
+    await notifier.flush();
+
+    expect(writes, 0);
   });
 
   test('the listen history switch is saved', () async {

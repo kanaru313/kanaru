@@ -144,38 +144,29 @@ class SettingsNotifier extends Notifier<AppSettings> {
   );
 
   /// Forgets translate plugins that are no longer installed: a stored
-  /// service that is a plugin id outside [livePlugins] becomes Google, and
-  /// such ids leave `noticeAcknowledged` (a plugin installed again asks the
-  /// notice again). One write, and none when nothing changes. `show` stays on
-  /// only if Google was accepted. Call it only with the ids of records that
-  /// were read from the database.
+  /// service that is a plugin id outside [livePlugins] becomes `null` and
+  /// `show` becomes `false`. Such ids leave `noticeAcknowledged` (a plugin
+  /// installed again asks the notice again). One write, and none when nothing
+  /// changes. Call it only with the ids of records that were read from the
+  /// database.
   void dropUninstalledTranslationServices(
     Set<TranslationServiceId> livePlugins,
   ) {
     final current = state.translation;
-    bool dead(TranslationServiceId id) =>
-        id.isPlugin && !livePlugins.contains(id);
-    final service = dead(current.service)
-        ? TranslationServiceId.google
-        : current.service;
+    bool dead(TranslationServiceId id) => !livePlugins.contains(id);
+    final serviceLost = current.service != null && dead(current.service!);
     final acknowledged = {
       for (final id in current.noticeAcknowledged)
         if (!dead(id)) id,
     };
-    if (service == current.service &&
+    if (!serviceLost &&
         acknowledged.length == current.noticeAcknowledged.length) {
       return;
     }
-    _update(
-      state.copyWith(
-        translation: _acknowledgedOnly(
-          current.copyWith(
-            service: service,
-            noticeAcknowledged: Set.unmodifiable(acknowledged),
-          ),
-        ),
-      ),
+    final next = (serviceLost ? current.withoutService() : current).copyWith(
+      noticeAcknowledged: Set.unmodifiable(acknowledged),
     );
+    _update(state.copyWith(translation: _acknowledgedOnly(next)));
   }
 
   Set<TranslationServiceId> _withAcknowledged(TranslationServiceId service) =>

@@ -7,12 +7,10 @@ import 'package:kanaru/core/lyrics/online/online_lyrics_streams.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
-import '../../lyrics_translation/fake_translator.dart';
+import '../../lyrics_translation/fake_plugin_runner.dart';
 import 'fake_lyrics_provider.dart';
 import 'status_test_rig.dart';
 
@@ -26,15 +24,15 @@ Future<void> untilSlow(bool Function() done) async {
 }
 
 void main() {
-  Future<(StatusRig, FakeTranslator)> make({
+  Future<(StatusRig, FakePluginRunner)> make({
     required bool auto,
     Duration tDebounce = const Duration(milliseconds: 30),
   }) async {
-    final google = FakeTranslator(TranslationServiceId.google);
+    final plugin = FakePluginRunner();
     final rig = await createStatusRig(
       autoFetch: auto,
       overrides: [
-        googleTranslatorProvider.overrideWithValue(google),
+        ...translatePluginOverrides(runner: plugin),
         secretStoreProvider.overrideWith(
           (ref) async => ResolvedSecretStore(
             MemorySecretStore(),
@@ -46,11 +44,8 @@ void main() {
       ],
     );
     final s = rig.container.read(settingsProvider.notifier);
-    s.acknowledgeTranslationNotice(TranslationServiceId.google);
-    s.setTranslation(
-      rig.container.read(settingsProvider).translation.copyWith(show: true),
-    );
-    return (rig, google);
+    s.enableTranslation(testTranslatePlugin);
+    return (rig, plugin);
   }
 
   Future<void> seedFound(StatusRig rig, String uri) =>
@@ -68,7 +63,7 @@ void main() {
   test(
     'translated online song: Clear -> translation unavailable, no new call',
     () async {
-      final (rig, google) = await make(auto: false);
+      final (rig, plugin) = await make(auto: false);
       await seedFound(rig, '/m/a.flac');
       rig.watch();
       final states = <LyricsTranslationState>[];
@@ -83,7 +78,7 @@ void main() {
             rig.container.read(lyricsTranslationProvider('en'))
                 is TranslationReady,
       );
-      expect(google.calls, hasLength(1));
+      expect(plugin.calls, hasLength(1));
       await rig.h.db.clearOnlineLyrics();
       await rig.until(() => rig.status is LyricsNone);
       await rig.settle();
@@ -91,13 +86,13 @@ void main() {
         rig.container.read(lyricsTranslationProvider('en')),
         isA<TranslationUnavailable>(),
       );
-      expect(google.calls, hasLength(1));
+      expect(plugin.calls, hasLength(1));
       expect(rig.requests, 0);
     },
   );
 
   test('Clear within the translation debounce: nothing sent', () async {
-    final (rig, google) = await make(
+    final (rig, plugin) = await make(
       auto: false,
       tDebounce: const Duration(milliseconds: 300),
     );
@@ -114,7 +109,7 @@ void main() {
     await rig.h.db.clearOnlineLyrics();
     await rig.until(() => rig.status is LyricsNone);
     await Future<void>.delayed(const Duration(milliseconds: 500));
-    expect(google.calls, isEmpty);
+    expect(plugin.calls, isEmpty);
     expect(
       rig.container.read(lyricsTranslationProvider('en')),
       isA<TranslationUnavailable>(),

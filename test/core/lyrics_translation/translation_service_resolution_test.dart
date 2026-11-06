@@ -17,10 +17,9 @@ import 'fake_translator.dart';
 
 final _plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
 final _other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
-const _google = TranslationServiceId.google;
 
 AppSettings _settings(
-  TranslationServiceId service,
+  TranslationServiceId? service,
   Set<TranslationServiceId> acknowledged, {
   bool show = true,
 }) => AppSettings(
@@ -79,12 +78,17 @@ void main() {
       AsyncValue.data([for (final id in ids) translateRecord(id)]);
 
   group('effectiveTranslationServiceProvider', () {
-    test('google is google whatever the plugin list does', () {
-      final c = make(_settings(_google, {_google}), const AsyncValue.loading());
-      expect(c.read(effectiveTranslationServiceProvider), _google);
+    test('stored null resolves to null', () {
+      final c = make(_settings(null, {}), live([]));
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
     });
 
-    test('loading, failed or no database: unavailable, never google', () {
+    test('two plugins installed and the default removed resolves to null', () {
+      final c = make(_settings(null, {}), live([_plugin.value, _other.value]));
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
+    });
+
+    test('loading, failed or no database: unavailable', () {
       for (final records in [
         const AsyncValue<List<LyricsPluginRecord>>.loading(),
         AsyncValue<List<LyricsPluginRecord>>.error(
@@ -102,11 +106,11 @@ void main() {
       expect(c.read(effectiveTranslationServiceProvider), _plugin);
     });
 
-    test('a plugin that is gone, or another one is installed: google', () {
+    test('a plugin that is gone, or another one is installed: null', () {
       final c = make(_settings(_plugin, {_plugin}), live([_other.value]));
-      expect(c.read(effectiveTranslationServiceProvider), _google);
+      expect(c.read(effectiveTranslationServiceProvider), isNull);
       final empty = make(_settings(_plugin, {_plugin}), live([]));
-      expect(empty.read(effectiveTranslationServiceProvider), _google);
+      expect(empty.read(effectiveTranslationServiceProvider), isNull);
     });
 
     test('it never writes the settings', () {
@@ -118,7 +122,7 @@ void main() {
     test('needsNoticeFor asks about the id it is given', () {
       final prefs = _settings(_plugin, {_plugin}).translation;
       expect(needsNoticeFor(prefs, _plugin), isFalse);
-      expect(needsNoticeFor(prefs, _google), isTrue);
+      expect(needsNoticeFor(prefs, _other), isTrue);
     });
   });
 
@@ -128,33 +132,42 @@ void main() {
       await settle();
     }
 
-    test('a dead selected plugin becomes google, its ack is dropped', () async {
-      final c = make(
-        _settings(_plugin, {_plugin, _google, _other}),
-        live([_other.value]),
-      );
-      await sweep(c);
+    test(
+      'a dead selected plugin becomes null and off, its ack is dropped',
+      () async {
+        final c = make(
+          _settings(_plugin, {_plugin, _other}),
+          live([_other.value]),
+        );
+        await sweep(c);
 
-      final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, _google);
-      expect(prefs.noticeAcknowledged, {_google, _other});
-      expect(prefs.show, isTrue);
-    });
-
-    test('show goes off when google was never accepted', () async {
-      final c = make(_settings(_plugin, {_plugin}), live([]));
-      await sweep(c);
-
-      final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, _google);
-      expect(prefs.noticeAcknowledged, isEmpty);
-      expect(prefs.show, isFalse);
-    });
+        final prefs = c.read(settingsProvider).translation;
+        expect(prefs.service, isNull);
+        expect(prefs.noticeAcknowledged, {_other});
+        expect(prefs.show, isFalse);
+      },
+    );
 
     test(
-      'a restart after the sweep keeps translation on with google',
+      'show goes off and service becomes null when plugin is uninstalled',
       () async {
-        final c = make(_settings(_plugin, {_plugin, _google}), live([]));
+        final c = make(_settings(_plugin, {_plugin}), live([]));
+        await sweep(c);
+
+        final prefs = c.read(settingsProvider).translation;
+        expect(prefs.service, isNull);
+        expect(prefs.noticeAcknowledged, isEmpty);
+        expect(prefs.show, isFalse);
+      },
+    );
+
+    test(
+      'a restart after the sweep keeps translation off with null service',
+      () async {
+        final c = make(
+          _settings(_plugin, {_plugin, _other}),
+          live([_other.value]),
+        );
         await sweep(c);
         await c.read(settingsProvider.notifier).flush();
 
@@ -162,14 +175,14 @@ void main() {
           File('${root.path}/settings.json').readAsStringSync(),
         ) as Map<String, Object?>;
         final json = stored['lyricsTranslation'] as Map<String, Object?>;
-        expect(json['service'], 'google');
-        expect(json['show'], isTrue);
-        expect(json['noticeAcknowledged'], ['google']);
+        expect(json['service'], isNull);
+        expect(json['show'], isFalse);
+        expect(json['noticeAcknowledged'], [_other.value]);
       },
     );
 
     test('no write while loading, on error or without a database', () async {
-      final start = _settings(_plugin, {_plugin, _google});
+      final start = _settings(_plugin, {_plugin});
       final cases = [
         make(start, const AsyncValue.loading()),
         make(start, AsyncValue.error(StateError('x'), StackTrace.empty)),
@@ -181,8 +194,8 @@ void main() {
       }
     });
 
-    test('a live plugin and google are left alone', () async {
-      final start = _settings(_plugin, {_plugin, _google});
+    test('a live plugin is left alone', () async {
+      final start = _settings(_plugin, {_plugin});
       final c = make(start, live([_plugin.value]));
       await sweep(c);
       expect(c.read(settingsProvider), start);
@@ -196,7 +209,7 @@ void main() {
             SettingsFile('${root.path}/settings.json'),
           ),
           initialSettingsProvider.overrideWithValue(
-            _settings(_plugin, {_plugin, _google}),
+            _settings(_plugin, {_plugin}),
           ),
           libraryDatabaseProvider.overrideWithValue(db),
           translatePluginRecordsProvider.overrideWith(
@@ -219,7 +232,8 @@ void main() {
       c.read(records.notifier).set(live([]));
       await settle();
       expect(writes, 1);
-      expect(c.read(settingsProvider).translation.service, _google);
+      expect(c.read(settingsProvider).translation.service, isNull);
+      expect(c.read(settingsProvider).translation.show, isFalse);
       await settle();
       expect(writes, 1);
     });

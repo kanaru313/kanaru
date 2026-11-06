@@ -2,57 +2,55 @@
 ///
 /// [code] is the app's own code: ISO 639-1 lowercase, plus `zh-Hans` and
 /// `zh-Hant`. [nameKey] is the key `languageDisplayName` turns into a label.
-/// [googleCode] is what Google's API expects.
 class TranslationLanguage {
-  const TranslationLanguage(this.code, this.nameKey, this.googleCode);
+  const TranslationLanguage(this.code, this.nameKey);
 
   final String code;
   final String nameKey;
-  final String googleCode;
 }
 
 const translationLanguages = <TranslationLanguage>[
-  TranslationLanguage('vi', 'vie', 'vi'),
-  TranslationLanguage('en', 'eng', 'en'),
-  TranslationLanguage('ja', 'jpn', 'ja'),
-  TranslationLanguage('ko', 'kor', 'ko'),
-  TranslationLanguage('zh-Hans', 'zh-Hans', 'zh-CN'),
-  TranslationLanguage('zh-Hant', 'zh-Hant', 'zh-TW'),
-  TranslationLanguage('fr', 'fra', 'fr'),
-  TranslationLanguage('de', 'deu', 'de'),
-  TranslationLanguage('es', 'spa', 'es'),
-  TranslationLanguage('it', 'ita', 'it'),
-  TranslationLanguage('ru', 'rus', 'ru'),
-  TranslationLanguage('pt', 'por', 'pt'),
-  TranslationLanguage('th', 'tha', 'th'),
-  TranslationLanguage('id', 'ind', 'id'),
-  TranslationLanguage('hi', 'hin', 'hi'),
-  TranslationLanguage('ar', 'ara', 'ar'),
-  TranslationLanguage('nl', 'nld', 'nl'),
-  TranslationLanguage('sv', 'swe', 'sv'),
-  TranslationLanguage('pl', 'pol', 'pl'),
-  TranslationLanguage('tr', 'tur', 'tr'),
-  TranslationLanguage('uk', 'ukr', 'uk'),
-  TranslationLanguage('cs', 'ces', 'cs'),
-  TranslationLanguage('el', 'ell', 'el'),
-  TranslationLanguage('fa', 'fas', 'fa'),
-  TranslationLanguage('ro', 'ron', 'ro'),
-  TranslationLanguage('ms', 'msa', 'ms'),
-  TranslationLanguage('he', 'heb', 'he'),
-  TranslationLanguage('fi', 'fin', 'fi'),
-  TranslationLanguage('da', 'dan', 'da'),
-  TranslationLanguage('no', 'nor', 'no'),
-  TranslationLanguage('hu', 'hun', 'hu'),
-  TranslationLanguage('cy', 'cym', 'cy'),
-  TranslationLanguage('sk', 'slk', 'sk'),
-  TranslationLanguage('sq', 'sqi', 'sq'),
-  TranslationLanguage('hy', 'hye', 'hy'),
-  TranslationLanguage('eu', 'eus', 'eu'),
-  TranslationLanguage('my', 'mya', 'my'),
-  TranslationLanguage('ka', 'kat', 'ka'),
-  TranslationLanguage('is', 'isl', 'is'),
-  TranslationLanguage('mk', 'mkd', 'mk'),
-  TranslationLanguage('mi', 'mri', 'mi'),
+  TranslationLanguage('vi', 'vie'),
+  TranslationLanguage('en', 'eng'),
+  TranslationLanguage('ja', 'jpn'),
+  TranslationLanguage('ko', 'kor'),
+  TranslationLanguage('zh-Hans', 'zh-Hans'),
+  TranslationLanguage('zh-Hant', 'zh-Hant'),
+  TranslationLanguage('fr', 'fra'),
+  TranslationLanguage('de', 'deu'),
+  TranslationLanguage('es', 'spa'),
+  TranslationLanguage('it', 'ita'),
+  TranslationLanguage('ru', 'rus'),
+  TranslationLanguage('pt', 'por'),
+  TranslationLanguage('th', 'tha'),
+  TranslationLanguage('id', 'ind'),
+  TranslationLanguage('hi', 'hin'),
+  TranslationLanguage('ar', 'ara'),
+  TranslationLanguage('nl', 'nld'),
+  TranslationLanguage('sv', 'swe'),
+  TranslationLanguage('pl', 'pol'),
+  TranslationLanguage('tr', 'tur'),
+  TranslationLanguage('uk', 'ukr'),
+  TranslationLanguage('cs', 'ces'),
+  TranslationLanguage('el', 'ell'),
+  TranslationLanguage('fa', 'fas'),
+  TranslationLanguage('ro', 'ron'),
+  TranslationLanguage('ms', 'msa'),
+  TranslationLanguage('he', 'heb'),
+  TranslationLanguage('fi', 'fin'),
+  TranslationLanguage('da', 'dan'),
+  TranslationLanguage('no', 'nor'),
+  TranslationLanguage('hu', 'hun'),
+  TranslationLanguage('cy', 'cym'),
+  TranslationLanguage('sk', 'slk'),
+  TranslationLanguage('sq', 'sqi'),
+  TranslationLanguage('hy', 'hye'),
+  TranslationLanguage('eu', 'eus'),
+  TranslationLanguage('my', 'mya'),
+  TranslationLanguage('ka', 'kat'),
+  TranslationLanguage('is', 'isl'),
+  TranslationLanguage('mk', 'mkd'),
+  TranslationLanguage('mi', 'mri'),
 ];
 
 /// The entry of [translationLanguages] whose code is [code], or `null`.
@@ -64,8 +62,8 @@ TranslationLanguage? translationLanguageFor(String code) {
 }
 
 /// [code] lower-cased and cut at the first `-` or `_`: `zh_TW` is `zh`.
-/// Alternative codes are folded into the one the table uses: Google's old
-/// `iw` is `he`, and `nb` and `nn` are `no`.
+/// Alternative codes are folded into the one the table uses: legacy `iw`
+/// is `he`, and `nb` and `nn` are `no`.
 String baseLanguageOf(String code) {
   final lower = code.toLowerCase();
   final cut = lower.indexOf(RegExp('[-_]'));

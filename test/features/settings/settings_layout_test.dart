@@ -182,8 +182,8 @@ Future<void> _checkLayout(
       ),
       (
         l10n.settingsTranslationService,
-        find.byType(SettingChoice<TranslationServiceId>),
-        l10n.settingsTranslationServiceGoogleHint,
+        find.byType(SettingDropdown<TranslationServiceId>),
+        l10n.settingsTranslationServicePluginHint,
       ),
       (
         l10n.settingsTranslationTarget,

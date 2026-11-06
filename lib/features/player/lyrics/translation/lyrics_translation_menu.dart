@@ -46,6 +46,7 @@ List<Widget> lyricsTranslationMenuItems(
   LyricsTranslationState state,
   String appLang, {
   FocusNode? firstItemFocus,
+  MenuController? serviceMenu,
 }) {
   final info = translationInfoOf(state);
   if (info == null) return const [];
@@ -59,22 +60,24 @@ List<Widget> lyricsTranslationMenuItems(
   final on =
       prefs.show && (effective == null || !needsNoticeFor(prefs, effective));
 
-  void toggle() {
-    if (on) {
-      settings.toggleLyricsTranslation();
-    } else if (effective != null) {
-      enableTranslationWithNotice(context, ref, effective);
-    }
-  }
-
-  // Google and the live translate plugins; names only. A stored plugin that
-  // is gone is not shown as picked: the one that really runs is.
+  // The live translate plugins; names only. A stored plugin that is gone is
+  // not shown as picked.
   final plugins = ref.watch(translationPluginInfosProvider);
   String serviceName(TranslationServiceId id) =>
       translationServiceName(l10n, plugins, id);
   final choices = ref.watch(translationServiceChoicesProvider);
   final services = choices.services;
   final shown = choices.selected;
+
+  void toggle() {
+    if (on) {
+      settings.toggleLyricsTranslation();
+    } else if (effective != null) {
+      enableTranslationWithNotice(context, ref, effective);
+    } else if (choices.ready) {
+      serviceMenu?.open();
+    }
+  }
 
   // The router and container are taken now: Now Playing closes, and with it
   // the tree this menu hangs from.
@@ -83,7 +86,8 @@ List<Widget> lyricsTranslationMenuItems(
   final container = ProviderScope.containerOf(context);
 
   Future<void> pickService(TranslationServiceId service) async {
-    if (prefs.show && needsNoticeFor(prefs, service)) {
+    if (prefs.service == null ||
+        (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
@@ -95,28 +99,38 @@ List<Widget> lyricsTranslationMenuItems(
     router?.go(settingsFocusLocation(SettingsAnchor.playbackTranslation));
   }
 
-  // A radio row of a submenu; the one in effect is tinted like the lyrics
-  // source menu's.
+  // A choice row of a submenu; the one in effect is tinted like the lyrics
+  // source menu's and has a checkmark at the end. It stays open on click.
   final scheme = Theme.of(context).colorScheme;
   Widget radio<T>({
     required T value,
-    required T groupValue,
+    required T? groupValue,
     required VoidCallback? onChanged,
     required String label,
-  }) => menuRowSpaced(
-    RadioMenuButton<T>(
-      style: menuRowStyle(
-        background: value == groupValue ? menuRowSelectedTint(scheme) : null,
+  }) {
+    final isSelected = value == groupValue;
+    return menuRowSpaced(
+      MenuItemButton(
+        closeOnActivate: false,
+        style: menuRowStyle(
+          background: isSelected ? menuRowSelectedTint(scheme) : null,
+        ),
+        onPressed: onChanged == null ? null : () => onChanged(),
+        trailingIcon: isSelected
+            ? Icon(AppIcons.check, size: 18, color: scheme.primary)
+            : const SizedBox(width: 18, height: 18),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: _optionMinWidth),
+          child: Text(
+            label,
+            style: isSelected
+                ? TextStyle(color: scheme.primary, fontWeight: FontWeight.w600)
+                : null,
+          ),
+        ),
       ),
-      value: value,
-      groupValue: groupValue,
-      onChanged: onChanged == null ? null : (_) => onChanged(),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: _optionMinWidth),
-        child: Text(label),
-      ),
-    ),
-  );
+    );
+  }
 
   return [
     lyricsTranslationSwitchRow(
@@ -161,12 +175,15 @@ List<Widget> lyricsTranslationMenuItems(
     ),
     menuRowSpaced(
       SubmenuButton(
+        controller: serviceMenu,
         style: menuRowStyle(),
         // A gap before the arrow.
         trailingIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: Text(
-            serviceName(shown),
+            shown == null
+                ? l10n.translationServiceNotSelected
+                : serviceName(shown),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

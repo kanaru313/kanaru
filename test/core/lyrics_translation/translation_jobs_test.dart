@@ -11,17 +11,18 @@ import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:logging/logging.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
+import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
-const _google = TranslationServiceId.google;
+final _plugin = testTranslatePlugin;
 const _lines = ['alpha', 'beta', 'gamma'];
 final _en = translationLanguageFor('en')!;
-const _key = TranslationJobKey('hash', 'en', _google);
-const _both = {_google};
+final _key = TranslationJobKey('hash', 'en', _plugin);
+final _both = {_plugin};
 
 void main() {
   late LibraryDatabase db;
-  late FakeTranslator google;
+  late FakePluginRunner plugin;
   late ProviderContainer container;
 
   TranslationJobs jobs() => container.read(translationJobsProvider.notifier);
@@ -31,17 +32,18 @@ void main() {
 
   void build({
     bool withDb = true,
-    Set<TranslationServiceId> acknowledged = _both,
+    Set<TranslationServiceId>? acknowledged,
     FakeSecretStore? store,
   }) {
     container = translationContainer(
       db: withDb ? db : null,
       lyrics: FakeEmbeddedLyricsReader(),
-      google: google,
-      settings: translationSettings(acknowledged: acknowledged),
+      plugin: plugin,
+      settings: translationSettings(acknowledged: acknowledged ?? _both),
       store: store,
     );
     container.listen(translationJobsProvider, (_, _) {});
+    jobs().setCurrent(_key);
   }
 
   Future<List<LyricTranslationRow>> rows() =>
@@ -49,7 +51,7 @@ void main() {
 
   setUp(() {
     db = memoryDb();
-    google = FakeTranslator(_google);
+    plugin = FakePluginRunner();
   });
   tearDown(() async {
     container.dispose();
@@ -60,7 +62,7 @@ void main() {
     build(acknowledged: {});
     await jobs().run(_key, _lines, _en);
     await jobs().run(_key, _lines, _en, force: true);
-    expect(google.calls, isEmpty);
+    expect(plugin.calls, isEmpty);
     expect(status(), isEmpty);
     expect(await rows(), isEmpty);
   });
@@ -68,7 +70,7 @@ void main() {
   test('without a database nothing happens', () async {
     build(withDb: false);
     await jobs().run(_key, _lines, _en);
-    expect(google.calls, isEmpty);
+    expect(plugin.calls, isEmpty);
     expect(status(), isEmpty);
   });
 
@@ -77,47 +79,47 @@ void main() {
     await jobs().run(_key, [for (var i = 0; i < 1001; i++) 'l$i'], _en);
     expect(status()[_key]!.failure, TranslationFailureKind.tooLong);
 
-    const other = TranslationJobKey('hash2', 'en', _google);
+    final other = TranslationJobKey('hash2', 'en', _plugin);
     await jobs().run(other, [for (var i = 0; i < 11; i++) '$i' * 2000], _en);
     expect(status()[other]!.failure, TranslationFailureKind.tooLong);
-    expect(google.calls, isEmpty);
+    expect(plugin.calls, isEmpty);
   });
 
   test('a running job is not started twice and is not cancelled', () async {
     build();
-    google.gate = Completer<void>();
+    plugin.hold = Completer<void>();
     final first = jobs().run(_key, _lines, _en);
     final second = jobs().run(_key, _lines, _en);
-    await until(() => google.calls.isNotEmpty);
+    await until(() => plugin.calls.isNotEmpty);
     expect(status()[_key]!.isRunning, isTrue);
 
-    google.gate!.complete();
+    plugin.hold!.complete();
     await Future.wait([first, second]);
-    expect(google.calls, hasLength(1));
+    expect(plugin.calls, hasLength(1));
     expect(status()[_key]!.isRunning, isFalse);
     expect(await rows(), hasLength(1));
   });
 
   test('a failure waits for retry; force and clearFailure lift it', () async {
     build();
-    google.errors[0] = failure(TranslationFailureKind.rateLimited);
+    plugin.errors[0] = failure(TranslationFailureKind.rateLimited);
     await jobs().run(_key, _lines, _en);
     expect(status()[_key]!.failure, TranslationFailureKind.rateLimited);
 
     await jobs().run(_key, _lines, _en);
-    expect(google.calls, hasLength(1));
+    expect(plugin.calls, hasLength(1));
 
     jobs().clearFailure(_key);
     expect(status(), isEmpty);
     await jobs().run(_key, _lines, _en);
-    expect(google.calls, hasLength(2));
+    expect(plugin.calls, hasLength(2));
     expect(await rows(), hasLength(1));
 
-    google.errors[2] = failure(TranslationFailureKind.server);
+    plugin.errors[2] = failure(TranslationFailureKind.server);
     await jobs().run(_key, _lines, _en, force: true);
     expect(status()[_key]!.failure, TranslationFailureKind.server);
     await jobs().run(_key, _lines, _en, force: true);
-    expect(google.calls, hasLength(4));
+    expect(plugin.calls, hasLength(4));
     expect(status()[_key]!.saved, isNotNull);
   });
 
@@ -125,11 +127,11 @@ void main() {
     build();
     await jobs().run(_key, _lines, _en);
     await jobs().run(_key, _lines, _en);
-    expect(google.calls, hasLength(1));
+    expect(plugin.calls, hasLength(1));
 
-    google.transform = (line) => 'new:$line';
+    plugin.transform = (line) => 'new:$line';
     await jobs().run(_key, _lines, _en, force: true);
-    expect(google.calls, hasLength(2));
+    expect(plugin.calls, hasLength(2));
     final saved = await rows();
     expect(saved, hasLength(1));
     expect(saved.single.linesJson, contains('new:alpha'));
@@ -138,22 +140,22 @@ void main() {
   test('force starts over instead of resuming', () async {
     build();
     final lines = [for (var i = 0; i < 120; i++) 'line $i'];
-    google.errors[1] = failure(TranslationFailureKind.server);
+    plugin.errors[1] = failure(TranslationFailureKind.server);
     await jobs().run(_key, lines, _en);
     await jobs().run(_key, lines, _en, force: true);
-    expect(google.calls[2], lines.sublist(0, 50));
+    expect(plugin.calls[2], lines.sublist(0, 50));
   });
 
   test(
     'lines left as they were or blank are not saved; language kept',
     () async {
       build();
-      google.transform = (line) => line == 'beta' ? ' BETA ' : '';
-      google.detected = 'ja';
+      plugin.transform = (line) => line == 'beta' ? ' BETA ' : '';
+      plugin.detected = 'ja';
       await jobs().run(_key, _lines, _en);
       expect(status()[_key]!.failure, TranslationFailureKind.emptyResult);
 
-      google.transform = (line) => line == 'beta' ? ' BETA ' : 'tr:$line';
+      plugin.transform = (line) => line == 'beta' ? ' BETA ' : 'tr:$line';
       jobs().clearFailure(_key);
       await jobs().run(_key, _lines, _en);
       final row = (await rows()).single;
@@ -167,7 +169,7 @@ void main() {
     final records = <String>[];
     final sub = Logger.root.onRecord.listen((r) => records.add(r.message));
     addTearDown(sub.cancel);
-    google.errors[0] = StateError('Bearer top-secret');
+    plugin.errors[0] = StateError('Bearer top-secret');
     await jobs().run(_key, _lines, _en);
 
     expect(status()[_key]!.failure, TranslationFailureKind.invalidResponse);
@@ -175,20 +177,13 @@ void main() {
     expect(records.join(), isNot(contains('top-secret')));
   });
 
-  test('google never reads the secret store', () async {
-    final store = FakeSecretStore();
-    build(store: store);
-    await jobs().run(_key, _lines, _en);
-    expect(store.reads, 0);
-  });
-
   test('clearFailures forgets the failures of a service', () async {
     build();
-    google.errors[0] = failure(TranslationFailureKind.server);
+    plugin.errors[0] = failure(TranslationFailureKind.server);
     await jobs().run(_key, _lines, _en);
     expect(status(), hasLength(1));
 
-    jobs().clearFailures(_google);
+    jobs().clearFailures(_plugin);
     expect(status(), isEmpty);
   });
 
@@ -196,23 +191,23 @@ void main() {
     container = translationContainer(
       db: db,
       lyrics: FakeEmbeddedLyricsReader(),
-      google: google,
+      plugin: plugin,
       settings: translationSettings(show: false),
     );
     await jobs().run(_key, _lines, _en, force: true);
-    expect(google.calls, isEmpty);
+    expect(plugin.calls, isEmpty);
   });
 
   test(
     'a job finishing after the container is gone saves and is quiet',
     () async {
       build();
-      google.gate = Completer<void>();
+      plugin.hold = Completer<void>();
       final running = jobs().run(_key, _lines, _en);
-      await until(() => google.calls.isNotEmpty);
+      await until(() => plugin.calls.isNotEmpty);
       container.dispose();
 
-      google.gate!.complete();
+      plugin.hold!.complete();
       await running;
       expect(await rows(), hasLength(1));
     },

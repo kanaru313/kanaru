@@ -20,8 +20,9 @@ import 'package:drift/drift.dart';
 //    never stored: that is a failed translation, not a result.
 // 4. Retranslating replaces only its own provider's row
 //    (`INSERT ... ON CONFLICT DO UPDATE` on the primary key).
-// 5. `provider` holds `google` or a translate plugin install id
-//    (`plugin-...`); readers skip unknown values, old `deepl` rows included.
+// 5. `provider` holds a translate plugin install id (`plugin-...`); readers
+//    skip unknown values, retired built-in service rows (`deepl`, etc.)
+//    included.
 // 6. `lyric_translation_prefs` is a user choice: clearing translations does
 //    not touch it.
 // 7. Unbounded by design (a few KB per song); settings shows count and size.
@@ -31,8 +32,8 @@ import 'package:drift/drift.dart';
 class LyricTranslations extends Table {
   TextColumn get contentHash => text()();
 
-  /// 'google' or a plugin install id; readers skip unknown values, old
-  /// `deepl` rows included.
+  /// A plugin install id; readers skip unknown values, retired built-in rows
+  /// (`deepl`, etc.) included.
   TextColumn get provider => text()();
 
   /// Internal language code, for example 'vi' or 'zh-Hans'.

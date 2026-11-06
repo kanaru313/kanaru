@@ -6,7 +6,6 @@ import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/playback_fade.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
@@ -27,6 +26,7 @@ import 'package:kanaru/features/player/volume_button.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
+import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../core/player/fake_audio_backend.dart';
 import '../../core/player/manual_fade_clock.dart';
 import 'fake_translation_controller.dart';
@@ -413,11 +413,12 @@ void main() {
 
     group('as a pill', () {
       List<Override> ready([String target = 'en']) => [
+        ...translatePluginOverrides(),
         fakeTranslationOverride(
           FakeTranslationController(
             TranslationReady(
               fakeTranslationInfo(defaultCode: target),
-              TranslationServiceId.google,
+              testTranslatePlugin,
               'ja',
               const [],
               false,
@@ -431,8 +432,8 @@ void main() {
       ) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
-        expect(find.text('Google · English'), findsOneWidget);
-        await tester.tap(find.text('Google · English'));
+        expect(find.text('Test Translate · English'), findsOneWidget);
+        await tester.tap(find.text('Test Translate · English'));
         await tester.pumpAndSettle();
         expect(find.text('Show translation'), findsOneWidget);
         expect(floating.value, isTrue);
@@ -442,7 +443,7 @@ void main() {
           'icon', (tester) async {
         await pump(tester, showTranslate: true, overrides: scripted());
 
-        expect(find.textContaining('Google ·'), findsNothing);
+        expect(find.textContaining('Test Translate ·'), findsNothing);
         expect(
           tester.getRect(find.byType(LyricsTranslationButton)).left -
               tester.getRect(find.byType(LyricsSourceButton)).right,
@@ -453,7 +454,7 @@ void main() {
       testWidgets('leaves a gap after the lyrics source pill', (tester) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
-        expect(find.text('Google · English'), findsOneWidget);
+        expect(find.text('Test Translate · English'), findsOneWidget);
         expect(
           tester.getRect(find.byType(LyricsTranslationButton)).left -
               tester.getRect(find.byType(LyricsSourceButton)).right,
@@ -489,7 +490,7 @@ void main() {
           await tester.pump();
 
           expect(find.byType(IconButton), findsWidgets);
-          expect(find.textContaining('Google ·'), findsNothing);
+          expect(find.textContaining('Test Translate ·'), findsNothing);
           expect(tester.takeException(), isNull);
           expect(
             tester.getRect(find.byType(LyricsTranslationButton)).right,
@@ -544,7 +545,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.text('30:00'), findsOneWidget);
-        final label = find.textContaining('Google ·');
+        final label = find.textContaining('Test Translate ·');
         expect(label, findsOneWidget);
         final text = tester.widget<Text>(label);
         expect(text.overflow, TextOverflow.ellipsis);
@@ -561,24 +562,29 @@ void main() {
         tester,
       ) async {
         final info = fakeTranslationInfo();
-        const google = TranslationServiceId.google;
+        final testPlugin = testTranslatePlugin;
         final controller = FakeTranslationController(TranslationOff(info));
         await pump(
           tester,
           showTranslate: true,
-          overrides: [fakeTranslationOverride(controller)],
+          overrides: [
+            ...translatePluginOverrides(),
+            fakeTranslationOverride(controller),
+          ],
         );
         await tester.tap(find.byType(LyricsTranslationButton));
         await tester.pumpAndSettle();
         expect(floating.value, isTrue);
 
         // A running ring never settles: step the frames by hand.
-        controller.emit(TranslationLoading(info, google));
+        controller.emit(TranslationLoading(info, testPlugin));
         await tester.pump(const Duration(milliseconds: 300));
-        controller.emit(TranslationReady(info, google, 'ja', const [], false));
+        controller.emit(
+          TranslationReady(info, testPlugin, 'ja', const [], false),
+        );
         await tester.pump(const Duration(milliseconds: 300));
 
-        expect(find.text('Google · English'), findsOneWidget);
+        expect(find.text('Test Translate · English'), findsOneWidget);
         expect(find.text('Show translation'), findsOneWidget);
         expect(floating.value, isTrue);
       });
@@ -595,7 +601,7 @@ void main() {
         container.read(sleepTimerProvider.notifier).startMinutes(30);
         await tester.pump();
 
-        expect(find.text('Google · English'), findsOneWidget);
+        expect(find.text('Test Translate · English'), findsOneWidget);
         expect(find.text('30:00'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
@@ -713,11 +719,12 @@ void main() {
     ];
 
     List<Override> translated() => [
+      ...translatePluginOverrides(),
       fakeTranslationOverride(
         FakeTranslationController(
           TranslationReady(
             fakeTranslationInfo(),
-            TranslationServiceId.google,
+            testTranslatePlugin,
             'ja',
             const [],
             false,

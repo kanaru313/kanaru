@@ -16,7 +16,7 @@ import '../lyrics/fake_lyrics_readers.dart';
 import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
-final _plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
+final _plugin = testTranslatePlugin;
 final _en = translationLanguageFor('en')!;
 final _key = TranslationJobKey('hash', 'en', _plugin);
 final _otherKey = TranslationJobKey('hash2', 'en', _plugin);
@@ -48,9 +48,7 @@ void main() {
       db.watchLyricTranslations(hash, 'en').first;
 
   void build({
-    Set<TranslationServiceId> acknowledged = const {
-      TranslationServiceId.google,
-    },
+    Set<TranslationServiceId> acknowledged = const {},
     bool withRunner = true,
     bool ackPlugin = true,
   }) {
@@ -216,6 +214,7 @@ void main() {
   test(
     'a plugin that is not the chosen service, or is gone, is never called',
     () async {
+      final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
       build();
       container
           .read(settingsProvider.notifier)
@@ -223,7 +222,7 @@ void main() {
             container
                 .read(settingsProvider)
                 .translation
-                .copyWith(service: TranslationServiceId.google),
+                .copyWith(service: other),
           );
       await jobs().run(_key, _lines, _en);
       expect(runner.calls, isEmpty);

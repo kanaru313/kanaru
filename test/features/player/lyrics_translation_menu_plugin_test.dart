@@ -8,13 +8,14 @@ import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service_needs_config_watch.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics_translation/fake_plugin_runner.dart';
 import 'fake_translation_controller.dart';
 
-const _google = TranslationServiceId.google;
 const _id = 'plugin-abc123def456';
+const _otherId = 'plugin-111111111111';
 
 class _NeedsConfig extends Fake implements LyricsPluginsController {
   _NeedsConfig(this.answer);
@@ -27,7 +28,9 @@ class _NeedsConfig extends Fake implements LyricsPluginsController {
 
 void main() {
   final plugin = TranslationServiceId.tryParse(_id)!;
+  final other = TranslationServiceId.tryParse(_otherId)!;
   late ProviderContainer container;
+  late FakeTranslationController fake;
 
   TranslationPrefs prefs() => container.read(settingsProvider).translation;
 
@@ -42,12 +45,14 @@ void main() {
     tester.view.physicalSize = const Size(800, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final live = [translateRecord(_id, name: pluginName)];
+    final live = [
+      translateRecord(_id, name: pluginName),
+      translateRecord(_otherId, name: 'Other'),
+    ];
+    fake = FakeTranslationController(TranslationOff(fakeTranslationInfo()));
     container = ProviderContainer(
       overrides: [
-        fakeTranslationOverride(
-          FakeTranslationController(TranslationOff(fakeTranslationInfo())),
-        ),
+        fakeTranslationOverride(fake),
         initialSettingsProvider.overrideWithValue(
           AppSettings(translation: settings),
         ),
@@ -70,25 +75,20 @@ void main() {
     await tester.tap(find.byType(IconButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    if (openService) {
+    if (openService &&
+        find.widgetWithText(MenuItemButton, pluginName).evaluate().isEmpty) {
       await tester.tap(find.text('Service'));
       await tester.pumpAndSettle();
     }
   }
 
-  Finder radio(String name) =>
-      find.widgetWithText(RadioMenuButton<TranslationServiceId>, name);
+  Finder radio(String name) => find.widgetWithText(MenuItemButton, name);
 
-  testWidgets('the service submenu lists Google and plugins by name', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      settings: const TranslationPrefs(noticeAcknowledged: {_google}),
-    );
+  testWidgets('the service submenu lists plugins by name', (tester) async {
+    await pump(tester, settings: TranslationPrefs(noticeAcknowledged: {other}));
 
-    expect(radio('Google'), findsOneWidget);
     expect(radio('Gemini'), findsOneWidget);
+    expect(radio('Other'), findsOneWidget);
   });
 
   testWidgets('a plugin that was not accepted asks while translation is on', (
@@ -96,9 +96,10 @@ void main() {
   ) async {
     await pump(
       tester,
-      settings: const TranslationPrefs(
+      settings: TranslationPrefs(
         show: true,
-        noticeAcknowledged: {_google},
+        service: other,
+        noticeAcknowledged: {other},
       ),
     );
 
@@ -109,12 +110,12 @@ void main() {
       find.text('Lyrics will be sent to the plugin Gemini'),
       findsOneWidget,
     );
-    expect(prefs().service, _google);
+    expect(prefs().service, other);
 
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(prefs().service, plugin);
-    expect(prefs().noticeAcknowledged, {_google, plugin});
+    expect(prefs().noticeAcknowledged, {other, plugin});
   });
 
   testWidgets('an accepted plugin is picked at once', (tester) async {
@@ -122,7 +123,8 @@ void main() {
       tester,
       settings: TranslationPrefs(
         show: true,
-        noticeAcknowledged: {_google, plugin},
+        service: other,
+        noticeAcknowledged: {other, plugin},
       ),
     );
 
@@ -133,7 +135,7 @@ void main() {
     expect(prefs().service, plugin);
   });
 
-  testWidgets('a stored plugin that is gone shows Google as picked', (
+  testWidgets('a stored plugin that is gone shows Not selected, no checkmark', (
     tester,
   ) async {
     await pump(
@@ -143,19 +145,53 @@ void main() {
       ),
     );
 
-    final google = tester.widget<RadioMenuButton<TranslationServiceId>>(
-      radio('Google'),
+    expect(find.text('Not selected'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: radio('Other'),
+        matching: find.byIcon(AppIcons.check),
+      ),
+      findsNothing,
     );
-    expect(google.groupValue, _google);
-    expect(prefs().service.value, 'plugin-zzzzzzzzzzzz');
+    expect(
+      find.descendant(
+        of: radio('Gemini'),
+        matching: find.byIcon(AppIcons.check),
+      ),
+      findsNothing,
+    );
+    expect(prefs().service?.value, 'plugin-zzzzzzzzzzzz');
+  });
+
+  testWidgets('switching service while on does not resend to the old one', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      settings: TranslationPrefs(
+        show: true,
+        service: other,
+        noticeAcknowledged: {other, plugin},
+      ),
+    );
+
+    await tester.tap(radio('Gemini'));
+    await tester.pumpAndSettle();
+
+    expect(prefs().service, plugin);
+    expect(prefs().show, isTrue);
+    // The controller rebuilds on the settings change and asks for the new
+    // service itself; no forced run goes out for the previous key.
+    expect(fake.retranslateCalls, 0);
   });
 
   testWidgets('Cancel on the notice changes nothing', (tester) async {
     await pump(
       tester,
-      settings: const TranslationPrefs(
+      settings: TranslationPrefs(
         show: true,
-        noticeAcknowledged: {_google},
+        service: other,
+        noticeAcknowledged: {other},
       ),
     );
 
@@ -164,14 +200,42 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
 
-    expect(prefs().service, _google);
-    expect(prefs().noticeAcknowledged, {_google});
+    expect(prefs().service, other);
+    expect(prefs().noticeAcknowledged, {other});
   });
+
+  testWidgets(
+    'picking a plugin from null asks the notice and turns translation on; Cancel leaves it null',
+    (tester) async {
+      await pump(tester, settings: const TranslationPrefs());
+
+      await tester.tap(radio('Gemini'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Lyrics will be sent to the plugin Gemini'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(prefs().service, isNull);
+      expect(prefs().show, isFalse);
+
+      await tester.tap(radio('Gemini'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(prefs().service, plugin);
+      expect(prefs().show, isTrue);
+      expect(prefs().noticeAcknowledged, {plugin});
+    },
+  );
 
   testWidgets('picking a plugin that needs config reports it', (tester) async {
     await pump(
       tester,
-      settings: TranslationPrefs(noticeAcknowledged: {_google, plugin}),
+      settings: TranslationPrefs(noticeAcknowledged: {other, plugin}),
       needsConfig: true,
     );
 
@@ -187,9 +251,10 @@ void main() {
   testWidgets('Cancel on the notice reports nothing', (tester) async {
     await pump(
       tester,
-      settings: const TranslationPrefs(
+      settings: TranslationPrefs(
         show: true,
-        noticeAcknowledged: {_google},
+        service: other,
+        noticeAcknowledged: {other},
       ),
       needsConfig: true,
     );
@@ -200,17 +265,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
-  });
-
-  testWidgets('a plugin named Google shows as Google (plugin)', (tester) async {
-    await pump(
-      tester,
-      settings: const TranslationPrefs(noticeAcknowledged: {_google}),
-      pluginName: 'Google',
-    );
-
-    expect(radio('Google (plugin)'), findsOneWidget);
-    expect(radio('Google'), findsOneWidget);
   });
 
   for (final (label, state) in [
@@ -232,17 +286,18 @@ void main() {
           recordsState: state,
         );
 
-        final selected = tester.widget<RadioMenuButton<TranslationServiceId>>(
-          find.byType(RadioMenuButton<TranslationServiceId>).first,
+        expect(
+          find.descendant(
+            of: radio('Gemini'),
+            matching: find.byIcon(AppIcons.check),
+          ),
+          findsOneWidget,
         );
-        expect(selected.groupValue, plugin);
-        for (final r
-            in tester.widgetList<RadioMenuButton<TranslationServiceId>>(
-              find.byType(RadioMenuButton<TranslationServiceId>),
-            )) {
-          expect(r.onChanged, isNull);
-        }
-        await tester.tap(radio('Google'), warnIfMissed: false);
+        expect(
+          tester.widget<MenuItemButton>(radio('Gemini')).onPressed,
+          isNull,
+        );
+        await tester.tap(radio('Gemini'), warnIfMissed: false);
         await tester.pumpAndSettle();
         expect(prefs().service, plugin);
       },

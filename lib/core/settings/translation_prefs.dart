@@ -14,7 +14,7 @@ enum LyricsTranslationDisplay {
 class TranslationPrefs {
   const TranslationPrefs({
     this.show = false,
-    this.service = TranslationServiceId.google,
+    this.service,
     this.targetLanguage,
     this.display = LyricsTranslationDisplay.underLine,
     this.noticeAcknowledged = const {},
@@ -23,7 +23,7 @@ class TranslationPrefs {
   /// Translated lines are shown (and fetched) for the playing song.
   final bool show;
 
-  final TranslationServiceId service;
+  final TranslationServiceId? service;
 
   /// Language the lyrics are translated into, a code of
   /// `translationLanguages`; `null` follows the app's language.
@@ -31,13 +31,14 @@ class TranslationPrefs {
 
   final LyricsTranslationDisplay display;
 
-  /// Services (`google` or plugin ids) the user accepted "lyrics will be sent
-  /// to `<service>`" for. Switching to another service asks once more.
+  /// Translate plugin ids the user accepted "lyrics will be sent to
+  /// `<service>`" for. Switching to another service asks once more.
   final Set<TranslationServiceId> noticeAcknowledged;
 
   /// The stored [service] has not been accepted yet. Callers that decide
   /// about a request ask `needsNoticeFor` with the effective service.
-  bool get needsNotice => !noticeAcknowledged.contains(service);
+  bool get needsNotice =>
+      service == null || !noticeAcknowledged.contains(service);
 
   TranslationPrefs copyWith({
     bool? show,
@@ -50,6 +51,17 @@ class TranslationPrefs {
     targetLanguage: targetLanguage,
     display: display ?? this.display,
     noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
+  );
+
+  /// Returns a copy with [service] set to `null` and [show] set to `false`.
+  ///
+  /// Used by sweeps and resets when a configured service is no longer available.
+  TranslationPrefs withoutService() => TranslationPrefs(
+    show: false,
+    service: null,
+    targetLanguage: targetLanguage,
+    display: display,
+    noticeAcknowledged: noticeAcknowledged,
   );
 
   /// Separate from [copyWith] because `null` is a valid target here.
@@ -83,7 +95,7 @@ class TranslationPrefs {
 
   @override
   String toString() =>
-      'TranslationPrefs(show: $show, service: ${service.value}, '
+      'TranslationPrefs(show: $show, service: ${service?.value}, '
       'targetLanguage: $targetLanguage, display: ${display.name}, '
       'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()})';
 }

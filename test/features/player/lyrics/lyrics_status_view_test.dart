@@ -17,7 +17,6 @@ import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
-import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -31,6 +30,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/lyrics/online/fake_lyrics_provider.dart';
 import '../../../core/lyrics/online/status_test_rig.dart';
+import '../../../core/lyrics_translation/fake_plugin_runner.dart';
 import '../../../core/player/fake_audio_backend.dart';
 import '../fake_translation_controller.dart';
 import 'fake_playing_lyrics_resolution.dart';
@@ -578,7 +578,10 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Lyrics will be sent to Google'), findsNothing);
+      expect(
+        find.text('Lyrics will be sent to the plugin Test Translate'),
+        findsNothing,
+      );
       expect(find.byType(AlertDialog), findsNothing);
       expect(container.read(settingsProvider).translation.show, isFalse);
     });
@@ -638,7 +641,7 @@ void main() {
       final fake = FakeTranslationController(
         TranslationReady(
           fakeTranslationInfo(),
-          TranslationServiceId.google,
+          testTranslatePlugin,
           'ja',
           const ['Dòng một', 'Dòng hai'],
           false,
@@ -649,14 +652,16 @@ void main() {
         LyricsFound(_uri, fakeSyncedLyrics(), origin: _origin),
         overrides: [
           fakeTranslationOverride(fake),
+          ...translatePluginOverrides(),
           lyricsProvidersProvider.overrideWithValue([
             LyricsProviderRegistration(FakeLyricsProvider()),
           ]),
         ],
-        settings: const AppSettings(
+        settings: AppSettings(
           translation: TranslationPrefs(
             show: true,
-            noticeAcknowledged: {TranslationServiceId.google},
+            service: testTranslatePlugin,
+            noticeAcknowledged: {testTranslatePlugin},
           ),
         ),
       );
@@ -665,7 +670,7 @@ void main() {
       expect(find.text('Lyrics from Fake'), findsNothing);
       expect(find.text('Show translation'), findsNothing);
 
-      await tester.tap(find.text('Google · English'));
+      await tester.tap(find.text('Test Translate · English'));
       await tester.pumpAndSettle();
       expect(find.text('Show translation'), findsOneWidget);
     });
