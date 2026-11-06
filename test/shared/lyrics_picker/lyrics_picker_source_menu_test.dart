@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
-import 'package:kanaru/shared/lyrics_picker/lyrics_picker_marquee_label.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_source_menu.dart';
+import 'package:kanaru/shared/widgets/marquee_text.dart';
 import 'package:material_ui/material_ui.dart';
 
 class _Host extends StatefulWidget {
@@ -85,7 +85,7 @@ void main() {
   /// Whether the marquee text has moved from its start.
   double scrolled(WidgetTester tester) {
     final transform = find.descendant(
-      of: find.byType(LyricsPickerMarqueeLabel),
+      of: find.byType(MarqueeText),
       matching: find.byType(Transform),
     );
     if (transform.evaluate().isEmpty) return 0;

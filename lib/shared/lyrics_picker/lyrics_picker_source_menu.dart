@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
-import 'lyrics_picker_marquee_label.dart';
+import '../widgets/marquee_text.dart';
 import 'lyrics_picker_result_sources.dart';
 import '../icons/app_icons.dart';
 
@@ -171,7 +171,7 @@ class _LyricsPickerSourceMenuState extends State<LyricsPickerSourceMenu> {
               child: Row(
                 children: [
                   Expanded(
-                    child: LyricsPickerMarqueeLabel(
+                    child: MarqueeText(
                       text: label,
                       active: _active,
                       style: textStyle,

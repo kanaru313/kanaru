@@ -5580,4 +5580,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsFontGroupCatalog => 'Catalog';
+
+  @override
+  String selectionPickerSearchHint(int count) {
+    return 'Search $count items';
+  }
+
+  @override
+  String selectionPickerNoMatch(String query) {
+    return 'Nothing matches “$query”';
+  }
 }

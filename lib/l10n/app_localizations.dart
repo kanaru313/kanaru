@@ -8083,6 +8083,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Catalog'**
   String get settingsFontGroupCatalog;
+
+  /// Hint of the search field in a selection picker with more than 8 items
+  ///
+  /// In en, this message translates to:
+  /// **'Search {count} items'**
+  String selectionPickerSearchHint(int count);
+
+  /// Shown when the search field of a selection picker matches no item
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{query}”'**
+  String selectionPickerNoMatch(String query);
 }
 
 class _AppLocalizationsDelegate

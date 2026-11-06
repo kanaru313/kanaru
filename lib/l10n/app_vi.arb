@@ -2102,5 +2102,7 @@
   "deleteCustomFontConfirm": "Xóa",
   "settingsFontGroupBuiltIn": "Phông chữ có sẵn",
   "settingsFontGroupCustom": "Phông chữ tùy chỉnh",
-  "settingsFontGroupCatalog": "Kho phông chữ trực tuyến"
+  "settingsFontGroupCatalog": "Kho phông chữ trực tuyến",
+  "selectionPickerSearchHint": "Tìm trong {count} mục",
+  "selectionPickerNoMatch": "Không có mục nào khớp «{query}»"
 }

@@ -5254,4 +5254,14 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsFontGroupCatalog => 'Kho phông chữ trực tuyến';
+
+  @override
+  String selectionPickerSearchHint(int count) {
+    return 'Tìm trong $count mục';
+  }
+
+  @override
+  String selectionPickerNoMatch(String query) {
+    return 'Không có mục nào khớp «$query»';
+  }
 }

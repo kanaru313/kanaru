@@ -5571,5 +5571,23 @@
   "settingsFontGroupCustom": "Custom",
   "@settingsFontGroupCustom": { "description": "Section title for imported custom fonts" },
   "settingsFontGroupCatalog": "Catalog",
-  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" }
+  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" },
+  "selectionPickerSearchHint": "Search {count} items",
+  "@selectionPickerSearchHint": {
+    "description": "Hint of the search field in a selection picker with more than 8 items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectionPickerNoMatch": "Nothing matches “{query}”",
+  "@selectionPickerNoMatch": {
+    "description": "Shown when the search field of a selection picker matches no item",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  }
 }

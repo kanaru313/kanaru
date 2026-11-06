@@ -20,10 +20,18 @@ class ContextModalSheetFrame extends StatefulWidget {
     super.key,
     required this.onClose,
     required this.child,
+    this.maxHeightFraction = _sheetMaxHeightFraction,
+    this.color,
   });
 
   final VoidCallback onClose;
   final Widget child;
+
+  /// Share of the screen height the sheet may take.
+  final double maxHeightFraction;
+
+  /// Surface color of the sheet; `surfaceContainerHigh` when null.
+  final Color? color;
 
   @override
   State<ContextModalSheetFrame> createState() => _ContextModalSheetFrameState();
@@ -49,7 +57,7 @@ class _ContextModalSheetFrameState extends State<ContextModalSheetFrame> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final media = MediaQuery.of(context);
-    final height = media.size.height * _sheetMaxHeightFraction;
+    final height = media.size.height * widget.maxHeightFraction;
     final reduce = MediaQuery.disableAnimationsOf(context);
     return Align(
       alignment: Alignment.bottomCenter,
@@ -60,7 +68,7 @@ class _ContextModalSheetFrameState extends State<ContextModalSheetFrame> {
         transform: Matrix4.translationValues(0, _dy, 0),
         constraints: BoxConstraints(maxHeight: height),
         child: Material(
-          color: colors.surfaceContainerHigh,
+          color: widget.color ?? colors.surfaceContainerHigh,
           elevation: 6,
           clipBehavior: Clip.antiAlias,
           shape: const RoundedRectangleBorder(
