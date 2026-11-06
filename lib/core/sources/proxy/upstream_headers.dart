@@ -5,14 +5,16 @@ final _mediaType = RegExp(
   caseSensitive: false,
 );
 
-final _control = RegExp(r'[\x00-\x1f\x7f]');
+/// Anything but printable ASCII: control characters, DEL and every
+/// non-ASCII character (dart:io refuses those in a header value).
+final _notPrintableAscii = RegExp(r'[^\x20-\x7e]');
 
 /// [value] when it is a media type that may go into a `content-type`
-/// header as it is (no control characters, nothing but a type and simple
+/// header as it is (printable ASCII only, nothing but a type and simple
 /// parameters), else null. Neither the plugin's type nor the upstream's is
 /// ever copied unchecked.
 String? safeMediaType(String? value) {
-  if (value == null || _control.hasMatch(value)) return null;
+  if (value == null || _notPrintableAscii.hasMatch(value)) return null;
   return _mediaType.hasMatch(value) ? value : null;
 }
 

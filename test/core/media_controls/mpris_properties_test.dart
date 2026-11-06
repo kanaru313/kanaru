@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/play_queue.dart';
 import 'package:kanaru/core/player/player_state.dart';
 import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/sources/remote_source_ref.dart';
 
 final tracks = [
   for (final name in ['a', 'b', 'c']) Track.fromPath('/music/$name.mp3'),
@@ -313,6 +314,23 @@ void main() {
       final m = metadata(stateOf(remote), null, 'https://example.com/c.jpg');
       expect(m.containsKey('xesam:url'), isFalse);
       expect(m.containsKey('mpris:artUrl'), isFalse);
+    });
+
+    test('a remote track publishes no url', () {
+      const ref = RemoteSourceRef(
+        installId: 'plugin-abc123def456',
+        itemId: 'video 1',
+        webUrl: 'https://example.com/watch?v=1',
+      );
+      final remote = PlayQueue(
+        original: [
+          Track(uri: remoteTrackUri(ref), title: 'Remote', remote: ref),
+        ],
+      );
+      final m = metadata(stateOf(remote));
+      expect(m['xesam:title'], const DBusString('Remote'));
+      expect(m.containsKey('xesam:url'), isFalse);
+      expect(mprisFileUrl(remoteTrackUri(ref)), isNull);
     });
   });
 

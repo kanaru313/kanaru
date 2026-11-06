@@ -44,7 +44,9 @@ ProxyAnswer streamingProxyAnswer(
 
 /// Streams the bytes `start..end` to the client: first the body of the
 /// upstream answer already open, then, when [chunked], one bounded upstream
-/// request per chunk of [chunkBytes]. The client's pauses pause the
+/// request per chunk of [chunkBytes]. Each later chunk must start where the
+/// body is and be of the same [total] size as the first answer (a fresh
+/// stream may point at another file). The client's pauses pause the
 /// upstream; the client leaving cancels it. A failure after the headers
 /// ends the body.
 class ProxyBodyPump {
@@ -52,6 +54,7 @@ class ProxyBodyPump {
     required HttpClientResponse this._first,
     required int start,
     required this._end,
+    required this._total,
     required this._chunked,
     required this._chunkBytes,
     required this._fetch,
@@ -68,6 +71,7 @@ class ProxyBodyPump {
   HttpClientResponse? _first;
   int _pos;
   final int _end;
+  final int _total;
   final bool _chunked;
   final int _chunkBytes;
   final ChunkFetch _fetch;
@@ -146,7 +150,10 @@ class ProxyBodyPump {
     if (_closed ||
         response.statusCode != HttpStatus.partialContent ||
         range == null ||
-        range.start != _pos) {
+        range.start != _pos ||
+        range.total != _total) {
+      // Not the next bytes of the same body: splicing them in would
+      // corrupt it, while a cut body makes the client reconnect.
       discardUpstream(response);
       close();
       return;

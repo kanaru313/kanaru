@@ -39,6 +39,9 @@ class FakeUpstream {
   /// Paths answered 302 to another place.
   final redirected = <String>{};
 
+  /// Paths that serve another body than [bytes] (another file).
+  final bodies = <String, List<int>>{};
+
   /// Answers 206 without `Content-Range` and without `Content-Length`.
   bool omitLengths = false;
 
@@ -72,6 +75,7 @@ class FakeUpstream {
 
   Future<void> _serve(HttpRequest request) async {
     final path = request.uri.path;
+    final bytes = bodies[path] ?? this.bytes;
     final range = request.headers.value('range');
     requests.add((path: path, range: range, headers: request.headers));
     final response = request.response;
@@ -135,7 +139,8 @@ class FakeUpstream {
         closed = true;
         if (finished) return;
         cutShort++;
-        _cuts.add(null);
+        // The client may close after the test ended and closed the fake.
+        if (!_cuts.isClosed) _cuts.add(null);
       },
     );
     try {
@@ -143,9 +148,14 @@ class FakeUpstream {
         final to = (at + piece).clamp(0, end + 1);
         socket.add(bytes.sublist(at, to));
         await socket.flush();
+        if (to > end) {
+          // The whole body is out: a client closing from now on is not a
+          // cut, and there is no pause after the last piece.
+          finished = !closed;
+          break;
+        }
         if (pause > Duration.zero) await Future<void>.delayed(pause);
       }
-      finished = !closed;
       await socket.close();
     } on Object {
       socket.destroy();

@@ -1,3 +1,5 @@
+import '../sources/remote_source_ref.dart';
+
 /// One playable item in the queue. Two tracks are the same when they point at
 /// the same [uri], whatever metadata they carry.
 class Track {
@@ -9,6 +11,7 @@ class Track {
     this.duration,
     this.album,
     this.year,
+    this.remote,
   });
 
   /// Builds a track from a local path, titled after the file name without
@@ -29,6 +32,11 @@ class Track {
   /// Album and release year, shown on the queue row; null when unknown.
   final String? album;
   final int? year;
+
+  /// Where a track found through a source plugin comes from; null for a
+  /// local file. Its [uri] is then a `kanaru-source:` uri that only names the
+  /// item: the engine plays the proxy URL made from this instead.
+  final RemoteSourceRef? remote;
 
   @override
   bool operator ==(Object other) => other is Track && other.uri == uri;

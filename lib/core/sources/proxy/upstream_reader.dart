@@ -129,6 +129,7 @@ class UpstreamReader {
       first: response,
       start: span.start,
       end: span.end,
+      total: total,
       // A 200 already holds every byte from the first one on.
       chunked: ranged,
       chunkBytes: chunkBytes,

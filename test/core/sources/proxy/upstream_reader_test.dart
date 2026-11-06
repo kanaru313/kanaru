@@ -171,6 +171,22 @@ void main() {
     expect(resolver.calls, [false, true]);
   });
 
+  test('a fresh stream of another size after a 403 ends the body instead of '
+      'splicing its bytes in', () async {
+    upstream
+      ..forbiddenAfter['/s1'] = 1
+      ..bodies['/s2'] = List.filled(4000, 7);
+    final answer = await open('bytes=0-');
+    expect(answer.status, 206);
+    expect(answer.headers['content-range'], 'bytes 0-2499/2500');
+    expect(await body(answer), bytes.sublist(0, 1000));
+    expect(resolver.calls, [false, true]);
+    expect(
+      [for (final r in upstream.requests) '${r.path} ${r.range}'],
+      ['/s1 bytes=0-999', '/s1 bytes=1000-1999', '/s2 bytes=1000-1999'],
+    );
+  });
+
   test('a redirect answers 502 and is not followed', () async {
     upstream.redirected.add('/s1');
     final answer = await open('bytes=0-');
@@ -269,6 +285,14 @@ void main() {
         expect(answer.headers.containsKey('x-evil'), isFalse);
       },
     );
+
+    test('a plugin type with a non-ASCII character falls back to the upstream '
+        'one', () async {
+      resolver.mimeType = 'audio/webm; codecs="opus é"';
+      upstream.contentType = 'audio/ogg';
+      final answer = await open('bytes=0-9');
+      expect(answer.headers['content-type'], 'audio/ogg');
+    });
 
     test('none when neither is a media type', () async {
       resolver.mimeType = 'webm';

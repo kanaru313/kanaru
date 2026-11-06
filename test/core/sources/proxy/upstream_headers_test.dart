@@ -21,6 +21,12 @@ void main() {
       expect(safeMediaType('audio/webm\x7f'), isNull);
     });
 
+    test('refuses non-ASCII characters, inside a quoted parameter too', () {
+      expect(safeMediaType('audio/webm; codecs="opus é"'), isNull);
+      expect(safeMediaType('audio/webm; codecs="\u{1F3B5}"'), isNull);
+      expect(safeMediaType('audio/wébm'), isNull);
+    });
+
     test('refuses what is not a media type', () {
       for (final value in [null, '', 'audio', 'audio/', '/webm', 'a b/c']) {
         expect(safeMediaType(value), isNull, reason: '$value');

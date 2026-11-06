@@ -10,8 +10,8 @@ const mpvStartupOptions = <(String, String)>[
   ('gapless-audio', 'weak'),
   // media_kit turns on mpv's disk cache, but libmpv runs with config=no and
   // has no cache directory, so every opened file logged "Failed to create
-  // file cache". Audio fits the RAM cache; remote streams will be cached by
-  // the local proxy, not by mpv.
+  // file cache". Audio fits the RAM cache; remote streams, which mpv reads
+  // from the local proxy over loopback HTTP, use that RAM cache too.
   ('cache-on-disk', 'no'),
   // A local file named `.mp3` that holds an M3U or HLS playlist makes mpv's
   // own playlist demuxer fetch the URLs in it (measured: one request per
@@ -21,14 +21,21 @@ const mpvStartupOptions = <(String, String)>[
   // also stop it, but media_kit's `open` loads the track through `loadlist`
   // of a temporary playlist file, which that option refuses, so nothing
   // would play. The playlist given to `loadlist` is still read: it forces
-  // the playlist format and does not use `demuxer`. Remote sources will
-  // need the whitelist widened for the local HTTP proxy.
+  // the playlist format and does not use `demuxer`. Remote tracks need no
+  // wider whitelist: mpv opens the loopback `http://127.0.0.1` proxy URL
+  // itself, not as a nested open of libavformat (measured, with these
+  // options).
   // Setting `demuxer-lavf-o` replaces media_kit's whole value
   // (`seg_max_retry=5,strict=experimental,allowed_extensions=ALL,
   // protocol_whitelist=...`, media_kit `real.dart`). That is fine for local
-  // files; remote sources may need the `-append` form to keep those keys.
+  // files and for the proxy's audio.
   ('demuxer', 'lavf'),
   ('demuxer-lavf-o', 'protocol_whitelist=file'),
+  // media_kit sets 5 s, which is shorter than a cold stream resolve: the
+  // proxy answers a remote track's first request only after the plugin's
+  // `stream.js` ran (measured: with 5 mpv gave up after 5.3 s on a response
+  // held for 7 s; with 30 it played).
+  ('network-timeout', '30'),
 ];
 
 /// Options whose value is read back after they are set: mpv ignores a failed

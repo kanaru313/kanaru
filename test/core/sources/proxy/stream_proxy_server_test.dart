@@ -86,6 +86,19 @@ void main() {
     expect(answer.body, bytes);
   });
 
+  test('a plugin type with a non-ASCII character: the answer is still '
+      'written, with the upstream type', () async {
+    resolver.mimeType = 'audio/webm; codecs="opus é"';
+    upstream.contentType = 'audio/ogg';
+    final answer = await rawRequest(
+      await urlFor(),
+      range: 'bytes=0-',
+    ).timeout(const Duration(seconds: 5));
+    expect(answer.status, 206);
+    expect(answer.headers['content-type'], 'audio/ogg');
+    expect(answer.body, bytes);
+  });
+
   test('requests of one playthrough share one resolve', () async {
     final url = await urlFor();
     await rawRequest(url, range: 'bytes=0-');

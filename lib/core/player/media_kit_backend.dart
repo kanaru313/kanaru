@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
+import '../sources/remote_source_ref.dart';
 import 'audio_backend.dart';
 import 'audio_output_device.dart';
 import 'mpv_audio_output.dart';
@@ -31,6 +32,15 @@ Level mpvLogLevel(String prefix, String level, String text) {
   return level == 'error' || level == 'fatal' ? Level.SEVERE : Level.WARNING;
 }
 
+/// [message] with the session token of a loopback proxy URL replaced by
+/// `***`: mpv's errors name the whole URL they failed to open, and the token
+/// is the only thing that keeps other local programs from using the proxy.
+@visibleForTesting
+String redactProxyToken(String message) =>
+    message.replaceAllMapped(_proxyUrlToken, (match) => '${match[1]}***/');
+
+final _proxyUrlToken = RegExp(r'(http://127\.0\.0\.1:\d+/)[^/\s]+/');
+
 /// [AudioBackend] on top of a media_kit (libmpv) [Player].
 ///
 /// Owns the command chain that runs every playlist change one at a time, and
@@ -43,7 +53,9 @@ class MediaKitBackend implements AudioBackend {
   /// moment between a loop and its re-arm.
   static const _loopBudget = 10000;
 
-  MediaKitBackend()
+  /// [remoteUrl] gives the URL mpv plays for a remote track (the stream
+  /// proxy's); without it, or when it fails, the track's own uri is used.
+  MediaKitBackend({this._remoteUrl})
     : _player = Player(
         // Fixed, not tied to KANARU_LOG_LEVEL: below `warn` mpv is too noisy.
         configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
@@ -81,14 +93,16 @@ class MediaKitBackend implements AudioBackend {
         }),
       );
     });
-    _forwardError = _player.stream.error.listen(_tracker.recordError);
+    _forwardError = _player.stream.error.listen(
+      (message) => _tracker.recordError(redactProxyToken(message)),
+    );
     // No de-duplication here or in media_kit: its `distinct` compares
     // `PlayerLog` objects, which have no `==`, so every line gets through.
     _forwardLog = _player.stream.log.listen((entry) {
       _audio.onMpvLog(entry);
       _mpvLog.log(
         mpvLogLevel(entry.prefix, entry.level, entry.text),
-        '${entry.prefix}: ${entry.text}',
+        '${entry.prefix}: ${redactProxyToken(entry.text)}',
       );
     });
     _forwardDuration = _player.stream.duration.listen((duration) {
@@ -121,6 +135,7 @@ class MediaKitBackend implements AudioBackend {
         });
   }
 
+  final Future<String> Function(RemoteSourceRef)? _remoteUrl;
   final Player _player;
   late final MpvAudioOutput _audio;
   late final MpvPlaylistTracker _tracker;
@@ -161,10 +176,27 @@ class MediaKitBackend implements AudioBackend {
 
   Future<int> _intProperty(String name) => _tracker.readInt(name);
 
+  /// What mpv is given for [track]: the proxy URL of a remote track (which
+  /// begins that item's playthrough), the track's uri otherwise. When the
+  /// proxy cannot give a URL the uri is used: mpv cannot open it, so the
+  /// track fails and is skipped like a broken file.
+  Future<String> _playUri(Track track) async {
+    final ref = track.remote;
+    final remoteUrl = _remoteUrl;
+    if (ref == null || remoteUrl == null) return track.uri;
+    try {
+      return await remoteUrl(ref);
+    } on Object catch (error) {
+      // The type only: the message may name a URL.
+      _log.warning('No stream URL for ${ref.installId}: ${error.runtimeType}');
+      return track.uri;
+    }
+  }
+
   Future<void> _queueNext(Track? next) async {
     _tracker.queueNext(next);
     if (next == null) return;
-    await _native.command(['loadfile', next.uri, 'append']);
+    await _native.command(['loadfile', await _playUri(next), 'append']);
     final last = await _intProperty('playlist-count') - 1;
     // mpv went idle before the entry arrived, so it was never tried and
     // never will be: drop it, and the idle handler reports the stop.
@@ -243,7 +275,10 @@ class MediaKitBackend implements AudioBackend {
         // are removed; harmless, as nothing reloads an entry but `open`,
         // which resets that list.
         await _player.open(
-          Media(track.uri, start: start > Duration.zero ? start : null),
+          Media(
+            await _playUri(track),
+            start: start > Duration.zero ? start : null,
+          ),
           play: play,
         );
         _tracker.setCurrent(track, await _tracker.entryId(0));
