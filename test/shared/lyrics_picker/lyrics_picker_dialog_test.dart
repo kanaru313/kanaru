@@ -129,6 +129,12 @@ void main() {
   Finder inDialog(String text) =>
       find.descendant(of: find.byType(Dialog), matching: find.text(text));
 
+  testWidgets('opened from a menu it has no back arrow', (tester) async {
+    await open(tester);
+    expect(find.byType(LyricsPickerDialog), findsOneWidget);
+    expect(find.byTooltip('Back'), findsNothing);
+  });
+
   testWidgets('Cancel on the notice opens no dialog and sends nothing', (
     tester,
   ) async {

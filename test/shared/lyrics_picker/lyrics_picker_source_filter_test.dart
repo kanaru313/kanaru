@@ -5,6 +5,7 @@ import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_dialog.dart';
+import 'package:kanaru/shared/widgets/selection_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/online/fake_lyrics_provider.dart';
@@ -159,7 +160,7 @@ void main() {
 
     // The tile's name is capped too.
     final tileName = find.descendant(
-      of: find.byType(ListTile),
+      of: find.byType(SelectionRow),
       matching: find.text(longName),
     );
     expect(tileName, findsOneWidget);

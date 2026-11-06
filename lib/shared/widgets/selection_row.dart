@@ -22,6 +22,7 @@ class SelectionRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.subtitle,
+    this.subtitleMaxLines,
     this.leading,
     this.trailing,
     this.details,
@@ -31,6 +32,9 @@ class SelectionRow extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// Lines the subtitle may take, ellipsized beyond; `null` shows all of it.
+  final int? subtitleMaxLines;
   final Widget? leading;
 
   /// Replaces the check slot (same minimum width, so titles still line up).
@@ -111,6 +115,10 @@ class SelectionRow extends StatelessWidget {
                             if (subtitle != null && subtitle.isNotEmpty)
                               Text(
                                 subtitle,
+                                maxLines: subtitleMaxLines,
+                                overflow: subtitleMaxLines == null
+                                    ? null
+                                    : TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: subColor,
                                 ),

@@ -4,6 +4,7 @@ import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker.dart';
 import 'package:kanaru/shared/lyrics_picker/lyrics_picker_results_pane.dart';
+import 'package:kanaru/shared/widgets/selection_row.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/online/fake_lyrics_provider.dart';
@@ -92,7 +93,7 @@ void main() {
     await open(tester);
     expect(tester.getSize(contentBox()).height, 720);
     // The list shows at least two full tiles.
-    final tile = tester.getSize(find.byType(ListTile).first).height;
+    final tile = tester.getSize(find.byType(SelectionRow).first).height;
     expect(tester.getSize(resultList()).height, greaterThanOrEqualTo(tile * 2));
   });
 

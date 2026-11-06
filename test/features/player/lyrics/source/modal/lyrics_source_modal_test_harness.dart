@@ -58,6 +58,7 @@ Future<SourceModalHarness> pumpSourceModal(
   List<LyricsPluginRecord> records = const [],
   Set<String> disabled = const {},
   bool autoAllowed = true,
+  bool manualConsent = false,
   bool library = true,
   bool loaded = true,
   bool loadFails = false,
@@ -119,6 +120,7 @@ Future<SourceModalHarness> pumpSourceModal(
           onlineLyrics: OnlineLyricsPrefs(
             autoFetch: autoAllowed,
             autoConsent: autoAllowed,
+            manualConsent: manualConsent,
           ),
         ),
       ),

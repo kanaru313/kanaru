@@ -3170,6 +3170,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsFindOnline => 'Tìm lời online…';
 
   @override
+  String get lyricsPickerBack => 'Quay lại';
+
+  @override
   String get lyricsPickerTitle => 'Chọn lời bài hát';
 
   @override

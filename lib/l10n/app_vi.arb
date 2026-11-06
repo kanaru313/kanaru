@@ -1498,6 +1498,7 @@
   "onlineLyricsNoticeTurnOn": "Bật",
   "onlineLyricsNoticeSearch": "Tìm",
   "lyricsFindOnline": "Tìm lời online…",
+  "lyricsPickerBack": "Quay lại",
   "lyricsPickerTitle": "Chọn lời bài hát",
   "lyricsPickerSong": "Bài: {title} · {artist} · {duration}",
   "lyricsPickerSearch": "Tìm",
