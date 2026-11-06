@@ -661,6 +661,124 @@ void main() {
       });
     });
 
+    group('another service says the lyrics are already in the target', () {
+      const otherId = 'plugin-bbbbbbbbbbbb';
+      const thirdId = 'plugin-cccccccccccc';
+
+      Future<Rig> rigWith({
+        required FakePluginRunner plugin,
+        bool otherRemoved = false,
+        bool third = false,
+      }) async {
+        final rig = Rig(
+          db,
+          plugin: plugin,
+          overrides: translatePluginOverrides(
+            runner: plugin,
+            records: [
+              translateRecord(testTranslatePluginId),
+              translateRecord(otherId, removed: otherRemoved),
+              if (third) translateRecord(thirdId),
+            ],
+          ),
+        );
+        await _seed(db, _text, otherId, '{}', source: 'en');
+        if (third) {
+          await _seed(db, _text, thirdId, '{"alpha":"x","beta":"y"}');
+        }
+        await rig.play('/m/a.mp3', _text);
+        await settle(_idle);
+        return rig;
+      }
+
+      test('a live plugin row is shown without a request', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWith(plugin: plugin);
+        final same = rig.state as TranslationSameLanguage;
+        expect(same.fromOtherService, isTrue);
+        expect(same.service.value, otherId);
+        expect(plugin.calls, isEmpty);
+        rig.dispose();
+      });
+
+      test('a removed plugin row does not stop the request', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWith(plugin: plugin, otherRemoved: true);
+        await rig.untilReady();
+        expect((rig.state as TranslationReady).service, testTranslatePlugin);
+        expect(plugin.calls, isNotEmpty);
+        rig.dispose();
+      });
+
+      test('a real translation of a third plugin wins', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWith(plugin: plugin, third: true);
+        final ready = rig.state as TranslationReady;
+        expect(ready.fromOtherService, isTrue);
+        expect(ready.service.value, thirdId);
+        expect(plugin.calls, isEmpty);
+        rig.dispose();
+      });
+
+      test('retranslate refreshes, then the selected version wins', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWith(plugin: plugin);
+        rig.states.clear();
+
+        await rig.controller.retranslate();
+        await settle();
+        final first = rig.states.first as TranslationSameLanguage;
+        expect(first.fromOtherService, isTrue);
+        expect(first.refreshing, isTrue);
+        final end = rig.state as TranslationReady;
+        expect(end.fromOtherService, isFalse);
+        expect(end.service, testTranslatePlugin);
+        rig.dispose();
+      });
+
+      test(
+        'the selected plugin own verdict keeps its note on failure',
+        () async {
+          final plugin = FakePluginRunner();
+          final rig = Rig(db, plugin: plugin);
+          await _seed(db, _text, testTranslatePluginId, '{}', source: 'en');
+          await rig.play('/m/a.mp3', _text);
+          await settle(_idle);
+          expect(
+            (rig.state as TranslationSameLanguage).fromOtherService,
+            isFalse,
+          );
+
+          plugin.errors[plugin.calls.length] = failure(
+            TranslationFailureKind.server,
+          );
+          await rig.controller.retranslate();
+          await settle();
+          final same = rig.state as TranslationSameLanguage;
+          expect(same.fromOtherService, isFalse);
+          expect(same.refreshing, isFalse);
+          expect(same.retranslateFailure, TranslationFailureKind.server);
+          rig.dispose();
+        },
+      );
+
+      test('a failed retranslate keeps the note and reports it', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWith(plugin: plugin);
+
+        plugin.errors[plugin.calls.length] = failure(
+          TranslationFailureKind.server,
+        );
+        await rig.controller.retranslate();
+        await settle();
+        final same = rig.state as TranslationSameLanguage;
+        expect(same.fromOtherService, isTrue);
+        expect(same.refreshing, isFalse);
+        expect(same.retranslateFailure, TranslationFailureKind.server);
+        rig.dispose();
+      });
+    });
+
     test(
       'retranslate and retry do nothing while off or target loads',
       () async {

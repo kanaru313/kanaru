@@ -2864,6 +2864,18 @@
       }
     }
   },
+  "lyricsTranslationSameLanguageFrom": "Lyrics are already in {language} (per {service})",
+  "@lyricsTranslationSameLanguageFrom": {
+    "description": "Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      },
+      "service": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsTranslationLoading": "Translating…",
   "@lyricsTranslationLoading": {
     "description": "Footer of the lyrics translation menu while a translation is being fetched"

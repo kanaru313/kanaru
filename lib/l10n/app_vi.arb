@@ -1455,6 +1455,7 @@
   "translationServiceNotSelected": "Chưa chọn",
   "lyricsTranslationRetranslate": "Dịch lại",
   "lyricsTranslationSameLanguage": "Lời bài hát đã là {language}",
+  "lyricsTranslationSameLanguageFrom": "Lời bài hát đã là {language} (theo {service})",
   "lyricsTranslationLoading": "Đang dịch…",
   "lyricsTranslationRetry": "Thử lại",
   "lyricsTranslationFailNetwork": "Không kết nối được tới dịch vụ. Kiểm tra mạng của bạn.",

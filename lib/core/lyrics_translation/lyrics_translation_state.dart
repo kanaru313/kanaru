@@ -132,13 +132,36 @@ class TranslationReady extends LyricsTranslationState {
 
 /// The lyrics are already in the target language; only a note is shown.
 class TranslationSameLanguage extends LyricsTranslationState {
-  const TranslationSameLanguage(this.info, this.service);
+  const TranslationSameLanguage(
+    this.info,
+    this.service, {
+    this.fromOtherService = false,
+    this.refreshing = false,
+    this.retranslateFailure,
+  });
 
   final TranslationTargetInfo info;
+
+  /// The service whose verdict is shown.
   final TranslationServiceId service;
 
+  /// Whether [service] is not the selected one (a fallback, no request made).
+  final bool fromOtherService;
+
+  /// A retranslate is running while this note stays.
+  final bool refreshing;
+
+  /// Why the last retranslate failed, while this note stays.
+  final TranslationFailureKind? retranslateFailure;
+
   @override
-  List<Object?> get _props => [info, service];
+  List<Object?> get _props => [
+    info,
+    service,
+    fromOtherService,
+    refreshing,
+    retranslateFailure,
+  ];
 }
 
 /// The request failed (or could not be made); remembered until Retry.

@@ -66,29 +66,45 @@ CachedTranslation? decodeTranslationRow(LyricTranslationRow row) {
 /// The JSON stored in `lines_json`.
 String encodeTranslationLines(Map<String, String> lines) => jsonEncode(lines);
 
+/// Whether [row] records that the lyrics are already in its target language.
+bool isSameLanguageRow(CachedTranslation row) {
+  final target = translationLanguageFor(row.targetLang);
+  return target != null && isSameLanguage(row.sourceLang, target);
+}
+
 /// Splits [cached] into the [preferred] service's translation and any other
 /// service's, so the caller can offer the other as a fallback.
 ///
+/// Every row in [cached] must be for one target language and already usable
+/// (it has lines or says the lyrics are already in that language).
+///
 /// Another service's row is offered only when it is one of [knownPlugins]
 /// (every translate plugin that has a record, removed ones included: their
-/// rows are kept and named by the record), and never when it says the lyrics
-/// are already in [target]: that verdict of one service must not stop a
-/// request to the one the user picked.
+/// rows are kept and named by the record). A row with translated lines comes
+/// first. Failing that, a row saying the lyrics are already in the target
+/// language is a fallback, but only from a plugin in [livePlugins] (still
+/// installed): a removed plugin's verdict is not trusted. The [preferred]
+/// service's own row always wins, so one service's "already in the target
+/// language" never stops a request to the one the user picked.
 ({CachedTranslation? current, CachedTranslation? other}) pickCached(
   List<CachedTranslation> cached,
   TranslationServiceId preferred, {
   Set<TranslationServiceId> knownPlugins = const {},
-  TranslationLanguage? target,
+  Set<TranslationServiceId> livePlugins = const {},
 }) {
   CachedTranslation? current;
-  CachedTranslation? other;
+  CachedTranslation? withLines;
+  CachedTranslation? sameLanguage;
   for (final c in cached) {
     if (c.service == preferred) {
       current ??= c;
     } else if (knownPlugins.contains(c.service)) {
-      if (target != null && isSameLanguage(c.sourceLang, target)) continue;
-      other ??= c;
+      if (!isSameLanguageRow(c)) {
+        withLines ??= c;
+      } else if (livePlugins.contains(c.service)) {
+        sameLanguage ??= c;
+      }
     }
   }
-  return (current: current, other: other);
+  return (current: current, other: withLines ?? sameLanguage);
 }

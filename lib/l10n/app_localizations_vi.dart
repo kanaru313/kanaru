@@ -3009,6 +3009,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguageFrom(String language, String service) {
+    return 'Lời bài hát đã là $language (theo $service)';
+  }
+
+  @override
   String get lyricsTranslationLoading => 'Đang dịch…';
 
   @override

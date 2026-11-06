@@ -4646,6 +4646,12 @@ abstract class AppLocalizations {
   /// **'Lyrics are already in {language}'**
   String lyricsTranslationSameLanguage(String language);
 
+  /// Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are already in {language} (per {service})'**
+  String lyricsTranslationSameLanguageFrom(String language, String service);
+
   /// Footer of the lyrics translation menu while a translation is being fetched
   ///
   /// In en, this message translates to:

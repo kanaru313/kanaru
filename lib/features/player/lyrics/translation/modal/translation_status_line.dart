@@ -48,7 +48,8 @@ class TranslationStatusLine extends ConsumerWidget {
         actionLabel: cancel,
         onAction: ref.read(settingsProvider.notifier).toggleLyricsTranslation,
       ),
-      TranslationReady(refreshing: true) => _statusRow(
+      TranslationReady(refreshing: true) ||
+      TranslationSameLanguage(refreshing: true) => _statusRow(
         theme,
         l10n.lyricsTranslationModalRetranslating,
         actionLabel: cancel,
@@ -62,22 +63,44 @@ class TranslationStatusLine extends ConsumerWidget {
       ),
       TranslationReady(retranslateFailure: final k?, service: final s) =>
         _failureCard(context, ref, selected ?? s, k, true),
-      TranslationSameLanguage(:final info) => _statusRow(
-        theme,
-        l10n.lyricsTranslationSameLanguage(
-          languageNameInSentence(
-            l10n,
-            translationLanguageName(l10n, info.effective),
+      TranslationSameLanguage(retranslateFailure: final k?, service: final s) =>
+        _failureCard(context, ref, selected ?? s, k, true),
+      TranslationSameLanguage(
+        :final info,
+        :final service,
+        :final fromOtherService,
+      ) =>
+        _statusRow(
+          theme,
+          _sameLanguageText(context, ref, info, service, fromOtherService),
+          leading: Icon(
+            AppIcons.success,
+            size: 20,
+            color: theme.colorScheme.primary,
           ),
         ),
-        leading: Icon(
-          AppIcons.success,
-          size: 20,
-          color: theme.colorScheme.primary,
-        ),
-      ),
       _ => const SizedBox.shrink(),
     };
+  }
+
+  String _sameLanguageText(
+    BuildContext context,
+    WidgetRef ref,
+    TranslationTargetInfo info,
+    TranslationServiceId service,
+    bool fromOtherService,
+  ) {
+    final l10n = context.l10n;
+    final language = languageNameInSentence(
+      l10n,
+      translationLanguageName(l10n, info.effective),
+    );
+    if (!fromOtherService) return l10n.lyricsTranslationSameLanguage(language);
+    final infos = ref.watch(translationPluginInfosProvider);
+    return l10n.lyricsTranslationSameLanguageFrom(
+      language,
+      translationServiceName(l10n, infos, service),
+    );
   }
 
   Widget _statusRow(

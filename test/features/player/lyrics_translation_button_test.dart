@@ -155,6 +155,50 @@ void main() {
     expect(button(tester).isSelected, isTrue);
   });
 
+  testWidgets('same language with refreshing: a progress ring', (tester) async {
+    await pump(
+      tester,
+      TranslationSameLanguage(_info, _testPlugin, refreshing: true),
+    );
+
+    expect(ring, findsOneWidget);
+    expect(dot, findsNothing);
+  });
+
+  testWidgets('same language with a retranslate failure: the error dot', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      TranslationSameLanguage(
+        _info,
+        _testPlugin,
+        retranslateFailure: TranslationFailureKind.network,
+      ),
+    );
+
+    expect(dot, findsOneWidget);
+    expect(ring, findsNothing);
+  });
+
+  testWidgets('same language from another service: tooltip names it', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      TranslationSameLanguage(_info, _testPlugin, fromOtherService: true),
+    );
+
+    expect(
+      find.byTooltip(
+        translationTooltip(
+          'Lyrics are already in English (per Test Translate)',
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('failed: an error-colour dot at the corner', (tester) async {
     await pump(
       tester,

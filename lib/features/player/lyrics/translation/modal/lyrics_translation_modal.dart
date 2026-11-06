@@ -96,27 +96,35 @@ class _LyricsTranslationModalState
   }
 
   Widget? _buildActionBar(BuildContext context, LyricsTranslationState state) {
-    if (state case TranslationReady(
-      :final service,
-      fromOtherService: true,
-      refreshing: false,
-      retranslateFailure: null,
-    )) {
-      final selected = ref.watch(
-        translationServiceChoicesProvider.select((c) => c.selected),
-      );
-      if (selected == null) return null;
-      final l10n = context.l10n;
-      final plugins = ref.watch(translationPluginInfosProvider);
-      final shownName = translationServiceName(l10n, plugins, service);
-      final selectedName = translationServiceName(l10n, plugins, selected);
-      return TranslationActionBar(
-        text: l10n.lyricsTranslationModalShowingOther(shownName),
-        actionLabel: l10n.lyricsTranslationModalTranslateWith(selectedName),
-        onPressed: _retranslate,
-      );
-    }
-    return null;
+    final service = switch (state) {
+      TranslationReady(
+        :final service,
+        fromOtherService: true,
+        refreshing: false,
+        retranslateFailure: null,
+      ) ||
+      TranslationSameLanguage(
+        :final service,
+        fromOtherService: true,
+        refreshing: false,
+        retranslateFailure: null,
+      ) => service,
+      _ => null,
+    };
+    if (service == null) return null;
+    final selected = ref.watch(
+      translationServiceChoicesProvider.select((c) => c.selected),
+    );
+    if (selected == null) return null;
+    final l10n = context.l10n;
+    final plugins = ref.watch(translationPluginInfosProvider);
+    final shownName = translationServiceName(l10n, plugins, service);
+    final selectedName = translationServiceName(l10n, plugins, selected);
+    return TranslationActionBar(
+      text: l10n.lyricsTranslationModalShowingOther(shownName),
+      actionLabel: l10n.lyricsTranslationModalTranslateWith(selectedName),
+      onPressed: _retranslate,
+    );
   }
 
   @override

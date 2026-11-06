@@ -3276,6 +3276,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguageFrom(String language, String service) {
+    return 'Lyrics are already in $language (per $service)';
+  }
+
+  @override
   String get lyricsTranslationLoading => 'Translating…';
 
   @override

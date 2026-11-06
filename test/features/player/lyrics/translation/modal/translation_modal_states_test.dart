@@ -145,6 +145,28 @@ void main() {
     expect(find.byType(LyricsTranslationModal), findsNothing);
   });
 
+  testWidgets('SameLanguage(retranslateFailure) shows the failure card', (
+    tester,
+  ) async {
+    final h = await pumpState(
+      tester,
+      TranslationSameLanguage(
+        info,
+        _otherPlugin,
+        fromOtherService: true,
+        retranslateFailure: TranslationFailureKind.network,
+      ),
+    );
+    expect(find.text('Test Translate reported an error'), findsOneWidget);
+    expect(find.byType(TranslationActionBar), findsNothing);
+    await tester.tap(find.text('Keep the old version'));
+    await tester.pump();
+    expect(h.fake.dismissRetranslateFailureCalls, 1);
+    await tester.tap(find.text('Retry'));
+    await settleModal(tester);
+    expect(h.fake.retranslateCalls, 1);
+  });
+
   testWidgets('SameLanguage shows note and lowercases Vietnamese name', (
     tester,
   ) async {
@@ -159,6 +181,55 @@ void main() {
       locale: const Locale('vi'),
     );
     expect(find.text('Lời bài hát đã là tiếng Việt'), findsOneWidget);
+  });
+
+  testWidgets(
+    'SameLanguage from another service names it and offers Translate with',
+    (tester) async {
+      final h = await pumpTranslationModal(
+        tester,
+        size: const Size(380, 800),
+        state: TranslationSameLanguage(
+          info,
+          TranslationServiceId.tryParse('plugin-111111111111')!,
+          fromOtherService: true,
+        ),
+        settings: onPrefs,
+        pluginOverrides: translatePluginOverrides(
+          records: [
+            translateRecord(testTranslatePluginId, name: 'Test Translate'),
+            translateRecord('plugin-111111111111', name: 'Other'),
+          ],
+        ),
+      );
+      expect(
+        find.text('Lyrics are already in English (per Other)'),
+        findsOneWidget,
+      );
+      expect(find.text('Showing the version from Other'), findsOneWidget);
+      await tester.tap(find.text('Translate with Test Translate'));
+      await settleModal(tester);
+      expect(h.fake.retranslateCalls, 1);
+    },
+  );
+
+  testWidgets('SameLanguage refreshing shows progress, Cancel cancels', (
+    tester,
+  ) async {
+    final h = await pumpState(
+      tester,
+      TranslationSameLanguage(
+        info,
+        testTranslatePlugin,
+        fromOtherService: true,
+        refreshing: true,
+      ),
+    );
+    expect(find.text('Retranslating…'), findsOneWidget);
+    expect(find.text('Translate with Test Translate'), findsNothing);
+    await tester.tap(find.text('Cancel'));
+    await tester.pump();
+    expect(h.fake.cancelRetranslateCalls, 1);
   });
 
   testWidgets(

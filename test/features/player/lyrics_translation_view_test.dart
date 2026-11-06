@@ -211,6 +211,20 @@ void main() {
     expect(find.textContaining('Translated by'), findsNothing);
   });
 
+  testWidgets('same language with a retranslate failure: the banner', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      TranslationSameLanguage(
+        fakeTranslationInfo(),
+        _testPlugin,
+        retranslateFailure: TranslationFailureKind.server,
+      ),
+    );
+    expect(find.byType(LyricsTranslationBanner), findsOneWidget);
+  });
+
   testWidgets('off: no banner, no credit, no extra text', (tester) async {
     await pump(tester, TranslationOff(fakeTranslationInfo()));
     expect(find.text('First words'), findsOneWidget);

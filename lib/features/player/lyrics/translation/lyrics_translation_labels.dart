@@ -44,9 +44,25 @@ String translationButtonTooltip(
       serviceName(service),
       translationLanguageName(l10n, info.effective),
     ),
-  TranslationSameLanguage(:final info) => l10n.lyricsTranslationSameLanguage(
-    languageNameInSentence(l10n, translationLanguageName(l10n, info.effective)),
-  ),
+  TranslationSameLanguage(
+    :final info,
+    :final service,
+    :final fromOtherService,
+  ) =>
+    fromOtherService
+        ? l10n.lyricsTranslationSameLanguageFrom(
+            languageNameInSentence(
+              l10n,
+              translationLanguageName(l10n, info.effective),
+            ),
+            serviceName(service),
+          )
+        : l10n.lyricsTranslationSameLanguage(
+            languageNameInSentence(
+              l10n,
+              translationLanguageName(l10n, info.effective),
+            ),
+          ),
   TranslationUnavailable() ||
   TranslationOff() ||
   TranslationNeedsNotice() => l10n.lyricsTranslationButton,
