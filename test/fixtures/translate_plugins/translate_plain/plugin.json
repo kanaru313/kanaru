@@ -1,0 +1,5 @@
+{
+  "metadata": {"apiVersion": 1, "type": "translate", "name": "QA Plain Translate", "version": 1, "hosts": ["example.invalid"], "author": "QA", "description": "Offline manual-check plugin, no network."},
+  "script": {"translate": "translate.js"},
+  "translate": {"languages": ["vi", "en", "ja", "ko", "zh-Hans"]}
+}
