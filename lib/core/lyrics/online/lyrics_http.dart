@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../app_identity.dart';
 import '../../logging/app_logging.dart';
+import '../plugins/plugin_run_deadline.dart' show pluginScriptWallTime;
 import '../../lyrics_translation/translation_http.dart'
     show translationRequestTimeout;
 import 'lyrics_fetch_exception.dart';
@@ -88,6 +89,31 @@ class LyricsHttp {
          allowed: allowed,
          maxRetries: 0,
          overallTimeout: overallTimeout,
+         perSendCap: null,
+       );
+
+  /// For a source plugin: the strict rules of the main constructor over the
+  /// plugin's own [hosts] (its `*.` wildcards included), no retry of a busy
+  /// answer and no cap per send: a send is bound only by the time left of the
+  /// call, at most [pluginScriptWallTime] (the wall time of a source
+  /// script). [allowed] is the plugin's consent and [abandoned] tells that
+  /// the caller no longer wants the answer (a newer search started); both
+  /// are asked before every send.
+  LyricsHttp.forPluginSource(
+    Iterable<String> hosts,
+    HttpClient client, {
+    bool Function()? allowed,
+    bool Function()? abandoned,
+    LyricsSleep sleep = realLyricsSleep,
+  }) : this._(
+         client,
+         hosts,
+         strict: true,
+         sleep: sleep,
+         abandoned: abandoned,
+         allowed: allowed,
+         maxRetries: 0,
+         overallTimeout: pluginScriptWallTime,
          perSendCap: null,
        );
 

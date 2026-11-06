@@ -37,6 +37,7 @@ import 'core/search/search_prefs_provider.dart';
 import 'core/secrets/secret_store_provider.dart';
 import 'core/settings/app_font_licenses.dart';
 import 'core/settings/settings_provider.dart';
+import 'core/sources/source_notice_sweep.dart';
 import 'core/stats/listen_recorder_provider.dart';
 import 'core/waveform/rust_waveform_reader.dart';
 import 'core/waveform/waveform.dart';
@@ -151,6 +152,9 @@ Future<void> main() async {
   // Drops a translate plugin that was uninstalled from the translation
   // settings once the plugin list is read; nothing in the UI reads it.
   container.listen(translationServiceSweepProvider, (_, _) {});
+  // Drops the consent of a source plugin that was uninstalled once the
+  // plugin list is read; nothing in the UI reads it.
+  container.listen(sourceNoticeSweepProvider, (_, _) {});
 
   runApp(
     UncontrolledProviderScope(container: container, child: const KanaruApp()),

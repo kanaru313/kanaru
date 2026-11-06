@@ -75,7 +75,9 @@ Output:
 | `artist` | at most 200 characters, else none |
 | `durationMs` | an integer from 1 to 86 400 000; anything else (a plugin's `0` included) means unknown |
 | `artworkUrl`, `webUrl` | kept only as an absolute `https` URL of at most 2000 characters without user info, else none |
-| `next` | a string of at most 8 KiB; dropped when equal to the `next` that was sent |
+| `next` | a string of at most 8 KiB; a longer or empty one, or one equal to the `next` that was sent, means no next page. A page with no items and a `next` is allowed |
+
+An output that is not an object with an `items` array, or whose `next` is neither a string nor null, is `invalidOutput`.
 
 ## `stream.js`
 
@@ -95,26 +97,32 @@ Output:
 
 | Field | Rule |
 |---|---|
-| `url` | absolute `https`, at most 8 KiB, no explicit port, no user info. Its host must be one the plugin declared |
-| `headers` | at most 20 string entries, filtered like any plugin request header (the same filter `fetch` uses); `range` and `if-range` are dropped because the player decides ranges; `cookie` and `authorization` are kept |
+| `url` | absolute `https`, at most 8 KiB, no explicit port (not even `:443`), no user info; else `invalidOutput`. Its host must be one the plugin declared |
+| `headers` | absent means none; else an object of at most 20 string entries (anything else is `invalidOutput`), filtered like any plugin request header (the same filter `fetch` uses); `range` and `if-range` are dropped because the player decides ranges; `cookie` and `authorization` are kept |
 | `mimeType` | starts with `audio/`, or is `video/webm` or `video/mp4` (parameters allowed); anything else is `invalidOutput` |
 | `bitrate` | a positive integer, else none |
 | `expiresAtMs` | an integer above 0, Unix epoch **milliseconds**; anything else means unknown. A seconds value (`expiresAt`) is not read |
 
 ## Errors
 
-A script reports a failure with `Response.error(message, {kind})`. The kinds are `auth`, `rateLimited`, `quota`, `invalidResponse` and `server`; any other text reaches the app as `server`. The app shows these to the user as:
+A script reports a failure with `Response.error(message, {kind})`. The kinds are `auth`, `rateLimited`, `quota`, `invalidResponse` and `server`; any other text reaches the app as `server`. The app turns every way a call can end into one failure kind (`SourceFailureKind`) and shows text chosen by the app from it:
 
-| Plugin kind | Shown as |
+| What happened | Shown as |
 |---|---|
-| `auth` | sign-in or credentials problem |
-| `rateLimited`, `quota` | rate limited |
-| `invalidResponse`, `server` | the service is unavailable |
-| fetch error, timeout | network problem |
-| output that breaks the rules above | invalid output |
-| the runtime is full (`busy`) | busy |
+| `Response.error` with `auth` | `auth`: sign-in or credentials problem |
+| `Response.error` with `rateLimited` or `quota` | `rateLimited` |
+| `Response.error` with `invalidResponse` or `server`, a thrown error, the heap or stack limit | `unavailable`: the service is unavailable. A `server` error or a thrown error after a failed `fetch` takes the kind of that `fetch` instead (`network`, `rateLimited`) |
+| a failed `fetch`, a timeout, plugin files that took too long to load | `network` |
+| output that breaks the rules above, or over 2 MiB | `invalidOutput` |
+| the runtime is full | `busy` |
+| a required setting is empty | `needsConfig`; the script does not run |
+| the user has not accepted the plugin's notice | `notConsented`; nothing runs or is sent |
+| the plugin is missing, removed, being updated, or the app no longer wants the answer | `skipped`; nothing is shown |
+| the runtime failed, or the plugin's files or settings cannot be read | `internal` |
 
-The message the script passed is kept for the log; the screen shows text chosen by the app from the kind.
+A `fetch` failure the script caught does not fail a call that then returns valid output, except a send refused for want of consent. The `Response.error` message is kept with the failure for the log; the screen never shows it.
+
+Every failed run, and every run that printed to the console, is written to the plugin's log as for lyrics plugins (the script input is the `query`, so a search text is in it; the file stays on the device). Skipped, busy and not consented calls are not logged. The stream URL and headers a `stream.js` returned are never logged.
 
 ## Limits
 
@@ -124,7 +132,7 @@ Unchanged from other plugins: at most 10 HTTP sends and 15 seconds of wall time 
 
 ## Consent
 
-A source plugin may send nothing until the user accepts a notice for **that plugin**. The accepted plugin ids are stored in settings (`onlineSources.noticeAcknowledged`). The app checks it before every send: each search, each stream resolve and each chunk the proxy asks upstream. Withdrawing it stops the next send, and uninstalling the plugin removes its id. An update that adds hosts does not ask again, as for translate plugins. An update never changes the kind: an update with another `type` is refused.
+A source plugin may send nothing until the user accepts a notice for **that plugin**. The accepted plugin ids are stored in settings (`onlineSources.noticeAcknowledged`, at most 64). The app checks it before a script starts (without consent `search.js` and `stream.js` do not run), before every `fetch` the script makes, once the script is over (what it returned after a withdrawal is not used), and before each chunk the proxy asks upstream. Withdrawing it stops the next send, and uninstalling the plugin removes its id. An update that adds hosts does not ask again, as for translate plugins. An update never changes the kind: an update with another `type` is refused.
 
 ## Playback
 
