@@ -26,7 +26,13 @@ const _plain = Track(uri: '/m/plain.flac', title: 'Plain');
 TranslationReady _ready({
   TranslationServiceId? service,
   List<String?> lines = const ['Dòng một', 'Dòng hai'],
-}) => TranslationReady(fakeTranslationInfo(), service ?? _testPlugin, 'ja', lines, false);
+}) => TranslationReady(
+  fakeTranslationInfo(),
+  service ?? _testPlugin,
+  'ja',
+  lines,
+  false,
+);
 
 void main() {
   late ProviderContainer container;
@@ -66,7 +72,8 @@ void main() {
         ...translatePluginOverrides(),
         initialSettingsProvider.overrideWithValue(
           AppSettings(
-            translation: settings ??
+            translation:
+                settings ??
                 TranslationPrefs(
                   show: true,
                   service: _testPlugin,
@@ -196,7 +203,10 @@ void main() {
   testWidgets('same language: no translation lines and no note', (
     tester,
   ) async {
-    await pump(tester, TranslationSameLanguage(fakeTranslationInfo(), _testPlugin));
+    await pump(
+      tester,
+      TranslationSameLanguage(fakeTranslationInfo(), _testPlugin),
+    );
     expect(find.text('Lyrics are already in English'), findsNothing);
     expect(find.byType(LyricsTranslationPlaceholder), findsNothing);
     expect(find.textContaining('Translated by'), findsNothing);

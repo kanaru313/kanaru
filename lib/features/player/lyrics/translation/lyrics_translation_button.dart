@@ -136,6 +136,7 @@ class _LyricsTranslationButtonState
             controller.open();
           }
         }
+
         final room = widget.maxLabelWidth ?? 0;
         if (state is TranslationReady &&
             room >= lyricsTranslationMinLabelWidth) {

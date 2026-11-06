@@ -132,33 +132,42 @@ void main() {
       await settle();
     }
 
-    test('a dead selected plugin becomes null and off, its ack is dropped', () async {
-      final c = make(
-        _settings(_plugin, {_plugin, _other}),
-        live([_other.value]),
-      );
-      await sweep(c);
+    test(
+      'a dead selected plugin becomes null and off, its ack is dropped',
+      () async {
+        final c = make(
+          _settings(_plugin, {_plugin, _other}),
+          live([_other.value]),
+        );
+        await sweep(c);
 
-      final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, isNull);
-      expect(prefs.noticeAcknowledged, {_other});
-      expect(prefs.show, isFalse);
-    });
+        final prefs = c.read(settingsProvider).translation;
+        expect(prefs.service, isNull);
+        expect(prefs.noticeAcknowledged, {_other});
+        expect(prefs.show, isFalse);
+      },
+    );
 
-    test('show goes off and service becomes null when plugin is uninstalled', () async {
-      final c = make(_settings(_plugin, {_plugin}), live([]));
-      await sweep(c);
+    test(
+      'show goes off and service becomes null when plugin is uninstalled',
+      () async {
+        final c = make(_settings(_plugin, {_plugin}), live([]));
+        await sweep(c);
 
-      final prefs = c.read(settingsProvider).translation;
-      expect(prefs.service, isNull);
-      expect(prefs.noticeAcknowledged, isEmpty);
-      expect(prefs.show, isFalse);
-    });
+        final prefs = c.read(settingsProvider).translation;
+        expect(prefs.service, isNull);
+        expect(prefs.noticeAcknowledged, isEmpty);
+        expect(prefs.show, isFalse);
+      },
+    );
 
     test(
       'a restart after the sweep keeps translation off with null service',
       () async {
-        final c = make(_settings(_plugin, {_plugin, _other}), live([_other.value]));
+        final c = make(
+          _settings(_plugin, {_plugin, _other}),
+          live([_other.value]),
+        );
         await sweep(c);
         await c.read(settingsProvider.notifier).flush();
 

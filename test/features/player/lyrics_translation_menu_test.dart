@@ -86,8 +86,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder serviceRadio(String name) =>
-      find.widgetWithText(MenuItemButton, name);
+  Finder serviceRadio(String name) => find.widgetWithText(MenuItemButton, name);
 
   testWidgets('items come in order and the first three work while off', (
     tester,
@@ -534,11 +533,7 @@ void main() {
     testWidgets('the first switch-on asks; Cancel changes nothing', (
       tester,
     ) async {
-      await pump(
-        tester,
-        off,
-        settings: TranslationPrefs(service: _plugin),
-      );
+      await pump(tester, off, settings: TranslationPrefs(service: _plugin));
 
       await tester.tap(find.text('Show translation'));
       await tester.pumpAndSettle();
@@ -556,11 +551,7 @@ void main() {
     testWidgets('Continue accepts and turns it on; the second time is silent', (
       tester,
     ) async {
-      await pump(
-        tester,
-        off,
-        settings: TranslationPrefs(service: _plugin),
-      );
+      await pump(tester, off, settings: TranslationPrefs(service: _plugin));
 
       await tester.tap(find.text('Show translation'));
       await tester.pumpAndSettle();

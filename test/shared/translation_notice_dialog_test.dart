@@ -24,11 +24,7 @@ void main() {
 
   List<Override> records([String name = 'Gemini']) => [
     lyricsPluginRecordsProvider.overrideWithValue([
-      translateRecord(
-        _id,
-        name: name,
-        hosts: const ['a.example', 'b.example'],
-      ),
+      translateRecord(_id, name: name, hosts: const ['a.example', 'b.example']),
     ]),
   ];
 

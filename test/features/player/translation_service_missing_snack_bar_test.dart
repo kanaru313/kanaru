@@ -77,10 +77,7 @@ void main() {
   testWidgets(
     'without plugins: shows no-plugin snackbar and opens the plugin store',
     (tester) async {
-      final (container, visited) = await pumpHarness(
-        tester,
-        hasPlugins: false,
-      );
+      final (container, visited) = await pumpHarness(tester, hasPlugins: false);
 
       await tester.tap(find.text('Trigger'));
       await tester.pumpAndSettle();
@@ -102,10 +99,7 @@ void main() {
   testWidgets(
     'with plugins: shows choose-service snackbar and opens translation settings',
     (tester) async {
-      final (container, visited) = await pumpHarness(
-        tester,
-        hasPlugins: true,
-      );
+      final (container, visited) = await pumpHarness(tester, hasPlugins: true);
 
       await tester.tap(find.text('Trigger'));
       await tester.pumpAndSettle();

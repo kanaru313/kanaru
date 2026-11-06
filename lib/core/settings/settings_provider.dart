@@ -166,11 +166,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     final next = (serviceLost ? current.withoutService() : current).copyWith(
       noticeAcknowledged: Set.unmodifiable(acknowledged),
     );
-    _update(
-      state.copyWith(
-        translation: _acknowledgedOnly(next),
-      ),
-    );
+    _update(state.copyWith(translation: _acknowledgedOnly(next)));
   }
 
   Set<TranslationServiceId> _withAcknowledged(TranslationServiceId service) =>

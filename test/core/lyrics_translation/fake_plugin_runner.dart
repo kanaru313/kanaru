@@ -16,17 +16,18 @@ import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 
 const testTranslatePluginId = 'plugin-abc123def456';
-final testTranslatePlugin =
-    TranslationServiceId.tryParse(testTranslatePluginId)!;
+final testTranslatePlugin = TranslationServiceId.tryParse(
+  testTranslatePluginId,
+)!;
 
 /// Riverpod overrides for translate plugins in tests.
 List<Override> translatePluginOverrides({
   List<LyricsPluginRecord>? records,
   PluginTranslateRunner? runner,
 }) {
-  final list = records ?? [
-    translateRecord(testTranslatePluginId, name: 'Test Translate'),
-  ];
+  final list =
+      records ??
+      [translateRecord(testTranslatePluginId, name: 'Test Translate')];
   return [
     translatePluginRecordsProvider.overrideWithValue(AsyncValue.data(list)),
     lyricsPluginRecordsProvider.overrideWithValue(list),
@@ -65,12 +66,13 @@ class FakePluginRunner implements PluginTranslateRunner {
     PluginTranslateSpec? spec_,
     PluginTranslateGate? gate,
     this.detected = 'ja',
-  }) : spec_ = spec_ ??
-            PluginTranslateSpec(
-              languages: [for (final l in translationLanguages) l.code],
-              maxLines: 50,
-              maxChars: 4000,
-            ),
+  }) : spec_ =
+           spec_ ??
+           PluginTranslateSpec(
+             languages: [for (final l in translationLanguages) l.code],
+             maxLines: 50,
+             maxChars: 4000,
+           ),
        gate = gate ?? PluginTranslateGate();
 
   final PluginTranslateSpec spec_;
@@ -127,7 +129,9 @@ class FakePluginRunner implements PluginTranslateRunner {
     await hold?.future;
     final error = errors[index];
     if (error != null) throw error;
-    return [for (final line in lines) (text: transform(line), detected: detected)];
+    return [
+      for (final line in lines) (text: transform(line), detected: detected),
+    ];
   });
 
   @override

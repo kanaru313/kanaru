@@ -85,29 +85,22 @@ void main() {
       expect((r.current, r.other), (null, null));
     });
 
-    test(
-      'offers a known plugin row, skips an id with no record',
-      () {
-        final other = _cached(_otherPlugin);
-        final unknown = _cached(_removed);
-        expect(
-          pickCached(
-            [unknown, other],
-            _plugin,
-            knownPlugins: {_otherPlugin},
-          ).other,
-          same(other),
-        );
-        expect(
-          pickCached(
-            [unknown],
-            _plugin,
-            knownPlugins: {_otherPlugin},
-          ).other,
-          isNull,
-        );
-      },
-    );
+    test('offers a known plugin row, skips an id with no record', () {
+      final other = _cached(_otherPlugin);
+      final unknown = _cached(_removed);
+      expect(
+        pickCached(
+          [unknown, other],
+          _plugin,
+          knownPlugins: {_otherPlugin},
+        ).other,
+        same(other),
+      );
+      expect(
+        pickCached([unknown], _plugin, knownPlugins: {_otherPlugin}).other,
+        isNull,
+      );
+    });
 
     test('never offers a same-language row of another service', () {
       final sameRow = CachedTranslation(

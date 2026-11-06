@@ -44,10 +44,7 @@ void main() {
           AppSettings(
             translation: TranslationPrefs(
               service: testTranslatePlugin,
-              noticeAcknowledged: {
-                testTranslatePlugin,
-                testTranslatePlugin,
-              },
+              noticeAcknowledged: {testTranslatePlugin, testTranslatePlugin},
             ),
           ),
         ),

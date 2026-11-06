@@ -651,9 +651,7 @@ void main() {
         isA<TranslationLoading>(),
       );
       expect(
-        (derive([
-          row(testTranslatePlugin, 'new'),
-        ]) as TranslationReady).lines,
+        (derive([row(testTranslatePlugin, 'new')]) as TranslationReady).lines,
         ['new'],
       );
     });
@@ -706,35 +704,27 @@ void main() {
       },
     );
 
-    test(
-      'a plugin that is gone: Off, nothing sent',
-      () async {
-        final rig = Rig(
-          db,
-          settings: translationSettings(
-            service: plugin,
-            acknowledged: {plugin},
+    test('a plugin that is gone: Off, nothing sent', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(service: plugin, acknowledged: {plugin}),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            const AsyncValue.data([]),
           ),
-          overrides: [
-            translatePluginRecordsProvider.overrideWithValue(
-              const AsyncValue.data([]),
-            ),
-          ],
-        );
-        await rig.play('/m/a.mp3', _text);
-        await settle(_idle);
-        expect(rig.state, isA<TranslationOff>());
-        expect(rig.plugin.calls, isEmpty);
-        rig.dispose();
-      },
-    );
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(rig.state, isA<TranslationOff>());
+      expect(rig.plugin.calls, isEmpty);
+      rig.dispose();
+    });
 
     test('stored null with show true built by hand: Off, no call', () async {
       final rig = Rig(
         db,
-        settings: const AppSettings(
-          translation: TranslationPrefs(show: true),
-        ),
+        settings: const AppSettings(translation: TranslationPrefs(show: true)),
       );
       await rig.play('/m/a.mp3', _text);
       await settle(_idle);
@@ -749,10 +739,7 @@ void main() {
       );
       final rig = Rig(
         db,
-        settings: translationSettings(
-          service: plugin,
-          acknowledged: {plugin},
-        ),
+        settings: translationSettings(service: plugin, acknowledged: {plugin}),
         overrides: [
           pluginTranslateRunnerProvider.overrideWithValue(runner),
           translatePluginRecordsProvider.overrideWithValue(
@@ -778,10 +765,7 @@ void main() {
     test('plugin list still loading: Loading, nothing sent', () async {
       final rig = Rig(
         db,
-        settings: translationSettings(
-          service: plugin,
-          acknowledged: {plugin},
-        ),
+        settings: translationSettings(service: plugin, acknowledged: {plugin}),
         overrides: [
           translatePluginRecordsProvider.overrideWithValue(
             const AsyncValue.loading(),

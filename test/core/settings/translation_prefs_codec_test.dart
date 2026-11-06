@@ -85,15 +85,18 @@ void main() {
     }
   });
 
-  test('acknowledged services that are not known are kept, google is dropped', () {
-    final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
-      'noticeAcknowledged': ['google', 'deepl', 'bing', 7],
-    });
-    final json = encodeTranslationPrefs(prefs, extra: extra);
+  test(
+    'acknowledged services that are not known are kept, google is dropped',
+    () {
+      final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{
+        'noticeAcknowledged': ['google', 'deepl', 'bing', 7],
+      });
+      final json = encodeTranslationPrefs(prefs, extra: extra);
 
-    expect(prefs.noticeAcknowledged, isEmpty);
-    expect(json['noticeAcknowledged'], ['deepl', 'bing', 7]);
-  });
+      expect(prefs.noticeAcknowledged, isEmpty);
+      expect(json['noticeAcknowledged'], ['deepl', 'bing', 7]);
+    },
+  );
 
   test('a list of the wrong type acknowledges nothing', () {
     expect(
@@ -157,17 +160,20 @@ void main() {
   group('plugin ids', () {
     final id = TranslationServiceId.tryParse('plugin-abc123def456')!;
 
-    test('a plugin id is kept as the service and as accepted, google dropped', () {
-      final prefs = decode(<String, Object?>{
-        'show': true,
-        'service': id.value,
-        'noticeAcknowledged': ['google', id.value],
-      });
+    test(
+      'a plugin id is kept as the service and as accepted, google dropped',
+      () {
+        final prefs = decode(<String, Object?>{
+          'show': true,
+          'service': id.value,
+          'noticeAcknowledged': ['google', id.value],
+        });
 
-      expect(prefs.service, id);
-      expect(prefs.show, isTrue);
-      expect(prefs.noticeAcknowledged, {id});
-    });
+        expect(prefs.service, id);
+        expect(prefs.show, isTrue);
+        expect(prefs.noticeAcknowledged, {id});
+      },
+    );
 
     test('deepl and malformed ids fall back to null, kept in extra, google dropped', () {
       final (prefs, extra) = decodeTranslationPrefs(<String, Object?>{

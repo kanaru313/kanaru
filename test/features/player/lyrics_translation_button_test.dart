@@ -77,12 +77,18 @@ void main() {
   });
 
   testWidgets('on: primary icon on a raised background', (tester) async {
-    await pump(tester, TranslationReady(_info, _testPlugin, 'ja', const [], false));
+    await pump(
+      tester,
+      TranslationReady(_info, _testPlugin, 'ja', const [], false),
+    );
 
     final style = button(tester).style!;
     final scheme = Theme.of(tester.element(find.byType(IconButton)))
         .colorScheme;
-    expect(find.byTooltip('Translated by Test Translate · English'), findsOneWidget);
+    expect(
+      find.byTooltip('Translated by Test Translate · English'),
+      findsOneWidget,
+    );
     expect(button(tester).isSelected, isTrue);
     expect(style.backgroundColor!.resolve({}), scheme.surfaceContainerHighest);
     expect(style.foregroundColor!.resolve({}), scheme.primary);
@@ -247,7 +253,10 @@ void main() {
 
       expect(find.text('Test Translate · English'), findsOneWidget);
       expect(find.byType(IconButton), findsNothing);
-      expect(find.byTooltip('Translated by Test Translate · English'), findsOneWidget);
+      expect(
+        find.byTooltip('Translated by Test Translate · English'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('disabled pill does not force the primary icon colour', (
@@ -255,8 +264,9 @@ void main() {
     ) async {
       await pump(tester, ready(), maxLabelWidth: 120, enabled: false);
 
-      final scheme = Theme.of(tester.element(find.text('Test Translate · English')))
-          .colorScheme;
+      final scheme = Theme.of(
+        tester.element(find.text('Test Translate · English')),
+      ).colorScheme;
       final icon = tester.widget<Icon>(
         find.descendant(
           of: find.byType(LyricsTranslationPill),
@@ -294,7 +304,10 @@ void main() {
 
       expect(find.byType(IconButton), findsOneWidget);
       expect(find.text('Test Translate · English'), findsNothing);
-      expect(find.byTooltip('Translated by Test Translate · English'), findsOneWidget);
+      expect(
+        find.byTooltip('Translated by Test Translate · English'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('no room given keeps the icon', (tester) async {

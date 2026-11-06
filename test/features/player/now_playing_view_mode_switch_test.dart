@@ -779,10 +779,7 @@ void main() {
         await pumpOverlay(tester);
 
         await pressT(tester);
-        expect(
-          find.text('Choose a translation service first'),
-          findsOneWidget,
-        );
+        expect(find.text('Choose a translation service first'), findsOneWidget);
         expect(find.text('Choose service'), findsOneWidget);
         expect(translation().show, isFalse);
       },

@@ -579,7 +579,9 @@ void main() {
         // A running ring never settles: step the frames by hand.
         controller.emit(TranslationLoading(info, testPlugin));
         await tester.pump(const Duration(milliseconds: 300));
-        controller.emit(TranslationReady(info, testPlugin, 'ja', const [], false));
+        controller.emit(
+          TranslationReady(info, testPlugin, 'ja', const [], false),
+        );
         await tester.pump(const Duration(milliseconds: 300));
 
         expect(find.text('Test Translate · English'), findsOneWidget);

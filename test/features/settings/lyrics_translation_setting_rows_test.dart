@@ -30,9 +30,7 @@ void main() {
 
   List<Override> withPlugins(List<LyricsPluginRecord> records) => [
     lyricsPluginRecordsProvider.overrideWithValue(records),
-    translatePluginRecordsProvider.overrideWithValue(
-      AsyncValue.data(records),
-    ),
+    translatePluginRecordsProvider.overrideWithValue(AsyncValue.data(records)),
   ];
 
   Future<void> pickLanguage(WidgetTester tester, String label) async {
@@ -69,9 +67,7 @@ void main() {
 
   testWidgets('picking the selected service changes nothing', (tester) async {
     final h = TranslationSettingsHarness(
-      settings: AppSettings(
-        translation: TranslationPrefs(service: plugin),
-      ),
+      settings: AppSettings(translation: TranslationPrefs(service: plugin)),
     );
     await h.pump(
       tester,
@@ -322,30 +318,27 @@ void main() {
       expect(h.prefs.noticeAcknowledged, {other, plugin});
     });
 
-    testWidgets(
-      'switching plugins while translation is off needs no notice',
-      (tester) async {
-        final h = TranslationSettingsHarness(
-          settings: AppSettings(
-            translation: TranslationPrefs(service: other),
-          ),
-        );
-        await h.pump(
-          tester,
-          rows,
-          overrides: withPlugins([
-            translateRecord(id, name: 'Gemini'),
-            translateRecord(otherId, name: 'Other'),
-          ]),
-        );
+    testWidgets('switching plugins while translation is off needs no notice', (
+      tester,
+    ) async {
+      final h = TranslationSettingsHarness(
+        settings: AppSettings(translation: TranslationPrefs(service: other)),
+      );
+      await h.pump(
+        tester,
+        rows,
+        overrides: withPlugins([
+          translateRecord(id, name: 'Gemini'),
+          translateRecord(otherId, name: 'Other'),
+        ]),
+      );
 
-        await pickService(tester, 'Gemini');
+      await pickService(tester, 'Gemini');
 
-        expect(find.byType(AlertDialog), findsNothing);
-        expect(h.prefs.service, plugin);
-        expect(h.prefs.show, isFalse);
-      },
-    );
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(h.prefs.service, plugin);
+      expect(h.prefs.show, isFalse);
+    });
 
     testWidgets(
       'picking a plugin from null asks the notice and turns translation on; Cancel leaves it null',
@@ -355,7 +348,11 @@ void main() {
           tester,
           rows,
           overrides: withPlugins([
-            translateRecord(id, name: 'Gemini', hosts: const ['gemini.example']),
+            translateRecord(
+              id,
+              name: 'Gemini',
+              hosts: const ['gemini.example'],
+            ),
           ]),
         );
 
