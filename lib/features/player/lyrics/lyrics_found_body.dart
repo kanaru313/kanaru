@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../core/settings/settings_provider.dart';
 import 'lyrics_pulse_host.dart';
 import 'plain_lyrics_view.dart';
@@ -41,9 +42,25 @@ class LyricsFoundBody extends ConsumerWidget {
           // The banner has its own room above the lyrics, so it never covers
           // the first lines. Its slot is always there, which keeps the view's
           // place in the tree.
-          state is TranslationFailed
-              ? LyricsTranslationBanner(state: state, appLang: appLang)
-              : const SizedBox.shrink(),
+          switch (state) {
+            TranslationFailed() => LyricsTranslationBanner(
+              service: state.service,
+              kind: state.kind,
+              appLang: appLang,
+            ),
+            TranslationReady(:final retranslateFailure?) =>
+              LyricsTranslationBanner(
+                // The failed run is the selected service's, not the one whose
+                // version is shown.
+                service:
+                    ref.watch(effectiveTranslationServiceProvider) ??
+                    state.service,
+                kind: retranslateFailure,
+                appLang: appLang,
+                keepsOld: true,
+              ),
+            _ => const SizedBox.shrink(),
+          },
           Expanded(
             // A new key per lyrics resets the scroll position and line state.
             child: lyrics.synced

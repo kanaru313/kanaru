@@ -144,19 +144,34 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     ref.onDispose(timer.cancel);
   }
 
-  /// Translates again with the selected service, replacing its saved row.
-  Future<void> retranslate() async {
+  /// Translates again with the selected service, replacing its saved row; the
+  /// version on screen stays until the new one is saved. Returns how the job
+  /// ended (`saved`, `failed`), or null when it did not run or was cancelled.
+  Future<TranslationJobStatus?> retranslate() async {
     final (key, lyrics, target) = (_key, _lyrics, _target);
-    if (key == null || lyrics == null || target == null) return;
-    await ref
-        .read(translationJobsProvider.notifier)
-        .run(
-          key,
-          uniqueLineTexts(lyrics),
-          target,
-          force: true,
-          song: _songContext(),
-        );
+    if (key == null || lyrics == null || target == null) return null;
+    final jobs = ref.read(translationJobsProvider.notifier);
+    return jobs.run(
+      key,
+      uniqueLineTexts(lyrics),
+      target,
+      force: true,
+      song: _songContext(),
+    );
+  }
+
+  /// Stops a retranslate that is running; the older version shows again.
+  void cancelRetranslate() {
+    final key = _key;
+    if (key != null) ref.read(translationJobsProvider.notifier).cancel(key);
+  }
+
+  /// Hides the failure of a retranslate and keeps the version on screen.
+  void dismissRetranslateFailure() {
+    final key = _key;
+    if (key != null) {
+      ref.read(translationJobsProvider.notifier).clearFailure(key);
+    }
   }
 
   /// Forgets the remembered failure and tries again; chunks translated before

@@ -1935,6 +1935,8 @@
   "settingsTranslationGetServices": "Tìm dịch vụ dịch",
   "settingsTranslationGetServicesHint": "Tìm plugin dịch trong kho plugin",
   "lyricsTranslationBannerOpenPlugin": "Mở cài đặt",
+  "lyricsTranslationRetranslateFailed": "Không dịch lại được, bản cũ vẫn hiện",
+  "lyricsTranslationBannerKeepOld": "Giữ bản cũ",
   "settingsTranslationServicePluginHint": "Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.",
   "lyricsTranslationNeedsPlugin": "Cần cài plugin dịch để dịch lời bài hát",
   "lyricsTranslationOpenPluginStore": "Mở kho plugin",

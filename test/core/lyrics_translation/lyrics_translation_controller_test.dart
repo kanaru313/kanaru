@@ -531,29 +531,120 @@ void main() {
   });
 
   group('review fixes', () {
+    test('retranslate keeps the old row (refreshing) until the new one, then '
+        'never goes back', () async {
+      final rig = Rig(db);
+      await rig.play('/m/a.mp3', _text);
+      await rig.untilReady();
+      final old = _lines(rig.state);
+      rig.states.clear();
+
+      rig.plugin.transform = (line) => 'new:$line';
+      final result = await rig.controller.retranslate();
+      await until(
+        () =>
+            rig.state is TranslationReady &&
+            _lines(rig.state).first == 'new:alpha',
+      );
+      await settle(_idle);
+      expect(result?.saved, isNotNull);
+      final first = rig.states.first as TranslationReady;
+      expect(first.refreshing, isTrue);
+      expect(first.lines, old);
+      expect(rig.states.whereType<TranslationLoading>(), isEmpty);
+      final fresh = rig.states.indexWhere(
+        (s) => s is TranslationReady && !s.refreshing,
+      );
+      expect(fresh, isNonNegative, reason: 'a non-refreshing Ready was seen');
+      for (final state in rig.states.skip(fresh)) {
+        expect((state as TranslationReady).lines.first, 'new:alpha');
+        expect(state.refreshing, isFalse);
+      }
+      rig.dispose();
+    });
+
     test(
-      'retranslate shows Loading, then the new row, never the old',
+      'a failed retranslate keeps the old row and can be dismissed',
       () async {
         final rig = Rig(db);
         await rig.play('/m/a.mp3', _text);
         await rig.untilReady();
-        rig.states.clear();
+        final old = _lines(rig.state);
 
-        rig.plugin.transform = (line) => 'new:$line';
-        await rig.controller.retranslate();
-        await until(
-          () =>
-              rig.state is TranslationReady &&
-              _lines(rig.state).first == 'new:alpha',
-        );
-        await settle(_idle);
-        expect(rig.states.first, isA<TranslationLoading>());
-        for (final state in rig.states.whereType<TranslationReady>()) {
-          expect(state.lines.first, 'new:alpha');
-        }
+        rig.plugin.errors[1] = failure(TranslationFailureKind.server);
+        final result = await rig.controller.retranslate();
+        await settle();
+        expect(result?.failure, TranslationFailureKind.server);
+        var ready = rig.state as TranslationReady;
+        expect(ready.retranslateFailure, TranslationFailureKind.server);
+        expect(ready.refreshing, isFalse);
+        expect(ready.lines, old);
+
+        rig.controller.dismissRetranslateFailure();
+        await settle();
+        ready = rig.state as TranslationReady;
+        expect(ready.retranslateFailure, isNull);
+        expect(ready.lines, old);
         rig.dispose();
       },
     );
+
+    group('with another service on screen', () {
+      const otherId = 'plugin-bbbbbbbbbbbb';
+
+      Future<Rig> rigWithOther(FakePluginRunner plugin) async {
+        final rig = Rig(
+          db,
+          plugin: plugin,
+          overrides: translatePluginOverrides(
+            runner: plugin,
+            records: [
+              translateRecord(testTranslatePluginId),
+              translateRecord(otherId),
+            ],
+          ),
+        );
+        await _seed(db, _text, otherId, '{"alpha":"x","beta":"y"}');
+        await rig.play('/m/a.mp3', _text);
+        await settle(_idle);
+        return rig;
+      }
+
+      test('retranslate keeps it, then shows the selected service', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWithOther(plugin);
+        expect((rig.state as TranslationReady).fromOtherService, isTrue);
+        rig.states.clear();
+
+        await rig.controller.retranslate();
+        await settle();
+        final first = rig.states.first as TranslationReady;
+        expect(first.fromOtherService, isTrue);
+        expect(first.refreshing, isTrue);
+        expect(first.service.value, otherId);
+        final end = rig.state as TranslationReady;
+        expect(end.fromOtherService, isFalse);
+        expect(end.service, testTranslatePlugin);
+        expect(rig.states.whereType<TranslationLoading>(), isEmpty);
+        rig.dispose();
+      });
+
+      test('a failed retranslate keeps the other version on screen', () async {
+        final plugin = FakePluginRunner();
+        final rig = await rigWithOther(plugin);
+
+        plugin.errors[plugin.calls.length] = failure(
+          TranslationFailureKind.server,
+        );
+        await rig.controller.retranslate();
+        await settle();
+        final ready = rig.state as TranslationReady;
+        expect(ready.fromOtherService, isTrue);
+        expect(ready.service.value, otherId);
+        expect(ready.retranslateFailure, TranslationFailureKind.server);
+        rig.dispose();
+      });
+    });
 
     test(
       'retranslate and retry do nothing while off or target loads',
@@ -644,16 +735,15 @@ void main() {
           job: saved,
         ).state;
 
-    test('a lagging row stream shows Loading, not an older row', () {
+    test('a lagging row stream keeps the older row, refreshing', () {
       expect(derive([]), isA<TranslationLoading>());
-      expect(
-        derive([row(testTranslatePlugin, 'old')]),
-        isA<TranslationLoading>(),
-      );
-      expect(
-        (derive([row(testTranslatePlugin, 'new')]) as TranslationReady).lines,
-        ['new'],
-      );
+      final old = derive([row(testTranslatePlugin, 'old')]) as TranslationReady;
+      expect(old.lines, ['old']);
+      expect(old.refreshing, isTrue);
+      final fresh =
+          derive([row(testTranslatePlugin, 'new')]) as TranslationReady;
+      expect(fresh.lines, ['new']);
+      expect(fresh.refreshing, isFalse);
     });
   });
 

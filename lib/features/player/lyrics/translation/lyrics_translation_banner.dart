@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/lyrics_translation/lyrics_translation_controller.dart';
-import '../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../core/lyrics_translation/translation_failure.dart';
+import '../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_plugin_routes.dart';
 import '../../now_playing/now_playing_open_provider.dart';
@@ -36,15 +36,23 @@ bool _canRetry(TranslationFailureKind kind) =>
 
 /// Small banner at the top of the lyrics after a failed translation: why, and
 /// the way out: open the settings or, where it can help, retry. The
-/// lyrics keep playing and scrolling under it.
+/// lyrics keep playing and scrolling under it. With [keepsOld] a retranslate
+/// failed while an older version stays shown: Retry translates again and
+/// "Keep the old version" hides the banner.
 class LyricsTranslationBanner extends ConsumerWidget {
   const LyricsTranslationBanner({
     super.key,
-    required this.state,
+    required this.service,
+    required this.kind,
     required this.appLang,
+    this.keepsOld = false,
   });
 
-  final TranslationFailed state;
+  /// The service that failed (the selected one), whose page the settings
+  /// button opens.
+  final TranslationServiceId service;
+  final TranslationFailureKind kind;
+  final bool keepsOld;
 
   /// Picks the controller (the app's language code).
   final String appLang;
@@ -54,19 +62,21 @@ class LyricsTranslationBanner extends ConsumerWidget {
   void _openKeySettings(BuildContext context, WidgetRef ref) {
     final router = GoRouter.maybeOf(context);
     ref.read(nowPlayingOpenProvider.notifier).close();
-    router?.go(translationPluginRoute(state.service.value));
+    router?.go(translationPluginRoute(service.value));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final kind = state.kind;
-    final message = switch (kind) {
+    final reason = switch (kind) {
       TranslationFailureKind.noKey => l10n.lyricsTranslationBannerNoKey,
       TranslationFailureKind.badKey => l10n.lyricsTranslationBannerBadKey,
       _ => translationFailureMessage(l10n, kind),
     };
+    final message = keepsOld
+        ? '${l10n.lyricsTranslationRetranslateFailed}\n$reason'
+        : reason;
     final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
     final opensSettings = _opensPluginSettings(kind);
     return Align(
@@ -105,8 +115,15 @@ class LyricsTranslationBanner extends ConsumerWidget {
                           ),
                         if (_canRetry(kind))
                           TextButton(
-                            onPressed: controller.retry,
+                            onPressed: keepsOld
+                                ? controller.retranslate
+                                : controller.retry,
                             child: Text(l10n.lyricsTranslationRetry),
+                          ),
+                        if (keepsOld)
+                          TextButton(
+                            onPressed: controller.dismissRetranslateFailure,
+                            child: Text(l10n.lyricsTranslationBannerKeepOld),
                           ),
                       ],
                     ),

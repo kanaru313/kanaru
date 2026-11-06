@@ -56,8 +56,12 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
     target: target,
   );
   TranslationLoading loading() => TranslationLoading(info, service);
-  LyricsTranslationState fromRow(CachedTranslation row, bool other) =>
-      isSameLanguage(row.sourceLang, target)
+  LyricsTranslationState fromRow(
+    CachedTranslation row,
+    bool other, {
+    bool refreshing = false,
+    TranslationFailureKind? failure,
+  }) => isSameLanguage(row.sourceLang, target)
       ? TranslationSameLanguage(info, row.service)
       : TranslationReady(
           info,
@@ -65,31 +69,41 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
           row.sourceLang,
           _linesOf(row, lyrics),
           other,
+          refreshing: refreshing,
+          retranslateFailure: failure,
         );
 
-  if (job != null && job.isRunning) {
-    return (state: loading(), needsRequest: false);
-  }
   final current = picked.current;
+  final otherRow = picked.other;
+  // The version on screen: the selected service's, else another service's.
+  final shown = current ?? otherRow;
+  LyricsTranslationState keepShown() => shown == null
+      ? loading()
+      : fromRow(shown, current == null, refreshing: true);
+
+  if (job != null && job.isRunning) {
+    return (state: keepShown(), needsRequest: false);
+  }
   final saved = job?.saved;
   if (saved != null &&
       (current == null || linesFingerprint(current.lines) != saved)) {
     // The job saved a row the stream has not shown yet; what is shown now is
     // the row it replaced, or the other service's. If the row was deleted
     // since, the request is made again.
-    return (state: loading(), needsRequest: current == null);
-  }
-  if (current != null) {
-    return (state: fromRow(current, false), needsRequest: false);
+    return (state: keepShown(), needsRequest: current == null);
   }
   final failure = job?.failure;
+  if (shown != null) {
+    return (
+      state: fromRow(shown, current == null, failure: failure),
+      needsRequest: false,
+    );
+  }
   if (failure != null) {
     return (
       state: TranslationFailed(info, service, failure),
       needsRequest: false,
     );
   }
-  final other = picked.other;
-  if (other != null) return (state: fromRow(other, true), needsRequest: false);
   return (state: loading(), needsRequest: true);
 }

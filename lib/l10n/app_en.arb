@@ -5146,6 +5146,14 @@
   "@lyricsTranslationBannerOpenPlugin": {
     "description": "Button on the error banner of a translation plugin that opens the plugin's page"
   },
+  "lyricsTranslationRetranslateFailed": "Could not retranslate; the old version stays",
+  "@lyricsTranslationRetranslateFailed": {
+    "description": "First line of the error banner when translating again failed and the older translation is still shown"
+  },
+  "lyricsTranslationBannerKeepOld": "Keep the old version",
+  "@lyricsTranslationBannerKeepOld": {
+    "description": "Banner button that hides the failed-retranslate banner and keeps the older translation"
+  },
   "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
   "@settingsTranslationServicePluginHint": {
     "description": "Subtitle of the translation service row when a translate plugin is the selected service"

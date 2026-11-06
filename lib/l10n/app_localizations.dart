@@ -7526,6 +7526,18 @@ abstract class AppLocalizations {
   /// **'Open settings'**
   String get lyricsTranslationBannerOpenPlugin;
 
+  /// First line of the error banner when translating again failed and the older translation is still shown
+  ///
+  /// In en, this message translates to:
+  /// **'Could not retranslate; the old version stays'**
+  String get lyricsTranslationRetranslateFailed;
+
+  /// Banner button that hides the failed-retranslate banner and keeps the older translation
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the old version'**
+  String get lyricsTranslationBannerKeepOld;
+
   /// Subtitle of the translation service row when a translate plugin is the selected service
   ///
   /// In en, this message translates to:

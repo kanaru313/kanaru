@@ -4852,6 +4852,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationBannerOpenPlugin => 'Mở cài đặt';
 
   @override
+  String get lyricsTranslationRetranslateFailed =>
+      'Không dịch lại được, bản cũ vẫn hiện';
+
+  @override
+  String get lyricsTranslationBannerKeepOld => 'Giữ bản cũ';
+
+  @override
   String get settingsTranslationServicePluginHint =>
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
 

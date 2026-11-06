@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
@@ -32,6 +33,8 @@ class FakeTranslationController extends LyricsTranslationController {
 
   int retranslateCalls = 0;
   int retryCalls = 0;
+  int cancelRetranslateCalls = 0;
+  int dismissFailureCalls = 0;
   final songTargets = <String?>[];
 
   @override
@@ -50,7 +53,16 @@ class FakeTranslationController extends LyricsTranslationController {
   void emit(LyricsTranslationState next) => state = next;
 
   @override
-  Future<void> retranslate() async => retranslateCalls++;
+  Future<TranslationJobStatus?> retranslate() async {
+    retranslateCalls++;
+    return null;
+  }
+
+  @override
+  void cancelRetranslate() => cancelRetranslateCalls++;
+
+  @override
+  void dismissRetranslateFailure() => dismissFailureCalls++;
 
   @override
   Future<void> retry() async => retryCalls++;

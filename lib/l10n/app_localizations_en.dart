@@ -5166,6 +5166,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationBannerOpenPlugin => 'Open settings';
 
   @override
+  String get lyricsTranslationRetranslateFailed =>
+      'Could not retranslate; the old version stays';
+
+  @override
+  String get lyricsTranslationBannerKeepOld => 'Keep the old version';
+
+  @override
   String get settingsTranslationServicePluginHint =>
       'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
 

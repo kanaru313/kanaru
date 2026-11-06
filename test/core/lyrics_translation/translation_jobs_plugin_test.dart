@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -260,4 +262,121 @@ void main() {
       expect(runner.calls, isEmpty);
     },
   );
+
+  group('cancel', () {
+    final two = _lines.sublist(0, 15); // two chunks of at most 10
+
+    Future<void> sent(int chunks) async {
+      for (var i = 0; i < 50 && runner.calls.length < chunks; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(runner.calls, hasLength(chunks));
+    }
+
+    test('before the next chunk: it is not sent, nothing saved', () async {
+      build();
+      runner.onSend = (i) {
+        if (i == 0) {
+          jobs().cancel(_key);
+          expect(status(), isEmpty); // gone at once
+        }
+      };
+      final result = await jobs().run(_key, two, _en, force: true);
+
+      expect(result, isNull);
+      expect(runner.calls, hasLength(1));
+      expect(status(), isEmpty);
+      expect(await rows(), isEmpty);
+    });
+
+    test('a chunk in flight that fails after it: no failure, next run '
+        'works', () async {
+      build();
+      runner.hold = Completer<void>();
+      runner.errors[0] = failure(TranslationFailureKind.server);
+      final run = jobs().run(_key, two, _en, force: true);
+      await sent(1);
+      expect(status()[_key]!.isRunning, isTrue);
+
+      jobs().cancel(_key);
+      expect(status(), isEmpty);
+      runner.hold!.complete();
+      expect(await run, isNull);
+      expect(status(), isEmpty);
+
+      runner.hold = null;
+      runner.errors.clear();
+      final again = await jobs().run(_key, two, _en, force: true);
+      expect(again?.saved, isNotNull);
+      expect(runner.calls.length, greaterThan(2));
+      expect(await rows(), hasLength(1));
+    });
+
+    test('cancel then retranslate while the old chunk flies: only the new '
+        'run saves', () async {
+      build();
+      final hold = Completer<void>();
+      runner.hold = hold;
+      final old = jobs().run(_key, two, _en, force: true);
+      await sent(1);
+
+      jobs().cancel(_key);
+      runner.hold = null;
+      runner.transform = (line) => 'new:$line';
+      // The gate sends one chunk at a time: the new run waits for the old one.
+      final freshRun = jobs().run(_key, two, _en, force: true);
+      hold.complete();
+      expect(await old, isNull);
+      final fresh = await freshRun;
+      expect(fresh?.saved, isNotNull);
+      expect(status()[_key], fresh);
+      final saved = await rows();
+      expect(saved, hasLength(1));
+      expect(saved.single.linesJson, contains('new:line 0'));
+      expect(saved.single.linesJson, isNot(contains('tr:line 0')));
+    });
+
+    test('the last chunk back after cancel is not saved', () async {
+      build();
+      runner.hold = Completer<void>();
+      final run = jobs().run(_key, _lines.sublist(0, 5), _en, force: true);
+      await sent(1);
+      jobs().cancel(_key);
+      runner.hold!.complete();
+
+      expect(await run, isNull);
+      expect(status(), isEmpty);
+      expect(await rows(), isEmpty);
+    });
+
+    test('a job that is not forced ignores it', () async {
+      build();
+      runner.hold = Completer<void>();
+      final run = jobs().run(_key, _lines.sublist(0, 5), _en);
+      await sent(1);
+      jobs().cancel(_key);
+      expect(status()[_key]!.isRunning, isTrue);
+      runner.hold!.complete();
+
+      expect((await run)?.saved, isNotNull);
+      expect(await rows(), hasLength(1));
+    });
+  });
+
+  test('run returns how it ended', () async {
+    build();
+    runner.errors[0] = failure(TranslationFailureKind.server);
+    final failed = await jobs().run(_key, _lines.sublist(0, 5), _en);
+    expect(failed?.failure, TranslationFailureKind.server);
+    // Failed and not forced: skipped.
+    expect(await jobs().run(_key, _lines.sublist(0, 5), _en), isNull);
+    final saved = await jobs().run(
+      _key,
+      _lines.sublist(0, 5),
+      _en,
+      force: true,
+    );
+    expect(saved?.saved, isNotNull);
+    expect(saved, status()[_key]);
+  });
 }
