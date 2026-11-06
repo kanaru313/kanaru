@@ -22,7 +22,10 @@ class Track {
     return Track(uri: path, title: dot > 0 ? name.substring(0, dot) : name);
   }
 
-  /// `file://…` URI or plain local path, as handed to the player.
+  /// `file://…` URI or plain local path, as handed to the player. For a
+  /// remote track ([remote] set) it is a `kanaru-source:` uri that only names
+  /// the item: it is an identity and is never handed to mpv, the backend asks
+  /// the stream proxy for the URL to play.
   final String uri;
   final String title;
   final String? artist;

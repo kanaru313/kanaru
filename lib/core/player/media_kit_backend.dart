@@ -10,6 +10,7 @@ import 'audio_output_device.dart';
 import 'mpv_audio_output.dart';
 import 'mpv_playlist_tracker.dart';
 import 'mpv_startup_options.dart';
+import 'play_uri.dart';
 import 'playback_error.dart';
 import 'repeat_mode.dart';
 import 'replay_gain_options.dart';
@@ -180,18 +181,13 @@ class MediaKitBackend implements AudioBackend {
   /// begins that item's playthrough), the track's uri otherwise. When the
   /// proxy cannot give a URL the uri is used: mpv cannot open it, so the
   /// track fails and is skipped like a broken file.
-  Future<String> _playUri(Track track) async {
-    final ref = track.remote;
-    final remoteUrl = _remoteUrl;
-    if (ref == null || remoteUrl == null) return track.uri;
-    try {
-      return await remoteUrl(ref);
-    } on Object catch (error) {
-      // The type only: the message may name a URL.
-      _log.warning('No stream URL for ${ref.installId}: ${error.runtimeType}');
-      return track.uri;
-    }
-  }
+  Future<String> _playUri(Track track) =>
+      playUriFor(track, _remoteUrl, (error) {
+        // The type only: the message may name a URL.
+        _log.warning(
+          'No stream URL for ${track.remote?.installId}: ${error.runtimeType}',
+        );
+      });
 
   Future<void> _queueNext(Track? next) async {
     _tracker.queueNext(next);
