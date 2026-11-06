@@ -35,7 +35,7 @@ String lyricsSourceLabel(
 }
 
 /// The menu's header and the pill's tooltip: where the shown lyrics come from
-/// ("Lyrics from LRCLIB · Synced", or from the file or tag), the only place
+/// ("Lyrics from <source> · Synced", or from the file or tag), the only place
 /// the round icon says it. Without lyrics it is the plain header.
 String lyricsSourceMenuTitle(
   AppLocalizations l10n,

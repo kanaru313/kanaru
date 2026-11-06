@@ -62,7 +62,8 @@ extension OnlineLyricsQueries on LibraryDatabase {
   /// A plugin source's row (id starting with `plugin-`) is saved only while
   /// that plugin's record exists and is not removed, so a lookup that
   /// outlived an uninstall leaves no orphan row. Returns whether a row was
-  /// written; LRCLIB rows always are.
+  /// written; ids outside the plugin namespace (tests, legacy rows) are
+  /// written as is.
   Future<bool> saveOnlineLyrics(OnlineLyricsCompanion row) async {
     if (!isLyricsPluginId(row.providerId.value)) {
       await into(onlineLyrics).insert(row, mode: InsertMode.insertOrReplace);

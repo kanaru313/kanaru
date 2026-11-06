@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/app_identity.dart';
 import 'package:kanaru/core/logging/app_logging.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 
 import '../../lyrics_translation/loopback_server.dart';
+import 'support/http_test_lyrics_provider.dart';
 
 Future<LyricsFetchKind> _kindOf(Future<Object?> call) async {
   try {
@@ -33,7 +33,7 @@ void main() {
   });
 
   LyricsHttp production() =>
-      LyricsHttp(LyricsProviderRegistration(LrclibProvider()), client);
+      LyricsHttp(LyricsProviderRegistration(HttpTestLyricsProvider()), client);
   LyricsHttp testing() =>
       LyricsHttp.forTesting(client: client, hosts: const ['127.0.0.1']);
 
@@ -52,9 +52,9 @@ void main() {
     () async {
       final http = production();
       for (final url in [
-        'http://lrclib.net/api/get',
-        'https://lrclib.net:8443/api/get',
-        'https://user@lrclib.net/api/get',
+        'http://lyrics.test.net/api/get',
+        'https://lyrics.test.net:8443/api/get',
+        'https://user@lyrics.test.net/api/get',
       ]) {
         expect(
           await _kindOf(http.get(Uri.parse(url))),
@@ -74,7 +74,6 @@ void main() {
       request.header('user-agent'),
       'Kanaru/$kanaruVersion (+$kanaruRepositoryUrl)',
     );
-    expect(request.header('lrclib-app-id'), isNull);
   });
 
   test('a redirect is returned, not followed', () async {

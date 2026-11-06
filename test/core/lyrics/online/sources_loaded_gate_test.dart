@@ -77,4 +77,20 @@ void main() {
     await done;
     expect(fake.searchCalls, 1);
   });
+
+  test(
+    'with no source on, an allowed automatic lookup sends nothing',
+    () async {
+      final rig = await createStatusRig(realSources: true);
+      rig.watch();
+      await rig.play([fakeSong('/m/a.flac')]);
+      await rig.settle();
+
+      expect(rig.fake.lookupCalls + rig.fake.searchCalls, 0);
+      expect(rig.requests, 0);
+      expect(rig.statuses.whereType<LyricsSearching>(), isEmpty);
+      expect(rig.status, isA<LyricsNone>());
+      expect((rig.status as LyricsNone).reason, LyricsNoneReason.noLyrics);
+    },
+  );
 }

@@ -3221,6 +3221,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerUse => 'Dùng lời này';
 
   @override
+  String get lyricsPickerNoSource =>
+      'Chưa có nguồn lời trực tuyến nào đang bật.';
+
+  @override
   String get lyricsPickerNoPreview => 'Chọn một kết quả để xem trước lời';
 
   @override
@@ -3284,6 +3288,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get settingsAutoOnlineLyricsHint =>
       'Khi màn hình Đang phát mở, cho các bài chưa có lời trên máy này. Mục \"Tìm lời online…\" trong menu bài luôn dùng được.';
+
+  @override
+  String get settingsAutoOnlineLyricsNoSource =>
+      'Chưa có nguồn lời trực tuyến nào đang bật · Thêm plugin trong Nguồn lời';
 
   @override
   String get settingsSavedLyrics => 'Lời đã lưu';
@@ -3567,14 +3575,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsSourcesEmptyHint =>
       'Chưa cài plugin nào. Bạn có thể thêm plugin từ Kho plugin.';
-
-  @override
-  String get lyricsSourceBuiltIn => 'Có sẵn';
-
-  @override
-  String lyricsSourceBuiltInHosts(String hosts) {
-    return 'Có sẵn · $hosts';
-  }
 
   @override
   String get lyricsSourceDragHandle =>

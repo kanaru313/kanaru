@@ -1,6 +1,3 @@
-/// Provider id of the built-in LRCLIB source.
-const lrclibSourceId = 'lrclib';
-
 /// Every plugin source id starts with this; `lyrics_plugins.install_id` is
 /// the whole id.
 const lyricsPluginIdPrefix = 'plugin-';

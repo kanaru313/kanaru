@@ -118,10 +118,10 @@ void main() {
       await controller.setEnabled(a.installId, false),
       LyricsPluginWrite.written,
     );
-    final order = await controller.reorder([b.installId, 'lrclib']);
-    expect(order.written, [b.installId, 'lrclib']);
+    final order = await controller.reorder([b.installId, a.installId]);
+    expect(order.written, [b.installId, a.installId]);
     final prefs = await env.db.watchLyricsSourcePrefs().first;
-    expect(prefs.map((p) => p.providerId).take(2), [b.installId, 'lrclib']);
+    expect(prefs.map((p) => p.providerId).take(2), [b.installId, a.installId]);
     expect(
       prefs.firstWhere((p) => p.providerId == a.installId).enabled,
       isFalse,

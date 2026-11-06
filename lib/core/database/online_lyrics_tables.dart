@@ -18,7 +18,7 @@ import 'package:drift/drift.dart';
 //    ranking. A reject made before hashes existed has a null hash and
 //    matches by id only.
 // 5. `status` holds only `found` or `not_found`. `provider_id` holds ids of
-//    known providers: `lrclib` and every `lyrics_plugins.install_id`,
+//    known providers: every `lyrics_plugins.install_id`,
 //    installed or removed (`lyrics_plugin_tables.dart`); readers skip other
 //    values. A plugin's row is saved only while its record exists and is not
 //    removed. There is no CHECK constraint, so a newer build's rows do not

@@ -20,11 +20,11 @@ class LyricsErrorBanner extends StatelessWidget {
   });
 
   /// The source the failure is put on, as the user reads it: a plugin's name
-  /// (with its author or "(removed)" where that is needed) or LRCLIB.
+  /// (with its author or "(removed)" where that is needed).
   final String providerName;
 
   /// The plugin whose log View log shows; `null` when the failed source is
-  /// LRCLIB or not known to be one plugin.
+  /// not known to be one plugin.
   final String? logProviderId;
   final bool canRetry;
 

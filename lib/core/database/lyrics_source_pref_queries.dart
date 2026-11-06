@@ -21,19 +21,18 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
     return row?.enabled ?? false;
   }
 
-  /// The position for a source with no row: after every row, and never 0
-  /// (the implicit position of `lrclib`).
+  /// The position for a source with no row: after every row, 0 when none.
   Future<int> nextLyricsSourcePosition() async {
     final highest = lyricsSourcePrefs.position.max();
     final row = await (selectOnly(
       lyricsSourcePrefs,
     )..addColumns([highest])).getSingle();
     final max = row.read(highest);
-    return max == null ? 1 : max + 1;
+    return max == null ? 0 : max + 1;
   }
 
   /// Whether a preference may be written for [providerId]: always for
-  /// `lrclib` (and any non-plugin id), for a plugin only while its record
+  /// an id outside the plugin namespace, for a plugin only while its record
   /// exists, is not removed and is a lyrics plugin.
   Future<bool> _acceptsLyricsSourcePref(String providerId) async {
     if (!isLyricsPluginId(providerId)) return true;
@@ -46,7 +45,7 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
   }
 
   /// Turns a source on or off. A source with no row gets one at the end of
-  /// the order (`lrclib` at 0); an existing row keeps its position. A plugin
+  /// the order; an existing row keeps its position. A plugin
   /// whose record is missing or removed is `skipped` and nothing is written,
   /// so a toggle from a stale list leaves no row behind.
   Future<LyricsPluginWrite> setLyricsSourceEnabled(
@@ -57,9 +56,7 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
       if (!await _acceptsLyricsSourcePref(providerId)) {
         return LyricsPluginWrite.skipped;
       }
-      final position = providerId == lrclibSourceId
-          ? 0
-          : await nextLyricsSourcePosition();
+      final position = await nextLyricsSourcePosition();
       await into(lyricsSourcePrefs).insert(
         LyricsSourcePrefsCompanion.insert(
           providerId: providerId,
@@ -76,12 +73,11 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
 
   /// Puts [ids] first, in the given order (a repeated id keeps its first
   /// place), then every other source after them in its current order, and
-  /// rewrites all positions to 0..n in one transaction. `lrclib` with no row
-  /// counts as the first current source, so when it is not in [ids] it gets a
-  /// row after them instead of tying with the first id at 0. A source with
-  /// no row gets one, enabled; `enabled` of existing rows is kept. Plugin ids
-  /// whose record is missing or removed are left out and returned as
-  /// `skipped`.
+  /// rewrites all positions to 0..n in one transaction. Only plugin sources are
+  /// ordered: a row whose id is outside the plugin namespace is left as it is.
+  /// A source with no row gets one, enabled; `enabled` of existing rows is
+  /// kept. Ids that are no plugin, or whose record is missing or removed, are
+  /// left out and returned as `skipped`.
   Future<({List<String> written, List<String> skipped})> reorderLyricsSources(
     List<String> ids,
   ) {
@@ -89,7 +85,10 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
       final written = <String>[];
       final skipped = <String>[];
       for (final id in ids.toSet()) {
-        (await _acceptsLyricsSourcePref(id) ? written : skipped).add(id);
+        (isLyricsPluginId(id) && await _acceptsLyricsSourcePref(id)
+                ? written
+                : skipped)
+            .add(id);
       }
       final current = [
         for (final row
@@ -98,9 +97,8 @@ extension LyricsSourcePrefQueries on LibraryDatabase {
                   (t) => OrderingTerm.asc(t.providerId),
                 ]))
                 .get())
-          row.providerId,
+          if (isLyricsPluginId(row.providerId)) row.providerId,
       ];
-      if (!current.contains(lrclibSourceId)) current.insert(0, lrclibSourceId);
       final order = [
         ...written,
         for (final id in current)

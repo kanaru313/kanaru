@@ -10,9 +10,6 @@ import 'lyrics_setting_rows.dart';
 import 'setting_card.dart';
 import 'settings_section.dart';
 
-/// Name of the built-in source in the row's subtitle.
-const _lrclibName = 'LRCLIB';
-
 /// Playback › Lyrics: which sources to use, which lyrics to prefer, and the
 /// online lookup with its permission. Translation has its own group; saved
 /// lyrics are in Data & storage.
@@ -39,12 +36,12 @@ class _LyricsSourcesRow extends ConsumerWidget {
     final loaded = ref.watch(lyricsSourcesLoadedProvider);
     final on = [
       for (final source in ref.watch(lyricsSourcesProvider))
-        if (source.enabled) source.record?.name ?? _lrclibName,
+        if (source.enabled) source.record.name,
     ];
     return SettingCard(
       child: ListTile(
         title: Text(l10n.lyricsSourcesTitle),
-        // Until the list is read it holds LRCLIB alone, which would be wrong.
+        // Until the list is read it is empty, which would be wrong.
         subtitle: !loaded
             ? null
             : Text(

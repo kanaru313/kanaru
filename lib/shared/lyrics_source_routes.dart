@@ -4,7 +4,7 @@ library;
 
 import 'settings_routes.dart';
 
-/// The list of lyrics sources (LRCLIB and installed plugins), a page below
+/// The list of lyrics sources (the installed plugins), a page below
 /// Playback settings so that back from it is a pop.
 const lyricsSourcesRoute = '$settingsPlaybackRoute/lyrics-sources';
 

@@ -419,7 +419,7 @@ There is no dev mode in v1: a change goes through a zip and the normal install. 
 
 ## Example: the LRCLIB plugin
 
-`test/fixtures/lyrics_plugins/lrclib/` is a complete, commented plugin for [LRCLIB](https://lrclib.net): the same service the built-in Dart provider talks to. It is not installed by default; the tests install it from a zip they build from the folder, and it is the example to copy.
+`test/fixtures/lyrics_plugins/lrclib/` is a complete, commented plugin for [LRCLIB](https://lrclib.net). Kanaru has no built-in lyrics source, so it is not installed by default, and it is the example to copy.
 
 | File | What it does |
 |---|---|
@@ -464,7 +464,6 @@ flutter test test/integration
 
 Without `rust/target/debug/librust_lib_kanaru.so` (or with a stale build the bridge cannot load) every test there is reported skipped with that hint.
 
-- `lyrics_plugin_lrclib_test.dart` and `lyrics_plugin_lrclib_unmirrored_test.dart`: the Dart provider and the plugin answer the same fake LRCLIB for a synced song, a plain-only song, an instrumental song and a miss; the stored rows (except `provider_id`) and the manual search's ranked order are compared.
 - `lyrics_plugin_hostile_test.dart` and `lyrics_plugin_hostile_slow_test.dart`: the packages in `test/fixtures/lyrics_plugins/hostile/` (endless loop, regex bomb, 64 MiB allocation, deep recursion, 11 fetches, undeclared host, `http://`, a swallowed network error, wrong output shape, 3 MiB output, `load('../x.js')`, console spam) each end as the expected `LyricsFetchKind` (an error the script throws, such as the one `load('../x.js')` throws, is `invalidResponse`), store nothing as "not found", leave one event in the plugin's JSONL log (kind, console, requests without query strings; a config value the script prints or puts in an address appears as `***`) and one INFO line in the app log without song data. The console-spam package is the exception: it is a successful run with an empty answer, so a `not_found` row is stored, the log event is `ok` with the console capped at 50 lines, and the app log gets nothing. Each finishes in under 20 s; the endless loop and the regex bomb wait for the 15 s wall-time limit, so they live in their own file and run in parallel with the others.
 
 ## Plugin repository

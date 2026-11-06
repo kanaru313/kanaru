@@ -22,6 +22,7 @@ class LyricsPickerResultsPane extends StatelessWidget {
     required this.onSelect,
     required this.onRetry,
     this.searchPending = false,
+    this.noSource = false,
     this.sourceFilter,
     this.scrollController,
   });
@@ -29,6 +30,9 @@ class LyricsPickerResultsPane extends StatelessWidget {
   /// A search is about to start by itself (the song has a title), so an
   /// empty state is progress, not the note to type a query.
   final bool searchPending;
+
+  /// No online lyrics source is on, so no search can run or end with results.
+  final bool noSource;
 
   final LyricsSearchState state;
 
@@ -66,6 +70,22 @@ class LyricsPickerResultsPane extends StatelessWidget {
                 onRetry: onRetry,
                 centered: true,
               ),
+          ],
+        );
+      }
+      if (noSource) {
+        return _Centered(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                l10n.lyricsPickerNoSource,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           ],
         );
       }

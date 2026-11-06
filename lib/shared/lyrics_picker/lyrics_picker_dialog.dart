@@ -169,6 +169,9 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                             state: state,
                             scrollController: _listScroll,
                             searchPending: _searchesOnOpen,
+                            noSource:
+                                ref.watch(lyricsSourcesLoadedProvider) &&
+                                registrations.isEmpty,
                             providerNames: providerNames,
                             sourceFilter: effectiveSourceFilter(
                               _sourceFilter,

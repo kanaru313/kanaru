@@ -6,7 +6,6 @@ import 'package:logging/logging.dart';
 import '../plugins/lyrics_sources_provider.dart';
 import '../plugins/plugin_lyrics_provider.dart';
 import '../plugins/plugin_script_runner_provider.dart';
-import 'lrclib_provider.dart';
 import 'lyrics_provider.dart';
 
 final _log = Logger('lyrics_sources');
@@ -104,8 +103,8 @@ List<LyricsProviderRegistration> registerLyricsProviders(
 }
 
 /// The lyrics providers that run, in the order they are tried: the enabled
-/// entries of [lyricsSourcesProvider] (LRCLIB and the installed plugins) in
-/// the user's order. A source whose registration fails (a plugin with a bad
+/// entries of [lyricsSourcesProvider] (the installed plugins) in the user's
+/// order. A source whose registration fails (a plugin with a bad
 /// host in a hand-edited database, say) is left out and logged. A disabled
 /// source is not here; its stored lyrics are still named by
 /// `lyricsSourceNamesProvider`.
@@ -116,17 +115,12 @@ final lyricsProvidersProvider = Provider<List<LyricsProviderRegistration>>((
   final registrations = <LyricsProviderRegistration>[];
   for (final entry in ref.watch(lyricsSourcesProvider)) {
     if (!entry.enabled) continue;
-    final record = entry.record;
     try {
-      if (record != null && runner == null) {
+      if (runner == null) {
         throw StateError('the plugin runner is not available');
       }
       registrations.add(
-        LyricsProviderRegistration(
-          record == null
-              ? LrclibProvider()
-              : PluginLyricsProvider(record, runner!),
-        ),
+        LyricsProviderRegistration(PluginLyricsProvider(entry.record, runner)),
       );
     } on Object catch (e) {
       // Only the id and the reason: the plugin's name and hosts are its own

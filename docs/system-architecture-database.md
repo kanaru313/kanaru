@@ -28,16 +28,16 @@ Lyrics plugin tables (schema 11; `lyrics_plugin_tables.dart`, queries in `lyrics
 | Table | Holds |
 |---|---|
 | `lyrics_plugins` | One record per installed plugin: `install_id` (the source id, `plugin-...`), `kind` (`lyrics` or `translate`, schema 13; see the paragraph above), name, author, description, `version`, `api_version`, `hosts` and `config_schema` (JSON text), `package_dir` (relative directory of the current package), install source (`source_kind` `file` or `repo`, `source_name`, `repo_url`, `repo_slug`), `installed_at`, `updated_at`, `removed_at`. Partial unique index on `(repo_url, repo_slug)` where `repo_url IS NOT NULL`. The source list watches it. |
-| `lyrics_source_prefs` | `provider_id`, `enabled`, `position` for LRCLIB and plugins. No `lrclib` row means enabled, position 0. |
+| `lyrics_source_prefs` | `provider_id`, `enabled`, `position` for lyrics plugins. A plugin with no row is enabled and goes after every saved position; there is no implicit built-in source. |
 | `lyrics_plugin_repos` | Repositories the user added: `url`, name, author, `added_at`, `last_fetched_at` (last success), `last_error` (kind string), `catalog` (last good catalog JSON, at most 1 MiB). |
 | `lyrics_plugin_data` | One row per live plugin: `config_values` (non-secret) and `storage` (localStorage), JSON objects, each at most 64 KiB. Not watched by the source list, so a config or storage write never rebuilds the lyrics streams. |
 
 Invariants:
 
-- `provider_id` in `online_lyrics`, `lyrics_pins`, `online_lyrics_rejects` and `lyrics_source_prefs` is `lrclib` or a `lyrics_plugins.install_id`, installed or removed; readers skip other values.
+- `provider_id` in `online_lyrics`, `lyrics_pins`, `online_lyrics_rejects` and `lyrics_source_prefs` is a `lyrics_plugins.install_id`, installed or removed; readers skip other values, so rows written by older builds under `lrclib` are not listed (there is no compatibility shim; the migration history is in `library_migration_v11.dart`).
 - `removed_at` set means the plugin is gone but saved lyrics, a pin or a reject still name its id. Uninstall (`uninstallLyricsPlugin`) is one transaction: it deletes the plugin's `not_found` rows, data row and preference row, then deletes the record when no found row, pin or reject names it, else marks it removed; it returns which happened and the old `config_schema` (for deleting secrets). Uninstalling a removed record changes nothing and returns no schema. A removed record is hard-deleted at uninstall, by `clearLyricsPluginSavedLyrics` once nothing names it, and by "Clear online lyrics"; removing the last pin or reject elsewhere does not delete it. A revive keeps the id, starts config, storage and preference empty, and moves `updated_at` forward.
-- Source preferences (`setLyricsSourceEnabled`, `reorderLyricsSources`) are written for a plugin id only while its record exists and is not removed (else `skipped`); `lrclib` is always allowed. A reorder puts the given ids first and keeps every other source after them in its current order, `lrclib` (no row) included, so positions are 0..n with no tie.
-- A plugin's `online_lyrics` row is saved only while its record exists and is not removed (`saveOnlineLyrics` returns whether it wrote), so a lookup that outlived an uninstall leaves no orphan row. LRCLIB rows are unchanged.
+- Source preferences (`setLyricsSourceEnabled`, `reorderLyricsSources`) are written for a plugin id only while its record exists and is not removed (else `skipped`); `setLyricsSourceEnabled` still accepts an id outside the plugin namespace and writes it as is. A reorder drops ids outside the plugin namespace (returned as `skipped`), puts the given plugin ids first and keeps every other plugin row after them in its current order, so positions are 0..n with no tie; a stored non-plugin row such as an old `lrclib` is not rewritten. `nextLyricsSourcePosition` is 0 on an empty table.
+- A plugin's `online_lyrics` row is saved only while its record exists and is not removed (`saveOnlineLyrics` returns whether it wrote), so a lookup that outlived an uninstall leaves no orphan row. An id outside the plugin namespace (tests, legacy rows) is written as is.
 - `updated_at` changes on install, revive and package switch. `setLyricsPluginStorage` writes only while the record is live and `updated_at` equals the value the run began with; it returns `written`, `skipped` or `tooLarge`.
 - A package switch (`switchLyricsPluginPackage`) changes `package_dir`, version, hosts, schema and `updated_at` in one statement and keeps config, storage and preferences. `lyricsPluginPackageDirs` lists the live records' directories for the startup sweep.
 - "Clear" for one source (`clearLyricsPluginSavedLyrics`) deletes only that source's `online_lyrics` rows; pins and rejects stay.
@@ -183,7 +183,7 @@ erDiagram
         int removed_at "set = removed, kept for saved lyrics"
     }
     LYRICS_SOURCE_PREFS {
-        text provider_id PK "lrclib or install_id"
+        text provider_id PK "install_id"
         bool enabled
         int position
     }

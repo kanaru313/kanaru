@@ -40,9 +40,8 @@ import 'package:drift/drift.dart';
 //    so a config or storage write never rebuilds them. The row goes with the
 //    plugin on uninstall.
 // 8. `lyrics_source_prefs` has one row per lyrics source the user changed or
-//    ordered, LRCLIB included. No row for `lrclib` means enabled at position
-//    0. A source with no row is enabled and goes after the rows. Rows for
-//    ids with no plugin record are ignored. Translate plugins never get a
+//    ordered. A source with no row is enabled and goes after the rows. Rows
+//    for ids with no plugin record are ignored. Translate plugins never get a
 //    row.
 // 9. `lyrics_plugin_repos.catalog` is the last good catalog (at most 1 MiB)
 //    and survives a failed fetch; `last_error` is a kind string only.

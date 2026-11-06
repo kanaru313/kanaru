@@ -115,8 +115,8 @@ Future<void> _checkBeforeProxy(
   check(url, addresses);
 }
 
-/// A factory that accepts public destinations only: the guard for plugin and
-/// LRCLIB traffic, whose hosts are public names. A name that resolves to any
+/// A factory that accepts public destinations only: the guard for plugin
+/// traffic, whose hosts are public names. A name that resolves to any
 /// non-public address (or to a mix) fails with [LyricsBlockedAddressException]
 /// before a socket is opened.
 LyricsConnectionFactory lyricsPublicOnlyConnectionFactory({

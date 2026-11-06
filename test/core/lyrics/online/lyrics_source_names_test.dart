@@ -30,19 +30,19 @@ void main() {
 
     final names = container.read(lyricsSourceNamesProvider);
 
-    expect(names.keys.toSet(), {'lrclib', 'a', 'b'});
+    expect(names.keys.toSet(), {'a', 'b'});
     expect(names['a'], const LyricsSourceName(displayName: 'Alpha'));
     expect(names['b']!.removed, isFalse);
     expect(names['b']!.author, isNull);
   });
 
   test(
-    'the default list names LRCLIB and is loaded without a library',
+    'the default list names nothing and is loaded without a library',
     () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(lyricsSourceNamesProvider).keys, ['lrclib']);
+      expect(container.read(lyricsSourceNamesProvider).keys, isEmpty);
       // The list is read from a stream, so it is loaded a moment later.
       container.listen(lyricsSourcesLoadedProvider, (_, _) {});
       expect(container.read(lyricsSourcesLoadedProvider), isFalse);

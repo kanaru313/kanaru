@@ -26,7 +26,7 @@ typedef LyricsHttpResponse = ({
 /// from a provider's registration, so a provider cannot reach a host it did
 /// not register.
 ///
-/// GET ([get], LRCLIB) or GET and POST ([send], plugin sources), `https`
+/// GET ([get]) or GET and POST ([send], plugin sources), `https`
 /// only, no explicit port, no user info; a request to anything else fails
 /// with `blockedHost` before a socket is opened. Timeouts
 /// are 10 s to connect and 20 s per send, and 30 s for the whole call with

@@ -8,15 +8,8 @@ import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import 'plugin_source_text.dart';
 
-/// Name shown for the built-in source.
-const lrclibDisplayName = 'LRCLIB';
-
-/// Address the built-in source connects to.
-const _lrclibHost = 'lrclib.net';
-
 /// One line of the source list: drag handle, icon, name with its subline and
-/// the switch. A plugin row opens the plugin's page on tap ([onOpen]); the
-/// built-in row has none.
+/// the switch. A row opens the plugin's page on tap ([onOpen]).
 ///
 /// The handle starts a drag at once ([index] is the row's place in the list).
 /// With the keyboard, Alt + Up or Down on the focused handle calls [onMove]
@@ -48,13 +41,11 @@ class LyricsSourceRow extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final record = entry.record;
-    final name = record?.name ?? lrclibDisplayName;
-    final lines = record == null
-        ? [l10n.lyricsSourceBuiltInHosts(_lrclibHost)]
-        : [
-            '${pluginByline(l10n, record)} · ${pluginSourceText(l10n, record)}',
-            record.hosts.join(', '),
-          ];
+    final name = record.name;
+    final lines = [
+      '${pluginByline(l10n, record)} · ${pluginSourceText(l10n, record)}',
+      record.hosts.join(', '),
+    ];
     final muted = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
@@ -74,21 +65,11 @@ class LyricsSourceRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyLarge,
-                          ),
-                        ),
-                        if (record == null) ...[
-                          const SizedBox(width: 8),
-                          _Badge(l10n.lyricsSourceBuiltIn),
-                        ],
-                      ],
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyLarge,
                     ),
                     for (final line in lines)
                       if (line.isNotEmpty)
@@ -108,32 +89,6 @@ class LyricsSourceRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-        child: Text(
-          text,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSecondaryContainer,
           ),
         ),
       ),

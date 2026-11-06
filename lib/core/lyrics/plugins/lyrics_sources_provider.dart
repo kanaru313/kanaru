@@ -23,7 +23,7 @@ class LyricsSourcesInput {
 /// The plugin records and the source preferences, emitted together. It emits
 /// for the first time only after both tables have answered, and again only
 /// when a row changed (the database streams fire on any write to a table).
-/// Without a library database it emits once with nothing, so LRCLIB alone
+/// Without a library database it emits once with nothing, so nothing
 /// runs. A failing stream ends in an error and the sources stay unloaded:
 /// nothing is looked up from a list that may be wrong.
 final lyricsSourcesInputProvider = StreamProvider<LyricsSourcesInput>((ref) {
@@ -82,8 +82,8 @@ final lyricsSourcesLoadedProvider = Provider<bool>(
   (ref) => ref.watch(lyricsSourcesInputProvider).hasValue,
 );
 
-/// Every source that exists (LRCLIB and the installed plugins), on or off,
-/// in the user's order. Only LRCLIB until the list is loaded.
+/// Every source that exists (the installed plugins), on or off, in the
+/// user's order. Empty until the list is loaded.
 final lyricsSourcesProvider = Provider<List<LyricsSourceEntry>>((ref) {
   final input = ref.watch(lyricsSourcesInputProvider).value;
   return List.unmodifiable(

@@ -4994,6 +4994,12 @@ abstract class AppLocalizations {
   /// **'Use these lyrics'**
   String get lyricsPickerUse;
 
+  /// Results pane text when no online lyrics source is turned on, so nothing can be searched
+  ///
+  /// In en, this message translates to:
+  /// **'No online lyrics source is on.'**
+  String get lyricsPickerNoSource;
+
   /// Preview pane text when nothing is selected
   ///
   /// In en, this message translates to:
@@ -5101,6 +5107,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.'**
   String get settingsAutoOnlineLyricsHint;
+
+  /// Subtitle of the automatic online lyrics switch when no lyrics source is on, so the switch is disabled
+  ///
+  /// In en, this message translates to:
+  /// **'No online lyrics source is on · Add a plugin in Lyrics sources'**
+  String get settingsAutoOnlineLyricsNoSource;
 
   /// No description provided for @settingsSavedLyrics.
   ///
@@ -5396,7 +5408,7 @@ abstract class AppLocalizations {
   /// **'Lyrics for this song'**
   String get lyricsSourceMenuHeader;
 
-  /// Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as "LRCLIB · Synced" or ".lrc file"
+  /// Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as "Demo · Synced" or ".lrc file"
   ///
   /// In en, this message translates to:
   /// **'Lyrics from {source}'**
@@ -5539,18 +5551,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No plugins installed yet. You can add some from the Plugin store.'**
   String get lyricsSourcesEmptyHint;
-
-  /// No description provided for @lyricsSourceBuiltIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Built in'**
-  String get lyricsSourceBuiltIn;
-
-  /// Subline of the built-in LRCLIB source; hosts is the address it connects to
-  ///
-  /// In en, this message translates to:
-  /// **'Built in · {hosts}'**
-  String lyricsSourceBuiltInHosts(String hosts);
 
   /// No description provided for @lyricsSourceDragHandle.
   ///

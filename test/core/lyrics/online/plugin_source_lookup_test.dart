@@ -4,7 +4,6 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
-import 'package:kanaru/core/database/lyrics_plugin_queries.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_search_controller.dart';
@@ -306,9 +305,8 @@ void main() {
     });
   });
 
-  test('a disabled LRCLIB keeps its found row listed', () async {
+  test('a row of a source that is no plugin is not listed', () async {
     await saveFound('lrclib');
-    await env.db.setLyricsSourceEnabled('lrclib', false);
     final h = await createHarness(
       null,
       database: env.db,
@@ -321,10 +319,10 @@ void main() {
 
     final entries = await h.container.read(cache.future);
 
-    expect(entries.map((e) => e.providerId), ['lrclib']);
+    expect(entries, isEmpty);
     expect(
-      h.container.read(lyricsSourceNamesProvider)['lrclib']!.removed,
-      false,
+      h.container.read(lyricsSourceNamesProvider),
+      isNot(contains('lrclib')),
     );
   });
 

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -27,71 +28,73 @@ void main() {
       );
     });
 
-    test('no rows at first; next position is 1', () async {
+    test('no rows at first; next position is 0', () async {
       expect(await prefs(), isEmpty);
-      expect(await db.nextLyricsSourcePosition(), 1);
+      expect(await db.nextLyricsSourcePosition(), 0);
     });
 
     test('enabling puts a new source at the end', () async {
       await db.setLyricsSourceEnabled('plugin-a', true);
       await db.setLyricsSourceEnabled('plugin-b', false);
-      expect(await prefs(), [('plugin-a', true, 1), ('plugin-b', false, 2)]);
-      expect(await db.nextLyricsSourcePosition(), 3);
-    });
-
-    test('lrclib with no row is switched off at position 0', () async {
-      await db.setLyricsSourceEnabled('plugin-a', true);
-      await db.setLyricsSourceEnabled('lrclib', false);
-      expect(await prefs(), [('lrclib', false, 0), ('plugin-a', true, 1)]);
+      expect(await prefs(), [('plugin-a', true, 0), ('plugin-b', false, 1)]);
+      expect(await db.nextLyricsSourcePosition(), 2);
     });
 
     test('toggling keeps the position', () async {
       await db.setLyricsSourceEnabled('plugin-a', true);
       await db.setLyricsSourceEnabled('plugin-b', true);
       await db.setLyricsSourceEnabled('plugin-a', false);
-      expect(await prefs(), [('plugin-a', false, 1), ('plugin-b', true, 2)]);
+      expect(await prefs(), [('plugin-a', false, 0), ('plugin-b', true, 1)]);
     });
 
     test('reorder rewrites positions 0..n and keeps enabled', () async {
       await db.setLyricsSourceEnabled('plugin-a', false);
       await db.setLyricsSourceEnabled('plugin-b', true);
-      await db.reorderLyricsSources(['plugin-b', 'lrclib', 'plugin-a']);
-      expect(await prefs(), [
-        ('plugin-b', true, 0),
-        ('lrclib', true, 1),
-        ('plugin-a', false, 2),
-      ]);
+      await db.reorderLyricsSources(['plugin-b', 'plugin-a']);
+      expect(await prefs(), [('plugin-b', true, 0), ('plugin-a', false, 1)]);
     });
 
     test('reorder ignores a repeated id', () async {
-      await db.reorderLyricsSources(['a', 'b', 'a', 'c']);
-      expect(await prefs(), [
-        ('a', true, 0),
-        ('b', true, 1),
-        ('c', true, 2),
-        ('lrclib', true, 3),
+      final result = await db.reorderLyricsSources([
+        'plugin-b',
+        'plugin-a',
+        'plugin-b',
       ]);
+      expect(result.written, ['plugin-b', 'plugin-a']);
+      expect(await prefs(), [('plugin-b', true, 0), ('plugin-a', true, 1)]);
     });
 
     test('reorder keeps every other source after the given ones', () async {
       await db.setLyricsSourceEnabled('plugin-a', true);
       await db.setLyricsSourceEnabled('plugin-b', false);
-      // lrclib has no row: it counts as first, so it ends up after plugin-b.
       final result = await db.reorderLyricsSources(['plugin-b']);
       expect(result.written, ['plugin-b']);
-      expect(await prefs(), [
-        ('plugin-b', false, 0),
-        ('lrclib', true, 1),
-        ('plugin-a', true, 2),
-      ]);
+      expect(await prefs(), [('plugin-b', false, 0), ('plugin-a', true, 1)]);
     });
 
-    test('reorder without lrclib never ties at position 0', () async {
-      await db.reorderLyricsSources(['plugin-a', 'plugin-b']);
+    test('reorder drops ids outside the plugin namespace', () async {
+      final result = await db.reorderLyricsSources(['lrclib', 'plugin-a']);
+      expect(result.skipped, ['lrclib']);
+      expect(result.written, ['plugin-a']);
+      expect(await prefs(), [('plugin-a', true, 0)]);
+    });
+
+    test('reorder does not rewrite an orphan row', () async {
+      await db
+          .into(db.lyricsSourcePrefs)
+          .insert(
+            LyricsSourcePrefsCompanion.insert(
+              providerId: 'lrclib',
+              enabled: const Value(false),
+              position: 7,
+            ),
+          );
+      await db.setLyricsSourceEnabled('plugin-a', true);
+      await db.reorderLyricsSources(['plugin-b', 'plugin-a']);
       expect(await prefs(), [
-        ('plugin-a', true, 0),
-        ('plugin-b', true, 1),
-        ('lrclib', true, 2),
+        ('plugin-b', true, 0),
+        ('plugin-a', true, 1),
+        ('lrclib', false, 7),
       ]);
     });
 
@@ -104,13 +107,14 @@ void main() {
         LyricsPluginWrite.skipped,
       );
       expect(await prefs(), isEmpty);
-      // Unknown plugins too; lrclib is always allowed.
+      // Unknown plugins too; an id outside the plugin namespace is written
+      // as is.
       expect(
         await db.setLyricsSourceEnabled('plugin-z', true),
         LyricsPluginWrite.skipped,
       );
       expect(
-        await db.setLyricsSourceEnabled('lrclib', false),
+        await db.setLyricsSourceEnabled('legacy-id', false),
         LyricsPluginWrite.written,
       );
     });
@@ -121,7 +125,7 @@ void main() {
       final result = await db.reorderLyricsSources(['plugin-a', 'plugin-b']);
       expect(result.skipped, ['plugin-a']);
       expect(result.written, ['plugin-b']);
-      expect((await prefs()).map((p) => p.$1), ['plugin-b', 'lrclib']);
+      expect((await prefs()).map((p) => p.$1), ['plugin-b']);
     });
 
     test('a stale preference does not come back on revive', () async {
@@ -137,13 +141,13 @@ void main() {
       await db.setLyricsSourceEnabled('plugin-a', true);
       await db.customStatement(
         'CREATE TRIGGER block_pref BEFORE INSERT ON lyrics_source_prefs '
-        "WHEN NEW.provider_id = 'bad' BEGIN SELECT RAISE(ABORT, 'boom'); END",
+        "WHEN NEW.provider_id = 'plugin-b' BEGIN SELECT RAISE(ABORT, 'boom'); END",
       );
       await expectLater(
-        db.reorderLyricsSources(['plugin-a', 'x', 'bad']),
+        db.reorderLyricsSources(['plugin-a', 'plugin-b']),
         throwsA(isA<Exception>()),
       );
-      expect(await prefs(), [('plugin-a', true, 1)]);
+      expect(await prefs(), [('plugin-a', true, 0)]);
     });
   });
 

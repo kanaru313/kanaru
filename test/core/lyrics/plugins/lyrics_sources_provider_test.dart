@@ -46,19 +46,18 @@ void main() {
   group('orderLyricsSources', () {
     List<String> ids(List<LyricsSourceEntry> e) => [for (final x in e) x.id];
 
-    test('LRCLIB first, then plugins in install order, all on', () {
+    test('plugins in install order, all on', () {
       final entries = orderLyricsSources([
         _record('plugin-aaaaaaaaaaaa', 10),
         _record('plugin-bbbbbbbbbbbb', 20),
       ], const []);
-      expect(ids(entries), [
-        'lrclib',
-        'plugin-aaaaaaaaaaaa',
-        'plugin-bbbbbbbbbbbb',
-      ]);
+      expect(ids(entries), ['plugin-aaaaaaaaaaaa', 'plugin-bbbbbbbbbbbb']);
       expect(entries.every((e) => e.enabled), isTrue);
-      expect(entries.first.record, isNull);
-      expect(entries.last.record, isNotNull);
+      expect(entries.first.record.installId, 'plugin-aaaaaaaaaaaa');
+    });
+
+    test('no records, no sources', () {
+      expect(orderLyricsSources(const [], [_pref('lrclib', 0)]), isEmpty);
     });
 
     test('saved positions and flags win; a plugin without a row goes last', () {
@@ -70,18 +69,16 @@ void main() {
         ],
         [
           _pref('plugin-bbbbbbbbbbbb', 0),
-          _pref('lrclib', 1, enabled: false),
-          _pref('plugin-aaaaaaaaaaaa', 2),
+          _pref('plugin-aaaaaaaaaaaa', 1, enabled: false),
         ],
       );
       expect(ids(entries), [
         'plugin-bbbbbbbbbbbb',
-        'lrclib',
         'plugin-aaaaaaaaaaaa',
         'plugin-cccccccccccc',
       ]);
       expect(entries[1].enabled, isFalse);
-      expect(entries[3].enabled, isTrue);
+      expect(entries[2].enabled, isTrue);
     });
 
     test('removed records and rows of unknown sources are not sources', () {
@@ -89,7 +86,7 @@ void main() {
         [_record('plugin-aaaaaaaaaaaa', 10, removed: true)],
         [_pref('plugin-aaaaaaaaaaaa', 0), _pref('plugin-zzzzzzzzzzzz', 1)],
       );
-      expect(ids(entries), ['lrclib']);
+      expect(ids(entries), isEmpty);
     });
   });
 
@@ -144,30 +141,29 @@ void main() {
 
     test('loaded only after both tables have answered', () async {
       expect(container.read(lyricsSourcesLoadedProvider), isFalse);
-      // Until then nothing but LRCLIB is listed.
-      expect(running(), ['lrclib']);
+      // Until then nothing is listed.
+      expect(running(), isEmpty);
 
       await container.read(lyricsSourcesInputProvider.future);
 
       expect(container.read(lyricsSourcesLoadedProvider), isTrue);
-      expect(running(), ['lrclib', first.installId, second.installId]);
+      expect(running(), [first.installId, second.installId]);
     });
 
     test('order and enable flags drive the providers', () async {
       await container.read(lyricsSourcesInputProvider.future);
 
       await env.controller.setEnabled(first.installId, false);
-      await until(() => running().length == 2);
-      expect(running(), ['lrclib', second.installId]);
+      await until(() => running().length == 1);
+      expect(running(), [second.installId]);
 
-      await env.controller.reorder([second.installId, 'lrclib']);
+      await env.controller.reorder([second.installId, first.installId]);
       await until(() => running().first == second.installId);
-      expect(running(), [second.installId, 'lrclib']);
+      expect(running(), [second.installId]);
 
       await env.controller.setEnabled(first.installId, true);
-      await until(() => running().length == 3);
-      expect(running().first, second.installId);
-      expect(running(), contains(first.installId));
+      await until(() => running().length == 2);
+      expect(running(), [second.installId, first.installId]);
     });
 
     test('a plugin is registered with its name and hosts', () async {
@@ -193,7 +189,7 @@ void main() {
       );
       await until(() => !running().contains(first.installId));
 
-      expect(running(), ['lrclib', second.installId]);
+      expect(running(), [second.installId]);
       final line = appLog.firstWhere(
         (r) => r.message.contains(first.installId),
       );
@@ -223,12 +219,11 @@ void main() {
       );
 
       final names = container.read(lyricsSourceNamesProvider);
-      expect(names['lrclib']!.displayName, 'LRCLIB');
       expect(names[first.installId]!.displayName, 'First');
       expect(names[first.installId]!.removed, isFalse);
       expect(names[first.installId]!.author, 'someone');
       expect(names[second.installId]!.removed, isTrue);
-      expect(running(), ['lrclib']);
+      expect(running(), isEmpty);
     });
   });
 
@@ -243,9 +238,7 @@ void main() {
     container.listen(lyricsProvidersProvider, (_, _) {});
     await container.read(lyricsSourcesInputProvider.future);
 
-    expect(container.read(lyricsProvidersProvider).map((r) => r.id), [
-      'lrclib',
-    ]);
+    expect(container.read(lyricsProvidersProvider), isEmpty);
     expect(
       container.read(lyricsSourceNamesProvider).containsKey(record.installId),
       isTrue,
@@ -275,10 +268,7 @@ void main() {
         _record('plugin-aaaaaaaaaaaa', 10),
         translateRecord('plugin-tttttttttttt'),
       ], const []);
-      expect(
-        [for (final e in entries) e.id],
-        ['lrclib', 'plugin-aaaaaaaaaaaa'],
-      );
+      expect([for (final e in entries) e.id], ['plugin-aaaaaaaaaaaa']);
     });
 
     test('a record of an unknown kind is in no list', () {
@@ -300,7 +290,7 @@ void main() {
           ),
         ),
       ], const []);
-      expect([for (final e in entries) e.id], ['lrclib']);
+      expect(entries, isEmpty);
     });
 
     Future<void> insert(
@@ -350,7 +340,7 @@ void main() {
         );
         expect(
           [for (final e in container.read(lyricsSourcesProvider)) e.id],
-          ['lrclib', 'plugin-llllllllllll'],
+          ['plugin-llllllllllll'],
         );
         expect(
           container.read(lyricsPluginRecordsProvider).length,

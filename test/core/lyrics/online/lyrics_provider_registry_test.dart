@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
+
+import 'support/http_test_lyrics_provider.dart';
 
 class _Stub implements LyricsProvider {
   _Stub(this.id, this.hosts);
@@ -29,10 +30,11 @@ class _Stub implements LyricsProvider {
 }
 
 void main() {
-  test('the default registry holds LRCLIB', () {
-    final registration = registerLyricsProviders([LrclibProvider()]).single;
-    expect(registration.id, 'lrclib');
-    expect(registration.hosts, ['lrclib.net']);
+  test('a registry holds the HTTP test provider', () {
+    final registration = registerLyricsProviders([HttpTestLyricsProvider()])
+        .single;
+    expect(registration.id, 'test-http');
+    expect(registration.hosts, ['lyrics.test.net']);
   });
 
   test('a duplicate id is rejected', () {
@@ -58,16 +60,16 @@ void main() {
     'example.1com',
     '[::1]',
     'music',
-    'lrclib.net:8443',
-    'lrclib.net/path',
-    'user@lrclib.net',
+    'lyrics.test.net:8443',
+    'lyrics.test.net/path',
+    'user@lyrics.test.net',
     'printer.local',
     'nas.home.arpa',
     'box.localdomain',
     '',
     'a..b.com',
     '-a.example.com',
-    'https://lrclib.net',
+    'https://lyrics.test.net',
   ]) {
     test('host "$host" is rejected', () {
       expect(

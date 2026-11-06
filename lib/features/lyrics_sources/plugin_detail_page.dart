@@ -121,7 +121,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     final failed = ref.watch(lyricsSourcesInputProvider).hasError;
     final entry = ref
         .watch(lyricsSourcesProvider)
-        .where((e) => e.id == _id && e.record != null)
+        .where((e) => e.id == _id)
         .firstOrNull;
     // A translate plugin is in no source list: find it among the live records.
     final record =

@@ -24,6 +24,7 @@ void main() {
     WidgetTester tester,
     LyricsTarget target, {
     double textScale = 1,
+    bool withSource = true,
   }) async {
     tester.view
       ..physicalSize = const Size(1280, 900)
@@ -32,7 +33,7 @@ void main() {
     fake = FakeLyricsProvider()..searchResult = [fakeCandidate()];
     client = CountingHttpClient();
     final h = await createHarness([
-      LyricsProviderRegistration(fake),
+      if (withSource) LyricsProviderRegistration(fake),
     ], client: client);
     await tester.pumpWidget(
       MaterialApp(
@@ -182,4 +183,25 @@ void main() {
     expect(song.maxLines, 2);
     expect(song.overflow, TextOverflow.ellipsis);
   });
+
+  testWidgets(
+    'with no source on, a tagged song ends in a note, not a spinner',
+    (tester) async {
+      await open(
+        tester,
+        LyricsTarget.fromFields(
+          uri: '/music/song.mp3',
+          title: 'Song',
+          artist: 'Artist',
+          duration: const Duration(seconds: 200),
+        ),
+        withSource: false,
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('No online lyrics source is on.'), findsOneWidget);
+      expect(fake.searchCalls, 0);
+      expect(client.opened, 0);
+    },
+  );
 }
