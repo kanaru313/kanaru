@@ -37,12 +37,17 @@ final _log = Logger('player');
 /// never load libmpv. The stream proxy is read only when a remote track is
 /// opened, so building the engine neither starts it nor reads plugin records.
 final audioBackendProvider = Provider<AudioBackend>((ref) {
-  final backend = MediaKitBackend(
-    remoteUrl: (remote) => ref.read(sourceStreamProxyProvider).urlFor(remote),
-  );
+  final backend = mediaKitBackendFor(ref);
   ref.onDispose(backend.dispose);
   return backend;
 });
+
+/// The mpv engine wired to the stream proxy, which it reads only when a
+/// remote track is opened. `main()` builds its engine through this too: an
+/// engine made without it hands mpv the `kanaru-source:` uri itself.
+MediaKitBackend mediaKitBackendFor(Ref ref) => MediaKitBackend(
+  remoteUrl: (remote) => ref.read(sourceStreamProxyProvider).urlFor(remote),
+);
 
 final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
   PlayerService.new,

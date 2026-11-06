@@ -39,7 +39,9 @@ ProviderContainer containerWith({
   required AudioBackend Function() create,
 }) {
   final container = ProviderContainer(
-    overrides: [audioBackendOverride(engineReady: engineReady, create: create)],
+    overrides: [
+      audioBackendOverride(engineReady: engineReady, create: (_) => create()),
+    ],
   );
   addTearDown(container.dispose);
   return container;
@@ -108,6 +110,27 @@ void main() {
   });
 
   group('audioBackendOrUnavailable', () {
+    test('hands create the ref of the provider it builds', () {
+      Ref? seen;
+      final backend = UnavailableAudioBackend();
+      final container = ProviderContainer(
+        overrides: [
+          audioBackendOverride(
+            engineReady: true,
+            create: (ref) {
+              seen = ref;
+              return backend;
+            },
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(audioBackendProvider), same(backend));
+      // The engine main() builds reads the stream proxy through this ref.
+      expect(seen, isNotNull);
+    });
+
     test('never calls create when the engine did not initialise', () {
       var created = 0;
       final container = containerWith(
@@ -232,7 +255,7 @@ void main() {
     final counting = _CountingUnavailable();
     final container = ProviderContainer(
       overrides: [
-        audioBackendOverride(engineReady: true, create: () => counting),
+        audioBackendOverride(engineReady: true, create: (_) => counting),
         settingsFileProvider.overrideWithValue(
           SettingsFile('${root.path}/settings.json'),
         ),

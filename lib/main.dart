@@ -27,7 +27,6 @@ import 'core/paths/app_directories.dart'
         resolveDataDirectory,
         resolveWaveformCacheDirectory;
 import 'core/player/app_exit_flush.dart';
-import 'core/player/media_kit_backend.dart';
 import 'core/player/original_cover_reader.dart';
 import 'core/player/player_service.dart';
 import 'core/player/rust_original_cover_reader.dart';
@@ -119,7 +118,7 @@ Future<void> main() async {
       ),
       audioBackendOverride(
         engineReady: engineReady,
-        create: MediaKitBackend.new,
+        create: mediaKitBackendFor,
       ),
       ...library.overrides,
       sessionCoverDirectoryProvider.overrideWithValue(
