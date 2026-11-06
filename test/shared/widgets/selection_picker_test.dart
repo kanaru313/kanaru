@@ -208,8 +208,31 @@ void main() {
       expect(find.text('Tải thêm plugin dịch'), findsOneWidget);
       expect(
         find.text('Bản dịch đã có trong máy vẫn được dùng trước.'),
-        findsOneWidget,
+        findsNothing,
       );
     },
   );
+
+  testWidgets('the hint shows with matches and hides with none', (
+    tester,
+  ) async {
+    await _pumpPickerHost<String>(
+      tester,
+      items: _makeItems(12),
+      footer: const Text('footer note'),
+      hint: 'hint note',
+      onResult: (_) {},
+    );
+    expect(find.text('hint note', skipOffstage: false), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'zzzz');
+    await tester.pump();
+    expect(find.textContaining('zzzz'), findsWidgets);
+    expect(find.text('footer note'), findsOneWidget);
+    expect(find.text('hint note'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'Option 1');
+    await tester.pump();
+    expect(find.text('hint note', skipOffstage: false), findsOneWidget);
+  });
 }

@@ -44,7 +44,8 @@ class SelectionPickerItem<T> {
 ///
 /// [footer] is the last child of the scrolling list (after the rows and
 /// before [hint]), not pinned below it. [hint] is a small muted note at the
-/// end of the list.
+/// end of the list; it is hidden while a search matches nothing, the [footer]
+/// stays.
 Future<T?> showSelectionPicker<T>(
   BuildContext context, {
   required String title,
@@ -182,7 +183,7 @@ class _SelectionPickerContentState<T>
               onTap: () => Navigator.of(context).pop(item.value),
             ),
         ?footer,
-        if (hint != null && hint.isNotEmpty)
+        if (hint != null && hint.isNotEmpty && filtered.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
             child: Text(
