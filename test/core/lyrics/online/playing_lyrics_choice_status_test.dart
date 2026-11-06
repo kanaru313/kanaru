@@ -68,27 +68,27 @@ void main() {
 
   // (mode, pick, local, cache) -> (shown, effective). For `online` the pick
   // is usable or not; for `local` and `off` it is stored or absent.
-  final cases = <(String?, bool, bool, bool), (String, LyricsChoice)>{
+  final cases = <(String?, bool, bool, bool), (String, LyricsChoice?)>{
     // off: nothing else matters
     ('off', true, true, true): ('off', LyricsChoice.off),
     ('off', false, false, true): ('off', LyricsChoice.off),
+    ('off', true, false, false): ('off', LyricsChoice.off),
     // online with a usable pick wins over local and cache
     ('online', true, true, true): ('picked (pick)', LyricsChoice.online),
     ('online', true, false, false): ('picked (pick)', LyricsChoice.online),
-    // online with an unusable pick goes automatic
-    ('online', false, true, true): ('local', LyricsChoice.auto),
-    ('online', false, false, true): ('cached (cache)', LyricsChoice.auto),
-    ('online', false, false, false): ('noLyrics', LyricsChoice.auto),
+    // online with an unusable pick falls back to the order
+    ('online', false, true, true): ('local', LyricsChoice.local),
+    ('online', false, false, true): ('cached (cache)', LyricsChoice.online),
+    ('online', false, false, false): ('noLyrics', null),
     // local
     ('local', true, true, true): ('local', LyricsChoice.local),
-    ('local', true, false, true): ('cached (cache)', LyricsChoice.auto),
-    ('local', true, false, false): ('noLyrics', LyricsChoice.auto),
-    ('local', false, false, true): ('cached (cache)', LyricsChoice.auto),
-    ('off', true, false, false): ('off', LyricsChoice.off),
-    // auto (no row, or a row without a mode)
-    (null, false, true, true): ('local', LyricsChoice.auto),
-    (null, false, false, true): ('cached (cache)', LyricsChoice.auto),
-    (null, false, false, false): ('noLyrics', LyricsChoice.auto),
+    ('local', true, false, true): ('cached (cache)', LyricsChoice.online),
+    ('local', true, false, false): ('noLyrics', null),
+    ('local', false, false, true): ('cached (cache)', LyricsChoice.online),
+    // no choice (no row)
+    (null, false, true, true): ('local', LyricsChoice.local),
+    (null, false, false, true): ('cached (cache)', LyricsChoice.online),
+    (null, false, false, false): ('noLyrics', null),
   };
 
   group('what each choice shows', () {
@@ -122,6 +122,16 @@ void main() {
         },
       );
     }
+
+    test('a legacy row with no mode and a pick shows the pick', () async {
+      rig = await createStatusRig(autoFetch: false);
+      await pin(null);
+      await open(local: true);
+
+      expect(describe(rig.status), 'picked (pick)');
+      expect(source().chosen, isNull);
+      expect(source().effective, LyricsChoice.online);
+    });
 
     test('a choice without a pick does not look anything up', () async {
       rig = await createStatusRig();

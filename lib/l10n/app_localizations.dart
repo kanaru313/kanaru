@@ -5402,30 +5402,6 @@ abstract class AppLocalizations {
   /// **'Lyrics from {source}'**
   String lyricsSourceMenuFrom(String source);
 
-  /// Lyrics source menu item that lets Kanaru pick the lyrics
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic'**
-  String get lyricsSourceAutoItem;
-
-  /// Subtitle of the Automatic item naming the lyrics now shown
-  ///
-  /// In en, this message translates to:
-  /// **'In use: {label}'**
-  String lyricsSourceAutoNow(String label);
-
-  /// Subtitle of the Automatic item when no online lyrics source is enabled
-  ///
-  /// In en, this message translates to:
-  /// **'The file or tag only'**
-  String get lyricsSourceAutoHintLocalOnly;
-
-  /// Subtitle of the Automatic item while at least one online lyrics source (built in or plugin) is enabled
-  ///
-  /// In en, this message translates to:
-  /// **'The file or tag first, then online sources'**
-  String get lyricsSourceAutoHint;
-
   /// Lyrics source menu item for the song's own lyrics
   ///
   /// In en, this message translates to:

@@ -3763,21 +3763,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lyricsSourceAutoItem => 'Automatic';
-
-  @override
-  String lyricsSourceAutoNow(String label) {
-    return 'In use: $label';
-  }
-
-  @override
-  String get lyricsSourceAutoHintLocalOnly => 'The file or tag only';
-
-  @override
-  String get lyricsSourceAutoHint =>
-      'The file or tag first, then online sources';
-
-  @override
   String get lyricsSourceLocalItem => 'Lyrics in the file';
 
   @override

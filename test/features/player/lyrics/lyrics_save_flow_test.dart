@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
@@ -50,8 +49,8 @@ const _origin = OnlineLyricsOrigin(
 );
 
 LyricsSourceResolution _source(String uri) => (
-  chosen: LyricsChoice.auto,
-  effective: LyricsChoice.auto,
+  chosen: null,
+  effective: null,
   pin: null,
   hasLocal: false,
   status: LyricsFound(

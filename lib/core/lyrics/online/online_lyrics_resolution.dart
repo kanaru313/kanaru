@@ -103,22 +103,22 @@ PlayingLyricsStatus? statusFromCache(
   return allMissed ? LyricsNone(uri, LyricsNoneReason.notFound) : null;
 }
 
-/// What a song resolves to: the status, and the choice that produced it. The
-/// effective choice differs from the chosen one when the choice cannot be
-/// honoured (`local` without local lyrics, `online` without a usable pick).
+/// What a song resolves to: the status, and the choice that produced it
+/// (`null` when none applies: no lyrics, or an automatic lookup).
 typedef LyricsResolution = ({
   PlayingLyricsStatus status,
-  LyricsChoice effective,
+  LyricsChoice? effective,
 });
 
-/// Resolves a song's lyrics by its stored choice, the one place the order is
-/// written. Pure: it reads nothing and writes nothing.
+/// Resolves a song's lyrics, the one place the order is written. Pure: it
+/// reads nothing and writes nothing.
 ///
 /// * `off`: [LyricsNoneReason.off]; [fromCacheOrLookup] is not called.
-/// * `online` with a usable pick: that pick.
-/// * otherwise (`local`, `auto`, `online` with an unusable pick): [local]
-///   when there is some; else, for a local file, [fromCacheOrLookup] (the
-///   cache, then a lookup); else no lyrics.
+/// * a usable pick, unless `local` is chosen: that pick (`online`).
+/// * [local] lyrics when there are some.
+/// * for a local file, [fromCacheOrLookup] (the cache, then a lookup);
+///   its effective choice is `online` when it found lyrics.
+/// * otherwise no lyrics.
 ///
 /// [local] is the song's own tag or `.lrc` lyrics, already checked to belong
 /// to [uri]. [fromCacheOrLookup] is called at most once, and only on the last
@@ -131,33 +131,32 @@ LyricsResolution resolveChoice({
   required bool isLocalFile,
   required PlayingLyricsStatus Function() fromCacheOrLookup,
 }) {
-  final chosen = pin?.choice ?? LyricsChoice.auto;
+  final chosen = pin?.choice;
   if (chosen == LyricsChoice.off) {
     return (
       status: LyricsNone(uri, LyricsNoneReason.off),
       effective: LyricsChoice.off,
     );
   }
-  if (chosen == LyricsChoice.online && pin != null) {
+  if (chosen != LyricsChoice.local && pin != null) {
     final picked = statusFromPick(uri, pin, songDuration);
     if (picked != null) {
       return (status: picked, effective: LyricsChoice.online);
     }
   }
-  // Local was honoured only when it was asked for; otherwise it simply won
-  // the automatic order.
-  final asked = chosen == LyricsChoice.local;
   if (local != null) {
+    return (status: LyricsFound(uri, local), effective: LyricsChoice.local);
+  }
+  if (!isLocalFile) {
     return (
-      status: LyricsFound(uri, local),
-      effective: asked ? LyricsChoice.local : LyricsChoice.auto,
+      status: LyricsNone(uri, LyricsNoneReason.noLyrics),
+      effective: null,
     );
   }
+  final status = fromCacheOrLookup();
   return (
-    status: isLocalFile
-        ? fromCacheOrLookup()
-        : LyricsNone(uri, LyricsNoneReason.noLyrics),
-    effective: LyricsChoice.auto,
+    status: status,
+    effective: status is LyricsFound ? LyricsChoice.online : null,
   );
 }
 

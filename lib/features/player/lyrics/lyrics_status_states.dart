@@ -3,9 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
 import '../../../core/database/lyrics_plugin_spec.dart' show lrclibSourceId;
-import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
-import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/player/local_path_of.dart';
@@ -88,11 +86,6 @@ class LyricsNoneView extends ConsumerWidget {
     final autoOn = ref.watch(
       settingsProvider.select((s) => hasSource && s.onlineLyrics.autoAllowed),
     );
-    // Turning lyrics back on keeps a stored pick: only the menu's Automatic
-    // item drops it.
-    final hasPick = ref.watch(
-      playingLyricsSourceProvider.select((s) => s?.pin?.hasPick ?? false),
-    );
     // The status does not say which source answered, so with several on the
     // texts name them all; with one, that one.
     final names = ref.watch(lyricsSourceNamesProvider);
@@ -126,13 +119,7 @@ class LyricsNoneView extends ConsumerWidget {
       ),
       LyricsNoneReason.off => (
         l10n.lyricsOffTitle,
-        [
-          find(
-            l10n.lyricsOffTurnOn,
-            () =>
-                run().choose(hasPick ? LyricsChoice.online : LyricsChoice.auto),
-          ),
-        ],
+        [find(l10n.lyricsOffTurnOn, () => run().turnOn())],
       ),
       LyricsNoneReason.paused => (
         switch (none.resumeAt) {

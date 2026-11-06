@@ -18,12 +18,12 @@ class FakePlayingLyricsResolution extends PlayingLyricsResolutionNotifier {
   void emit(LyricsSourceResolution? next) => state = next;
 }
 
-/// A resolution for the tests: by default automatic, nothing stored, no own
+/// A resolution for the tests: by default no choice, nothing stored, no own
 /// lyrics.
 LyricsSourceResolution fakeResolution(
   PlayingLyricsStatus status, {
-  LyricsChoice chosen = LyricsChoice.auto,
-  LyricsChoice effective = LyricsChoice.auto,
+  LyricsChoice? chosen,
+  LyricsChoice? effective,
   LyricsPinEntry? pin,
   bool hasLocal = false,
 }) => (

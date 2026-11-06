@@ -43,52 +43,60 @@ class OnlineLyricsActions {
     return _lookUp(target);
   }
 
-  /// Sets which lyrics the song shows.
-  ///
-  /// * `auto` forgets the choice but keeps a stored pick, so choosing
-  ///   `online` again brings it back; with no pick the row goes;
-  /// * `local` and `off` keep a stored pick too;
-  /// * `online` needs a stored pick and does nothing without one.
-  ///
-  /// Choosing what is already stored writes nothing. After `auto` or `local`,
-  /// changed or not, the song's own lyrics are read again, so a `.lrc` that
-  /// appeared since is found. `online` and `off` of the stored mode touch
-  /// nothing, so no new `Lyrics` instance is made.
+  /// Sets which lyrics the song shows. `online` stores the choice when a
+  /// pick exists, else removes the pin row; `local` keeps a stored pick;
+  /// `off` keeps it too and stores `off:local` when the choice was `local`.
+  /// Choosing what is stored writes nothing; `online` and `local` read the
+  /// song's own lyrics again either way, so a new `.lrc` is found.
   Future<void> choose(LyricsTarget target, LyricsChoice choice) async {
     final db = _db;
     if (db == null) return;
     final pin = await db.watchLyricsPin(target.trackKey).first;
-    final same = choice == LyricsChoice.auto
-        ? pin == null || parseLyricsChoice(pin.mode) == LyricsChoice.auto
-        : pin != null && parseLyricsChoice(pin.mode) == choice;
+    final stored = parseLyricsChoice(pin?.mode);
+    final hasPick = pin?.remoteId != null;
+    final same = switch (choice) {
+      LyricsChoice.online => hasPick ? stored == choice : pin == null,
+      _ => stored == choice,
+    };
     if (same) {
-      // Nothing to write, but picking the checked item is a way to ask for
-      // the song's own lyrics to be read again.
       _refreshLocal(choice);
       return;
     }
     switch (choice) {
-      case LyricsChoice.auto:
-        if (pin?.remoteId == null) {
-          await db.removeLyricsPin(target.trackKey);
-        } else {
-          await db.clearLyricsChoice(target.trackKey, _now);
-        }
       case LyricsChoice.online:
-        if (pin?.remoteId == null) return;
-        await db.setLyricsChoice(target.trackKey, 'online', _now);
-      case LyricsChoice.local || LyricsChoice.off:
+        if (hasPick) {
+          await db.setLyricsChoice(target.trackKey, 'online', _now);
+        } else if (pin != null) {
+          await db.removeLyricsPin(target.trackKey);
+        }
+      case LyricsChoice.local:
+        await db.setLyricsChoice(target.trackKey, 'local', _now);
+      case LyricsChoice.off:
         await db.setLyricsChoice(
           target.trackKey,
-          lyricsChoiceMode(choice)!,
+          stored == LyricsChoice.local ? offFromLocalMode : 'off',
           _now,
         );
     }
     if (_ref.mounted) _refreshLocal(choice);
   }
 
+  /// Turns lyrics back on after `off`: a remembered `local`, else the pick,
+  /// else the row goes. Does nothing when lyrics are not off.
+  Future<void> turnOn(LyricsTarget target) async {
+    final db = _db;
+    if (db == null) return;
+    final pin = await db.watchLyricsPin(target.trackKey).first;
+    if (pin == null || parseLyricsChoice(pin.mode) != LyricsChoice.off) return;
+    if (pin.mode == offFromLocalMode) {
+      await choose(target, LyricsChoice.local);
+    } else {
+      await choose(target, LyricsChoice.online);
+    }
+  }
+
   void _refreshLocal(LyricsChoice choice) {
-    if (choice == LyricsChoice.auto || choice == LyricsChoice.local) {
+    if (choice == LyricsChoice.online || choice == LyricsChoice.local) {
       _ref.invalidate(playingLocalLyricsProvider);
     }
   }

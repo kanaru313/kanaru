@@ -163,6 +163,15 @@ void main() {
       expect(matches.hashes, {'h'});
     });
 
+    test('keeps off:local and clears the pick', () async {
+      await db.pinLyrics(pin('t', 'bad', mode: 'off:local'));
+      await reject('bad');
+
+      final row = await pinOf('t');
+      expect(row!.mode, 'off:local');
+      expect(row.remoteId, isNull);
+    });
+
     test(
       'drops duplicates and the rejected id only on their provider',
       () async {

@@ -3422,27 +3422,6 @@
       }
     }
   },
-  "lyricsSourceAutoItem": "Automatic",
-  "@lyricsSourceAutoItem": {
-    "description": "Lyrics source menu item that lets Kanaru pick the lyrics"
-  },
-  "lyricsSourceAutoNow": "In use: {label}",
-  "@lyricsSourceAutoNow": {
-    "description": "Subtitle of the Automatic item naming the lyrics now shown",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsSourceAutoHintLocalOnly": "The file or tag only",
-  "@lyricsSourceAutoHintLocalOnly": {
-    "description": "Subtitle of the Automatic item when no online lyrics source is enabled"
-  },
-  "lyricsSourceAutoHint": "The file or tag first, then online sources",
-  "@lyricsSourceAutoHint": {
-    "description": "Subtitle of the Automatic item while at least one online lyrics source (built in or plugin) is enabled"
-  },
   "lyricsSourceLocalItem": "Lyrics in the file",
   "@lyricsSourceLocalItem": {
     "description": "Lyrics source menu item for the song's own lyrics"

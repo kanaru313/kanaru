@@ -59,6 +59,10 @@ class _RecordingActions extends OnlineLyricsActions {
   final List<String> log;
 
   @override
+  Future<void> turnOn(LyricsTarget target) async =>
+      log.add('turnOn ${target.trackKey}');
+
+  @override
   Future<void> choose(LyricsTarget target, LyricsChoice choice) async =>
       log.add('choose ${choice.name} ${target.trackKey}');
 
@@ -224,8 +228,8 @@ void main() {
   LyricsSourceResolution found(
     Lyrics lyrics, {
     OnlineLyricsOrigin? origin,
-    LyricsChoice chosen = LyricsChoice.auto,
-    LyricsChoice effective = LyricsChoice.auto,
+    LyricsChoice? chosen,
+    LyricsChoice? effective,
     bool hasLocal = false,
     bool pick = false,
   }) => fakeResolution(
@@ -240,9 +244,8 @@ void main() {
     (
       name: 'automatic, the song\'s .lrc',
       resolution: () => found(_lyrics(), hasLocal: true),
-      label: 'Auto · .lrc file',
+      label: '.lrc file',
       menu: [
-        '✓ Automatic',
         'Lyrics in the file',
         'Find lyrics online…',
         'Save current lyrics… (off)',
@@ -261,7 +264,6 @@ void main() {
       ),
       label: 'Fake · Synced',
       menu: [
-        'Automatic',
         'Lyrics in the file',
         '✓ Online version',
         'Find lyrics online…',
@@ -281,7 +283,6 @@ void main() {
       ),
       label: '.lrc file',
       menu: [
-        'Automatic',
         '✓ Lyrics in the file',
         'Online version',
         'Find lyrics online…',
@@ -299,7 +300,6 @@ void main() {
       ),
       label: 'Auto · Fake',
       menu: [
-        '✓ Automatic',
         'Lyrics in the file (off)',
         'Online version',
         'Keep this one',
@@ -314,7 +314,6 @@ void main() {
       resolution: () => found(_lyrics(), origin: _origin(pinned: false)),
       label: 'Auto · Fake',
       menu: [
-        '✓ Automatic',
         'Keep this one',
         'Find lyrics online…',
         'Save current lyrics…',
@@ -327,7 +326,6 @@ void main() {
       resolution: () => fakeResolution(const LyricsSearching(_uri, 'fake')),
       label: 'Searching…',
       menu: [
-        '✓ Automatic',
         'Find lyrics online…',
         'Save current lyrics… (off)',
         '✓ Lyrics for this song',
@@ -339,7 +337,6 @@ void main() {
           fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
       label: 'No lyrics',
       menu: [
-        '✓ Automatic',
         'Find lyrics online…',
         'Save current lyrics… (off)',
         '✓ Lyrics for this song',
@@ -355,7 +352,6 @@ void main() {
       ),
       label: 'Lyrics off',
       menu: [
-        'Automatic',
         'Lyrics in the file',
         'Find lyrics online…',
         'Save current lyrics… (off)',
@@ -370,7 +366,6 @@ void main() {
         await pump(tester, state.resolution(), ownLyrics: _lyrics());
         expect(find.text(state.label), findsOneWidget);
         await openMenu(tester);
-        expect(find.text('Automatic'), findsOneWidget);
         expect(menuRows(tester), state.menu);
       });
     }
@@ -401,7 +396,7 @@ void main() {
       ) async {
         await pump(tester, found(_lyrics(), hasLocal: true), room: room);
         expect(findPill, findsNothing);
-        expect(find.text('Auto · .lrc file'), findsNothing);
+        expect(find.text('.lrc file'), findsNothing);
         expect(find.byTooltip('Lyrics from .lrc file'), findsOneWidget);
         expect(find.byType(IconButton), findsOneWidget);
       });
@@ -658,63 +653,9 @@ void main() {
         ownLyrics: _lyrics(source: LyricsSource.embedded),
       );
       await openMenu(tester);
-      expect(
-        find.text('The file or tag first, then online sources'),
-        findsOneWidget,
-      );
       expect(find.text('In the tag'), findsOneWidget);
       expect(find.text(' · Synced · 4:05'), findsOneWidget);
       expect(find.text('Fake'), findsOneWidget);
-    });
-
-    testWidgets('Automatic names no source with several enabled', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true, remoteId: '7'),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        providers: [
-          LyricsProviderRegistration(FakeLyricsProvider()),
-          LyricsProviderRegistration(_NamedProvider('second', 'Second')),
-        ],
-      );
-      await openMenu(tester);
-      expect(
-        find.text('The file or tag first, then online sources'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Second'), findsNothing);
-    });
-
-    testWidgets('Automatic says file or tag only with no source enabled', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true, remoteId: '7'),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        providers: const [],
-      );
-      await openMenu(tester);
-      expect(find.text('The file or tag only'), findsOneWidget);
-      expect(find.text('Find lyrics online…'), findsNothing);
-    });
-
-    testWidgets('automatic names the lyrics in use', (tester) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      expect(find.text('In use: Fake · Synced'), findsOneWidget);
     });
 
     testWidgets('a missing file says so', (tester) async {
@@ -728,6 +669,25 @@ void main() {
       );
       await openMenu(tester);
       expect(find.text('No lyrics found in the file'), findsOneWidget);
+    });
+
+    testWidgets('an automatic match does not tick Online version', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        found(
+          _lyrics(),
+          origin: _origin(pinned: false),
+          chosen: LyricsChoice.local,
+          effective: LyricsChoice.online,
+          pick: true,
+        ),
+      );
+      await openMenu(tester);
+      final rows = menuRows(tester);
+      expect(rows, contains('Online version'));
+      expect(rows, isNot(contains('✓ Online version')));
     });
 
     for (final (name, library, track) in [
@@ -752,7 +712,6 @@ void main() {
         );
         await openMenu(tester);
         expect(menuRows(tester), [
-          '✓ Automatic (off)',
           'Lyrics in the file (off)',
           'Keep this one (off)',
           'Save current lyrics… (off)',
@@ -765,7 +724,6 @@ void main() {
 
   group('each row', () {
     for (final (title, expected) in [
-      ('Automatic', 'choose auto $_uri'),
       ('Lyrics in the file', 'choose local $_uri'),
       ('Online version', 'choose online $_uri'),
       ('Lyrics for this song', 'choose off $_uri'),
@@ -788,7 +746,6 @@ void main() {
         await tester.tap(item(title));
         await tester.pumpAndSettle();
         expect(log, [expected]);
-        expect(find.text('Automatic'), findsNothing);
       });
     }
 
@@ -824,7 +781,6 @@ void main() {
     testWidgets('a track change closes the open menu', (tester) async {
       await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
       await openMenu(tester);
-      expect(find.text('Automatic'), findsOneWidget);
 
       await container.read(playerServiceProvider.notifier).openTracks([_other]);
       resolution.emit(
@@ -838,7 +794,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Automatic'), findsNothing);
+      expect(find.text('Lyrics for this song'), findsNothing);
       expect(menuEvents, [true, false]);
     });
 
@@ -909,9 +865,7 @@ void main() {
       expect(find.text('In the tag'), findsNothing);
     });
 
-    testWidgets('the switch turns lyrics back on with Automatic', (
-      tester,
-    ) async {
+    testWidgets('the switch turns lyrics back on', (tester) async {
       await pump(
         tester,
         fakeResolution(
@@ -925,7 +879,7 @@ void main() {
       await openMenu(tester);
       await tester.tap(item('Lyrics for this song'));
       await tester.pumpAndSettle();
-      expect(log, ['choose auto $_uri']);
+      expect(log, ['turnOn $_uri']);
     });
 
     testWidgets('acts on the playing song when the library target is stale', (
@@ -951,9 +905,9 @@ void main() {
       await pump(tester, found(_lyrics()), track: _other);
       await tester.tap(find.byType(LyricsSourceButton));
       await tester.pumpAndSettle();
-      expect(find.text('Automatic'), findsNothing);
+      expect(find.text('Lyrics for this song'), findsNothing);
       expect(opener.value!(), isFalse);
-      expect(find.text('Automatic'), findsNothing);
+      expect(find.text('Lyrics for this song'), findsNothing);
       // The press left a tooltip timer behind: let it run out.
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 2));
@@ -978,14 +932,12 @@ void main() {
       expect(opener.value, isNotNull);
       opener.value!();
       await tester.pumpAndSettle();
-      expect(find.text('Automatic'), findsOneWidget);
-
       FocusNode focusOf(String title) =>
           Focus.of(tester.element(find.text(title)));
-      expect(focusOf('Automatic').hasPrimaryFocus, isTrue);
+      expect(focusOf('Keep this one').hasPrimaryFocus, isTrue);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
-      expect(focusOf('Keep this one').hasPrimaryFocus, isTrue);
+      expect(focusOf('Find lyrics online…').hasPrimaryFocus, isTrue);
     });
 
     testWidgets('the callback is cleared when the button leaves', (
@@ -997,12 +949,4 @@ void main() {
       expect(opener.value, isNull);
     });
   });
-}
-
-/// A fake source with its own id and name, for a list of several sources.
-class _NamedProvider extends FakeLyricsProvider {
-  _NamedProvider(String id, this.displayName) : super(id: id);
-
-  @override
-  final String displayName;
 }

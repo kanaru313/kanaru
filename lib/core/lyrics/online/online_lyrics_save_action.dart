@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../database/library_startup.dart';
-import '../../database/lyrics_choice_queries.dart';
+import '../../database/online_lyrics_queries.dart';
 import '../../lyrics_translation/lyrics_content_hash.dart';
 import '../../settings/settings_provider.dart';
 import '../embedded_lyrics_reader.dart';
@@ -28,7 +28,7 @@ enum LyricsChoiceKept {
 
 /// The result of a save. [result] is `null` when the stored text is gone (it
 /// changed since the menu opened). [kept] is set only after `written` or
-/// `identical`, when the song cannot go back to automatic.
+/// `identical`, when the saved file is not the local lyrics that show.
 typedef LyricsSaveOutcome = ({LrcWriteResult? result, LyricsChoiceKept? kept});
 
 const _noText = (result: null, kept: null);
@@ -36,11 +36,12 @@ const _noText = (result: null, kept: null);
 /// Saves the stored text of [origin] as the song's `.lrc` file.
 ///
 /// After `written` or `identical` the song's own lyrics are read again with
-/// the current "prefer embedded lyrics" setting. When that finds the saved
-/// file (same text), the choice and the pick are forgotten and the song is
-/// automatic again; otherwise they stay and [LyricsSaveOutcome.kept] says
-/// why. File errors come back as results, never as exceptions; a database
-/// error propagates.
+/// the current "prefer embedded lyrics" setting. The pick and the choice
+/// always stay, so a pinned online version keeps showing; the file is the
+/// song's local lyrics from now on. When another file or the tags win over
+/// the saved one, [LyricsSaveOutcome.kept] says why (not when the song's pick
+/// is the saved record: the pick wins and keeps showing). File errors come
+/// back as results, never as exceptions; a database error propagates.
 Future<LyricsSaveOutcome> saveOnlineLyrics(
   Ref ref,
   LyricsTarget target,
@@ -100,9 +101,15 @@ Future<LyricsSaveOutcome> saveOnlineLyrics(
       reread.source == LyricsSource.sidecar &&
       lyricsContentHashOf(reread) == lyricsContentHashOf(savedLyrics);
   if (isSavedFile) {
-    await db.removeLyricsPin(target.trackKey);
     return (result: result, kept: null);
   }
+  final pin = await db.watchLyricsPin(target.trackKey).first;
+  if (!ref.mounted) return (result: result, kept: null);
+  final pickIsSaved =
+      pin != null &&
+      pin.providerId == origin.providerId &&
+      pin.remoteId == origin.remoteId;
+  if (pickIsSaved) return (result: result, kept: null);
   final fromTags = reread?.source == LyricsSource.embedded && preferEmbedded;
   return (
     result: result,

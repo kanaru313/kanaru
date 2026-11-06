@@ -119,6 +119,9 @@ class LyricsActionRunner {
   Future<void> choose(LyricsChoice choice) =>
       _run((target) => _actions.choose(target, choice));
 
+  /// Turns lyrics back on after `off` (see [OnlineLyricsActions.turnOn]).
+  Future<void> turnOn() => _run(_actions.turnOn);
+
   /// "Keep this one": makes the automatic match on screen the song's pick.
   Future<void> keep() {
     final origin = this.origin;
