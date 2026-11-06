@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
+import 'package:kanaru/shared/icons/app_icons.dart';
+import 'package:kanaru/shared/lyrics_plugins/plugin_icon.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'translation_modal_harness.dart';
@@ -21,6 +24,28 @@ void main() {
   testWidgets('translation on: the service row is shown', (tester) async {
     await pumpTranslationModal(tester, settings: onPrefs);
     expect(find.text('Test Translate'), findsOneWidget);
+  });
+
+  testWidgets('selected service row draws that plugin\'s own icon', (
+    tester,
+  ) async {
+    await pumpTranslationModal(tester, settings: onPrefs);
+    final finder = find.descendant(
+      of: find.byType(TranslationServiceSection),
+      matching: find.byType(PluginIcon),
+    );
+    expect(
+      tester.widget<PluginIcon>(finder).record?.installId,
+      testTranslatePluginId,
+    );
+  });
+
+  testWidgets('no service selected: error icon, no plugin icon', (
+    tester,
+  ) async {
+    await pumpTranslationModal(tester, settings: const TranslationPrefs());
+    expect(find.byIcon(AppIcons.errorOutline), findsOneWidget);
+    expect(find.byType(PluginIcon), findsNothing);
   });
 
   testWidgets('translation off with a service: the section is hidden', (

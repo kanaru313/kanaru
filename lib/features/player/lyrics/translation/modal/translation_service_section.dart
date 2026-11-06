@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
+import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../lyrics_translation_labels.dart';
@@ -107,6 +109,16 @@ class _ServiceRow extends ConsumerWidget {
     final selected = choices.selected;
     final ready = choices.ready;
     final unset = ready && selected == null;
+    final selectedId = selected?.value;
+    // The selected plugin's record, for its own icon; null while records load.
+    final record = ref.watch(
+      lyricsPluginRecordsProvider.select((records) {
+        for (final r in records) {
+          if (r.installId == selectedId) return r;
+        }
+        return null;
+      }),
+    );
 
     final title = selected == null
         ? l10n.translationServiceNotSelected
@@ -135,10 +147,11 @@ class _ServiceRow extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24, 6, 16, 6),
               child: Row(
                 children: [
-                  Icon(
-                    unset ? AppIcons.errorOutline : AppIcons.extension,
-                    color: unset ? colors.error : colors.onSurfaceVariant,
-                  ),
+                  if (unset)
+                    Icon(AppIcons.errorOutline, color: colors.error)
+                  else
+                    // Same 24 px box as the error icon so the text stays aligned.
+                    PluginIcon(record: record, size: 24),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
