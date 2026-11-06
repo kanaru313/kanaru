@@ -7,16 +7,17 @@ import '../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../core/settings/settings_provider.dart';
 import '../../../shared/translation_notice_dialog.dart';
-import '../lyrics/translation/translation_service_missing_snack_bar.dart';
 
-/// The `T` key: turning lyrics translation off always works; turning it on
-/// needs [hasLyrics] and, the first time for a service, the network notice
-/// (opened on [context]). When no service is selected, a snackbar guides the
-/// user to the plugin store or to the Translation settings.
-void toggleLyricsTranslationByKey(
+/// Toggles lyrics translation from a shortcut, a secondary tap, or the
+/// translation modal switch: turning it off always works; turning it on needs
+/// [hasLyrics] and, the first time for a service, the network notice (opened
+/// on [context]). When no service is selected and the plugin records are
+/// ready, [openModal] is called instead.
+void quickToggleLyricsTranslation(
   BuildContext context,
   WidgetRef ref, {
   required bool hasLyrics,
+  VoidCallback? openModal,
 }) {
   final prefs = ref.read(settingsProvider).translation;
   // The service a request would go to; null while the plugin list loads.
@@ -28,10 +29,7 @@ void toggleLyricsTranslationByKey(
   } else if (hasLyrics) {
     final choices = ref.read(translationServiceChoicesProvider);
     if (choices.ready) {
-      showTranslationServiceMissingSnackBar(
-        context,
-        hasPlugins: choices.services.isNotEmpty,
-      );
+      openModal?.call();
     }
   }
 }

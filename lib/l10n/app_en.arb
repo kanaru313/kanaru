@@ -2830,18 +2830,13 @@
   "@lyricsTranslationButtonFailed": {
     "description": "Tooltip of the translation button after a translation failed"
   },
+  "lyricsTranslationButtonHint": "Right-click or T: turn translation on or off",
+  "@lyricsTranslationButtonHint": {
+    "description": "Second line of the translation button tooltip naming its toggle shortcuts"
+  },
   "lyricsTranslationShow": "Show translation",
   "@lyricsTranslationShow": {
     "description": "Switch in the lyrics translation menu; a key hint follows it"
-  },
-  "lyricsTranslationTarget": "Translate to: {language}",
-  "@lyricsTranslationTarget": {
-    "description": "Submenu title in the lyrics translation menu; language is the language name",
-    "placeholders": {
-      "language": {
-        "type": "String"
-      }
-    }
   },
   "lyricsTranslationTargetDefault": "Default ({language})",
   "@lyricsTranslationTargetDefault": {
@@ -2852,51 +2847,13 @@
       }
     }
   },
-  "lyricsTranslationDisplayHeader": "Display style",
-  "@lyricsTranslationDisplayHeader": {
-    "description": "Heading of the display style choices in the lyrics translation menu"
-  },
-  "lyricsTranslationDisplayUnder": "Under each line",
-  "@lyricsTranslationDisplayUnder": {
-    "description": "Display style that puts the translation under each original line"
-  },
-  "lyricsTranslationDisplayReplace": "Replace",
-  "@lyricsTranslationDisplayReplace": {
-    "description": "Display style that shows the translation instead of the original line"
-  },
-  "lyricsTranslationServiceHeader": "Service",
-  "@lyricsTranslationServiceHeader": {
-    "description": "Heading of the translation service choices in the lyrics translation menu"
-  },
   "translationServiceNotSelected": "Not selected",
   "@translationServiceNotSelected": {
     "description": "Label and hint text shown when no translation service is currently selected"
   },
-  "lyricsTranslationSaved": "Saved",
-  "@lyricsTranslationSaved": {
-    "description": "Status on the right of the Retranslate row of the translation menu when a saved translation shows"
-  },
-  "lyricsTranslationSavedFrom": "Saved from {service}",
-  "@lyricsTranslationSavedFrom": {
-    "description": "Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsTranslationRetranslate": "Retranslate",
   "@lyricsTranslationRetranslate": {
     "description": "Button in the lyrics translation menu that translates again with the selected service"
-  },
-  "lyricsTranslationRetranslateWith": "Retranslate with {service}",
-  "@lyricsTranslationRetranslateWith": {
-    "description": "Button in the lyrics translation menu that translates again with the selected service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
   },
   "lyricsTranslationSameLanguage": "Lyrics are already in {language}",
   "@lyricsTranslationSameLanguage": {
@@ -2970,18 +2927,6 @@
   "lyricsTranslationAttribution": "Translated by {service} · {language}",
   "@lyricsTranslationAttribution": {
     "description": "Tooltip of the translate button while translated lyrics show: who translated them. service is a translation service name, language the language name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      },
-      "language": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsTranslationButtonLabel": "{service} · {language}",
-  "@lyricsTranslationButtonLabel": {
-    "description": "Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -5146,6 +5091,14 @@
   "@lyricsTranslationBannerOpenPlugin": {
     "description": "Button on the error banner of a translation plugin that opens the plugin's page"
   },
+  "lyricsTranslationRetranslateFailed": "Could not retranslate; the old version stays",
+  "@lyricsTranslationRetranslateFailed": {
+    "description": "First line of the error banner when translating again failed and the older translation is still shown"
+  },
+  "lyricsTranslationBannerKeepOld": "Keep the old version",
+  "@lyricsTranslationBannerKeepOld": {
+    "description": "Banner button that hides the failed-retranslate banner and keeps the older translation"
+  },
   "settingsTranslationServicePluginHint": "The lyrics, song title and artist are sent to the plugin's hosts when translation is on.",
   "@settingsTranslationServicePluginHint": {
     "description": "Subtitle of the translation service row when a translate plugin is the selected service"
@@ -5157,14 +5110,6 @@
   "lyricsTranslationOpenPluginStore": "Open plugin store",
   "@lyricsTranslationOpenPluginStore": {
     "description": "Action button on the snackbar when no translation plugin is installed"
-  },
-  "lyricsTranslationChooseServiceFirst": "Choose a translation service first",
-  "@lyricsTranslationChooseServiceFirst": {
-    "description": "Snackbar shown when pressing T to turn translation on while no translation service is selected"
-  },
-  "lyricsTranslationChooseService": "Choose service",
-  "@lyricsTranslationChooseService": {
-    "description": "Action button on the snackbar when no translation service is selected"
   },
   "playlistEditTitle": "Edit playlist",
   "@playlistEditTitle": {
@@ -5563,5 +5508,142 @@
   "settingsFontGroupCustom": "Custom",
   "@settingsFontGroupCustom": { "description": "Section title for imported custom fonts" },
   "settingsFontGroupCatalog": "Catalog",
-  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" }
+  "@settingsFontGroupCatalog": { "description": "Section title for online open font catalog" },
+  "selectionPickerSearchHint": "Search {count} items",
+  "@selectionPickerSearchHint": {
+    "description": "Hint of the search field in a selection picker with more than 8 items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectionPickerNoMatch": "Nothing matches “{query}”",
+  "@selectionPickerNoMatch": {
+    "description": "Shown when the search field of a selection picker matches no item",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalPreview": "Preview",
+  "@lyricsTranslationModalPreview": {
+    "description": "Caption above the current lyric line preview card in the translation modal"
+  },
+  "lyricsTranslationModalSection": "Translation",
+  "@lyricsTranslationModalSection": {
+    "description": "Section heading for the translation controls in the translation modal"
+  },
+  "lyricsTranslationModalSourceDetected": "{language} · detected",
+  "@lyricsTranslationModalSourceDetected": {
+    "description": "Read-only source language label when the lyrics language has been detected",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalSourceAuto": "Detected automatically",
+  "@lyricsTranslationModalSourceAuto": {
+    "description": "Read-only source language label before a source language is detected"
+  },
+  "lyricsTranslationModalTargetTitle": "Translate to",
+  "@lyricsTranslationModalTargetTitle": {
+    "description": "Title of the child modal that picks the target translation language"
+  },
+  "lyricsTranslationModalServiceTitle": "Translation service",
+  "@lyricsTranslationModalServiceTitle": {
+    "description": "Title of the child modal that picks the translation service"
+  },
+  "lyricsTranslationModalGetPlugins": "Get more translation plugins",
+  "@lyricsTranslationModalGetPlugins": {
+    "description": "Footer row in the translation service picker that opens the plugin store"
+  },
+  "lyricsTranslationModalCacheFirst": "Translations saved on this device are used first.",
+  "@lyricsTranslationModalCacheFirst": {
+    "description": "Hint at the bottom of the translation service picker"
+  },
+  "lyricsTranslationModalNoPluginsTitle": "No translation plugin",
+  "@lyricsTranslationModalNoPluginsTitle": {
+    "description": "Title of the empty-state card in the translation modal when no translate plugin is installed"
+  },
+  "lyricsTranslationModalServiceUnset": "Lyrics are sent only after you choose",
+  "@lyricsTranslationModalServiceUnset": {
+    "description": "Subtitle of the service row when no translation service is selected"
+  },
+  "lyricsTranslationModalPluginsLoading": "Loading translation plugins…",
+  "@lyricsTranslationModalPluginsLoading": {
+    "description": "Subtitle of the service row while translation plugin records are still loading"
+  },
+  "lyricsTranslationModalTranslatedBy": "Translated by {service}",
+  "@lyricsTranslationModalTranslatedBy": {
+    "description": "Credit line under the preview card naming the service that produced the translation",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalDisplayUnder": "Under line",
+  "@lyricsTranslationModalDisplayUnder": {
+    "description": "Compact segment label in the translation modal preview card: show translation below the original line"
+  },
+  "lyricsTranslationModalDisplayReplace": "Replace line",
+  "@lyricsTranslationModalDisplayReplace": {
+    "description": "Compact segment label in the translation modal preview card: show translation as the main line"
+  },
+  "lyricsTranslationModalRetranslating": "Retranslating…",
+  "@lyricsTranslationModalRetranslating": {
+    "description": "Status line in the translation modal while a forced retranslate runs in the background"
+  },
+  "lyricsTranslationModalRefreshingNote": "Retranslating; the old version stays",
+  "@lyricsTranslationModalRefreshingNote": {
+    "description": "Provenance line in the translation modal preview card while a retranslate runs and the older version remains shown"
+  },
+  "lyricsTranslationModalOtherVersion": "Saved version from {service}",
+  "@lyricsTranslationModalOtherVersion": {
+    "description": "Provenance line in the translation modal preview card when the shown translation came from another plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalShowingOther": "Showing the version from {service}",
+  "@lyricsTranslationModalShowingOther": {
+    "description": "Bottom action bar label in the translation modal when the shown translation came from another plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalTranslateWith": "Translate with {service}",
+  "@lyricsTranslationModalTranslateWith": {
+    "description": "Bottom action bar button in the translation modal that translates with the currently selected plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalServiceError": "{service} reported an error",
+  "@lyricsTranslationModalServiceError": {
+    "description": "Title of the failure block in the translation modal naming the plugin that failed",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationRetranslated": "Retranslated with {service}",
+  "@lyricsTranslationRetranslated": {
+    "description": "Success snackbar shown after a background retranslate finishes and saves",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  }
 }

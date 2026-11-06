@@ -30,6 +30,10 @@ const nowPlayingHeaderSeparatorWidth = 25.0;
 /// Width of one round header button.
 const _buttonWidth = 48.0;
 
+/// Width of the lyrics source pill beside its label: padding (10 + 14), the
+/// 28 px icon and the gap after it (8).
+const _sourcePillChrome = 60.0;
+
 /// Air after the lyrics source pill, so it reads apart from the translate
 /// button beside it, whether that is a pill or a tinted round icon.
 const nowPlayingPillGap = 8.0;
@@ -61,9 +65,10 @@ const nowPlayingPillGap = 8.0;
       nowPlayingHeaderSleepLabelWidth +
       (hasWindowButtons ? nowPlayingHeaderSeparatorWidth : 0);
   final free = width - left - right - nowPlayingPillGap;
-  const spare = _buttonWidth - lyricsTranslationPillChrome;
-  if (!translatePill) return (source: free + spare, translate: 0);
-  final half = (free + 2 * spare) / 2;
+  const sourceSpare = _buttonWidth - _sourcePillChrome;
+  const translateSpare = _buttonWidth - lyricsTranslationPillChrome;
+  if (!translatePill) return (source: free + sourceSpare, translate: 0);
+  final half = (free + sourceSpare + translateSpare) / 2;
   return (source: half, translate: half);
 }
 
@@ -79,9 +84,10 @@ class NowPlayingLyricsPills extends ConsumerWidget {
     required this.hasModeButton,
     required this.hasWindowButtons,
     required this.translateEnabled,
-    required this.onTranslateMenuChanged,
+    required this.onTranslateModalChanged,
     required this.onSourceMenuChanged,
     required this.sourceMenuOpener,
+    this.translationModalOpener,
   });
 
   /// The header's width.
@@ -89,9 +95,10 @@ class NowPlayingLyricsPills extends ConsumerWidget {
   final bool hasModeButton;
   final bool hasWindowButtons;
   final bool translateEnabled;
-  final ValueChanged<bool> onTranslateMenuChanged;
+  final ValueChanged<bool> onTranslateModalChanged;
   final ValueChanged<bool> onSourceMenuChanged;
   final ValueNotifier<bool Function()?>? sourceMenuOpener;
+  final ValueNotifier<bool Function()?>? translationModalOpener;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -129,7 +136,8 @@ class NowPlayingLyricsPills extends ConsumerWidget {
         LyricsTranslationButton(
           enabled: translateEnabled,
           maxLabelWidth: rooms.translate,
-          onMenuChanged: onTranslateMenuChanged,
+          modalOpener: translationModalOpener,
+          onModalChanged: onTranslateModalChanged,
         ),
       ],
     );

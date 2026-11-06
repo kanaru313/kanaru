@@ -4610,17 +4610,17 @@ abstract class AppLocalizations {
   /// **'Lyrics translation: failed'**
   String get lyricsTranslationButtonFailed;
 
+  /// Second line of the translation button tooltip naming its toggle shortcuts
+  ///
+  /// In en, this message translates to:
+  /// **'Right-click or T: turn translation on or off'**
+  String get lyricsTranslationButtonHint;
+
   /// Switch in the lyrics translation menu; a key hint follows it
   ///
   /// In en, this message translates to:
   /// **'Show translation'**
   String get lyricsTranslationShow;
-
-  /// Submenu title in the lyrics translation menu; language is the language name
-  ///
-  /// In en, this message translates to:
-  /// **'Translate to: {language}'**
-  String lyricsTranslationTarget(String language);
 
   /// First item of the target language submenu: clears the choice made for this song; language is the default language name
   ///
@@ -4628,59 +4628,17 @@ abstract class AppLocalizations {
   /// **'Default ({language})'**
   String lyricsTranslationTargetDefault(String language);
 
-  /// Heading of the display style choices in the lyrics translation menu
-  ///
-  /// In en, this message translates to:
-  /// **'Display style'**
-  String get lyricsTranslationDisplayHeader;
-
-  /// Display style that puts the translation under each original line
-  ///
-  /// In en, this message translates to:
-  /// **'Under each line'**
-  String get lyricsTranslationDisplayUnder;
-
-  /// Display style that shows the translation instead of the original line
-  ///
-  /// In en, this message translates to:
-  /// **'Replace'**
-  String get lyricsTranslationDisplayReplace;
-
-  /// Heading of the translation service choices in the lyrics translation menu
-  ///
-  /// In en, this message translates to:
-  /// **'Service'**
-  String get lyricsTranslationServiceHeader;
-
   /// Label and hint text shown when no translation service is currently selected
   ///
   /// In en, this message translates to:
   /// **'Not selected'**
   String get translationServiceNotSelected;
 
-  /// Status on the right of the Retranslate row of the translation menu when a saved translation shows
-  ///
-  /// In en, this message translates to:
-  /// **'Saved'**
-  String get lyricsTranslationSaved;
-
-  /// Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Saved from {service}'**
-  String lyricsTranslationSavedFrom(String service);
-
   /// Button in the lyrics translation menu that translates again with the selected service
   ///
   /// In en, this message translates to:
   /// **'Retranslate'**
   String get lyricsTranslationRetranslate;
-
-  /// Button in the lyrics translation menu that translates again with the selected service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Retranslate with {service}'**
-  String lyricsTranslationRetranslateWith(String service);
 
   /// Footer of the lyrics translation menu and tooltip of the translate button when nothing needs translating; language is the language name
   ///
@@ -4783,12 +4741,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translated by {service} · {language}'**
   String lyricsTranslationAttribution(String service, String language);
-
-  /// Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name
-  ///
-  /// In en, this message translates to:
-  /// **'{service} · {language}'**
-  String lyricsTranslationButtonLabel(String service, String language);
 
   /// Lyrics translation error banner: the service needs a key and none is saved
   ///
@@ -7526,6 +7478,18 @@ abstract class AppLocalizations {
   /// **'Open settings'**
   String get lyricsTranslationBannerOpenPlugin;
 
+  /// First line of the error banner when translating again failed and the older translation is still shown
+  ///
+  /// In en, this message translates to:
+  /// **'Could not retranslate; the old version stays'**
+  String get lyricsTranslationRetranslateFailed;
+
+  /// Banner button that hides the failed-retranslate banner and keeps the older translation
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the old version'**
+  String get lyricsTranslationBannerKeepOld;
+
   /// Subtitle of the translation service row when a translate plugin is the selected service
   ///
   /// In en, this message translates to:
@@ -7543,18 +7507,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open plugin store'**
   String get lyricsTranslationOpenPluginStore;
-
-  /// Snackbar shown when pressing T to turn translation on while no translation service is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a translation service first'**
-  String get lyricsTranslationChooseServiceFirst;
-
-  /// Action button on the snackbar when no translation service is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Choose service'**
-  String get lyricsTranslationChooseService;
 
   /// Title of the dialog that edits a playlist's name and description
   ///
@@ -8071,6 +8023,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Catalog'**
   String get settingsFontGroupCatalog;
+
+  /// Hint of the search field in a selection picker with more than 8 items
+  ///
+  /// In en, this message translates to:
+  /// **'Search {count} items'**
+  String selectionPickerSearchHint(int count);
+
+  /// Shown when the search field of a selection picker matches no item
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{query}”'**
+  String selectionPickerNoMatch(String query);
+
+  /// Caption above the current lyric line preview card in the translation modal
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get lyricsTranslationModalPreview;
+
+  /// Section heading for the translation controls in the translation modal
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get lyricsTranslationModalSection;
+
+  /// Read-only source language label when the lyrics language has been detected
+  ///
+  /// In en, this message translates to:
+  /// **'{language} · detected'**
+  String lyricsTranslationModalSourceDetected(String language);
+
+  /// Read-only source language label before a source language is detected
+  ///
+  /// In en, this message translates to:
+  /// **'Detected automatically'**
+  String get lyricsTranslationModalSourceAuto;
+
+  /// Title of the child modal that picks the target translation language
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to'**
+  String get lyricsTranslationModalTargetTitle;
+
+  /// Title of the child modal that picks the translation service
+  ///
+  /// In en, this message translates to:
+  /// **'Translation service'**
+  String get lyricsTranslationModalServiceTitle;
+
+  /// Footer row in the translation service picker that opens the plugin store
+  ///
+  /// In en, this message translates to:
+  /// **'Get more translation plugins'**
+  String get lyricsTranslationModalGetPlugins;
+
+  /// Hint at the bottom of the translation service picker
+  ///
+  /// In en, this message translates to:
+  /// **'Translations saved on this device are used first.'**
+  String get lyricsTranslationModalCacheFirst;
+
+  /// Title of the empty-state card in the translation modal when no translate plugin is installed
+  ///
+  /// In en, this message translates to:
+  /// **'No translation plugin'**
+  String get lyricsTranslationModalNoPluginsTitle;
+
+  /// Subtitle of the service row when no translation service is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are sent only after you choose'**
+  String get lyricsTranslationModalServiceUnset;
+
+  /// Subtitle of the service row while translation plugin records are still loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading translation plugins…'**
+  String get lyricsTranslationModalPluginsLoading;
+
+  /// Credit line under the preview card naming the service that produced the translation
+  ///
+  /// In en, this message translates to:
+  /// **'Translated by {service}'**
+  String lyricsTranslationModalTranslatedBy(String service);
+
+  /// Compact segment label in the translation modal preview card: show translation below the original line
+  ///
+  /// In en, this message translates to:
+  /// **'Under line'**
+  String get lyricsTranslationModalDisplayUnder;
+
+  /// Compact segment label in the translation modal preview card: show translation as the main line
+  ///
+  /// In en, this message translates to:
+  /// **'Replace line'**
+  String get lyricsTranslationModalDisplayReplace;
+
+  /// Status line in the translation modal while a forced retranslate runs in the background
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslating…'**
+  String get lyricsTranslationModalRetranslating;
+
+  /// Provenance line in the translation modal preview card while a retranslate runs and the older version remains shown
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslating; the old version stays'**
+  String get lyricsTranslationModalRefreshingNote;
+
+  /// Provenance line in the translation modal preview card when the shown translation came from another plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Saved version from {service}'**
+  String lyricsTranslationModalOtherVersion(String service);
+
+  /// Bottom action bar label in the translation modal when the shown translation came from another plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the version from {service}'**
+  String lyricsTranslationModalShowingOther(String service);
+
+  /// Bottom action bar button in the translation modal that translates with the currently selected plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Translate with {service}'**
+  String lyricsTranslationModalTranslateWith(String service);
+
+  /// Title of the failure block in the translation modal naming the plugin that failed
+  ///
+  /// In en, this message translates to:
+  /// **'{service} reported an error'**
+  String lyricsTranslationModalServiceError(String service);
+
+  /// Success snackbar shown after a background retranslate finishes and saves
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslated with {service}'**
+  String lyricsTranslationRetranslated(String service);
 }
 
 class _AppLocalizationsDelegate

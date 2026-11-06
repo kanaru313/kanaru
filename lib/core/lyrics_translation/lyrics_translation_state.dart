@@ -89,20 +89,28 @@ class TranslationLoading extends LyricsTranslationState {
 /// A translation to show. [lines] has one entry per lyrics line (`null`: no
 /// translation to show). [service] is the one whose row this is; it differs
 /// from the selected service when [fromOtherService].
+///
+/// [refreshing]: a job is translating again while this older version stays
+/// shown. [retranslateFailure]: that job failed; the version shown is kept and
+/// the failure is for the selected service (which may not be [service]).
 class TranslationReady extends LyricsTranslationState {
   const TranslationReady(
     this.info,
     this.service,
     this.sourceLang,
     this.lines,
-    this.fromOtherService,
-  );
+    this.fromOtherService, {
+    this.refreshing = false,
+    this.retranslateFailure,
+  });
 
   final TranslationTargetInfo info;
   final TranslationServiceId service;
   final String? sourceLang;
   final List<String?> lines;
   final bool fromOtherService;
+  final bool refreshing;
+  final TranslationFailureKind? retranslateFailure;
 
   @override
   List<Object?> get _props => [
@@ -110,6 +118,8 @@ class TranslationReady extends LyricsTranslationState {
     service,
     sourceLang,
     fromOtherService,
+    refreshing,
+    retranslateFailure,
     ...lines,
   ];
 }

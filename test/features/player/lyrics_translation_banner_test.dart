@@ -62,7 +62,8 @@ void main() {
           path: '/',
           builder: (_, _) => Scaffold(
             body: LyricsTranslationBanner(
-              state: TranslationFailed(fakeTranslationInfo(), service, kind),
+              service: service,
+              kind: kind,
               appLang: 'en',
             ),
           ),

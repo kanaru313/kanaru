@@ -21,6 +21,7 @@ import 'package:kanaru/features/player/seek_bar.dart';
 import 'package:material_ui/material_ui.dart' hide RepeatMode;
 
 import '../../core/player/fake_audio_backend.dart';
+import 'fake_translation_controller.dart';
 
 final songs = [
   const Track(
@@ -253,7 +254,7 @@ void main() {
     /// (`nowPlayingTabHeaderMinGap`) before them, moved right to keep it.
     double expectedDotsCenter(WidgetTester tester, Rect dots, double width) {
       final buttonsEnd = tester
-          .getRect(inScreen(find.byTooltip('Lyrics translation')))
+          .getRect(inScreen(find.byTooltip(translationButtonTooltipOff)))
           .right;
       return math.max(
         width / 2,

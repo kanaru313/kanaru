@@ -2987,12 +2987,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationButtonFailed => 'Dịch lời bài hát: lỗi';
 
   @override
-  String get lyricsTranslationShow => 'Hiện bản dịch';
+  String get lyricsTranslationButtonHint => 'Chuột phải hoặc T: bật/tắt dịch';
 
   @override
-  String lyricsTranslationTarget(String language) {
-    return 'Dịch sang: $language';
-  }
+  String get lyricsTranslationShow => 'Hiện bản dịch';
 
   @override
   String lyricsTranslationTargetDefault(String language) {
@@ -3000,35 +2998,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsTranslationDisplayHeader => 'Kiểu hiển thị';
-
-  @override
-  String get lyricsTranslationDisplayUnder => 'Dưới mỗi dòng';
-
-  @override
-  String get lyricsTranslationDisplayReplace => 'Thay dòng gốc';
-
-  @override
-  String get lyricsTranslationServiceHeader => 'Dịch vụ';
-
-  @override
   String get translationServiceNotSelected => 'Chưa chọn';
 
   @override
-  String get lyricsTranslationSaved => 'Đã lưu';
-
-  @override
-  String lyricsTranslationSavedFrom(String service) {
-    return 'Đã lưu từ $service';
-  }
-
-  @override
   String get lyricsTranslationRetranslate => 'Dịch lại';
-
-  @override
-  String lyricsTranslationRetranslateWith(String service) {
-    return 'Dịch lại bằng $service';
-  }
 
   @override
   String lyricsTranslationSameLanguage(String language) {
@@ -3092,11 +3065,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Dịch bởi $service · $language';
-  }
-
-  @override
-  String lyricsTranslationButtonLabel(String service, String language) {
-    return '$service · $language';
   }
 
   @override
@@ -4852,6 +4820,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationBannerOpenPlugin => 'Mở cài đặt';
 
   @override
+  String get lyricsTranslationRetranslateFailed =>
+      'Không dịch lại được, bản cũ vẫn hiện';
+
+  @override
+  String get lyricsTranslationBannerKeepOld => 'Giữ bản cũ';
+
+  @override
   String get settingsTranslationServicePluginHint =>
       'Lời bài hát, tên bài và nghệ sĩ được gửi tới các máy chủ của plugin khi bật dịch.';
 
@@ -4861,13 +4836,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationOpenPluginStore => 'Mở kho plugin';
-
-  @override
-  String get lyricsTranslationChooseServiceFirst =>
-      'Hãy chọn dịch vụ dịch trước';
-
-  @override
-  String get lyricsTranslationChooseService => 'Chọn dịch vụ';
 
   @override
   String get playlistEditTitle => 'Sửa danh sách phát';
@@ -5247,4 +5215,94 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsFontGroupCatalog => 'Kho phông chữ trực tuyến';
+
+  @override
+  String selectionPickerSearchHint(int count) {
+    return 'Tìm trong $count mục';
+  }
+
+  @override
+  String selectionPickerNoMatch(String query) {
+    return 'Không có mục nào khớp «$query»';
+  }
+
+  @override
+  String get lyricsTranslationModalPreview => 'Xem trước';
+
+  @override
+  String get lyricsTranslationModalSection => 'Bản dịch';
+
+  @override
+  String lyricsTranslationModalSourceDetected(String language) {
+    return '$language · tự nhận';
+  }
+
+  @override
+  String get lyricsTranslationModalSourceAuto => 'Tự nhận';
+
+  @override
+  String get lyricsTranslationModalTargetTitle => 'Dịch sang';
+
+  @override
+  String get lyricsTranslationModalServiceTitle => 'Dịch vụ dịch';
+
+  @override
+  String get lyricsTranslationModalGetPlugins => 'Tải thêm plugin dịch';
+
+  @override
+  String get lyricsTranslationModalCacheFirst =>
+      'Bản dịch đã có trong máy vẫn được dùng trước.';
+
+  @override
+  String get lyricsTranslationModalNoPluginsTitle => 'Chưa có plugin dịch';
+
+  @override
+  String get lyricsTranslationModalServiceUnset =>
+      'Lời chỉ được gửi sau khi bạn chọn';
+
+  @override
+  String get lyricsTranslationModalPluginsLoading => 'Đang tải plugin dịch…';
+
+  @override
+  String lyricsTranslationModalTranslatedBy(String service) {
+    return 'Dịch bởi $service';
+  }
+
+  @override
+  String get lyricsTranslationModalDisplayUnder => 'Dưới dòng';
+
+  @override
+  String get lyricsTranslationModalDisplayReplace => 'Thay dòng';
+
+  @override
+  String get lyricsTranslationModalRetranslating => 'Đang dịch lại…';
+
+  @override
+  String get lyricsTranslationModalRefreshingNote =>
+      'Đang dịch lại, bản cũ vẫn hiện';
+
+  @override
+  String lyricsTranslationModalOtherVersion(String service) {
+    return 'Bản có sẵn của $service';
+  }
+
+  @override
+  String lyricsTranslationModalShowingOther(String service) {
+    return 'Đang hiện bản của $service';
+  }
+
+  @override
+  String lyricsTranslationModalTranslateWith(String service) {
+    return 'Dịch bằng $service';
+  }
+
+  @override
+  String lyricsTranslationModalServiceError(String service) {
+    return '$service báo lỗi';
+  }
+
+  @override
+  String lyricsTranslationRetranslated(String service) {
+    return 'Đã dịch lại bằng $service';
+  }
 }

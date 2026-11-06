@@ -13,6 +13,7 @@ import 'package:kanaru/core/player/sleep_timer.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
+import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_pill.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
@@ -355,7 +356,7 @@ void main() {
 
     testWidgets('shows when the layout asks for it', (tester) async {
       await pump(tester, showTranslate: true, overrides: scripted());
-      expect(find.byTooltip('Lyrics translation'), findsOneWidget);
+      expect(find.byTooltip(translationButtonTooltipOff), findsOneWidget);
     });
 
     testWidgets('sits right after the lyrics source button', (tester) async {
@@ -378,23 +379,23 @@ void main() {
       );
 
       await tester.tap(
-        find.byTooltip('Lyrics translation'),
+        find.byTooltip(translationButtonTooltipOff),
         warnIfMissed: false,
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Show translation'), findsNothing);
+      expect(translationModalFinder, findsNothing);
       expect(floating.value, isFalse);
     });
 
-    testWidgets('its menu sets floatingOpen while open', (tester) async {
+    testWidgets('its modal sets floatingOpen while open', (tester) async {
       await pump(tester, showTranslate: true, overrides: scripted());
 
-      await tester.tap(find.byTooltip('Lyrics translation'));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(translationButtonTooltipOff));
+      await settleTranslationModal(tester);
       expect(floating.value, isTrue);
 
-      await tester.tapAt(const Offset(600, 600));
+      await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
       expect(floating.value, isFalse);
     });
@@ -403,8 +404,8 @@ void main() {
       tester,
     ) async {
       await pump(tester, showTranslate: true, overrides: scripted());
-      await tester.tap(find.byTooltip('Lyrics translation'));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(translationButtonTooltipOff));
+      await settleTranslationModal(tester);
 
       await tester.pumpWidget(const SizedBox());
 
@@ -427,23 +428,26 @@ void main() {
         ),
       ];
 
-      testWidgets('shows the credit at 1280 px and opens the menu', (
+      testWidgets('shows the language at 1280 px and opens the modal', (
         tester,
       ) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
-        expect(find.text('Test Translate · English'), findsOneWidget);
-        await tester.tap(find.text('Test Translate · English'));
-        await tester.pumpAndSettle();
-        expect(find.text('Show translation'), findsOneWidget);
+        expect(find.text('English'), findsOneWidget);
+        await tester.tap(find.text('English'));
+        await settleTranslationModal(tester);
+        expect(translationModalFinder, findsOneWidget);
         expect(floating.value, isTrue);
+
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
       });
 
       testWidgets('leaves a gap between the source pill and the translate '
           'icon', (tester) async {
         await pump(tester, showTranslate: true, overrides: scripted());
 
-        expect(find.textContaining('Test Translate ·'), findsNothing);
+        expect(find.byType(LyricsTranslationPill), findsNothing);
         expect(
           tester.getRect(find.byType(LyricsTranslationButton)).left -
               tester.getRect(find.byType(LyricsSourceButton)).right,
@@ -454,7 +458,7 @@ void main() {
       testWidgets('leaves a gap after the lyrics source pill', (tester) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
-        expect(find.text('Test Translate · English'), findsOneWidget);
+        expect(find.text('English'), findsOneWidget);
         expect(
           tester.getRect(find.byType(LyricsTranslationButton)).left -
               tester.getRect(find.byType(LyricsSourceButton)).right,
@@ -490,7 +494,7 @@ void main() {
           await tester.pump();
 
           expect(find.byType(IconButton), findsWidgets);
-          expect(find.textContaining('Test Translate ·'), findsNothing);
+          expect(find.byType(LyricsTranslationPill), findsNothing);
           expect(tester.takeException(), isNull);
           expect(
             tester.getRect(find.byType(LyricsTranslationButton)).right,
@@ -545,7 +549,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.text('30:00'), findsOneWidget);
-        final label = find.textContaining('Test Translate ·');
+        final label = find.text('Tiếng Trung (phồn thể)');
         expect(label, findsOneWidget);
         final text = tester.widget<Text>(label);
         expect(text.overflow, TextOverflow.ellipsis);
@@ -558,7 +562,7 @@ void main() {
         );
       });
 
-      testWidgets('an open menu and floatingOpen survive loading to ready', (
+      testWidgets('an open modal and floatingOpen survive loading to ready', (
         tester,
       ) async {
         final info = fakeTranslationInfo();
@@ -573,7 +577,7 @@ void main() {
           ],
         );
         await tester.tap(find.byType(LyricsTranslationButton));
-        await tester.pumpAndSettle();
+        await settleTranslationModal(tester);
         expect(floating.value, isTrue);
 
         // A running ring never settles: step the frames by hand.
@@ -584,9 +588,18 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 300));
 
-        expect(find.text('Test Translate · English'), findsOneWidget);
-        expect(find.text('Show translation'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(LyricsTranslationPill),
+            matching: find.text('English'),
+          ),
+          findsOneWidget,
+        );
+        expect(translationModalFinder, findsOneWidget);
         expect(floating.value, isTrue);
+
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
       });
 
       testWidgets('keeps the sleep timer label while the pill shows', (
@@ -601,7 +614,7 @@ void main() {
         container.read(sleepTimerProvider.notifier).startMinutes(30);
         await tester.pump();
 
-        expect(find.text('Test Translate · English'), findsOneWidget);
+        expect(find.text('English'), findsOneWidget);
         expect(find.text('30:00'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
@@ -611,7 +624,8 @@ void main() {
       // Left: 30 inset, 5 buttons (close, favorite, playlist, translate,
       // source) and a 16 gap. Right: 4 buttons, the 56 sleep label and the 12 px
       // the sleep pill adds to its button. A pill replaces its 48 px button
-      // and spends 60 px on padding and icon.
+      // and spends 60 px (source, 28 px icon) or 50 px (translate, 18 px logo)
+      // on padding and icon.
       ({double source, double translate}) rooms(
         double width, {
         bool mode = false,
@@ -639,7 +653,7 @@ void main() {
       // both pills replaced a button each and the gap between them.
       final both = rooms(1000, pill: true);
       expect(both.source, both.translate);
-      expect(both.source, (1000 - 286 - 260 - 24 - nowPlayingPillGap) / 2);
+      expect(both.source, (1000 - 286 - 260 - 14 - nowPlayingPillGap) / 2);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {

@@ -3253,12 +3253,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationButtonFailed => 'Lyrics translation: failed';
 
   @override
-  String get lyricsTranslationShow => 'Show translation';
+  String get lyricsTranslationButtonHint =>
+      'Right-click or T: turn translation on or off';
 
   @override
-  String lyricsTranslationTarget(String language) {
-    return 'Translate to: $language';
-  }
+  String get lyricsTranslationShow => 'Show translation';
 
   @override
   String lyricsTranslationTargetDefault(String language) {
@@ -3266,35 +3265,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lyricsTranslationDisplayHeader => 'Display style';
-
-  @override
-  String get lyricsTranslationDisplayUnder => 'Under each line';
-
-  @override
-  String get lyricsTranslationDisplayReplace => 'Replace';
-
-  @override
-  String get lyricsTranslationServiceHeader => 'Service';
-
-  @override
   String get translationServiceNotSelected => 'Not selected';
 
   @override
-  String get lyricsTranslationSaved => 'Saved';
-
-  @override
-  String lyricsTranslationSavedFrom(String service) {
-    return 'Saved from $service';
-  }
-
-  @override
   String get lyricsTranslationRetranslate => 'Retranslate';
-
-  @override
-  String lyricsTranslationRetranslateWith(String service) {
-    return 'Retranslate with $service';
-  }
 
   @override
   String lyricsTranslationSameLanguage(String language) {
@@ -3360,11 +3334,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Translated by $service · $language';
-  }
-
-  @override
-  String lyricsTranslationButtonLabel(String service, String language) {
-    return '$service · $language';
   }
 
   @override
@@ -5166,6 +5135,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationBannerOpenPlugin => 'Open settings';
 
   @override
+  String get lyricsTranslationRetranslateFailed =>
+      'Could not retranslate; the old version stays';
+
+  @override
+  String get lyricsTranslationBannerKeepOld => 'Keep the old version';
+
+  @override
   String get settingsTranslationServicePluginHint =>
       'The lyrics, song title and artist are sent to the plugin\'s hosts when translation is on.';
 
@@ -5175,13 +5151,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationOpenPluginStore => 'Open plugin store';
-
-  @override
-  String get lyricsTranslationChooseServiceFirst =>
-      'Choose a translation service first';
-
-  @override
-  String get lyricsTranslationChooseService => 'Choose service';
 
   @override
   String get playlistEditTitle => 'Edit playlist';
@@ -5573,4 +5542,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsFontGroupCatalog => 'Catalog';
+
+  @override
+  String selectionPickerSearchHint(int count) {
+    return 'Search $count items';
+  }
+
+  @override
+  String selectionPickerNoMatch(String query) {
+    return 'Nothing matches “$query”';
+  }
+
+  @override
+  String get lyricsTranslationModalPreview => 'Preview';
+
+  @override
+  String get lyricsTranslationModalSection => 'Translation';
+
+  @override
+  String lyricsTranslationModalSourceDetected(String language) {
+    return '$language · detected';
+  }
+
+  @override
+  String get lyricsTranslationModalSourceAuto => 'Detected automatically';
+
+  @override
+  String get lyricsTranslationModalTargetTitle => 'Translate to';
+
+  @override
+  String get lyricsTranslationModalServiceTitle => 'Translation service';
+
+  @override
+  String get lyricsTranslationModalGetPlugins => 'Get more translation plugins';
+
+  @override
+  String get lyricsTranslationModalCacheFirst =>
+      'Translations saved on this device are used first.';
+
+  @override
+  String get lyricsTranslationModalNoPluginsTitle => 'No translation plugin';
+
+  @override
+  String get lyricsTranslationModalServiceUnset =>
+      'Lyrics are sent only after you choose';
+
+  @override
+  String get lyricsTranslationModalPluginsLoading =>
+      'Loading translation plugins…';
+
+  @override
+  String lyricsTranslationModalTranslatedBy(String service) {
+    return 'Translated by $service';
+  }
+
+  @override
+  String get lyricsTranslationModalDisplayUnder => 'Under line';
+
+  @override
+  String get lyricsTranslationModalDisplayReplace => 'Replace line';
+
+  @override
+  String get lyricsTranslationModalRetranslating => 'Retranslating…';
+
+  @override
+  String get lyricsTranslationModalRefreshingNote =>
+      'Retranslating; the old version stays';
+
+  @override
+  String lyricsTranslationModalOtherVersion(String service) {
+    return 'Saved version from $service';
+  }
+
+  @override
+  String lyricsTranslationModalShowingOther(String service) {
+    return 'Showing the version from $service';
+  }
+
+  @override
+  String lyricsTranslationModalTranslateWith(String service) {
+    return 'Translate with $service';
+  }
+
+  @override
+  String lyricsTranslationModalServiceError(String service) {
+    return '$service reported an error';
+  }
+
+  @override
+  String lyricsTranslationRetranslated(String service) {
+    return 'Retranslated with $service';
+  }
 }

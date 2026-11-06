@@ -8,6 +8,7 @@ Future<void> _pump(
   WidgetTester tester, {
   VoidCallback? onTap,
   Widget? trailing,
+  double trailingWidth = 48,
   Widget? below,
   bool? canRequestFocus,
 }) => tester.pumpWidget(
@@ -19,6 +20,7 @@ Future<void> _pump(
         leading: const SizedBox(width: 64, height: 64),
         lines: [contextModalHeaderLine('Title', null)],
         trailing: trailing,
+        trailingWidth: trailingWidth,
         below: below,
         onTap: onTap,
         tapHint: 'Go there',
@@ -145,5 +147,23 @@ void main() {
       tester.getTopLeft(find.text('Desc')).dy,
       greaterThan(tester.getBottomLeft(find.text('Title')).dy),
     );
+  });
+
+  testWidgets('trailingWidth sizes the trailing slot for two icon buttons', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      trailingWidth: 96,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.close), onPressed: () {}),
+        ],
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.byType(IconButton), findsNWidgets(2));
   });
 }

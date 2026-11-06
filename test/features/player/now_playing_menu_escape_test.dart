@@ -77,7 +77,6 @@ void main() {
   }
 
   final sourceMenu = find.text('Automatic');
-  final translationMenu = find.text('Show translation');
 
   for (final (name, size) in [
     ('wide', const Size(1280, 800)),
@@ -98,17 +97,16 @@ void main() {
         expect(container.read(nowPlayingOpenProvider), isTrue);
       });
 
-      testWidgets('closes the translation menu and keeps Now Playing open', (
+      testWidgets('closes the translation modal and keeps Now Playing open', (
         tester,
       ) async {
         await pumpOverlay(tester, size);
-        await tester.tap(find.byTooltip('Lyrics translation'));
-        await tester.pumpAndSettle();
-        expect(translationMenu, findsOneWidget);
+        await openTranslationModal(tester);
+        expect(translationModalFinder, findsOneWidget);
 
         await escape(tester);
 
-        expect(translationMenu, findsNothing);
+        expect(translationModalFinder, findsNothing);
         expect(container.read(nowPlayingOpenProvider), isTrue);
       });
     });

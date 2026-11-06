@@ -70,13 +70,22 @@ class TranslationJobStatus {
   int get hashCode => Object.hash(failure, saved);
 }
 
-/// Runs translation jobs: one per [TranslationJobKey] at a time, never
-/// cancelled (a sent chunk is billed, so a started job finishes and saves),
-/// failures remembered until [clearFailure] or a forced run. Finished jobs
-/// leave no status: their result is the saved row.
+/// Runs translation jobs: one per [TranslationJobKey] at a time, failures
+/// remembered until [clearFailure] or a forced run. Finished jobs leave no
+/// status: their result is the saved row.
+///
+/// A sent chunk is billed, so a job that runs normally is never cancelled and
+/// finishes and saves. Only [cancel], for a forced job (Retranslate), drops the
+/// chunks not sent yet and the result of the chunk in flight; chunks already
+/// done stay for the next run.
 class TranslationJobs
     extends Notifier<Map<TranslationJobKey, TranslationJobStatus>> {
   final _partial = <TranslationJobKey, JobPartial>{};
+
+  /// The token of the forced run of each key. A run owns the key's status only
+  /// while its token is here, so a cancelled run that ends late (or fails)
+  /// cannot touch what a newer run, or the cancel itself, left.
+  final _forced = <TranslationJobKey, Object>{};
   TranslationJobKey? _current;
 
   @override
@@ -84,6 +93,13 @@ class TranslationJobs
 
   void clearFailure(TranslationJobKey key) {
     if (state[key]?.failure != null) _remove(key);
+  }
+
+  /// Stops the forced run of [key]: its status goes at once, so the view shows
+  /// the older version again, and what is still in flight is dropped. Does
+  /// nothing for a job that is not forced.
+  void cancel(TranslationJobKey key) {
+    if (_forced.remove(key) != null) _remove(key);
   }
 
   /// The job the screen wants now. A plugin chunk still waiting for its turn
@@ -104,8 +120,8 @@ class TranslationJobs
 
   /// Translates [uniqueLines] (see `uniqueLineTexts`) into [target].
   ///
-  /// Returns at once, sending nothing, when the job runs, when it failed and
-  /// [force] is off, when translation is off, the key's service is not the
+  /// Returns null at once, sending nothing, when the job runs, when it failed
+  /// and [force] is off, when translation is off, the key's service is not the
   /// effective one or has no accepted notice, when the library database is
   /// unavailable, or (without [force]) when a usable row is saved already.
   /// [force] (Retranslate) also starts over instead of resuming the chunks
@@ -113,7 +129,10 @@ class TranslationJobs
   ///
   /// A plugin chunk dropped because the screen moved on ends the run without
   /// a failure; the chunks done stay for when the user comes back.
-  Future<void> run(
+  ///
+  /// Returns the status the run ended with (`saved` or `failed`), or null when
+  /// it did not run, was dropped or was cancelled.
+  Future<TranslationJobStatus?> run(
     TranslationJobKey key,
     List<String> uniqueLines,
     TranslationLanguage target, {
@@ -123,32 +142,44 @@ class TranslationJobs
     final status = state[key];
     if (status != null &&
         (status.isRunning || (status.failure != null && !force))) {
-      return;
+      return null;
     }
     final prefs = ref.read(settingsProvider).translation;
     if (!prefs.show ||
         ref.read(effectiveTranslationServiceProvider) != key.service ||
         needsNoticeFor(prefs, key.service)) {
-      return;
+      return null;
     }
     final db = ref.read(libraryDatabaseProvider);
-    if (db == null) return;
+    if (db == null) return null;
+    final token = force ? Object() : null;
+    if (token != null) _forced[key] = token;
+    // A run that is not forced always owns its status.
+    bool owns() => token == null || identical(_forced[key], token);
+    TranslationJobStatus? end(TranslationJobStatus result) {
+      if (!owns()) return null;
+      _set(key, result);
+      return result;
+    }
+
     _set(key, const TranslationJobStatus.running());
+    JobPartial? held;
     try {
       if (!force && await _hasUsableRow(db, key, target)) {
         _remove(key);
-        return;
+        return null;
       }
-      if (!ref.mounted) return;
+      if (!ref.mounted || !owns()) return null;
       final (translator, version) = await _translatorFor(
         key,
         uniqueLines,
-        force: force,
+        token,
       );
-      if (!ref.mounted) return;
+      if (!ref.mounted || !owns()) return null;
       checkJobLimits(uniqueLines, target, translator);
       if (force || _partial[key]?.version != version) _partial.remove(key);
       final partial = _partial.putIfAbsent(key, () => JobPartial(version));
+      held = partial;
       await translateMissingLines(
         translator,
         uniqueLines,
@@ -156,11 +187,14 @@ class TranslationJobs
         partial,
         song: song,
       );
+      // Cancelled while the last chunk was in flight: nothing is saved (the
+      // finally block drops the partial).
+      if (!owns()) return null;
       // clearFailures dropped the chunks while this job ran: what it holds
       // may be stale, so nothing is saved.
       if (!identical(_partial[key], partial)) {
         _remove(key);
-        return;
+        return null;
       }
       final map = await saveJobResult(
         db,
@@ -171,31 +205,40 @@ class TranslationJobs
         partial,
       );
       if (map == null) {
-        _partial.remove(key);
-        _set(
-          key,
+        _dropPartial(key, partial);
+        return end(
           const TranslationJobStatus.failed(TranslationFailureKind.emptyResult),
         );
-        return;
       }
-      _partial.remove(key);
-      _set(key, TranslationJobStatus.saved(linesFingerprint(map)));
+      _dropPartial(key, partial);
+      return end(TranslationJobStatus.saved(linesFingerprint(map)));
     } on TranslationSuperseded {
-      _remove(key);
+      if (owns()) _remove(key);
+      return null;
     } on TranslationException catch (e) {
-      _set(key, TranslationJobStatus.failed(e.kind));
+      return end(TranslationJobStatus.failed(e.kind));
     } on SecretStoreException catch (e) {
-      _set(key, TranslationJobStatus.failed(failureKindOfSecretError(e)));
+      return end(TranslationJobStatus.failed(failureKindOfSecretError(e)));
     } on Object catch (e) {
       // Only the type: the message of a transport error may hold headers.
       _log.warning('translation job failed: ${e.runtimeType}');
-      _set(
-        key,
+      return end(
         const TranslationJobStatus.failed(
           TranslationFailureKind.invalidResponse,
         ),
       );
+    } finally {
+      // A cancelled retranslate leaves no partial: the next forced run starts
+      // clean and a normal run finds the saved row. A newer run's is kept.
+      if (held != null && !owns()) _dropPartial(key, held);
+      if (token != null && identical(_forced[key], token)) _forced.remove(key);
     }
+  }
+
+  /// Forgets [partial] after the save, unless a newer run already replaced it
+  /// (a cancel during the write lets a new forced run start meanwhile).
+  void _dropPartial(TranslationJobKey key, JobPartial partial) {
+    if (identical(_partial[key], partial)) _partial.remove(key);
   }
 
   Future<bool> _hasUsableRow(
@@ -220,9 +263,9 @@ class TranslationJobs
   /// runs (its `updatedAt`). A plugin that is missing is a `server` failure.
   Future<(LyricsTranslator, int?)> _translatorFor(
     TranslationJobKey key,
-    List<String> uniqueLines, {
-    required bool force,
-  }) async {
+    List<String> uniqueLines,
+    Object? forcedToken,
+  ) async {
     final service = key.service;
     final runner = ref.read(pluginTranslateRunnerProvider);
     final record = ref
@@ -250,7 +293,9 @@ class TranslationJobs
       spec: info.spec,
       jobLines: uniqueLines,
       allowed: allowed,
-      stillWanted: () => force || _current == key,
+      stillWanted: () => forcedToken != null
+          ? identical(_forced[key], forcedToken)
+          : _current == key,
     );
     return (translator, record.updatedAt);
   }

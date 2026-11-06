@@ -30,6 +30,7 @@ class NowPlayingTabs extends StatefulWidget {
     required this.hasLyrics,
     required this.floatingOpen,
     this.sourceMenuOpener,
+    this.translationModalOpener,
   });
 
   /// Adds the window drag area and buttons around the tab header.
@@ -49,13 +50,17 @@ class NowPlayingTabs extends StatefulWidget {
   /// Whether the song has lyrics to translate; gates the translate button.
   final bool hasLyrics;
 
-  /// Set to whether the translation or lyrics source menu is open; the
-  /// screen reads it to leave its keys to the menu.
+  /// Set to whether the translation modal or lyrics source menu is open; the
+  /// screen reads it to leave its keys to the modal or menu.
   final ValueNotifier<bool> floatingOpen;
 
   /// Receives the callback that opens the lyrics source menu while its button
   /// is in the header.
   final ValueNotifier<bool Function()?>? sourceMenuOpener;
+
+  /// Receives the callback that opens the translation modal while its button
+  /// is in the header.
+  final ValueNotifier<bool Function()?>? translationModalOpener;
 
   @override
   State<NowPlayingTabs> createState() => _NowPlayingTabsState();
@@ -143,7 +148,8 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                         ),
                         LyricsTranslationButton(
                           enabled: widget.hasLyrics,
-                          onMenuChanged: (open) {
+                          modalOpener: widget.translationModalOpener,
+                          onModalChanged: (open) {
                             _translateOpen = open;
                             _report();
                           },

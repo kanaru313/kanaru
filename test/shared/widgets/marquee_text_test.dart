@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/shared/lyrics_picker/lyrics_picker_marquee_label.dart';
+import 'package:kanaru/shared/widgets/marquee_text.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _boxWidth = 120.0;
 const _long = 'A very long lyrics source name that cannot fit';
@@ -8,10 +9,12 @@ const _style = TextStyle(fontSize: 14);
 
 Widget _host({
   required String text,
-  required bool active,
+  bool active = true,
+  Duration startDelay = const Duration(seconds: 1),
   bool disableAnimations = false,
   double textScale = 1,
   double boxWidth = _boxWidth,
+  Key? boundaryKey,
 }) {
   return MaterialApp(
     home: Scaffold(
@@ -24,10 +27,14 @@ Widget _host({
           child: Center(
             child: SizedBox(
               width: boxWidth,
-              child: LyricsPickerMarqueeLabel(
-                text: text,
-                style: _style,
-                active: active,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: MarqueeText(
+                  text: text,
+                  style: _style,
+                  active: active,
+                  startDelay: startDelay,
+                ),
               ),
             ),
           ),
@@ -37,7 +44,7 @@ Widget _host({
   );
 }
 
-final _label = find.byType(LyricsPickerMarqueeLabel);
+final _label = find.byType(MarqueeText);
 Finder get _transforms =>
     find.descendant(of: _label, matching: find.byType(Transform));
 Finder get _shader =>
@@ -77,7 +84,7 @@ Future<void> _pumpToMaxShift(WidgetTester tester) async {
 
 void main() {
   testWidgets('text that fits is plain, unfaded and idle', (tester) async {
-    await tester.pumpWidget(_host(text: 'Short', active: true));
+    await tester.pumpWidget(_host(text: 'Short'));
     await tester.pumpAndSettle();
 
     expect(_shader, findsNothing);
@@ -96,7 +103,7 @@ void main() {
   testWidgets('long text active waits, then scrolls to the measured end', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await tester.pump(const Duration(milliseconds: 900));
     expect(_translation(tester), 0);
 
@@ -114,13 +121,55 @@ void main() {
     expect(_paintedRight(tester), closeTo(_fadeStart(tester), 0.5));
   });
 
+  testWidgets('custom 300ms startDelay: still at 1.1s, scrolling by 1.6s', (
+    tester,
+  ) async {
+    // The cycle rests 0.9 s at the start after the delay, so the text starts
+    // moving about 1.2 s after the label appears.
+    await tester.pumpWidget(
+      _host(text: _long, startDelay: const Duration(milliseconds: 300)),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(_translation(tester), 0);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(_translation(tester), lessThan(0));
+  });
+
+  testWidgets('left edge fades only while scrolled away from the start', (
+    tester,
+  ) async {
+    final boundary = GlobalKey();
+    await tester.pumpWidget(_host(text: _long, boundaryKey: boundary));
+    // The Ahem test font paints solid glyph boxes, so the label's first pixel
+    // column is opaque at rest and almost transparent inside the left fade.
+    Future<int> leftAlpha() async {
+      final render =
+          boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final alpha = await tester.runAsync(() async {
+        final image = await render.toImage();
+        final data = await image.toByteData();
+        final y = image.height ~/ 2;
+        final a = data!.getUint8((y * image.width + 1) * 4 + 3);
+        image.dispose();
+        return a;
+      });
+      return alpha!;
+    }
+
+    expect(await leftAlpha(), 255);
+
+    await _pumpToMaxShift(tester);
+    expect(await leftAlpha(), lessThan(60));
+  });
+
   for (final width in [160.0, 300.0]) {
     testWidgets('last glyph ends where the fade starts in a $width px box', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _host(text: _long, active: true, boxWidth: width),
-      );
+      await tester.pumpWidget(_host(text: _long, boxWidth: width));
       await _pumpToMaxShift(tester);
 
       expect(_paintedRight(tester), closeTo(_fadeStart(tester), 0.5));
@@ -130,11 +179,11 @@ void main() {
   testWidgets('changing the text while active restarts from the start', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await _pumpToMaxShift(tester);
     expect(_translation(tester), lessThan(-100));
 
-    await tester.pumpWidget(_host(text: '$_long, edited', active: true));
+    await tester.pumpWidget(_host(text: '$_long, edited'));
     expect(_translation(tester), 0);
     await tester.pump(const Duration(milliseconds: 900));
     expect(_translation(tester), 0);
@@ -147,7 +196,7 @@ void main() {
   testWidgets('going inactive returns to the start and stops the ticker', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
@@ -161,7 +210,7 @@ void main() {
   testWidgets('going inactive during the pause cancels the start', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpWidget(_host(text: _long, active: false));
     await tester.pump(const Duration(seconds: 2));
@@ -172,7 +221,7 @@ void main() {
   testWidgets('disposing while active leaves no timer or ticker', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
@@ -181,9 +230,7 @@ void main() {
   testWidgets('animations disabled: static ellipsis, no fade, no motion', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      _host(text: _long, active: true, disableAnimations: true),
-    );
+    await tester.pumpWidget(_host(text: _long, disableAnimations: true));
     await tester.pump(const Duration(seconds: 8));
 
     expect(_shader, findsNothing);
@@ -196,12 +243,12 @@ void main() {
   });
 
   testWidgets('larger text scale lengthens the measured shift', (tester) async {
-    await tester.pumpWidget(_host(text: _long, active: true));
+    await tester.pumpWidget(_host(text: _long));
     await _pumpToMaxShift(tester);
     final normal = _translation(tester);
 
     await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(_host(text: _long, active: true, textScale: 1.5));
+    await tester.pumpWidget(_host(text: _long, textScale: 1.5));
     await _pumpToMaxShift(tester);
     final scaled = _translation(tester);
 
