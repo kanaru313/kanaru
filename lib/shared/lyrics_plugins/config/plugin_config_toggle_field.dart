@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/plugins/package/plugin_manifest.dart';
+import '../../../core/lyrics/plugins/package/plugin_manifest.dart';
 import 'plugin_config_commit_mixin.dart';
 import 'plugin_config_error_text.dart';
 

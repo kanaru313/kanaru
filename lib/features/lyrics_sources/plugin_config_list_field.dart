@@ -5,11 +5,11 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_payload_checks.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_value_messages.dart';
 import 'plugin_config_group.dart';
-import 'plugin_config_payload_checks.dart';
 import 'plugin_config_row_box.dart';
-import 'plugin_config_value_messages.dart';
 
 /// A `list` field: one text box per item (text, number, integer or url), with
 /// Add (off at the item limit) and a Remove button per row. The whole list is

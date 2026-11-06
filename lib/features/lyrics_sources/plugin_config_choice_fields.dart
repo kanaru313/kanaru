@@ -2,9 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/lyrics/plugins/package/plugin_manifest.dart';
-import 'plugin_config_commit_mixin.dart';
-import 'plugin_config_label.dart';
-import 'plugin_config_subtitle.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_label.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_subtitle.dart';
 
 /// A `select` field with one value: a dropdown of the manifest's options,
 /// each with its subtitle. It saves at once; when the save is refused the old

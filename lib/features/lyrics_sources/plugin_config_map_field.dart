@@ -5,7 +5,7 @@ import '../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../core/lyrics/plugins/store/plugin_config_value_rules.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
-import 'plugin_config_commit_mixin.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_commit_mixin.dart';
 import 'plugin_config_group.dart';
 import 'plugin_config_row_box.dart';
 

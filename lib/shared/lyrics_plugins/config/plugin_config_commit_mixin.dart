@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
-import '../../core/lyrics/plugins/package/plugin_manifest.dart';
-import '../../core/lyrics/plugins/store/plugin_config_values.dart';
-import '../../core/lyrics_translation/translation_jobs.dart';
-import '../../l10n/l10n.dart';
+import '../../../core/lyrics/plugins/lyrics_plugins_provider.dart';
+import '../../../core/lyrics/plugins/package/plugin_manifest.dart';
+import '../../../core/lyrics/plugins/store/plugin_config_values.dart';
+import '../../../core/lyrics_translation/translation_jobs.dart';
+import '../../../l10n/l10n.dart';
 import 'plugin_config_payload_checks.dart';
 import 'plugin_config_save.dart';
 import 'plugin_config_value_messages.dart';

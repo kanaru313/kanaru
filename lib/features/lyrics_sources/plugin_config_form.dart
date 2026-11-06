@@ -11,9 +11,9 @@ import 'plugin_config_map_field.dart';
 import 'plugin_config_multi_select_field.dart';
 import 'plugin_config_secret_field.dart';
 import 'plugin_config_state_provider.dart';
-import 'plugin_config_text_field.dart';
-import 'plugin_config_toggle_field.dart';
-import 'plugin_config_value_messages.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_text_field.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_toggle_field.dart';
+import '../../shared/lyrics_plugins/config/plugin_config_value_messages.dart';
 import 'plugin_section_title.dart';
 
 /// "Cài đặt của plugin": the form the plugin's manifest declares. Nothing is
