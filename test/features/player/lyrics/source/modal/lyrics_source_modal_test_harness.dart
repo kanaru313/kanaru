@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/playing_local_lyrics_provider.dart';
@@ -62,6 +63,7 @@ Future<SourceModalHarness> pumpSourceModal(
   bool loadFails = false,
   bool autoSearchable = true,
   bool failChoose = false,
+  LrcWriteResult saveResult = LrcWriteResult.written,
   Lyrics? ownLyrics,
   Size size = const Size(1000, 900),
   List<Override> overrides = const [],
@@ -88,7 +90,12 @@ Future<SourceModalHarness> pumpSourceModal(
       libraryDatabaseProvider.overrideWithValue(library ? db : null),
       nowPlayingOpenProvider.overrideWith(_OpenNowPlaying.new),
       onlineLyricsActionsProvider.overrideWith(
-        (ref) => RecordingActions(ref, log, failChoose: failChoose),
+        (ref) => RecordingActions(
+          ref,
+          log,
+          failChoose: failChoose,
+          saveResult: saveResult,
+        ),
       ),
       lyricsSourcesInputProvider.overrideWith(
         (ref) => loadFails

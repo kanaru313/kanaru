@@ -23,7 +23,7 @@ Future<Lyrics?> loadLyrics(
   for (final source in sources) {
     try {
       final lyrics = switch (source) {
-        LyricsSource.embedded => _fromTags(await embedded.read(path)),
+        LyricsSource.embedded => lyricsFromTags(await embedded.read(path)),
         LyricsSource.sidecar => _fromText(
           await sidecar.read(path),
           LyricsSource.sidecar,
@@ -39,7 +39,7 @@ Future<Lyrics?> loadLyrics(
 
 /// Tag lyrics: the `SYLT` lines when there are any (already sorted and
 /// capped), else the text, which may itself be LRC.
-Lyrics? _fromTags(EmbeddedLyricsData? data) {
+Lyrics? lyricsFromTags(EmbeddedLyricsData? data) {
   if (data == null) return null;
   if (data.synced.isNotEmpty) {
     return Lyrics(

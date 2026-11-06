@@ -3378,19 +3378,32 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsSavedLyricsClearFailed => 'Không xóa được lời đã lưu';
 
   @override
-  String get lyricsSaveTitle => 'Lưu lời';
+  String get lyricsSaveToTitle => 'Lưu lời vào';
 
   @override
-  String get lyricsSaveOptionLrc => 'File .lrc';
+  String get lyricsSaveToLrc => 'Tệp .lrc cạnh bài';
 
   @override
-  String get lyricsSaveOptionTags => 'Trong tag nhạc';
+  String get lyricsSaveToTag => 'Tag trong tệp nhạc';
 
   @override
-  String get lyricsSaveOptionTagsSoon => 'Sắp có';
+  String lyricsSaveToButton(int count) {
+    return 'Lưu ($count)';
+  }
 
   @override
-  String get lyricsSaveConfirm => 'Lưu';
+  String lyricsSaveAlready(String name) {
+    return 'Đã lưu sẵn ở $name';
+  }
+
+  @override
+  String get lyricsSaveKeptTagSame =>
+      'Vẫn hiện lời trong tag; tệp .lrc có cùng lời này.';
+
+  @override
+  String lyricsSaveToLrcTrash(String name) {
+    return '$name · tệp cũ vào thùng rác';
+  }
 
   @override
   String lyricsReplaceTitle(String files, String title) {
@@ -3405,9 +3418,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsSaveWritten => 'Đã lưu lời thành file .lrc';
-
-  @override
-  String get lyricsSaveIdentical => 'File .lrc đã có đúng lời này';
 
   @override
   String get lyricsSaveKeptTag =>

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/lyrics/lyrics.dart';
 import '../../../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_status.dart';
@@ -11,11 +12,12 @@ import '../../../../../shared/lyrics_source_routes.dart';
 import '../../../../../shared/widgets/selection_row.dart';
 import '../../../now_playing/now_playing_modal_navigation.dart';
 import '../lyrics_source_labels.dart';
+import 'lyrics_save_targets_modal.dart';
 import 'lyrics_source_modal_run.dart';
 
 /// Action rows under the choices: "Find lyrics online…" (or its all-off
 /// variant), "Add an online lyrics source" when no plugin is installed, and
-/// "Save lyrics…" while online lyrics show.
+/// "Save lyrics…" while online lyrics or lyrics from the tags show.
 ///
 /// Only the add row needs no song; the others show when [canChoose]. Nothing
 /// shows until the sources are [loaded].
@@ -41,7 +43,12 @@ class LyricsSourceModalActions extends ConsumerWidget {
     final names = ref.watch(lyricsSourceNamesProvider);
     final on = entries.where((e) => e.enabled).length;
     final status = source.status;
-    final found = status is LyricsFound && status.origin != null
+    // Online lyrics and lyrics from the tags can be saved; a `.lrc` already is
+    // the file.
+    final found =
+        status is LyricsFound &&
+            (status.origin != null ||
+                status.lyrics.source == LyricsSource.embedded)
         ? status
         : null;
     final chevron = Icon(
@@ -96,11 +103,10 @@ class LyricsSourceModalActions extends ConsumerWidget {
             leading: const Icon(AppIcons.lyricsSave),
             trailing: chevron,
             selected: false,
-            onTap: () => closeStackThenRun(
+            onTap: () => showLyricsSaveTargetsModal(
               context,
               source: source,
               messenger: messenger,
-              action: (runner) => runner.save(),
             ),
           ),
       ],

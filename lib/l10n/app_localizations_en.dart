@@ -3656,19 +3656,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSavedLyricsClearFailed => 'Could not clear saved lyrics';
 
   @override
-  String get lyricsSaveTitle => 'Save lyrics';
+  String get lyricsSaveToTitle => 'Save lyrics to';
 
   @override
-  String get lyricsSaveOptionLrc => '.lrc file';
+  String get lyricsSaveToLrc => '.lrc file next to the song';
 
   @override
-  String get lyricsSaveOptionTags => 'In the music tags';
+  String get lyricsSaveToTag => 'Tag in the music file';
 
   @override
-  String get lyricsSaveOptionTagsSoon => 'Coming soon';
+  String lyricsSaveToButton(int count) {
+    return 'Save ($count)';
+  }
 
   @override
-  String get lyricsSaveConfirm => 'Save';
+  String lyricsSaveAlready(String name) {
+    return 'Already saved as $name';
+  }
+
+  @override
+  String get lyricsSaveKeptTagSame =>
+      'Lyrics from the tags still show; the .lrc file holds the same lyrics.';
+
+  @override
+  String lyricsSaveToLrcTrash(String name) {
+    return '$name · old file goes to the trash';
+  }
 
   @override
   String lyricsReplaceTitle(String files, String title) {
@@ -3683,9 +3696,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsSaveWritten => 'Lyrics saved as a .lrc file';
-
-  @override
-  String get lyricsSaveIdentical => 'The .lrc file already has these lyrics';
 
   @override
   String get lyricsSaveKeptTag =>
