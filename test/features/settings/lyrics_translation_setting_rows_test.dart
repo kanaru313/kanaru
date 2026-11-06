@@ -131,7 +131,7 @@ void main() {
       expect(find.widgetWithText(MenuItemButton, 'Gemini'), findsWidgets);
     });
 
-    testWidgets('more than two services use a dropdown', (tester) async {
+    testWidgets('multiple services use a dropdown', (tester) async {
       final h = TranslationSettingsHarness();
       await h.pump(
         tester,

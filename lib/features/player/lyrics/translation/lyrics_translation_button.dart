@@ -127,11 +127,7 @@ class _LyricsTranslationButtonState
           } else if (choices.ready &&
               choices.services.isEmpty &&
               choices.selected == null) {
-            showTranslationServiceMissingSnackBar(
-              context,
-              ref,
-              hasPlugins: false,
-            );
+            showTranslationServiceMissingSnackBar(context, hasPlugins: false);
           } else {
             controller.open();
           }

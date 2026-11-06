@@ -17,6 +17,7 @@ import 'fake_translator.dart';
 
 final _plugin = TranslationServiceId.tryParse('plugin-abc123def456')!;
 final _other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
+final _third = TranslationServiceId.tryParse('plugin-111111111111')!;
 
 AppSettings _settings(
   TranslationServiceId? service,
@@ -83,8 +84,11 @@ void main() {
       expect(c.read(effectiveTranslationServiceProvider), isNull);
     });
 
-    test('two plugins installed and the default removed resolves to null', () {
-      final c = make(_settings(null, {}), live([_plugin.value, _other.value]));
+    test('two other plugins installed and the selected one removed resolves to null', () {
+      final c = make(
+        _settings(_plugin, {_plugin}),
+        live([_other.value, _third.value]),
+      );
       expect(c.read(effectiveTranslationServiceProvider), isNull);
     });
 
@@ -137,7 +141,7 @@ void main() {
       () async {
         final c = make(
           _settings(_plugin, {_plugin, _other}),
-          live([_other.value]),
+          live([_other.value, _third.value]),
         );
         await sweep(c);
 

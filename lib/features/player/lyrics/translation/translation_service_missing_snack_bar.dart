@@ -15,8 +15,7 @@ import '../../now_playing/now_playing_open_provider.dart';
 /// Translate chip; with [hasPlugins] true, it guides them to the Translation
 /// section of Playback settings.
 void showTranslationServiceMissingSnackBar(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
   required bool hasPlugins,
 }) {
   final l10n = context.l10n;
