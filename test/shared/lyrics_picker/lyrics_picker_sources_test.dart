@@ -63,7 +63,7 @@ class _HostState extends State<_Host> {
           providerNames: widget.names,
           sourceFilter: widget.filter,
           onSelect: widget.onSelect ?? (_) {},
-          onRetry: () => setState(() => retries++),
+          onRetry: (_) => setState(() => retries++),
         ),
       ),
     ],
@@ -162,7 +162,7 @@ void main() {
           providerNames: names,
           sourceFilter: _other,
           onSelect: (_) {},
-          onRetry: () {},
+          onRetry: (_) {},
         ),
       );
 

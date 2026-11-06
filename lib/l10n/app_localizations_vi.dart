@@ -3148,7 +3148,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeSourcesBody =>
-      'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới các nguồn lời đang bật. Không gửi tên file, đường dẫn hay thông tin máy.';
+      'Kanaru sẽ gửi tên bài, nghệ sĩ, album và độ dài tới các nguồn lời trực tuyến bạn tìm hoặc bật. Không gửi tên file, đường dẫn hay thông tin máy.';
 
   @override
   String get onlineLyricsNoticeAutoHint =>
@@ -3226,6 +3226,41 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsPickerNoSource =>
       'Chưa có nguồn lời trực tuyến nào đang bật.';
+
+  @override
+  String get lyricsPickerNoneOn => 'Chưa có nguồn nào đang bật';
+
+  @override
+  String lyricsPickerSearchDisabled(int count) {
+    return 'Tìm trong $count nguồn đang tắt';
+  }
+
+  @override
+  String lyricsPickerMoreOff(int count) {
+    return 'Chưa thấy lời ưng ý? Còn $count nguồn đang tắt';
+  }
+
+  @override
+  String lyricsPickerSearchSourceHosts(String name, String hosts) {
+    return '$name ($hosts)';
+  }
+
+  @override
+  String get lyricsPickerSourcesTitle => 'Nguồn tìm kiếm';
+
+  @override
+  String get lyricsPickerSourcesOff => 'Đang tắt';
+
+  @override
+  String get lyricsPickerSourceOff => 'Nguồn đang tắt';
+
+  @override
+  String lyricsSourceFindRowAllOffSearch(int count) {
+    return 'Mọi nguồn đang tắt ($count) · chỉ tìm khi bạn bấm';
+  }
+
+  @override
+  String get lyricsPickerFooterNoHosts => 'Lời bạn chọn được ghim vào bài này';
 
   @override
   String get lyricsPickerNoPreview => 'Chọn một kết quả để xem trước lời';
@@ -5303,10 +5338,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String lyricsSourceFindRowSubtitle(int on, int off) {
     return '$on nguồn đang bật · $off đang tắt';
   }
-
-  @override
-  String get lyricsSourceFindRowAllOff =>
-      'Mọi nguồn trực tuyến đang tắt · quản lý trong Nguồn lời';
 
   @override
   String get lyricsSourceAddRow => 'Thêm nguồn lời trực tuyến';

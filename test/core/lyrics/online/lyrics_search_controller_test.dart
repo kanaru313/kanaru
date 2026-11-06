@@ -380,6 +380,56 @@ void main() {
       expect(state().selected, isNull);
     });
 
+    test('Retry of an on-source failure asks no off source', () async {
+      fake.searchResult = StateError('boom');
+      await controller().search('artist song');
+      await controller().searchDisabled(ids: {'off'});
+      expect(off.searchCalls, 1);
+      expect(state().onDemand, {'off'});
+
+      fake.searchResult = [fakeCandidate()];
+      await controller().retrySource('fake');
+
+      expect(off.searchCalls, 1);
+      expect(off2.searchCalls, 0);
+      expect(state().onDemand, isEmpty);
+    });
+
+    test('retrySource of a failed off source asks only it', () async {
+      off.searchResult = StateError('boom');
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled();
+      expect(state().byProvider['off']!.phase, ProviderSearchPhase.error);
+      final onSearches = fake.searchCalls;
+
+      off.searchResult = [fakeCandidate(providerId: 'off', remoteId: 'o')];
+      await controller().retrySource('off');
+
+      expect(off.searchCalls, 2);
+      expect(off2.searchCalls, 1);
+      expect(fake.searchCalls, onSearches);
+      expect(state().byProvider['off']!.phase, ProviderSearchPhase.done);
+    });
+
+    test('searchDisabledFor runs the normal search for a new text', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled(ids: {'off'});
+      expect(state().onDemand, {'off'});
+
+      await controller().searchDisabledFor('another words', ids: {'off2'});
+
+      expect(state().query, 'another words');
+      expect(state().onDemand, {'off2'});
+      expect(off2.searchCalls, 1);
+      expect(off.searchCalls, 1);
+    });
+
+    test('searchDisabledFor with a blank text does nothing', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabledFor('  ');
+      expect(off.searchCalls + off2.searchCalls, 0);
+    });
+
     test('a hand-picked result stays selected', () async {
       await searchWith([
         for (var i = 0; i < maxSearchResults; i++)

@@ -3424,7 +3424,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineLyricsNoticeSourcesBody =>
-      'Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.';
+      'Kanaru sends the song title, artist, album and length to the online lyrics sources you search or turn on. No file names, paths or device details.';
 
   @override
   String get onlineLyricsNoticeAutoHint =>
@@ -3502,6 +3502,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsPickerNoSource => 'No online lyrics source is on.';
+
+  @override
+  String get lyricsPickerNoneOn => 'No source is on';
+
+  @override
+  String lyricsPickerSearchDisabled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Search in $count disabled sources',
+      one: 'Search in 1 disabled source',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsPickerMoreOff(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Didn\'t find the right lyrics? $count sources are off',
+      one: 'Didn\'t find the right lyrics? 1 source is off',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsPickerSearchSourceHosts(String name, String hosts) {
+    return '$name ($hosts)';
+  }
+
+  @override
+  String get lyricsPickerSourcesTitle => 'Search sources';
+
+  @override
+  String get lyricsPickerSourcesOff => 'Off';
+
+  @override
+  String get lyricsPickerSourceOff => 'Source is off';
+
+  @override
+  String lyricsSourceFindRowAllOffSearch(int count) {
+    return 'All sources are off ($count) · searched only when you ask';
+  }
+
+  @override
+  String get lyricsPickerFooterNoHosts =>
+      'The lyrics you pick are pinned to this song';
 
   @override
   String get lyricsPickerNoPreview => 'Select a result to preview its lyrics';
@@ -5630,10 +5678,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String lyricsSourceFindRowSubtitle(int on, int off) {
     return '$on on · $off off';
   }
-
-  @override
-  String get lyricsSourceFindRowAllOff =>
-      'All online sources are off · manage them in Lyrics sources';
 
   @override
   String get lyricsSourceAddRow => 'Add an online lyrics source';

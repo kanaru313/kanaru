@@ -1,13 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/lyrics/online/lyrics_fetch_exception.dart';
 import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../l10n/l10n.dart';
 import '../widgets/scroll_ink_surface.dart';
-import 'lyrics_failure_message.dart';
+import 'lyrics_picker_failure_line.dart';
 import 'lyrics_picker_result_tile.dart';
 import 'lyrics_picker_result_sources.dart';
-import 'lyrics_view_log_button.dart';
 
 /// The left side of the Choose lyrics dialog: progress while searching, the
 /// results (each with its source, narrowed to one source by the filter in the
@@ -25,6 +23,7 @@ class LyricsPickerResultsPane extends StatelessWidget {
     this.noSource = false,
     this.sourceFilter,
     this.scrollController,
+    this.offSourcesCard,
   });
 
   /// A search is about to start by itself (the song has a title), so an
@@ -41,7 +40,13 @@ class LyricsPickerResultsPane extends StatelessWidget {
 
   /// Called with an index into `state.results`.
   final ValueChanged<int> onSelect;
-  final VoidCallback onRetry;
+
+  /// Called with the id of the source whose failure line was retried.
+  final ValueChanged<String> onRetry;
+
+  /// Offers the off sources not searched yet; shown under the empty states
+  /// and as the last item of the list.
+  final Widget? offSourcesCard;
 
   /// The provider id the list is filtered to; `null` shows every source. One
   /// that returned no results (a new search) counts as `null`.
@@ -58,40 +63,45 @@ class LyricsPickerResultsPane extends StatelessWidget {
         if (e.value.phase == ProviderSearchPhase.error) e,
     ];
     final results = state.results;
+    final card = offSourcesCard;
     if (results.isEmpty) {
       if (failures.isNotEmpty) {
-        return _Centered(
+        return LyricsPickerCentered(
           children: [
             for (final f in failures)
-              _FailureLine(
+              LyricsPickerFailureLine(
                 providerId: f.key,
                 providerName: providerNames[f.key] ?? f.key,
                 kind: f.value.kind,
-                onRetry: onRetry,
+                onRetry: () => onRetry(f.key),
                 centered: true,
               ),
+            ?card,
           ],
         );
       }
       if (noSource) {
-        return _Centered(
+        return LyricsPickerCentered(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                l10n.lyricsPickerNoSource,
+                card == null
+                    ? l10n.lyricsPickerNoSource
+                    : l10n.lyricsPickerNoneOn,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
+            ?card,
           ],
         );
       }
       // No search has run and none is about to: the user types one.
       if (state.byProvider.isEmpty && !searchPending) {
-        return _Centered(
+        return LyricsPickerCentered(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -107,9 +117,13 @@ class LyricsPickerResultsPane extends StatelessWidget {
         );
       }
       if (state.searching || state.byProvider.isEmpty) {
-        return const _Centered(children: [CircularProgressIndicator()]);
+        return const LyricsPickerCentered(
+          children: [CircularProgressIndicator()],
+        );
       }
-      return _Centered(children: [Text(l10n.lyricsPickerEmpty)]);
+      return LyricsPickerCentered(
+        children: [Text(l10n.lyricsPickerEmpty), ?card],
+      );
     }
     final filter = effectiveSourceFilter(
       sourceFilter,
@@ -123,11 +137,11 @@ class LyricsPickerResultsPane extends StatelessWidget {
       children: [
         if (state.searching) const LinearProgressIndicator(),
         for (final f in failures)
-          _FailureLine(
+          LyricsPickerFailureLine(
             providerId: f.key,
             providerName: providerNames[f.key] ?? f.key,
             kind: f.value.kind,
-            onRetry: onRetry,
+            onRetry: () => onRetry(f.key),
           ),
         // Ink and hover paint on the nearest Material, which would be the
         // dialog; this one inside the clip keeps them within the list.
@@ -135,14 +149,16 @@ class LyricsPickerResultsPane extends StatelessWidget {
           child: ScrollInkSurface(
             child: ListView.builder(
               controller: scrollController,
-              itemCount: shown.length,
+              itemCount: shown.length + (card == null ? 0 : 1),
               itemBuilder: (context, row) {
+                if (row == shown.length) return card!;
                 final i = shown[row];
                 final id = results[i].candidate.providerId;
                 return LyricsPickerResultTile(
                   result: results[i],
                   selected: state.selected == i,
                   sourceName: providerNames[id] ?? id,
+                  sourceOff: state.onDemand.contains(id),
                   onTap: () => onSelect(i),
                 );
               },
@@ -152,60 +168,4 @@ class LyricsPickerResultsPane extends StatelessWidget {
       ],
     );
   }
-}
-
-/// One failed source: what went wrong at it, Retry (not after withdrawn
-/// consent, which trying again does not fix) and View log.
-class _FailureLine extends StatelessWidget {
-  const _FailureLine({
-    required this.providerId,
-    required this.providerName,
-    required this.kind,
-    required this.onRetry,
-    this.centered = false,
-  });
-
-  final String providerId;
-  final String providerName;
-  final LyricsFetchKind? kind;
-  final VoidCallback onRetry;
-  final bool centered;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final text = Text(
-      lyricsFailureMessage(l10n, kind, providerName),
-      textAlign: centered ? TextAlign.center : TextAlign.start,
-    );
-    final actions = Wrap(
-      alignment: centered ? WrapAlignment.center : WrapAlignment.end,
-      children: [
-        if (kind != LyricsFetchKind.notConsented)
-          TextButton(onPressed: onRetry, child: Text(l10n.lyricsPickerRetry)),
-        LyricsViewLogButton(providerId: providerId),
-      ],
-    );
-    if (centered) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [text, actions],
-        ),
-      );
-    }
-    return ListTile(dense: true, title: text, subtitle: actions);
-  }
-}
-
-class _Centered extends StatelessWidget {
-  const _Centered({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Column(mainAxisSize: MainAxisSize.min, children: children),
-  );
 }

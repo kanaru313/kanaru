@@ -78,7 +78,7 @@ void main() {
         ),
         providerNames: const {'fake': 'Fake'},
         onSelect: (_) {},
-        onRetry: () {},
+        onRetry: (_) {},
       ),
     );
 
@@ -125,7 +125,7 @@ void main() {
         ),
         providerNames: const {'fake': 'Fake'},
         onSelect: (_) {},
-        onRetry: () {},
+        onRetry: (_) {},
       ),
     );
 
@@ -143,7 +143,7 @@ void main() {
         state: const LyricsSearchState(query: ''),
         providerNames: const {},
         onSelect: (_) {},
-        onRetry: () {},
+        onRetry: (_) {},
       ),
     );
 
@@ -230,7 +230,7 @@ void _rejectedAndClipTests() {
             ),
             providerNames: const {},
             onSelect: (_) {},
-            onRetry: () {},
+            onRetry: (_) {},
           ),
         ),
       );

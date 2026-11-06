@@ -87,11 +87,16 @@ void main() {
   }
 
   Finder chip() => find.byType(OutlinedButton);
-  Finder item(String name) => find.widgetWithText(MenuItemButton, name);
+  // A row of the Search sources modal (the result tiles have no trailing).
+  Finder item(String name) => find.byWidgetPredicate(
+    (w) => w is SelectionRow && w.title == name && w.trailing != null,
+  );
 
   Future<void> pick(WidgetTester tester, String name) async {
     await tester.tap(chip());
-    await settle(tester);
+    // A long row title scrolls forever, so the modal never settles.
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(item(name));
     await settle(tester);
   }
@@ -167,7 +172,22 @@ void main() {
     expect(tester.getSize(tileName).width, lessThanOrEqualTo(180));
   });
 
-  testWidgets('the keyboard opens the menu, picks, and Esc keeps the dialog', (
+  testWidgets('Esc in the Search sources modal keeps the dialog', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(chip());
+    await settle(tester);
+    expect(find.text('Search sources'), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+
+    expect(find.text('Search sources'), findsNothing);
+    expect(find.byType(LyricsPickerDialog), findsOneWidget);
+  });
+
+  testWidgets('the chip takes the keyboard: Enter opens Search sources', (
     tester,
   ) async {
     await open(tester);
@@ -179,31 +199,12 @@ void main() {
     expect(Focus.of(tester.element(chip())).hasFocus, isTrue);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(MenuItemButton), findsWidgets);
-
-    // The current item ("All sources") has focus; down moves to Alpha.
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-    await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-    await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await settle(tester);
-    expect(find.text('Song alpha'), findsNothing);
-    expect(find.text('Song beta'), findsOneWidget);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(MenuItemButton), findsWidgets);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byType(MenuItemButton), findsNothing);
-    expect(find.byType(LyricsPickerDialog), findsOneWidget);
+    expect(find.text('Search sources'), findsOneWidget);
   });
 
-  testWidgets('the field stays put with fewer than two sources', (
+  testWidgets('one source: the chip is enabled and opens the modal', (
     tester,
   ) async {
     await open(tester);
@@ -211,8 +212,13 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await open(tester, onlyOne: true);
     expect(find.text('All sources'), findsOneWidget);
-    expect(tester.widget<OutlinedButton>(chip()).onPressed, isNull);
+    expect(tester.widget<OutlinedButton>(chip()).onPressed, isNotNull);
     expect(tester.getTopLeft(find.byType(TextField)).dx, x);
+
+    await tester.tap(chip());
+    await settle(tester);
+    expect(find.text('Search sources'), findsOneWidget);
+    expect(item('Alpha'), findsOneWidget);
   });
 
   testWidgets('a small window does not overflow', (tester) async {

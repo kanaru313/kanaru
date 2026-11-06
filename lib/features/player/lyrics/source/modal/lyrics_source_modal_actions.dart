@@ -101,24 +101,19 @@ class _LyricsSourceModalActionsState
               lyricsStoreRouteWithKind(lyricsSourcesStoreRoute, 'lyrics'),
             ),
           )
-        else if (canChoose && on > 0)
+        else if (canChoose)
           SelectionRow(
             title: l10n.lyricsFindOnline,
-            subtitle: l10n.lyricsSourceFindRowSubtitle(on, entries.length - on),
+            // With every source off the picker still opens: an off source is
+            // searched only when the user asks for it there.
+            subtitle: on > 0
+                ? l10n.lyricsSourceFindRowSubtitle(on, entries.length - on)
+                : l10n.lyricsSourceFindRowAllOffSearch(entries.length),
             leading: const Icon(AppIcons.search),
             trailing: chevron,
             selected: false,
             // The modal stays open under the picker.
             onTap: () => unawaited(_find()),
-          )
-        else if (canChoose)
-          SelectionRow(
-            title: l10n.lyricsFindOnline,
-            subtitle: l10n.lyricsSourceFindRowAllOff,
-            leading: const Icon(AppIcons.search),
-            trailing: chevron,
-            selected: false,
-            onTap: () => leaveNowPlayingTo(context, lyricsSourcesRoute),
           ),
         if (canChoose && found != null)
           SelectionRow(

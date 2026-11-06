@@ -72,6 +72,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
 
   /// Searches every enabled provider for [text], once the sources are
   /// loaded. A blank text does nothing.
+  @override
   Future<void> search(String text) async {
     final query = text.trim();
     if (query.isEmpty) return;
@@ -102,6 +103,12 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
 
   /// Runs the current query again, e.g. after a failure.
   Future<void> retry() => search(state.query);
+
+  /// Retries the failed source [id]. A source searched on request is asked
+  /// again alone; any other failure runs the whole search again, which also
+  /// drops the sources searched on request.
+  Future<void> retrySource(String id) =>
+      state.onDemand.contains(id) ? searchDisabled(ids: {id}) : retry();
 
   /// Selects result [index]; out of range clears the selection. A selected
   /// result without its lyrics has them fetched (one fetch at a time per

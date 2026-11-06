@@ -8,15 +8,20 @@ import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../core/lyrics/online/lyrics_source_names.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../../l10n/l10n.dart';
-import 'lyrics_failure_message.dart';
 import 'lyrics_picker_actions.dart';
+import 'lyrics_picker_disabled_sources_card.dart';
 import 'lyrics_picker_dialog_size.dart';
+import 'lyrics_picker_failure_line.dart';
+import 'lyrics_picker_footer.dart';
 import 'lyrics_picker_preview.dart';
 import 'lyrics_picker_result_sources.dart';
 import 'lyrics_picker_results_pane.dart';
 import 'lyrics_picker_search_row.dart';
+import 'lyrics_picker_sources_modal.dart';
 import 'lyrics_picker_title_row.dart';
 import 'lyrics_source_name_text.dart';
+
+part 'lyrics_picker_dialog_actions.dart';
 
 /// The content of the Choose lyrics modal: a query field, the ranked results of the manual
 /// search and a preview of the selected one. Pops the chosen
@@ -32,28 +37,13 @@ class LyricsPickerDialog extends ConsumerStatefulWidget {
   ConsumerState<LyricsPickerDialog> createState() => _LyricsPickerDialogState();
 }
 
-class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
-  late final _query = TextEditingController(
-    text: lyricsSearchPrefill(widget.target),
-  );
-
-  /// Provider id the results are filtered to; `null` shows every source.
-  String? _sourceFilter;
-
-  /// Scroll position of the result list, reset when the list changes.
-  final _listScroll = ScrollController();
-
-  bool get _searchesOnOpen => widget.target.query.title != null;
-
-  LyricsSearchController get _controller =>
-      ref.read(lyricsSearchControllerProvider(widget.target).notifier);
-
+class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog>
+    with _PickerActions {
   @override
   void initState() {
     super.initState();
-    // Only a song with a real title searches on open; any other waits for
-    // the user to press Search. A provider may not change while widgets
-    // build.
+    _watchBlank();
+    // Only a song with a real title searches on open (after the build).
     if (!_searchesOnOpen) return;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) _controller.search(_query.text);
@@ -67,43 +57,22 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     super.dispose();
   }
 
-  void _resetListScroll() {
-    if (_listScroll.hasClients) _listScroll.jumpTo(0);
-  }
-
-  /// Filters the list to [id] (`null`: every source). A selection the filter
-  /// hides moves to the first result that stays, so the preview and Use never
-  /// belong to a row the user cannot see.
-  void _filterBySource(String? id) {
-    setState(() => _sourceFilter = id);
-    _resetListScroll();
-    if (id == null) return;
-    final results = ref
-        .read(lyricsSearchControllerProvider(widget.target))
-        .results;
-    final selected = ref
-        .read(lyricsSearchControllerProvider(widget.target))
-        .selected;
-    if (selected != null && results[selected].candidate.providerId == id) {
-      return;
-    }
-    final first = results.indexWhere((r) => r.candidate.providerId == id);
-    if (first >= 0) _controller.select(first);
-  }
-
-  void _search() {
-    // A new query starts from every source again.
-    setState(() => _sourceFilter = null);
-    _resetListScroll();
-    _controller.search(_query.text);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = ref.watch(lyricsSearchControllerProvider(widget.target));
-    final registrations = ref.watch(lyricsProvidersProvider);
     final names = ref.watch(lyricsSourceNamesProvider);
+    final enabled = ref.watch(lyricsProvidersProvider);
+    final off = ref.watch(disabledLyricsProvidersProvider);
+    // Enabled sources and the off ones searched on request: only these name
+    // results and show their hosts.
+    final registrations = searchRegistrations(
+      enabled: enabled,
+      disabled: off,
+      state: state,
+    );
+    final unsearched = unsearchedOffSources(l10n, names, off, state);
+    final blank = _queryBlank;
     final query = widget.target.query;
     final selection = state.selection;
     final sources = lyricsResultSources(state.results);
@@ -112,13 +81,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
         r.id: lyricsSourceNameText(l10n, names, r.id),
     };
     final fetch = state.selectionFetch;
-    final failure = fetch?.phase == BodyFetchPhase.failed
-        ? lyricsFailureMessage(
-            l10n,
-            fetch?.kind,
-            providerNames[selection?.candidate.providerId] ?? '',
-          )
-        : null;
+    final failure = lyricsSelectionFailure(l10n, state, providerNames);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
@@ -137,7 +100,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                   sources: sources,
                   providerNames: providerNames,
                   sourceFilter: _sourceFilter,
-                  onSourceFilter: _filterBySource,
+                  onOpenSources: _openSources,
                   onSearch: _search,
                 ),
                 const SizedBox(height: 16),
@@ -153,13 +116,27 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                           noSource:
                               ref.watch(lyricsSourcesLoadedProvider) &&
                               registrations.isEmpty,
+                          offSourcesCard:
+                              unsearched.isEmpty ||
+                                  !ref.watch(lyricsSourcesLoadedProvider)
+                              ? null
+                              : LyricsPickerDisabledSourcesCard(
+                                  sources: unsearched,
+                                  noneOn:
+                                      enabled.isEmpty && state.results.isEmpty,
+                                  onSearch: blank
+                                      ? null
+                                      : () => _searchOff({
+                                          for (final s in unsearched) s.id,
+                                        }),
+                                ),
                           providerNames: providerNames,
                           sourceFilter: effectiveSourceFilter(
                             _sourceFilter,
                             sources,
                           ),
                           onSelect: _controller.select,
-                          onRetry: _controller.retry,
+                          onRetry: _retry,
                         ),
                       ),
                       const VerticalDivider(width: 24),
@@ -174,14 +151,7 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  l10n.lyricsPickerFooter(
-                    registrations.expand((r) => r.hosts).toSet().join(', '),
-                  ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                LyricsPickerFooter(registrations: registrations),
                 const SizedBox(height: 12),
                 LyricsPickerActions(selection: selection),
               ],

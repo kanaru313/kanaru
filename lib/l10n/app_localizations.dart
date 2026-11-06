@@ -4865,7 +4865,7 @@ abstract class AppLocalizations {
   /// Body of the online lyrics notice dialog; one consent covers every enabled source
   ///
   /// In en, this message translates to:
-  /// **'Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.'**
+  /// **'Kanaru sends the song title, artist, album and length to the online lyrics sources you search or turn on. No file names, paths or device details.'**
   String get onlineLyricsNoticeSourcesBody;
 
   /// Hint under the automatic online lyrics notice saying where to turn it off
@@ -5005,6 +5005,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No online lyrics source is on.'**
   String get lyricsPickerNoSource;
+
+  /// List area text when every lyrics source is off but some can be searched on request
+  ///
+  /// In en, this message translates to:
+  /// **'No source is on'**
+  String get lyricsPickerNoneOn;
+
+  /// Button that searches every off lyrics source for this song, only this once
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Search in 1 disabled source} other{Search in {count} disabled sources}}'**
+  String lyricsPickerSearchDisabled(int count);
+
+  /// Title of the card at the end of the results that offers the off lyrics sources
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Didn\'t find the right lyrics? 1 source is off} other{Didn\'t find the right lyrics? {count} sources are off}}'**
+  String lyricsPickerMoreOff(int count);
+
+  /// One off source with the hosts a search would contact, in the card and the Search sources modal
+  ///
+  /// In en, this message translates to:
+  /// **'{name} ({hosts})'**
+  String lyricsPickerSearchSourceHosts(String name, String hosts);
+
+  /// Title of the modal that picks the source filter and searches off sources
+  ///
+  /// In en, this message translates to:
+  /// **'Search sources'**
+  String get lyricsPickerSourcesTitle;
+
+  /// Group label for the off sources in the Search sources modal
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get lyricsPickerSourcesOff;
+
+  /// Badge and subtitle on a result or row from a source that is turned off
+  ///
+  /// In en, this message translates to:
+  /// **'Source is off'**
+  String get lyricsPickerSourceOff;
+
+  /// Subtitle of the Find lyrics online row when every lyrics source is off; it still opens the picker
+  ///
+  /// In en, this message translates to:
+  /// **'All sources are off ({count}) · searched only when you ask'**
+  String lyricsSourceFindRowAllOffSearch(int count);
+
+  /// Footer of the Choose lyrics dialog before any source has been asked, so no hosts can be named
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics you pick are pinned to this song'**
+  String get lyricsPickerFooterNoHosts;
 
   /// Preview pane text when nothing is selected
   ///
@@ -8149,12 +8203,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{on} on · {off} off'**
   String lyricsSourceFindRowSubtitle(int on, int off);
-
-  /// Subtitle of the Find lyrics online row when every installed lyrics source is off
-  ///
-  /// In en, this message translates to:
-  /// **'All online sources are off · manage them in Lyrics sources'**
-  String get lyricsSourceFindRowAllOff;
 
   /// Row that opens the plugin store when no lyrics plugin is installed
   ///
