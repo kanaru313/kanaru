@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_host_label.dart';
 import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import 'plugin_source_text.dart';
@@ -53,7 +54,7 @@ class LyricsSourceRow extends StatelessWidget {
         ? [l10n.lyricsSourceBuiltInHosts(_lrclibHost)]
         : [
             '${pluginByline(l10n, record)} · ${pluginSourceText(l10n, record)}',
-            record.hosts.join(', '),
+            record.hosts.map((h) => pluginHostLabel(l10n, h)).join(', '),
           ];
     final muted = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,

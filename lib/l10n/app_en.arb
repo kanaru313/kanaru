@@ -3732,6 +3732,7 @@
     }
   },
   "pluginUninstallKeepTranslations": "Saved translations, until you choose Clear saved translations",
+  "pluginUninstallKeepNothingSource": "Your library is not affected",
   "pluginUninstallKeepPinned": "Lyrics pinned from this source, if any",
   "pluginUninstallKeepLrc": "The .lrc files already written next to songs",
   "pluginUninstallConfirm": "Uninstall",

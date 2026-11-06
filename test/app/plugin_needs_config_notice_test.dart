@@ -56,6 +56,10 @@ void main() {
           builder: (_, _) => const Text('translate plugin page'),
         ),
         GoRoute(
+          path: onlineRoute,
+          builder: (_, _) => const Text('online page'),
+        ),
+        GoRoute(
           path: '$onlineRoute/$onlineSourcePluginRoutePattern',
           builder: (_, _) => const Text('source plugin page'),
         ),
@@ -362,6 +366,18 @@ void main() {
       location(),
       settingsFocusLocation(SettingsAnchor.playbackTranslation),
     );
+  });
+
+  testWidgets('several source plugins: Open config goes to Online', (
+    tester,
+  ) async {
+    await openFor(tester, [('a', PluginKind.source), ('b', PluginKind.source)]);
+    expect(location(), onlineRoute);
+  });
+
+  testWidgets('a source plugin among others: the sources page', (tester) async {
+    await openFor(tester, [('a', PluginKind.source), ('b', PluginKind.lyrics)]);
+    expect(location(), lyricsSourcesRoute);
   });
 
   testWidgets('mixed kinds: Open config goes to the sources page', (

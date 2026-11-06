@@ -5,6 +5,7 @@ import '../../core/sources/source_models.dart';
 import '../../core/sources/source_plugin_records.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
+import '../../shared/lyrics_plugins/plugin_host_label.dart';
 import '../../shared/lyrics_source_routes.dart';
 import '../../shared/online_routes.dart';
 
@@ -171,7 +172,10 @@ class OnlineConsentView extends StatelessWidget {
         const SizedBox(height: 8),
         _text(
           context,
-          l10n.onlineConsentBody(record.name, record.hosts.join(', ')),
+          l10n.onlineConsentBody(
+            record.name,
+            record.hosts.map((h) => pluginHostLabel(l10n, h)).join(', '),
+          ),
         ),
       ],
       action: FilledButton(

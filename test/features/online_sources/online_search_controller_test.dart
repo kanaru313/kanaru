@@ -10,11 +10,14 @@ import 'package:kanaru/features/online_sources/online_search_controller.dart';
 import 'online_test_support.dart';
 
 void main() {
+  late RecordsProvider records;
+
   ProviderContainer make(FakeSourceRunner runner) {
+    records = testRecords(AsyncData([sourceRecord()]));
     final container = ProviderContainer(
       overrides: [
         sourcePluginRunnerProvider.overrideWithValue(runner),
-        settingsProvider.overrideWith(TestSettings.new),
+        ...onlineOverrides(records),
       ],
     );
     addTearDown(container.dispose);
@@ -152,9 +155,94 @@ void main() {
     expect(runner.searches, hasLength(2));
   });
 
+  group('a plugin drop', () {
+    const other = 'plugin-bbbbbbbbbbbb';
+
+    void consentTo(ProviderContainer c, String id) =>
+        c.read(settingsProvider.notifier).acknowledgeSourceNotice(id);
+
+    test('removing the plugin clears its shown results', () async {
+      final c = make(FakeSourceRunner((_, _, _) async => pageOf(2)));
+      consentTo(c, sourceId);
+      await controllerOf(c).search(sourceId, 'x');
+      expect(stateOf(c), isA<OnlineSearchResults>());
+
+      c.read(records.notifier).set(const AsyncData([]));
+      await pumpEventQueue();
+
+      expect(stateOf(c), isA<OnlineSearchIdle>());
+    });
+
+    test('withdrawing the notice clears its shown results', () async {
+      final c = make(FakeSourceRunner((_, _, _) async => pageOf(2)));
+      consentTo(c, sourceId);
+      await controllerOf(c).search(sourceId, 'x');
+
+      c.read(settingsProvider.notifier).withdrawSourceNotice(sourceId);
+
+      expect(stateOf(c), isA<OnlineSearchIdle>());
+    });
+
+    test('the drop of another plugin leaves the results alone', () async {
+      final c = make(FakeSourceRunner((_, _, _) async => pageOf(2)));
+      consentTo(c, sourceId);
+      consentTo(c, other);
+      c
+          .read(records.notifier)
+          .set(AsyncData([sourceRecord(), sourceRecord(id: other)]));
+      await controllerOf(c).search(sourceId, 'x');
+
+      c.read(records.notifier).set(AsyncData([sourceRecord()]));
+      await pumpEventQueue();
+      c.read(settingsProvider.notifier).withdrawSourceNotice(other);
+
+      expect(stateOf(c), isA<OnlineSearchResults>());
+    });
+
+    test(
+      'a search in flight ends skipped when the plugin is removed',
+      () async {
+        final reply = Completer<SourceSearchPage>();
+        final c = make(FakeSourceRunner((_, _, _) => reply.future));
+        consentTo(c, sourceId);
+        final running = controllerOf(c).search(sourceId, 'x');
+
+        c.read(records.notifier).set(const AsyncData([]));
+        await pumpEventQueue();
+        reply.completeError(
+          const SourceFailure(kind: SourceFailureKind.skipped),
+        );
+        await running;
+
+        expect(stateOf(c), isA<OnlineSearchIdle>());
+      },
+    );
+
+    test(
+      'a search in flight ends with the notice when consent is withdrawn',
+      () async {
+        final reply = Completer<SourceSearchPage>();
+        final c = make(FakeSourceRunner((_, _, _) => reply.future));
+        consentTo(c, sourceId);
+        final running = controllerOf(c).search(sourceId, 'x');
+
+        c.read(settingsProvider.notifier).withdrawSourceNotice(sourceId);
+        reply.completeError(
+          const SourceFailure(kind: SourceFailureKind.notConsented),
+        );
+        await running;
+
+        expect(stateOf(c), isA<OnlineSearchConsent>());
+      },
+    );
+  });
+
   test('no runner (no database) is an internal failure', () async {
     final c = ProviderContainer(
-      overrides: [sourcePluginRunnerProvider.overrideWithValue(null)],
+      overrides: [
+        sourcePluginRunnerProvider.overrideWithValue(null),
+        ...onlineOverrides(testRecords(const AsyncData([]))),
+      ],
     );
     addTearDown(c.dispose);
     await controllerOf(c).search(sourceId, 'x');

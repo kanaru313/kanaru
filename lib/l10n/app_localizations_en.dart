@@ -4078,6 +4078,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Saved translations, until you choose Clear saved translations';
 
   @override
+  String get pluginUninstallKeepNothingSource => 'Your library is not affected';
+
+  @override
   String get pluginUninstallKeepPinned =>
       'Lyrics pinned from this source, if any';
 

@@ -244,7 +244,7 @@ void main() {
         find.text(
           en.onlineConsentBody(
             'Tube',
-            '*.example.com, api.example.com, b.test',
+            '${en.pluginInfoHostAnySubdomain('example.com')}, api.example.com, b.test',
           ),
         ),
         findsOneWidget,

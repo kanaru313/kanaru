@@ -3784,6 +3784,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Bản dịch đã lưu, cho đến khi bạn chọn Xóa các bản dịch đã lưu';
 
   @override
+  String get pluginUninstallKeepNothingSource =>
+      'Thư viện của bạn không bị ảnh hưởng';
+
+  @override
   String get pluginUninstallKeepPinned => 'Lời đã ghim từ nguồn này (nếu có)';
 
   @override

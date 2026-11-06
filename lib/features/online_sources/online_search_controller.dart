@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/player/track.dart';
 import '../../core/settings/settings_provider.dart';
+import '../../core/sources/proxy/plugin_drop_watcher.dart';
 import '../../core/sources/source_plugin_runner.dart';
 import 'remote_track_builder.dart';
 
@@ -67,7 +68,8 @@ class OnlineSearchConsent extends OnlineSearchState {
 /// Runs the searches of the Online screen. Not auto-disposed, so the results
 /// survive a switch to another sidebar page. Only a call to [search] or
 /// [acceptNotice] sends anything; typing never does.
-class OnlineSearchController extends Notifier<OnlineSearchState> {
+class OnlineSearchController extends Notifier<OnlineSearchState>
+    implements PluginDropTarget {
   /// Counts searches: a result that arrives after a newer search started (or
   /// after this notifier went away) is dropped, and its HTTP is abandoned.
   int _generation = 0;
@@ -75,8 +77,28 @@ class OnlineSearchController extends Notifier<OnlineSearchState> {
   @override
   OnlineSearchState build() {
     ref.onDispose(() => _generation++);
+    watchPluginDrops(ref, this);
     return const OnlineSearchIdle();
   }
+
+  /// The plugin left the enabled source plugins or lost its notice: what the
+  /// screen shows for it goes away. A search still running ends in its own
+  /// state (nothing, or the notice).
+  @override
+  void dropPlugin(String installId) {
+    final shown = switch (state) {
+      OnlineSearchIdle() => null,
+      OnlineSearchLoading(:final installId) => installId,
+      OnlineSearchResults(:final installId) => installId,
+      OnlineSearchEmpty(:final installId) => installId,
+      OnlineSearchFailed(:final installId) => installId,
+      OnlineSearchConsent(:final installId) => installId,
+    };
+    if (shown == installId) state = const OnlineSearchIdle();
+  }
+
+  @override
+  void restorePlugin(String installId) {}
 
   /// Searches the first page of [query] in the plugin [installId]. A blank
   /// query does nothing.

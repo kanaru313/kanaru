@@ -5894,6 +5894,12 @@ abstract class AppLocalizations {
   /// **'Saved translations, until you choose Clear saved translations'**
   String get pluginUninstallKeepTranslations;
 
+  /// No description provided for @pluginUninstallKeepNothingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is not affected'**
+  String get pluginUninstallKeepNothingSource;
+
   /// No description provided for @pluginUninstallKeepPinned.
   ///
   /// In en, this message translates to:

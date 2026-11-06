@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_plugins/plugin_card.dart';
+import '../../shared/lyrics_plugins/plugin_host_label.dart';
 import 'plugin_section_title.dart';
 import 'plugin_source_text.dart';
 
@@ -35,12 +36,7 @@ class PluginInfoSection extends StatelessWidget {
       ),
       _Item(
         label: l10n.pluginInfoHosts,
-        lines: [
-          for (final host in record.hosts)
-            host.startsWith('*.')
-                ? l10n.pluginInfoHostAnySubdomain(host.substring(2))
-                : host,
-        ],
+        lines: [for (final host in record.hosts) pluginHostLabel(l10n, host)],
       ),
       _Item(
         label: l10n.pluginInfoInstalled,

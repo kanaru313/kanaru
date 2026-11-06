@@ -1663,6 +1663,7 @@
   "pluginUninstallStorage": "Bộ nhớ riêng ({size})",
   "pluginUninstallKeepLyrics": "Lời đã lưu của {count} bài và lời đã ghim từ nguồn này",
   "pluginUninstallKeepTranslations": "Bản dịch đã lưu, cho đến khi bạn chọn Xóa các bản dịch đã lưu",
+  "pluginUninstallKeepNothingSource": "Thư viện của bạn không bị ảnh hưởng",
   "pluginUninstallKeepPinned": "Lời đã ghim từ nguồn này (nếu có)",
   "pluginUninstallKeepLrc": "File .lrc đã ghi cạnh bài",
   "pluginUninstallConfirm": "Gỡ",

@@ -173,8 +173,8 @@ String _title(AppLocalizations l10n, List<String> names) => switch (names) {
 };
 
 /// Where "Open config" goes: the plugin's own page for one plugin; for
-/// several, translation settings when all are translate plugins, else the
-/// lyrics sources page.
+/// several, translation settings when all are translate plugins, the Online
+/// page when all are source plugins, else the lyrics sources page.
 String _route(List<_Entry> entries) {
   if (entries.length == 1) {
     final e = entries.single;
@@ -184,7 +184,9 @@ String _route(List<_Entry> entries) {
       _ => lyricsPluginRoute(e.installId),
     };
   }
-  return entries.every((e) => e.kind == PluginKind.translate)
-      ? settingsFocusLocation(SettingsAnchor.playbackTranslation)
-      : lyricsSourcesRoute;
+  if (entries.every((e) => e.kind == PluginKind.translate)) {
+    return settingsFocusLocation(SettingsAnchor.playbackTranslation);
+  }
+  if (entries.every((e) => e.kind == PluginKind.source)) return onlineRoute;
+  return lyricsSourcesRoute;
 }
