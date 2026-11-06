@@ -5430,4 +5430,23 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get translationAiOpenPluginSettings => 'Mở cài đặt plugin';
+
+  @override
+  String translationAiTuneChanged(String changes) {
+    return 'Khác bản đang hiện: $changes';
+  }
+
+  @override
+  String get translationAiEditedNote => 'Đổi lời dặn';
+
+  @override
+  String get translationAiTuneLater => 'Để sau';
+
+  @override
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  ) {
+    return 'Dịch bởi $service · $style';
+  }
 }

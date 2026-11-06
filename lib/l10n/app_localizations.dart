@@ -8365,6 +8365,33 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open plugin settings'**
   String get translationAiOpenPluginSettings;
+
+  /// Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with
+  ///
+  /// In en, this message translates to:
+  /// **'Differs from the version shown: {changes}'**
+  String translationAiTuneChanged(String changes);
+
+  /// Part of the 'differs from the version shown' line: the note for the AI changed
+  ///
+  /// In en, this message translates to:
+  /// **'Changed the note'**
+  String get translationAiEditedNote;
+
+  /// Button of the AI tuning modal that closes it without translating again
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get translationAiTuneLater;
+
+  /// Credit line under the preview card naming the AI service and the style the translation was made with
+  ///
+  /// In en, this message translates to:
+  /// **'Translated by {service} · {style}'**
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  );
 }
 
 class _AppLocalizationsDelegate

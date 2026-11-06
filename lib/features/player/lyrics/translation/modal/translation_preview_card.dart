@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
+import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
+import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../core/lyrics_translation/translation_service_resolution.dart';
@@ -11,6 +13,7 @@ import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../lyrics_translation_labels.dart';
+import 'translation_ai_tune_changes.dart';
 import 'translation_preview_line.dart';
 
 /// Pause before an overflowing provenance line starts scrolling.
@@ -113,6 +116,7 @@ class TranslationPreviewCard extends ConsumerWidget {
                     :final service,
                     :final fromOtherService,
                     :final refreshing,
+                    :final settingsJson,
                   )
                   when active)
                 Padding(
@@ -121,6 +125,7 @@ class TranslationPreviewCard extends ConsumerWidget {
                     serviceName: translationServiceName(l10n, plugins, service),
                     fromOtherService: fromOtherService,
                     refreshing: refreshing,
+                    styleTitle: _styleTitle(ref, service, settingsJson),
                     onRetranslate: onRetranslate,
                   ),
                 ),
@@ -132,14 +137,28 @@ class TranslationPreviewCard extends ConsumerWidget {
   }
 }
 
+// The style the shown translation was made with, from its snapshot.
+String? _styleTitle(
+  WidgetRef ref,
+  TranslationServiceId service,
+  String? settingsJson,
+) {
+  final tune = ref.watch(translationAiTunesProvider)[service];
+  return tune == null ? null : aiSnapshotStyleTitle(tune, settingsJson);
+}
+
 class _ProvenanceRow extends StatelessWidget {
   const _ProvenanceRow({
     required this.serviceName,
     required this.fromOtherService,
     required this.refreshing,
+    required this.styleTitle,
     required this.onRetranslate,
   });
 
+  /// Title of the style in the snapshot of the shown version; null when it
+  /// has none.
+  final String? styleTitle;
   final String serviceName;
   final bool fromOtherService;
   final bool refreshing;
@@ -157,6 +176,11 @@ class _ProvenanceRow extends StatelessWidget {
         ? l10n.lyricsTranslationModalRefreshingNote
         : fromOtherService
         ? l10n.lyricsTranslationModalOtherVersion(serviceName)
+        : styleTitle != null
+        ? l10n.lyricsTranslationModalTranslatedByWithStyle(
+            serviceName,
+            styleTitle!,
+          )
         : l10n.lyricsTranslationModalTranslatedBy(serviceName);
 
     return Center(

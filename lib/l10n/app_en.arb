@@ -5798,5 +5798,34 @@
   "translationAiOpenPluginSettings": "Open plugin settings",
   "@translationAiOpenPluginSettings": {
     "description": "Button in the AI tuning modal that opens the translation plugin's settings page"
+  },
+  "translationAiTuneChanged": "Differs from the version shown: {changes}",
+  "@translationAiTuneChanged": {
+    "description": "Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with",
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiEditedNote": "Changed the note",
+  "@translationAiEditedNote": {
+    "description": "Part of the 'differs from the version shown' line: the note for the AI changed"
+  },
+  "translationAiTuneLater": "Later",
+  "@translationAiTuneLater": {
+    "description": "Button of the AI tuning modal that closes it without translating again"
+  },
+  "lyricsTranslationModalTranslatedByWithStyle": "Translated by {service} · {style}",
+  "@lyricsTranslationModalTranslatedByWithStyle": {
+    "description": "Credit line under the preview card naming the AI service and the style the translation was made with",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      },
+      "style": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -5769,4 +5769,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get translationAiOpenPluginSettings => 'Open plugin settings';
+
+  @override
+  String translationAiTuneChanged(String changes) {
+    return 'Differs from the version shown: $changes';
+  }
+
+  @override
+  String get translationAiEditedNote => 'Changed the note';
+
+  @override
+  String get translationAiTuneLater => 'Later';
+
+  @override
+  String lyricsTranslationModalTranslatedByWithStyle(
+    String service,
+    String style,
+  ) {
+    return 'Translated by $service · $style';
+  }
 }

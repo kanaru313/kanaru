@@ -22,10 +22,26 @@ class TranslationAiTuneRow extends ConsumerWidget {
     super.key,
     required this.service,
     required this.hash,
+    required this.appLang,
+    required this.onRetranslate,
   });
 
   final TranslationServiceId service;
   final String hash;
+  final String appLang;
+
+  /// Called when the tune modal closes asking for a retranslation.
+  final VoidCallback onRetranslate;
+
+  Future<void> _open(BuildContext context) async {
+    final retranslate = await openAiTuneModal(
+      context,
+      service: service,
+      hash: hash,
+      appLang: appLang,
+    );
+    if (retranslate == true && context.mounted) onRetranslate();
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,8 +60,7 @@ class TranslationAiTuneRow extends ConsumerWidget {
       container: true,
       button: true,
       child: InkWell(
-        onTap: () =>
-            unawaited(openAiTuneModal(context, service: service, hash: hash)),
+        onTap: () => unawaited(_open(context)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 56),
           child: Padding(

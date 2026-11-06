@@ -32,9 +32,18 @@ const Duration _serviceMarqueeDelay = Duration(milliseconds: 300);
 /// no translate plugin is installed, or the service row that opens
 /// [openServicePicker] when plugins exist.
 class TranslationServiceSection extends ConsumerWidget {
-  const TranslationServiceSection({super.key, required this.state});
+  const TranslationServiceSection({
+    super.key,
+    required this.state,
+    required this.appLang,
+    required this.onRetranslate,
+  });
 
   final LyricsTranslationState state;
+  final String appLang;
+
+  /// Called when the AI tuning modal asks for a retranslation.
+  final VoidCallback onRetranslate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,7 +67,12 @@ class TranslationServiceSection extends ConsumerWidget {
       children: [
         _ServiceRow(choices: choices),
         if (tune != null && selected != null && hash != null)
-          TranslationAiTuneRow(service: selected, hash: hash),
+          TranslationAiTuneRow(
+            service: selected,
+            hash: hash,
+            appLang: appLang,
+            onRetranslate: onRetranslate,
+          ),
       ],
     );
   }
