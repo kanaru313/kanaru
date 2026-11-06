@@ -7,13 +7,21 @@ import '../marquee_text.dart';
 /// Pause before an overflowing [LayeredModalTopBar] title starts scrolling.
 const Duration _topBarMarqueeDelay = Duration(milliseconds: 1200);
 
-/// Header bar of a child modal: a one-line [title] and a close button (`✕`)
-/// that pops only the child modal and returns to the parent modal underneath.
+/// Header bar of a child modal, or of a parent modal that shows no song: a
+/// one-line [title], optional [actions] and a close button (`✕`) that pops only the child modal and returns to the parent modal underneath.
 class LayeredModalTopBar extends StatelessWidget {
-  const LayeredModalTopBar({super.key, required this.title, this.onClose});
+  const LayeredModalTopBar({
+    super.key,
+    required this.title,
+    this.actions = const [],
+    this.onClose,
+  });
 
   /// Title shown in the bar.
   final String title;
+
+  /// Buttons drawn before the close button (for example a settings icon).
+  final List<Widget> actions;
 
   /// Called when the close button is pressed; pops the enclosing route when
   /// null.
@@ -37,6 +45,7 @@ class LayeredModalTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
+          ...actions,
           IconButton(
             tooltip: context.l10n.contextModalClose,
             icon: const Icon(AppIcons.close),

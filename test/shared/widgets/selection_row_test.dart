@@ -151,6 +151,27 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('disabled row reports enabled=false in semantics', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      _host(
+        const SelectionRow(
+          key: ValueKey('off'),
+          title: 'Off',
+          selected: false,
+          onTap: null,
+        ),
+      ),
+    );
+    final data = tester
+        .getSemantics(find.byKey(const ValueKey('off')))
+        .getSemanticsData();
+    expect(data.flagsCollection.isEnabled, Tristate.isFalse);
+    handle.dispose();
+  });
+
   testWidgets('PickerFieldButton shows label and chevron and dims when null', (
     tester,
   ) async {
@@ -187,5 +208,104 @@ void main() {
       ),
     );
     expect(disabledOpacity.opacity, lessThan(1));
+  });
+
+  testWidgets('disabled row is dimmed and an enabled row is not', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SelectionRow(
+              key: ValueKey('off'),
+              title: 'Off',
+              selected: false,
+              onTap: null,
+            ),
+            SelectionRow(
+              key: const ValueKey('on'),
+              title: 'On',
+              selected: false,
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    double opacityOf(String key) => tester
+        .widget<Opacity>(
+          find.descendant(
+            of: find.byKey(ValueKey(key)),
+            matching: find.byType(Opacity),
+          ),
+        )
+        .opacity;
+    expect(opacityOf('off'), 0.38);
+    expect(opacityOf('on'), 1);
+  });
+
+  testWidgets('trailing replaces the check and keeps the title width', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SelectionRow(
+              key: const ValueKey('with'),
+              title: 'A',
+              selected: true,
+              onTap: () {},
+              trailing: const Icon(Icons.search, size: 24),
+            ),
+            SelectionRow(
+              key: const ValueKey('without'),
+              title: 'A',
+              selected: false,
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    final withRow = find.byKey(const ValueKey('with'));
+    expect(
+      find.descendant(of: withRow, matching: find.byIcon(AppIcons.check)),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: withRow, matching: find.byIcon(Icons.search)),
+      findsOneWidget,
+    );
+    double titleWidth(String key) => tester
+        .getSize(
+          find.descendant(
+            of: find.byKey(ValueKey(key)),
+            matching: find.byType(MarqueeText),
+          ),
+        )
+        .width;
+    expect(titleWidth('with'), titleWidth('without'));
+  });
+
+  testWidgets('details is drawn under the subtitle', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        SelectionRow(
+          title: 'T',
+          subtitle: 'Sub',
+          selected: false,
+          onTap: () {},
+          details: const Text('Badge'),
+        ),
+      ),
+    );
+    expect(
+      tester.getTopLeft(find.text('Badge')).dy,
+      greaterThan(tester.getTopLeft(find.text('Sub')).dy),
+    );
   });
 }

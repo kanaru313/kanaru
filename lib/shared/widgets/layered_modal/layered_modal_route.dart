@@ -9,6 +9,7 @@ import 'layered_modal_child_frame.dart';
 
 export 'layered_modal_body.dart';
 export 'layered_modal_child_frame.dart';
+export 'layered_modal_stack.dart';
 export 'layered_modal_top_bar.dart';
 
 /// Nesting depth of a modal opened with [showLayeredModal]: `0` for the parent

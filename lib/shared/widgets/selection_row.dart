@@ -23,6 +23,8 @@ class SelectionRow extends StatelessWidget {
     required this.onTap,
     this.subtitle,
     this.leading,
+    this.trailing,
+    this.details,
     this.focusNode,
     this.autofocus = false,
   });
@@ -30,6 +32,14 @@ class SelectionRow extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? leading;
+
+  /// Replaces the check slot (same minimum width, so titles still line up).
+  /// Wins over the check mark when the row is also [selected].
+  final Widget? trailing;
+
+  /// Drawn under the subtitle, for content a plain string cannot hold such as
+  /// coloured badges.
+  final Widget? details;
   final bool selected;
 
   /// Called when the row is tapped or activated with Enter or Space; `null`
@@ -52,6 +62,8 @@ class SelectionRow extends StatelessWidget {
         : colors.onSurfaceVariant;
     final subtitle = this.subtitle;
     final leading = this.leading;
+    final trailing = this.trailing;
+    final details = this.details;
 
     return Semantics(
       container: true,
@@ -76,47 +88,55 @@ class SelectionRow extends StatelessWidget {
                   horizontal: 14,
                   vertical: 8,
                 ),
-                child: Row(
-                  children: [
-                    if (leading != null) ...[
-                      leading,
-                      const SizedBox(width: 14),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          MarqueeText(
-                            text: title,
-                            startDelay: _titleMarqueeDelay,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: fg,
-                            ),
-                          ),
-                          if (subtitle != null && subtitle.isNotEmpty)
-                            Text(
-                              subtitle,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: subColor,
+                child: Opacity(
+                  opacity: onTap == null ? 0.38 : 1,
+                  child: Row(
+                    children: [
+                      if (leading != null) ...[
+                        leading,
+                        const SizedBox(width: 14),
+                      ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MarqueeText(
+                              text: title,
+                              startDelay: _titleMarqueeDelay,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: fg,
                               ),
                             ),
-                        ],
+                            if (subtitle != null && subtitle.isNotEmpty)
+                              Text(
+                                subtitle,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: subColor,
+                                ),
+                              ),
+                            ?details,
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    SizedBox(
-                      width: _checkSlotSize,
-                      height: _checkSlotSize,
-                      child: selected
-                          ? Icon(
-                              AppIcons.check,
-                              size: _checkSlotSize,
-                              color: colors.onSecondaryContainer,
-                            )
-                          : null,
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: _checkSlotSize,
+                          minHeight: _checkSlotSize,
+                        ),
+                        child:
+                            trailing ??
+                            (selected
+                                ? Icon(
+                                    AppIcons.check,
+                                    size: _checkSlotSize,
+                                    color: colors.onSecondaryContainer,
+                                  )
+                                : null),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
