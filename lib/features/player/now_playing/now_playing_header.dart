@@ -16,9 +16,9 @@ const nowPlayingHeaderHeight = 64.0;
 /// app draws them, come after it (see [NowPlayingTitleBar.wrapHeader]).
 ///
 /// [floatingOpen] is set to whether one of the things that float outside the
-/// header is open: the volume popup, or the repeat, sleep timer, translation
-/// or lyrics source menu. Whoever hides the header on inactivity listens to it to
-/// keep the header shown meanwhile.
+/// header is open: the volume popup, the sleep timer dialog, the translation
+/// modal, or the repeat or lyrics source menu. Whoever hides the header on
+/// inactivity listens to it to keep the header shown meanwhile.
 class NowPlayingHeader extends StatefulWidget {
   const NowPlayingHeader({
     super.key,
@@ -30,6 +30,7 @@ class NowPlayingHeader extends StatefulWidget {
     this.showTranslate = false,
     this.translateEnabled = true,
     this.sourceMenuOpener,
+    this.translationModalOpener,
   });
 
   final VoidCallback onClose;
@@ -55,8 +56,12 @@ class NowPlayingHeader extends StatefulWidget {
   final bool translateEnabled;
 
   /// Receives the callback that opens the lyrics source menu while its
-  /// button (which follows the translation button) is in the header.
+  /// button (which precedes the translation button) is in the header.
   final ValueNotifier<bool Function()?>? sourceMenuOpener;
+
+  /// Receives the callback that opens the translation modal while its button
+  /// is in the header.
+  final ValueNotifier<bool Function()?>? translationModalOpener;
 
   @override
   State<NowPlayingHeader> createState() => _NowPlayingHeaderState();
@@ -111,7 +116,8 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                         hasWindowButtons: widget.hasWindowButtons,
                         translateEnabled: widget.translateEnabled,
                         sourceMenuOpener: widget.sourceMenuOpener,
-                        onTranslateMenuChanged: (open) {
+                        translationModalOpener: widget.translationModalOpener,
+                        onTranslateModalChanged: (open) {
                           _translateOpen = open;
                           _report();
                         },

@@ -2830,18 +2830,13 @@
   "@lyricsTranslationButtonFailed": {
     "description": "Tooltip of the translation button after a translation failed"
   },
+  "lyricsTranslationButtonHint": "Right-click or T: turn translation on or off",
+  "@lyricsTranslationButtonHint": {
+    "description": "Second line of the translation button tooltip naming its toggle shortcuts"
+  },
   "lyricsTranslationShow": "Show translation",
   "@lyricsTranslationShow": {
     "description": "Switch in the lyrics translation menu; a key hint follows it"
-  },
-  "lyricsTranslationTarget": "Translate to: {language}",
-  "@lyricsTranslationTarget": {
-    "description": "Submenu title in the lyrics translation menu; language is the language name",
-    "placeholders": {
-      "language": {
-        "type": "String"
-      }
-    }
   },
   "lyricsTranslationTargetDefault": "Default ({language})",
   "@lyricsTranslationTargetDefault": {
@@ -2852,51 +2847,13 @@
       }
     }
   },
-  "lyricsTranslationDisplayHeader": "Display style",
-  "@lyricsTranslationDisplayHeader": {
-    "description": "Heading of the display style choices in the lyrics translation menu"
-  },
-  "lyricsTranslationDisplayUnder": "Under each line",
-  "@lyricsTranslationDisplayUnder": {
-    "description": "Display style that puts the translation under each original line"
-  },
-  "lyricsTranslationDisplayReplace": "Replace",
-  "@lyricsTranslationDisplayReplace": {
-    "description": "Display style that shows the translation instead of the original line"
-  },
-  "lyricsTranslationServiceHeader": "Service",
-  "@lyricsTranslationServiceHeader": {
-    "description": "Heading of the translation service choices in the lyrics translation menu"
-  },
   "translationServiceNotSelected": "Not selected",
   "@translationServiceNotSelected": {
     "description": "Label and hint text shown when no translation service is currently selected"
   },
-  "lyricsTranslationSaved": "Saved",
-  "@lyricsTranslationSaved": {
-    "description": "Status on the right of the Retranslate row of the translation menu when a saved translation shows"
-  },
-  "lyricsTranslationSavedFrom": "Saved from {service}",
-  "@lyricsTranslationSavedFrom": {
-    "description": "Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsTranslationRetranslate": "Retranslate",
   "@lyricsTranslationRetranslate": {
     "description": "Button in the lyrics translation menu that translates again with the selected service"
-  },
-  "lyricsTranslationRetranslateWith": "Retranslate with {service}",
-  "@lyricsTranslationRetranslateWith": {
-    "description": "Button in the lyrics translation menu that translates again with the selected service; service is a translation service name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
   },
   "lyricsTranslationSameLanguage": "Lyrics are already in {language}",
   "@lyricsTranslationSameLanguage": {
@@ -2970,18 +2927,6 @@
   "lyricsTranslationAttribution": "Translated by {service} · {language}",
   "@lyricsTranslationAttribution": {
     "description": "Tooltip of the translate button while translated lyrics show: who translated them. service is a translation service name, language the language name",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      },
-      "language": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsTranslationButtonLabel": "{service} · {language}",
-  "@lyricsTranslationButtonLabel": {
-    "description": "Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name",
     "placeholders": {
       "service": {
         "type": "String"
@@ -5165,14 +5110,6 @@
   "lyricsTranslationOpenPluginStore": "Open plugin store",
   "@lyricsTranslationOpenPluginStore": {
     "description": "Action button on the snackbar when no translation plugin is installed"
-  },
-  "lyricsTranslationChooseServiceFirst": "Choose a translation service first",
-  "@lyricsTranslationChooseServiceFirst": {
-    "description": "Snackbar shown when pressing T to turn translation on while no translation service is selected"
-  },
-  "lyricsTranslationChooseService": "Choose service",
-  "@lyricsTranslationChooseService": {
-    "description": "Action button on the snackbar when no translation service is selected"
   },
   "playlistEditTitle": "Edit playlist",
   "@playlistEditTitle": {

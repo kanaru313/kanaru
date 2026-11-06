@@ -29,6 +29,7 @@ class NowPlayingWideLayout extends StatefulWidget {
     required this.onChoose,
     this.titleBar,
     this.sourceMenuOpener,
+    this.translationModalOpener,
   });
 
   final AutoHideController chrome;
@@ -40,6 +41,9 @@ class NowPlayingWideLayout extends StatefulWidget {
 
   /// See [NowPlayingHeader.sourceMenuOpener].
   final ValueNotifier<bool Function()?>? sourceMenuOpener;
+
+  /// See [NowPlayingHeader.translationModalOpener].
+  final ValueNotifier<bool Function()?>? translationModalOpener;
 
   /// The mode the user chose.
   final NowPlayingViewMode mode;
@@ -112,6 +116,7 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
       showTranslate: widget.mode != NowPlayingViewMode.coverOnly,
       translateEnabled: widget.hasLyrics,
       sourceMenuOpener: widget.sourceMenuOpener,
+      translationModalOpener: widget.translationModalOpener,
       modeButton: NowPlayingViewModeButton(
         mode: widget.mode,
         onChoose: widget.onChoose,

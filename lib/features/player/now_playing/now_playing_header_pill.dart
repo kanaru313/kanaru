@@ -5,25 +5,32 @@ import '../playback_controls.dart';
 /// Height of a header pill, as tall as the round icon button beside it.
 const _pillHeight = 40.0;
 
-/// A Now Playing header button with a label: [icon] followed by [label] on a
-/// raised stadium. Both lyrics buttons (translation and source) use it, so
-/// they look alike. The label is one line and shrinks with an ellipsis to
+/// A Now Playing header button with a label: [leading] (or [icon]) followed by
+/// [label] on a raised stadium, or an 18 px progress ring in place of the icon
+/// while [busy]. Both lyrics buttons (translation and source) use it, so they
+/// look alike. The label is one line and shrinks with an ellipsis to
 /// [maxLabelWidth]; [tooltip] says what the button does. Pressing it runs
 /// [onPressed]; `null` greys it out. A [muted] pill keeps the icon in the
 /// label's colour instead of the primary one.
 class NowPlayingHeaderPill extends StatelessWidget {
   const NowPlayingHeaderPill({
     super.key,
-    required this.icon,
+    this.icon,
+    this.leading,
     required this.label,
     required this.tooltip,
     required this.maxLabelWidth,
     required this.onPressed,
     this.muted = false,
+    this.busy = false,
     this.tabularFigures = false,
-  });
+  }) : assert(
+         (icon == null) != (leading == null),
+         'Give exactly one of icon and leading',
+       );
 
-  final IconData icon;
+  final IconData? icon;
+  final Widget? leading;
   final String label;
   final String tooltip;
 
@@ -32,6 +39,10 @@ class NowPlayingHeaderPill extends StatelessWidget {
 
   final VoidCallback? onPressed;
   final bool muted;
+
+  /// Whether a background task is running; replaces [leading]/[icon] with an
+  /// 18 px progress indicator.
+  final bool busy;
 
   /// Digits of one width, for a label that counts (a timer), so the pill
   /// does not change width every second.
@@ -57,12 +68,21 @@ class NowPlayingHeaderPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: playerIconSize,
-              // Null lets the button's own (or disabled) colour through.
-              color: onPressed == null || muted ? null : scheme.primary,
-            ),
+            if (busy)
+              const SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else if (leading != null)
+              // Dimmed like the label of a disabled Material button.
+              Opacity(opacity: onPressed == null ? 0.38 : 1, child: leading)
+            else
+              Icon(
+                icon,
+                size: playerIconSize,
+                // Null lets the button's own (or disabled) colour through.
+                color: onPressed == null || muted ? null : scheme.primary,
+              ),
             const SizedBox(width: 8),
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxLabelWidth),

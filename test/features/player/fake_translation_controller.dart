@@ -9,6 +9,7 @@ import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
 import 'package:kanaru/l10n/app_localizations.dart';
 
 /// The info every scripted state shares: English everywhere.
@@ -112,8 +113,34 @@ Widget translationApp(
   ),
 );
 
-/// Opens the anchor button's menu by its tooltip.
-Future<void> openMenuByTooltip(WidgetTester tester, String tooltip) async {
+/// Shortcut hint line appended to the translation button's tooltip.
+const translationButtonHint = 'Right-click or T: turn translation on or off';
+
+/// Builds the full tooltip of the translation button for [status].
+String translationTooltip([String status = 'Lyrics translation']) =>
+    '$status\n$translationButtonHint';
+
+/// Default tooltip of the translation button when translation is off.
+const translationButtonTooltipOff =
+    'Lyrics translation\n$translationButtonHint';
+
+/// Finder for the open [LyricsTranslationModal].
+final Finder translationModalFinder = find.byType(LyricsTranslationModal);
+
+/// Pumps enough frames for [LyricsTranslationModal] to finish its route
+/// transition without calling `pumpAndSettle` (the modal's marquee labels
+/// animate continuously after their start delay).
+Future<void> settleTranslationModal(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+}
+
+/// Opens the translation modal by tapping the button with [tooltip].
+Future<void> openTranslationModal(
+  WidgetTester tester, [
+  String tooltip = translationButtonTooltipOff,
+]) async {
   await tester.tap(find.byTooltip(tooltip));
-  await tester.pumpAndSettle();
+  await settleTranslationModal(tester);
 }

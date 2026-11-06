@@ -57,6 +57,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   /// tree, so `null` means there is no menu to open.
   final _sourceMenuOpener = ValueNotifier<bool Function()?>(null);
 
+  /// Opens the lyrics translation modal; set by its button while it is in the
+  /// tree, so `null` means there is no modal to open.
+  final _translationModalOpener = ValueNotifier<bool Function()?>(null);
+
   void _pinForFloating() =>
       _floatingOpen.value ? _chrome.pin() : _chrome.unpin();
 
@@ -78,6 +82,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       ..removeListener(_pinForFloating)
       ..dispose();
     _sourceMenuOpener.dispose();
+    _translationModalOpener.dispose();
     _focus.dispose();
     _chrome.dispose();
     super.dispose();
@@ -90,7 +95,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   /// menu and `T` turns the lyrics translation on or off (both layouts; not in
   /// Cover only, which shows no lyrics). Each works only where the key is not
   /// meant for something else: with no modifier, no text field and no open
-  /// popup or menu (a menu is no route, so its keys bubble up to here).
+  /// popup, modal or menu (a menu is no route, so its keys bubble up to here).
   KeyEventResult _onKey(KeyEvent event, bool wide) {
     _chrome.poke();
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
@@ -122,7 +127,12 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       if (open == null || !open()) return KeyEventResult.ignored;
       return KeyEventResult.handled;
     }
-    toggleLyricsTranslationByKey(context, ref, hasLyrics: widget._hasLyrics);
+    quickToggleLyricsTranslation(
+      context,
+      ref,
+      hasLyrics: widget._hasLyrics,
+      openModal: () => _translationModalOpener.value?.call(),
+    );
     return KeyEventResult.handled;
   }
 
@@ -172,6 +182,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         onClose: _close,
                         titleBar: widget.titleBar,
                         sourceMenuOpener: _sourceMenuOpener,
+                        translationModalOpener: _translationModalOpener,
                         lyrics: lyrics,
                         mode: mode,
                         hasLyrics: widget._hasLyrics,
@@ -185,6 +196,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         hasLyrics: widget._hasLyrics,
                         floatingOpen: _floatingOpen,
                         sourceMenuOpener: _sourceMenuOpener,
+                        translationModalOpener: _translationModalOpener,
                         onClose: _close,
                       ),
               ),

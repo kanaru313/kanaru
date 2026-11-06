@@ -4,7 +4,10 @@ import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_language_row.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_modal_header.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_preview_card.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_dialog_frame.dart';
@@ -169,4 +172,127 @@ void main() {
     expect(find.text('Tiếng Việt'), findsOneWidget);
     expect(find.text('Dịch bởi Test Translate'), findsOneWidget);
   });
+
+  testWidgets(
+    'sections come in order: preview, Translation header, language row, service',
+    (tester) async {
+      await pumpTranslationModal(
+        tester,
+        settings: TranslationPrefs(
+          show: true,
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
+        ),
+      );
+
+      final order = [
+        find.byType(TranslationPreviewCard),
+        find.text('Translation'),
+        find.byType(TranslationLanguageRow),
+        find.byType(TranslationServiceSection),
+      ].map((finder) => tester.getTopLeft(finder).dy).toList();
+      expect(order, orderedEquals([...order]..sort()));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Enter and Space on the focused switch flip translation on and off',
+    (tester) async {
+      final h = await pumpTranslationModal(tester);
+
+      final switchPaint = find.descendant(
+        of: find.byType(Switch),
+        matching: find.byType(CustomPaint),
+      );
+      final node = Focus.of(tester.element(switchPaint.first));
+      node.requestFocus();
+      await tester.pump();
+      expect(node.hasPrimaryFocus, isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await settleModal(tester);
+      expect(h.prefs.show, isTrue);
+      expect(find.byType(LyricsTranslationModal), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await settleModal(tester);
+      expect(h.prefs.show, isFalse);
+      expect(find.byType(LyricsTranslationModal), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'short 380x600 window fits modal and target picker without overflow',
+    (tester) async {
+      await pumpTranslationModal(
+        tester,
+        size: const Size(380, 600),
+        state: TranslationReady(
+          fakeTranslationInfo(),
+          testTranslatePlugin,
+          'ja',
+          const ['The last kiss', 'Tasted like cigarettes'],
+          false,
+        ),
+        settings: TranslationPrefs(
+          show: true,
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
+        ),
+      );
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byType(PickerFieldButton));
+      await settleModal(tester);
+      expect(find.text('Default (English)'), findsOneWidget);
+      await tester.drag(find.byType(ListView).last, const Offset(0, -150));
+      await settleModal(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('target language picker scrolls inside a bounded height', (
+    tester,
+  ) async {
+    await pumpTranslationModal(tester);
+    await tester.tap(find.byType(PickerFieldButton));
+    await settleModal(tester);
+
+    final list = find.byType(ListView).last;
+    expect(tester.getSize(list).height, lessThan(600));
+    await tester.drag(list, const Offset(0, -200));
+    await settleModal(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'an open modal follows Loading to Ready state without reopening',
+    (tester) async {
+      final info = fakeTranslationInfo();
+      final h = await pumpTranslationModal(
+        tester,
+        state: TranslationLoading(info, testTranslatePlugin),
+        settings: TranslationPrefs(
+          show: true,
+          service: testTranslatePlugin,
+          noticeAcknowledged: {testTranslatePlugin},
+        ),
+      );
+      expect(find.text('Translating…'), findsOneWidget);
+
+      h.fake.emit(
+        TranslationReady(info, testTranslatePlugin, 'ja', const [
+          'The last kiss',
+          'Tasted like cigarettes',
+        ], false),
+      );
+      await tester.pump();
+
+      expect(find.text('Translating…'), findsNothing);
+      expect(find.text('Translated by Test Translate'), findsOneWidget);
+      expect(find.text('The last kiss'), findsOneWidget);
+      expect(find.byType(LyricsTranslationModal), findsOneWidget);
+    },
+  );
 }

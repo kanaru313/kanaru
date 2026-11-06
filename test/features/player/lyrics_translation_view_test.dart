@@ -100,7 +100,6 @@ void main() {
     expect(find.text('Dòng một'), findsOneWidget);
     expect(find.text('Dòng hai'), findsOneWidget);
     expect(find.textContaining('Translated by'), findsNothing);
-    expect(find.byType(MenuAnchor), findsNothing);
   });
 
   testWidgets('plain lyrics: replace shows the translation as the main line', (

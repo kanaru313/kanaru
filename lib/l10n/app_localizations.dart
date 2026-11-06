@@ -4610,17 +4610,17 @@ abstract class AppLocalizations {
   /// **'Lyrics translation: failed'**
   String get lyricsTranslationButtonFailed;
 
+  /// Second line of the translation button tooltip naming its toggle shortcuts
+  ///
+  /// In en, this message translates to:
+  /// **'Right-click or T: turn translation on or off'**
+  String get lyricsTranslationButtonHint;
+
   /// Switch in the lyrics translation menu; a key hint follows it
   ///
   /// In en, this message translates to:
   /// **'Show translation'**
   String get lyricsTranslationShow;
-
-  /// Submenu title in the lyrics translation menu; language is the language name
-  ///
-  /// In en, this message translates to:
-  /// **'Translate to: {language}'**
-  String lyricsTranslationTarget(String language);
 
   /// First item of the target language submenu: clears the choice made for this song; language is the default language name
   ///
@@ -4628,59 +4628,17 @@ abstract class AppLocalizations {
   /// **'Default ({language})'**
   String lyricsTranslationTargetDefault(String language);
 
-  /// Heading of the display style choices in the lyrics translation menu
-  ///
-  /// In en, this message translates to:
-  /// **'Display style'**
-  String get lyricsTranslationDisplayHeader;
-
-  /// Display style that puts the translation under each original line
-  ///
-  /// In en, this message translates to:
-  /// **'Under each line'**
-  String get lyricsTranslationDisplayUnder;
-
-  /// Display style that shows the translation instead of the original line
-  ///
-  /// In en, this message translates to:
-  /// **'Replace'**
-  String get lyricsTranslationDisplayReplace;
-
-  /// Heading of the translation service choices in the lyrics translation menu
-  ///
-  /// In en, this message translates to:
-  /// **'Service'**
-  String get lyricsTranslationServiceHeader;
-
   /// Label and hint text shown when no translation service is currently selected
   ///
   /// In en, this message translates to:
   /// **'Not selected'**
   String get translationServiceNotSelected;
 
-  /// Status on the right of the Retranslate row of the translation menu when a saved translation shows
-  ///
-  /// In en, this message translates to:
-  /// **'Saved'**
-  String get lyricsTranslationSaved;
-
-  /// Footer of the lyrics translation menu when the shown translation came from the other service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Saved from {service}'**
-  String lyricsTranslationSavedFrom(String service);
-
   /// Button in the lyrics translation menu that translates again with the selected service
   ///
   /// In en, this message translates to:
   /// **'Retranslate'**
   String get lyricsTranslationRetranslate;
-
-  /// Button in the lyrics translation menu that translates again with the selected service; service is a translation service name
-  ///
-  /// In en, this message translates to:
-  /// **'Retranslate with {service}'**
-  String lyricsTranslationRetranslateWith(String service);
 
   /// Footer of the lyrics translation menu and tooltip of the translate button when nothing needs translating; language is the language name
   ///
@@ -4783,12 +4741,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translated by {service} · {language}'**
   String lyricsTranslationAttribution(String service, String language);
-
-  /// Text of the translate button in the header while translated lyrics show. service is a translation service name, language the language name
-  ///
-  /// In en, this message translates to:
-  /// **'{service} · {language}'**
-  String lyricsTranslationButtonLabel(String service, String language);
 
   /// Lyrics translation error banner: the service needs a key and none is saved
   ///
@@ -7555,18 +7507,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open plugin store'**
   String get lyricsTranslationOpenPluginStore;
-
-  /// Snackbar shown when pressing T to turn translation on while no translation service is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a translation service first'**
-  String get lyricsTranslationChooseServiceFirst;
-
-  /// Action button on the snackbar when no translation service is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Choose service'**
-  String get lyricsTranslationChooseService;
 
   /// Title of the dialog that edits a playlist's name and description
   ///

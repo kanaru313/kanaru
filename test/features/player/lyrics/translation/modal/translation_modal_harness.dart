@@ -65,11 +65,7 @@ class TranslationModalHarness {
       router.routerDelegate.currentConfiguration.uri.toString();
 }
 
-Future<void> settleModal(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 350));
-}
+Future<void> settleModal(WidgetTester tester) => settleTranslationModal(tester);
 
 Future<TranslationModalHarness> pumpTranslationModal(
   WidgetTester tester, {

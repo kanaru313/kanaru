@@ -668,11 +668,11 @@ void main() {
       expect(find.text('Dòng một'), findsOneWidget);
 
       expect(find.text('Lyrics from Fake'), findsNothing);
-      expect(find.text('Show translation'), findsNothing);
+      expect(translationModalFinder, findsNothing);
 
-      await tester.tap(find.text('Test Translate · English'));
-      await tester.pumpAndSettle();
-      expect(find.text('Show translation'), findsOneWidget);
+      await tester.tap(find.text('English'));
+      await settleTranslationModal(tester);
+      expect(translationModalFinder, findsOneWidget);
     });
   });
 

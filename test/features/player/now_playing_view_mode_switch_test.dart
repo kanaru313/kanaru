@@ -532,7 +532,7 @@ void main() {
       expect(sourceMenu, findsNothing);
     });
 
-    testWidgets('narrow: an open translation menu keeps L and T out', (
+    testWidgets('narrow: an open translation modal keeps L and T out', (
       tester,
     ) async {
       startSettings = AppSettings(
@@ -548,9 +548,8 @@ void main() {
         ),
       ];
       await pumpScreen(tester, size: const Size(600, 900));
-      await tester.tap(find.byTooltip('Lyrics translation'));
-      await tester.pumpAndSettle();
-      expect(find.text('Show translation'), findsOneWidget);
+      await openTranslationModal(tester);
+      expect(translationModalFinder, findsOneWidget);
 
       await pressL(tester);
       await pressT(tester);
@@ -727,7 +726,7 @@ void main() {
       expect(translation().show, isFalse);
     });
 
-    testWidgets('does nothing while the translation menu is open', (
+    testWidgets('does nothing while the translation modal is open', (
       tester,
     ) async {
       // A fresh notifier each time: the button's provider is recreated when
@@ -740,9 +739,8 @@ void main() {
         ),
       ];
       await pumpOverlay(tester);
-      await tester.tap(find.byTooltip('Lyrics translation'));
-      await tester.pumpAndSettle();
-      expect(find.text('Show translation'), findsOneWidget);
+      await openTranslationModal(tester);
+      expect(translationModalFinder, findsOneWidget);
 
       await pressT(tester);
 
@@ -750,43 +748,60 @@ void main() {
     });
 
     testWidgets(
-      '0 plugins and no service: T shows the no-plugin snackbar twice without losing focus',
+      '0 plugins and no service: T opens the modal with the empty-plugins card, Escape closes it, and T opens it again',
       (tester) async {
         startSettings = const AppSettings();
-        extraOverrides = translatePluginOverrides(records: const []);
+        extraOverrides = [
+          ...translatePluginOverrides(records: const []),
+          lyricsTranslationProvider.overrideWith2(
+            (_) => FakeTranslationController(
+              TranslationOff(fakeTranslationInfo()),
+            ),
+          ),
+        ];
         await pumpOverlay(tester);
 
         await pressT(tester);
-        expect(
-          find.text('Install a translation plugin to translate lyrics'),
-          findsOneWidget,
-        );
+        expect(translationModalFinder, findsOneWidget);
+        expect(find.text('No translation plugin'), findsOneWidget);
         expect(find.text('Open plugin store'), findsOneWidget);
+        expect(find.byType(SnackBar), findsNothing);
         expect(translation().show, isFalse);
 
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        expect(translationModalFinder, findsNothing);
+
         await pressT(tester);
-        expect(
-          find.text('Install a translation plugin to translate lyrics'),
-          findsOneWidget,
-        );
+        expect(translationModalFinder, findsOneWidget);
+        expect(find.text('No translation plugin'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'plugins installed and no service: T shows the choose-service snackbar',
+      'plugins installed and no service: T opens the modal with Not selected row',
       (tester) async {
         startSettings = const AppSettings();
+        extraOverrides = [
+          ...translatePluginOverrides(),
+          lyricsTranslationProvider.overrideWith2(
+            (_) => FakeTranslationController(
+              TranslationOff(fakeTranslationInfo()),
+            ),
+          ),
+        ];
         await pumpOverlay(tester);
 
         await pressT(tester);
-        expect(find.text('Choose a translation service first'), findsOneWidget);
-        expect(find.text('Choose service'), findsOneWidget);
+        expect(translationModalFinder, findsOneWidget);
+        expect(find.text('Not selected'), findsOneWidget);
+        expect(find.byType(SnackBar), findsNothing);
         expect(translation().show, isFalse);
       },
     );
 
     testWidgets(
-      'while plugin records load: T shows no snackbar and changes nothing',
+      'while plugin records load: T opens no modal and changes nothing',
       (tester) async {
         startSettings = const AppSettings();
         extraOverrides = [
@@ -798,6 +813,7 @@ void main() {
         await pumpOverlay(tester);
 
         await pressT(tester);
+        expect(translationModalFinder, findsNothing);
         expect(find.byType(SnackBar), findsNothing);
         expect(translation().show, isFalse);
       },

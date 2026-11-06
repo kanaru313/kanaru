@@ -3253,12 +3253,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationButtonFailed => 'Lyrics translation: failed';
 
   @override
-  String get lyricsTranslationShow => 'Show translation';
+  String get lyricsTranslationButtonHint =>
+      'Right-click or T: turn translation on or off';
 
   @override
-  String lyricsTranslationTarget(String language) {
-    return 'Translate to: $language';
-  }
+  String get lyricsTranslationShow => 'Show translation';
 
   @override
   String lyricsTranslationTargetDefault(String language) {
@@ -3266,35 +3265,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lyricsTranslationDisplayHeader => 'Display style';
-
-  @override
-  String get lyricsTranslationDisplayUnder => 'Under each line';
-
-  @override
-  String get lyricsTranslationDisplayReplace => 'Replace';
-
-  @override
-  String get lyricsTranslationServiceHeader => 'Service';
-
-  @override
   String get translationServiceNotSelected => 'Not selected';
 
   @override
-  String get lyricsTranslationSaved => 'Saved';
-
-  @override
-  String lyricsTranslationSavedFrom(String service) {
-    return 'Saved from $service';
-  }
-
-  @override
   String get lyricsTranslationRetranslate => 'Retranslate';
-
-  @override
-  String lyricsTranslationRetranslateWith(String service) {
-    return 'Retranslate with $service';
-  }
 
   @override
   String lyricsTranslationSameLanguage(String language) {
@@ -3360,11 +3334,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Translated by $service · $language';
-  }
-
-  @override
-  String lyricsTranslationButtonLabel(String service, String language) {
-    return '$service · $language';
   }
 
   @override
@@ -5182,13 +5151,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationOpenPluginStore => 'Open plugin store';
-
-  @override
-  String get lyricsTranslationChooseServiceFirst =>
-      'Choose a translation service first';
-
-  @override
-  String get lyricsTranslationChooseService => 'Choose service';
 
   @override
   String get playlistEditTitle => 'Edit playlist';

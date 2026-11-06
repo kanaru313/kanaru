@@ -1,17 +1,26 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/app/shell/window/desktop_window.dart';
+import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
+import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_tab_dot.dart';
 import 'package:kanaru/shared/icons/app_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/lyrics/fake_lyrics_readers.dart';
+import '../core/lyrics_translation/fake_plugin_runner.dart';
 import '../core/player/fake_audio_backend.dart';
+import '../features/player/fake_translation_controller.dart';
 
 /// Narrow window: Now Playing shows the tab header with its buttons. Wide
 /// enough that the centered tab dots leave a gap after the left button group,
@@ -31,9 +40,10 @@ void main() {
 
   /// Opens Now Playing with a custom title bar. Window calls are counted in
   /// [toggles] and [drags], never sent to the window plugin.
-  Future<void> pumpNowPlaying(
+  Future<ProviderContainer> pumpNowPlaying(
     WidgetTester tester, {
     Size size = _narrow,
+    List<Override> overrides = const [],
   }) async {
     toggles = [];
     drags = [];
@@ -53,6 +63,7 @@ void main() {
         startWindowDragProvider.overrideWithValue(
           () async => drags.add(drags.length),
         ),
+        ...overrides,
       ],
     );
     addTearDown(container.dispose);
@@ -67,6 +78,7 @@ void main() {
     ]);
     container.read(nowPlayingOpenProvider.notifier).open();
     await tester.pumpAndSettle();
+    return container;
   }
 
   /// Two quick primary clicks at [at], with real time stamps (`tester.tap`
@@ -189,4 +201,52 @@ void main() {
 
     expect(toggles, hasLength(1));
   });
+
+  testWidgets(
+    'secondary tap on the translate button in the title bar toggles translation without dragging or maximizing',
+    (tester) async {
+      final container = await pumpNowPlaying(
+        tester,
+        overrides: [
+          embeddedLyricsReaderProvider.overrideWithValue(
+            FakeEmbeddedLyricsReader(),
+          ),
+          lrcSidecarReaderProvider.overrideWithValue(
+            FakeLrcSidecarReader()
+              ..byPath['/music/First Song.flac'] = '[00:00.00]First line',
+          ),
+          ...translatePluginOverrides(),
+          initialSettingsProvider.overrideWithValue(
+            AppSettings(
+              translation: TranslationPrefs(
+                service: testTranslatePlugin,
+                noticeAcknowledged: {testTranslatePlugin},
+              ),
+            ),
+          ),
+          lyricsTranslationProvider.overrideWith2(
+            (_) => FakeTranslationController(
+              TranslationOff(fakeTranslationInfo()),
+            ),
+          ),
+        ],
+      );
+
+      await tester.tap(
+        find.byType(LyricsTranslationButton),
+        buttons: kSecondaryButton,
+      );
+      await tester.pumpAndSettle();
+      expect(container.read(settingsProvider).translation.show, isTrue);
+
+      await tester.tap(
+        find.byType(LyricsTranslationButton),
+        buttons: kSecondaryButton,
+      );
+      await tester.pumpAndSettle();
+      expect(container.read(settingsProvider).translation.show, isFalse);
+      expect(drags, isEmpty);
+      expect(toggles, isEmpty);
+    },
+  );
 }

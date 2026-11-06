@@ -138,7 +138,7 @@ void main() {
     testWidgets('sits in the header when the track has lyrics', (tester) async {
       await pump(tester, lyrics: lyrics, size: narrow, overrides: scripted());
 
-      final button = find.byTooltip('Lyrics translation');
+      final button = find.byTooltip(translationButtonTooltipOff);
       expect(button, findsOneWidget);
       expect(tester.getRect(button).top, lessThan(64));
       expect(tester.takeException(), isNull);
@@ -147,7 +147,7 @@ void main() {
     testWidgets('is disabled without lyrics', (tester) async {
       await pump(tester, size: narrow, overrides: scripted());
 
-      final button = find.byTooltip('Lyrics translation');
+      final button = find.byTooltip(translationButtonTooltipOff);
       expect(button, findsOneWidget);
       expect(
         tester
@@ -159,13 +159,12 @@ void main() {
       );
     });
 
-    testWidgets('opens the translation menu', (tester) async {
+    testWidgets('opens the translation modal', (tester) async {
       await pump(tester, lyrics: lyrics, size: narrow, overrides: scripted());
 
-      await tester.tap(find.byTooltip('Lyrics translation'));
-      await tester.pumpAndSettle();
+      await openTranslationModal(tester);
 
-      expect(find.text('Show translation'), findsOneWidget);
+      expect(translationModalFinder, findsOneWidget);
     });
 
     testWidgets('with window buttons and a credit stays an icon', (
@@ -194,12 +193,14 @@ void main() {
 
       expect(
         find.ancestor(
-          of: find.byTooltip('Translated by Test Translate · English'),
+          of: find.byTooltip(
+            translationTooltip('Translated by Test Translate · English'),
+          ),
           matching: find.byType(IconButton),
         ),
         findsOneWidget,
       );
-      expect(find.text('Test Translate · English'), findsNothing);
+      expect(find.text('English'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

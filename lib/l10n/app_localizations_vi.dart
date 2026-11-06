@@ -2987,12 +2987,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationButtonFailed => 'Dịch lời bài hát: lỗi';
 
   @override
-  String get lyricsTranslationShow => 'Hiện bản dịch';
+  String get lyricsTranslationButtonHint => 'Chuột phải hoặc T: bật/tắt dịch';
 
   @override
-  String lyricsTranslationTarget(String language) {
-    return 'Dịch sang: $language';
-  }
+  String get lyricsTranslationShow => 'Hiện bản dịch';
 
   @override
   String lyricsTranslationTargetDefault(String language) {
@@ -3000,35 +2998,10 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get lyricsTranslationDisplayHeader => 'Kiểu hiển thị';
-
-  @override
-  String get lyricsTranslationDisplayUnder => 'Dưới mỗi dòng';
-
-  @override
-  String get lyricsTranslationDisplayReplace => 'Thay dòng gốc';
-
-  @override
-  String get lyricsTranslationServiceHeader => 'Dịch vụ';
-
-  @override
   String get translationServiceNotSelected => 'Chưa chọn';
 
   @override
-  String get lyricsTranslationSaved => 'Đã lưu';
-
-  @override
-  String lyricsTranslationSavedFrom(String service) {
-    return 'Đã lưu từ $service';
-  }
-
-  @override
   String get lyricsTranslationRetranslate => 'Dịch lại';
-
-  @override
-  String lyricsTranslationRetranslateWith(String service) {
-    return 'Dịch lại bằng $service';
-  }
 
   @override
   String lyricsTranslationSameLanguage(String language) {
@@ -3092,11 +3065,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String lyricsTranslationAttribution(String service, String language) {
     return 'Dịch bởi $service · $language';
-  }
-
-  @override
-  String lyricsTranslationButtonLabel(String service, String language) {
-    return '$service · $language';
   }
 
   @override
@@ -4868,13 +4836,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationOpenPluginStore => 'Mở kho plugin';
-
-  @override
-  String get lyricsTranslationChooseServiceFirst =>
-      'Hãy chọn dịch vụ dịch trước';
-
-  @override
-  String get lyricsTranslationChooseService => 'Chọn dịch vụ';
 
   @override
   String get playlistEditTitle => 'Sửa danh sách phát';
