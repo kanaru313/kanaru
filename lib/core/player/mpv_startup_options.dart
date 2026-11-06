@@ -36,6 +36,10 @@ const mpvStartupOptions = <(String, String)>[
   // `stream.js` ran (measured: with 5 mpv gave up after 5.3 s on a response
   // held for 7 s; with 30 it played).
   ('network-timeout', '30'),
+  // mpv's youtube-dl hook runs `yt-dlp` on any http URL it fails to open,
+  // so a proxy 502 made a second request and started an outside program.
+  // Remote tracks come only from the proxy; nothing needs the hook.
+  ('ytdl', 'no'),
 ];
 
 /// Options whose value is read back after they are set: mpv ignores a failed
