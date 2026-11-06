@@ -28,7 +28,7 @@ class NowPlayingWideLayout extends StatefulWidget {
     required this.lyrics,
     required this.onChoose,
     this.titleBar,
-    this.sourceMenuOpener,
+    this.lyricsModalOpener,
     this.translationModalOpener,
   });
 
@@ -39,8 +39,8 @@ class NowPlayingWideLayout extends StatefulWidget {
   final VoidCallback onClose;
   final NowPlayingTitleBar? titleBar;
 
-  /// See [NowPlayingHeader.sourceMenuOpener].
-  final ValueNotifier<bool Function()?>? sourceMenuOpener;
+  /// See [NowPlayingHeader.lyricsModalOpener].
+  final ValueNotifier<bool Function()?>? lyricsModalOpener;
 
   /// See [NowPlayingHeader.translationModalOpener].
   final ValueNotifier<bool Function()?>? translationModalOpener;
@@ -115,7 +115,7 @@ class _NowPlayingWideLayoutState extends State<NowPlayingWideLayout> {
       hasWindowButtons: titleBar?.hasWindowButtons ?? false,
       showTranslate: widget.mode != NowPlayingViewMode.coverOnly,
       translateEnabled: widget.hasLyrics,
-      sourceMenuOpener: widget.sourceMenuOpener,
+      lyricsModalOpener: widget.lyricsModalOpener,
       translationModalOpener: widget.translationModalOpener,
       modeButton: NowPlayingViewModeButton(
         mode: widget.mode,

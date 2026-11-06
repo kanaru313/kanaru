@@ -53,9 +53,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   /// outside the header, so the chrome stays shown meanwhile.
   final _floatingOpen = ValueNotifier<bool>(false);
 
-  /// Opens the lyrics source menu; set by its button while it is in the
-  /// tree, so `null` means there is no menu to open.
-  final _sourceMenuOpener = ValueNotifier<bool Function()?>(null);
+  /// Opens the lyrics modal; set by its button while it is in the
+  /// tree, so `null` means there is no modal to open.
+  final _lyricsModalOpener = ValueNotifier<bool Function()?>(null);
 
   /// Opens the lyrics translation modal; set by its button while it is in the
   /// tree, so `null` means there is no modal to open.
@@ -81,7 +81,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     _floatingOpen
       ..removeListener(_pinForFloating)
       ..dispose();
-    _sourceMenuOpener.dispose();
+    _lyricsModalOpener.dispose();
     _translationModalOpener.dispose();
     _focus.dispose();
     _chrome.dispose();
@@ -91,8 +91,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   void _choose(NowPlayingViewMode mode) =>
       ref.read(nowPlayingViewModeProvider.notifier).choose(mode);
 
-  /// `V` cycles the view mode (wide layout only), `L` opens the lyrics source
-  /// menu and `T` turns the lyrics translation on or off (both layouts; not in
+  /// `V` cycles the view mode (wide layout only), `L` opens the lyrics
+  /// modal and `T` turns the lyrics translation on or off (both layouts; not in
   /// Cover only, which shows no lyrics). Each works only where the key is not
   /// meant for something else: with no modifier, no text field and no open
   /// popup, modal or menu (a menu is no route, so its keys bubble up to here).
@@ -123,7 +123,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       return KeyEventResult.ignored;
     }
     if (isSource) {
-      final open = _sourceMenuOpener.value;
+      final open = _lyricsModalOpener.value;
       if (open == null || !open()) return KeyEventResult.ignored;
       return KeyEventResult.handled;
     }
@@ -181,7 +181,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         floatingOpen: _floatingOpen,
                         onClose: _close,
                         titleBar: widget.titleBar,
-                        sourceMenuOpener: _sourceMenuOpener,
+                        lyricsModalOpener: _lyricsModalOpener,
                         translationModalOpener: _translationModalOpener,
                         lyrics: lyrics,
                         mode: mode,
@@ -195,7 +195,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         lyricsPage: lyrics,
                         hasLyrics: widget._hasLyrics,
                         floatingOpen: _floatingOpen,
-                        sourceMenuOpener: _sourceMenuOpener,
+                        lyricsModalOpener: _lyricsModalOpener,
                         translationModalOpener: _translationModalOpener,
                         onClose: _close,
                       ),

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/features/player/lyrics/source/lyrics_source_labels.dart';
@@ -24,15 +23,8 @@ OnlineLyricsOrigin _origin({required bool pinned}) =>
 void main() {
   final providers = {'lrclib': const LyricsSourceName(displayName: 'LRCLIB')};
 
-  String label(
-    AppLocalizations l10n,
-    PlayingLyricsStatus status, {
-    LyricsChoice? effective,
-  }) => lyricsSourceLabel(
-    l10n,
-    fakeResolution(status, effective: effective),
-    providers,
-  );
+  String title(AppLocalizations l10n, PlayingLyricsStatus status) =>
+      lyricsSourceTooltipTitle(l10n, fakeResolution(status), providers);
 
   for (final (l10n, name) in [
     (AppLocalizationsEn() as AppLocalizations, 'en'),
@@ -41,77 +33,60 @@ void main() {
     final vi = name == 'vi';
     String pick(String en, String viText) => vi ? viText : en;
 
-    group('the label, $name', () {
+    group('the tooltip title, $name', () {
       test('lyrics off, searching, paused', () {
         expect(
-          label(
-            l10n,
-            const LyricsNone(_uri, LyricsNoneReason.off),
-            effective: LyricsChoice.off,
-          ),
+          title(l10n, const LyricsNone(_uri, LyricsNoneReason.off)),
           pick('Lyrics off', 'Đã tắt lời'),
         );
         expect(
-          label(l10n, const LyricsSearching(_uri, 'lrclib')),
+          title(l10n, const LyricsSearching(_uri, 'lrclib')),
           pick('Searching…', 'Đang tìm…'),
         );
         expect(
-          label(l10n, LyricsNone(_uri, LyricsNoneReason.paused)),
+          title(l10n, LyricsNone(_uri, LyricsNoneReason.paused)),
           pick('Lookups paused', 'Tạm dừng tìm'),
         );
       });
 
-      test('the song\'s own lyrics are named plainly, chosen or not', () {
-        final file = LyricsFound(_uri, _lyrics());
-        expect(label(l10n, file), pick('.lrc file', 'File .lrc'));
+      test('the song\'s own lyrics are named plainly: the file or the tag', () {
         expect(
-          label(l10n, file, effective: LyricsChoice.local),
+          title(l10n, LyricsFound(_uri, _lyrics())),
           pick('.lrc file', 'File .lrc'),
         );
-        final tag = LyricsFound(_uri, _lyrics(source: LyricsSource.embedded));
-        expect(label(l10n, tag), pick('Tag lyrics', 'Lời trong tag'));
         expect(
-          label(l10n, tag, effective: LyricsChoice.local),
+          title(
+            l10n,
+            LyricsFound(_uri, _lyrics(source: LyricsSource.embedded)),
+          ),
           pick('Tag lyrics', 'Lời trong tag'),
         );
       });
 
-      test(
-        'online lyrics: chosen names the kind, automatic only the service',
-        () {
-          expect(
-            label(
-              l10n,
-              LyricsFound(_uri, _lyrics(), origin: _origin(pinned: true)),
-              effective: LyricsChoice.online,
+      test('online lyrics name the service and the kind', () {
+        expect(
+          title(
+            l10n,
+            LyricsFound(_uri, _lyrics(), origin: _origin(pinned: true)),
+          ),
+          pick('Lyrics from LRCLIB · Synced', 'Lời từ LRCLIB · Đồng bộ'),
+        );
+        expect(
+          title(
+            l10n,
+            LyricsFound(
+              _uri,
+              _lyrics(synced: false),
+              origin: _origin(pinned: false),
             ),
-            pick('LRCLIB · Synced', 'LRCLIB · Đồng bộ'),
-          );
-          expect(
-            label(
-              l10n,
-              LyricsFound(
-                _uri,
-                _lyrics(synced: false),
-                origin: _origin(pinned: true),
-              ),
-              effective: LyricsChoice.online,
-            ),
-            pick('LRCLIB · Plain', 'LRCLIB · Lời thường'),
-          );
-          expect(
-            label(
-              l10n,
-              LyricsFound(_uri, _lyrics(), origin: _origin(pinned: false)),
-            ),
-            pick('Auto · LRCLIB', 'Tự động · LRCLIB'),
-          );
-        },
-      );
+          ),
+          pick('Lyrics from LRCLIB · Plain', 'Lời từ LRCLIB · Lời thường'),
+        );
+      });
 
       test('reading the song reads "searching", not "no lyrics"', () {
         expect(
-          label(l10n, const LyricsReading(_uri)),
+          title(l10n, const LyricsReading(_uri)),
           pick('Searching…', 'Đang tìm…'),
         );
       });
@@ -124,23 +99,9 @@ void main() {
           LyricsNoneReason.error,
           LyricsNoneReason.instrumental,
         ]) {
-          expect(label(l10n, LyricsNone(_uri, reason)), none);
+          expect(title(l10n, LyricsNone(_uri, reason)), none);
         }
       });
     });
   }
-
-  test('only found lyrics are not muted', () {
-    bool muted(PlayingLyricsStatus status) =>
-        lyricsSourceMuted(fakeResolution(status));
-    expect(muted(LyricsFound(_uri, _lyrics())), isFalse);
-    for (final status in <PlayingLyricsStatus>[
-      const LyricsNone(_uri, LyricsNoneReason.off),
-      const LyricsNone(_uri, LyricsNoneReason.noLyrics),
-      const LyricsSearching(_uri, 'lrclib'),
-      const LyricsReading(_uri),
-    ]) {
-      expect(muted(status), isTrue, reason: '$status');
-    }
-  });
 }

@@ -18,7 +18,7 @@ import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
-    show nowPlayingPillGap, nowPlayingPillLabelRooms;
+    show nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
     show ShuffleButton;
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
@@ -42,6 +42,13 @@ class _Excluded extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => child;
+}
+
+/// The open modal's marquee text never stops animating, so no pumpAndSettle.
+Future<void> settleLyricsModal(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
 void main() {
@@ -366,7 +373,7 @@ void main() {
       final translate = tester.getRect(find.byType(LyricsTranslationButton));
       // The playlist button's 48 px slot ends where the source starts.
       expect(source.left, centerX(tester, 'Add to playlist') + 24);
-      expect(translate.left - source.right, anyOf(0, nowPlayingPillGap));
+      expect(translate.left - source.right, 0);
       expect(translate.right, lessThan(centerX(tester, 'Shuffle')));
     });
 
@@ -443,26 +450,15 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('leaves a gap between the source pill and the translate '
-          'icon', (tester) async {
-        await pump(tester, showTranslate: true, overrides: scripted());
-
-        expect(find.byType(LyricsTranslationPill), findsNothing);
-        expect(
-          tester.getRect(find.byType(LyricsTranslationButton)).left -
-              tester.getRect(find.byType(LyricsSourceButton)).right,
-          nowPlayingPillGap,
-        );
-      });
-
-      testWidgets('leaves a gap after the lyrics source pill', (tester) async {
+      testWidgets('the translate pill sits right against the lyrics button', (
+        tester,
+      ) async {
         await pump(tester, showTranslate: true, overrides: ready());
 
         expect(find.text('English'), findsOneWidget);
         expect(
-          tester.getRect(find.byType(LyricsTranslationButton)).left -
-              tester.getRect(find.byType(LyricsSourceButton)).right,
-          nowPlayingPillGap,
+          tester.getRect(find.byType(LyricsTranslationButton)).left,
+          tester.getRect(find.byType(LyricsSourceButton)).right,
         );
       });
 
@@ -532,11 +528,11 @@ void main() {
       testWidgets('at the tightest edge the pill and sleep label both fit', (
         tester,
       ) async {
-        // Header 780 px wide: after the gap between them, each of the two
-        // pills gets a label room just above the 64 px minimum.
+        // Header 690 px wide: the translate pill gets a label room just
+        // above the 64 px minimum.
         await pump(
           tester,
-          width: 780 + windowButtons,
+          width: 690 + windowButtons,
           windowButtons: true,
           textScale: 1.5,
           showTranslate: true,
@@ -621,12 +617,11 @@ void main() {
     });
 
     test('the label room budget', () {
-      // Left: 30 inset, 5 buttons (close, favorite, playlist, translate,
-      // source) and a 16 gap. Right: 4 buttons, the 56 sleep label and the 12 px
-      // the sleep pill adds to its button. A pill replaces its 48 px button
-      // and spends 60 px (source, 28 px icon) or 50 px (translate, 18 px logo)
-      // on padding and icon.
-      ({double source, double translate}) rooms(
+      // Left: 30 inset, 5 buttons (close, favorite, playlist, lyrics,
+      // translate) and a 16 gap. Right: 4 buttons, the 56 sleep label and the
+      // 12 px the sleep pill adds to its button. The translate pill replaces
+      // its 48 px button and spends 50 px (18 px logo) on padding and icon.
+      double room(
         double width, {
         bool mode = false,
         bool window = false,
@@ -636,24 +631,17 @@ void main() {
         hasModeButton: mode,
         hasWindowButtons: window,
         translatePill: pill,
-      );
+      ).translate;
 
-      // The translation is an icon: the source label gets all of the room.
-      expect(rooms(598).source, 40 - nowPlayingPillGap);
-      expect(rooms(598).translate, 0);
-      expect(rooms(552, mode: true, window: true).source, lessThan(0));
-      expect(rooms(720, mode: true).source, greaterThan(64));
+      // The translation is an icon: no label room at all.
+      expect(room(1000), 0);
+      expect(room(1000, pill: true), 1000 - 286 - 260 - 2);
+      expect(room(552, mode: true, window: true, pill: true), lessThan(0));
       expect(
-        rooms(720, mode: true).source -
-            rooms(720, mode: true, window: true).source,
+        room(720, mode: true, pill: true) -
+            room(720, mode: true, window: true, pill: true),
         25,
       );
-
-      // Both are pills: the room is split in two, from what is left after
-      // both pills replaced a button each and the gap between them.
-      final both = rooms(1000, pill: true);
-      expect(both.source, both.translate);
-      expect(both.source, (1000 - 286 - 260 - 14 - nowPlayingPillGap) / 2);
     });
 
     for (final locale in const [Locale('en'), Locale('vi')]) {
@@ -747,7 +735,7 @@ void main() {
       ),
     ];
 
-    testWidgets('comes before the translate button and shows the source', (
+    testWidgets('is a round button before the translate button', (
       tester,
     ) async {
       await pump(
@@ -758,10 +746,11 @@ void main() {
       final translate = tester.getRect(find.byType(LyricsTranslationButton));
       final source = tester.getRect(find.byType(LyricsSourceButton));
       expect(translate.left, greaterThanOrEqualTo(source.right));
-      expect(find.text('a-long-service-name · Synced'), findsOneWidget);
+      expect(source.width, lessThanOrEqualTo(48));
+      expect(find.text('a-long-service-name · Synced'), findsNothing);
     });
 
-    testWidgets('is only its icon when lyrics are off', (tester) async {
+    testWidgets('keeps its round shape when lyrics are off', (tester) async {
       await pump(
         tester,
         showTranslate: true,
@@ -779,10 +768,7 @@ void main() {
       );
 
       final source = tester.getRect(find.byType(LyricsSourceButton));
-      expect(find.text('Lyrics off'), findsNothing);
       expect(source.width, lessThanOrEqualTo(48));
-      // No pill, so no gap: the translate icon sits beside it like the
-      // other round buttons.
       expect(
         tester.getRect(find.byType(LyricsTranslationButton)).left,
         source.right,
@@ -796,15 +782,15 @@ void main() {
       expect(find.byType(LyricsSourceButton), findsNothing);
     });
 
-    testWidgets('its menu sets floatingOpen while it is open', (tester) async {
+    testWidgets('its modal sets floatingOpen while it is open', (tester) async {
       await pump(tester, showTranslate: true, overrides: longLabel());
       await tester.tap(find.byType(LyricsSourceButton));
-      await tester.pumpAndSettle();
+      await settleLyricsModal(tester);
       expect(find.text('Lyrics for this song'), findsOneWidget);
       expect(floating.value, isTrue);
 
-      await tester.tapAt(const Offset(600, 600));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Close'));
+      await settleLyricsModal(tester);
       expect(floating.value, isFalse);
     });
 
@@ -813,7 +799,7 @@ void main() {
     ) async {
       await pump(tester, showTranslate: true, overrides: longLabel());
       await tester.tap(find.byType(LyricsSourceButton));
-      await tester.pumpAndSettle();
+      await settleLyricsModal(tester);
 
       await tester.pumpWidget(const SizedBox());
 

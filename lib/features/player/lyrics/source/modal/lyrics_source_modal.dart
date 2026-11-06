@@ -1,14 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/database/library_startup.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
-import '../../../../../core/player/local_path_of.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/settings_routes.dart';
 import '../../../../../shared/widgets/layered_modal/layered_modal_route.dart';
+import '../../../now_playing/now_playing_lyrics_toggle.dart';
 import '../../../now_playing/now_playing_modal_navigation.dart';
 import 'lyrics_source_action_bar.dart';
 import 'lyrics_source_choice_rows.dart';
@@ -78,8 +77,7 @@ class _LyricsSourceModalState extends ConsumerState<LyricsSourceModal> {
     final loaded = ref.watch(lyricsSourcesLoadedProvider);
     final failed = ref.watch(lyricsSourcesInputProvider).hasError;
     final ready = loaded && !failed;
-    final canChoose =
-        ref.watch(libraryDatabaseProvider) != null && localPathOf(uri!) != null;
+    final canChoose = lyricsCanChoose(ref, source);
 
     return LayeredModalBody(
       header: LayeredModalTopBar(

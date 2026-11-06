@@ -626,8 +626,14 @@ void main() {
           expect(find.textContaining('Lyrics from'), findsNothing);
           expect(find.textContaining('not synced'), findsNothing);
           expect(
-            find.byTooltip(
-              synced ? 'Lyrics from Fake · Synced' : 'Lyrics from Fake · Plain',
+            find.byWidgetPredicate(
+              (w) =>
+                  w is IconButton &&
+                  (w.tooltip ?? '').startsWith(
+                    synced
+                        ? 'Lyrics from Fake · Synced\n'
+                        : 'Lyrics from Fake · Plain\n',
+                  ),
             ),
             findsOneWidget,
           );

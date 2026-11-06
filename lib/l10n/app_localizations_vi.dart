@@ -3479,14 +3479,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAuto(String label) {
-    return 'Tự động · $label';
-  }
-
-  @override
-  String get lyricsSourceMenuHeader => 'Nguồn lời cho bài này';
-
-  @override
   String lyricsSourceMenuFrom(String source) {
     return 'Lời từ $source';
   }
@@ -3498,30 +3490,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourceLocalTag => 'Trong tag';
 
   @override
-  String get lyricsSourceLocalMissing => 'Không tìm thấy lời trong file';
-
-  @override
-  String lyricsSourceOnlineSubtitle(String kind, String length) {
-    return '$kind · $length';
-  }
-
-  @override
-  String get lyricsSourceMenuSection => 'Nguồn';
-
-  @override
   String get lyricsSourceOnlineVersion => 'Bản online';
 
   @override
-  String get lyricsSourceRemovedPlugin => 'plugin đã gỡ';
-
-  @override
-  String get lyricsSourceSwitch => 'Lời cho bài này';
-
-  @override
   String get lyricsSourceKeep => 'Giữ bản này';
-
-  @override
-  String get lyricsSourceSave => 'Lưu lời đang hiện…';
 
   @override
   String get lyricsOffTitle => 'Đã tắt lời cho bài này';
@@ -5371,4 +5343,8 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsSourceBarKept => 'Đang dùng bản đã giữ';
+
+  @override
+  String get lyricsSourceButtonHint =>
+      'Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L';
 }

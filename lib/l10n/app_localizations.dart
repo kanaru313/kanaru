@@ -5396,18 +5396,6 @@ abstract class AppLocalizations {
   /// **'{provider} · {kind}'**
   String lyricsSourceOnline(String provider, String kind);
 
-  /// Lyrics source button label when the lyrics were picked automatically; label says which
-  ///
-  /// In en, this message translates to:
-  /// **'Auto · {label}'**
-  String lyricsSourceAuto(String label);
-
-  /// Heading of the lyrics source menu
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics for this song'**
-  String get lyricsSourceMenuHeader;
-
   /// Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as "Demo · Synced" or ".lrc file"
   ///
   /// In en, this message translates to:
@@ -5426,53 +5414,17 @@ abstract class AppLocalizations {
   /// **'In the tag'**
   String get lyricsSourceLocalTag;
 
-  /// Subtitle of the file item when the song has no own lyrics
-  ///
-  /// In en, this message translates to:
-  /// **'No lyrics found in the file'**
-  String get lyricsSourceLocalMissing;
-
-  /// Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss
-  ///
-  /// In en, this message translates to:
-  /// **'{kind} · {length}'**
-  String lyricsSourceOnlineSubtitle(String kind, String length);
-
-  /// Heading of the lyrics source menu (shown in capitals)
-  ///
-  /// In en, this message translates to:
-  /// **'Source'**
-  String get lyricsSourceMenuSection;
-
   /// Title of the lyrics source menu row for the online version the user picked; its subtitle names the source
   ///
   /// In en, this message translates to:
   /// **'Online version'**
   String get lyricsSourceOnlineVersion;
 
-  /// Dim note after the name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown
-  ///
-  /// In en, this message translates to:
-  /// **'removed plugin'**
-  String get lyricsSourceRemovedPlugin;
-
-  /// Switch at the end of the lyrics source menu: off hides lyrics for the song, on goes back to Automatic
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics for this song'**
-  String get lyricsSourceSwitch;
-
   /// Lyrics source menu item that picks the automatic match for good
   ///
   /// In en, this message translates to:
   /// **'Keep this one'**
   String get lyricsSourceKeep;
-
-  /// Lyrics source menu item that opens the save dialog
-  ///
-  /// In en, this message translates to:
-  /// **'Save current lyrics…'**
-  String get lyricsSourceSave;
 
   /// Lyrics slot text when the user turned lyrics off for the song
   ///
@@ -8269,6 +8221,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Using the kept version'**
   String get lyricsSourceBarKept;
+
+  /// Second line of the lyrics button tooltip: what a click and a right click do
+  ///
+  /// In en, this message translates to:
+  /// **'Click: lyrics options · Right-click: turn on/off · L'**
+  String get lyricsSourceButtonHint;
 }
 
 class _AppLocalizationsDelegate

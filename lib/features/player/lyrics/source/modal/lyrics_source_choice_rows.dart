@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../../../core/lyrics/online/lyrics_source_names.dart';
-import '../../../../../core/lyrics/online/lyrics_target.dart';
 import '../../../../../core/lyrics/playing_local_lyrics_provider.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_status.dart';
@@ -15,7 +14,7 @@ import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/widgets/layered_modal/layered_modal_stack.dart';
 import '../../../../../shared/widgets/selection_row.dart';
 import '../lyrics_source_labels.dart';
-import '../lyrics_source_menu_item.dart';
+import '../lyrics_source_subtitles.dart';
 import 'lyrics_source_modal_run.dart';
 
 /// The three choices of the lyrics source modal as [SelectionRow]s: lyrics in
@@ -62,7 +61,7 @@ class LyricsSourceChoiceRows extends ConsumerWidget {
     final autoPossible =
         ref.watch(settingsProvider.select((s) => s.onlineLyrics.autoAllowed)) &&
         ref.watch(lyricsSourcesProvider).any((e) => e.enabled) &&
-        (ref.watch(lyricsTargetProvider).value?.isAutoSearchable ?? false);
+        (lyricsTargetOfSong(ref, status.uri)?.isAutoSearchable ?? false);
 
     // Local row.
     // Read only for this song: the provider holds the previous song's value

@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/lyrics/online/playing_lyrics_source_provider.dart';
-import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../lyrics/source/lyrics_source_button.dart';
@@ -30,32 +28,19 @@ const nowPlayingHeaderSeparatorWidth = 25.0;
 /// Width of one round header button.
 const _buttonWidth = 48.0;
 
-/// Width of the lyrics source pill beside its label: padding (10 + 14), the
-/// 28 px icon and the gap after it (8).
-const _sourcePillChrome = 60.0;
-
-/// Air after the lyrics source pill, so it reads apart from the translate
-/// button beside it, whether that is a pill or a tinted round icon.
-const nowPlayingPillGap = 8.0;
-
-/// Room the labels of the two lyrics buttons (lyrics source, then
-/// translation) may take in a header [width] wide: what is left after every other
-/// button, the sleep timer label's reserve and the window buttons' divider,
-/// plus the round buttons the pills replace, minus each pill's own padding
-/// and icon. Zero or less means no room for a label.
-///
-/// The [nowPlayingPillGap] after the source pill comes off first. The room
-/// is split in two only when the translation is a pill ([translatePill]);
-/// otherwise the source pill gets all of it and the translate button stays
-/// an icon.
+/// Room the label of the translate button may take in a header [width] wide:
+/// what is left after every other button, the sleep timer label's reserve and
+/// the window buttons' divider, plus the round button the pill replaces, minus
+/// the pill's own padding and icon. Zero or less means no room for a label,
+/// and it is zero while the translation is not a pill ([translatePill]).
 @visibleForTesting
-({double source, double translate}) nowPlayingPillLabelRooms({
+({double translate}) nowPlayingPillLabelRooms({
   required double width,
   required bool hasModeButton,
   required bool hasWindowButtons,
   required bool translatePill,
 }) {
-  // Close, [mode], favorite, playlist, translate, source.
+  // Close, [mode], favorite, playlist, lyrics, translate.
   final left =
       nowPlayingHeaderLeftInset +
       (hasModeButton ? 6 : 5) * _buttonWidth +
@@ -64,19 +49,15 @@ const nowPlayingPillGap = 8.0;
       nowPlayingHeaderRightButtonsWidth +
       nowPlayingHeaderSleepLabelWidth +
       (hasWindowButtons ? nowPlayingHeaderSeparatorWidth : 0);
-  final free = width - left - right - nowPlayingPillGap;
-  const sourceSpare = _buttonWidth - _sourcePillChrome;
+  if (!translatePill) return (translate: 0);
   const translateSpare = _buttonWidth - lyricsTranslationPillChrome;
-  if (!translatePill) return (source: free + sourceSpare, translate: 0);
-  final half = (free + sourceSpare + translateSpare) / 2;
-  return (source: half, translate: half);
+  return (translate: width - left - right + translateSpare);
 }
 
-/// The lyrics source button followed by the translate button, sharing the
-/// room [nowPlayingPillLabelRooms] gives them. Only whether the translation
-/// is a pill is watched here, so the pair rebuilds when that flips and not
-/// on every translation change. Lyrics turned off for the song keep the
-/// source button a round icon.
+/// The lyrics button followed by the translate button, which may grow into a
+/// pill with the room [nowPlayingPillLabelRooms] gives it. Only whether the
+/// translation is a pill is watched here, so the pair rebuilds when that
+/// flips and not on every translation change.
 class NowPlayingLyricsPills extends ConsumerWidget {
   const NowPlayingLyricsPills({
     super.key,
@@ -85,8 +66,8 @@ class NowPlayingLyricsPills extends ConsumerWidget {
     required this.hasWindowButtons,
     required this.translateEnabled,
     required this.onTranslateModalChanged,
-    required this.onSourceMenuChanged,
-    required this.sourceMenuOpener,
+    required this.onLyricsModalChanged,
+    required this.lyricsModalOpener,
     this.translationModalOpener,
   });
 
@@ -96,8 +77,8 @@ class NowPlayingLyricsPills extends ConsumerWidget {
   final bool hasWindowButtons;
   final bool translateEnabled;
   final ValueChanged<bool> onTranslateModalChanged;
-  final ValueChanged<bool> onSourceMenuChanged;
-  final ValueNotifier<bool Function()?>? sourceMenuOpener;
+  final ValueChanged<bool> onLyricsModalChanged;
+  final ValueNotifier<bool Function()?>? lyricsModalOpener;
   final ValueNotifier<bool Function()?>? translationModalOpener;
 
   @override
@@ -105,15 +86,6 @@ class NowPlayingLyricsPills extends ConsumerWidget {
     final appLang = Localizations.localeOf(context).languageCode;
     final translatePill = ref.watch(
       lyricsTranslationProvider(appLang).select((s) => s is TranslationReady),
-    );
-    // Lyrics turned off for the song: the source button is only its icon.
-    final sourceOff = ref.watch(
-      playingLyricsSourceProvider.select(
-        (s) => switch (s?.status) {
-          LyricsNone(reason: LyricsNoneReason.off) => true,
-          _ => false,
-        },
-      ),
     );
     final rooms = nowPlayingPillLabelRooms(
       width: width,
@@ -125,14 +97,9 @@ class NowPlayingLyricsPills extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         LyricsSourceButton(
-          maxLabelWidth: sourceOff ? 0 : rooms.source,
-          menuOpener: sourceMenuOpener,
-          onMenuChanged: onSourceMenuChanged,
+          modalOpener: lyricsModalOpener,
+          onModalChanged: onLyricsModalChanged,
         ),
-        // Only after a source pill: a source squeezed back to its round
-        // icon keeps the round buttons' usual spacing.
-        if (!sourceOff && rooms.source >= lyricsTranslationMinLabelWidth)
-          const SizedBox(width: nowPlayingPillGap),
         LyricsTranslationButton(
           enabled: translateEnabled,
           maxLabelWidth: rooms.translate,

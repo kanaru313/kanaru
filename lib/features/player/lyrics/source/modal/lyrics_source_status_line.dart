@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/lyrics/online/lyrics_target.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_source_provider.dart';
 import '../../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
@@ -41,7 +40,7 @@ class LyricsSourceStatusLine extends ConsumerWidget {
     final autoAllowed = ref.watch(
       settingsProvider.select((s) => s.onlineLyrics.autoAllowed),
     );
-    final target = ref.watch(lyricsTargetProvider).value;
+    final target = lyricsTargetOfSong(ref, status.uri);
 
     String? text;
     Widget? button;

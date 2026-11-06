@@ -437,14 +437,14 @@ void main() {
   });
 
   group('the L key', () {
-    final sourceMenu = find.text('Automatic');
+    final sourceMenu = find.text('Lyrics for this song');
 
     setUp(() {
       startSettings = const AppSettings();
       extraOverrides = [];
     });
 
-    testWidgets('opens the lyrics source menu and leaves the mode alone', (
+    testWidgets('opens the lyrics modal and leaves the mode alone', (
       tester,
     ) async {
       await pumpOverlay(tester);
@@ -466,7 +466,7 @@ void main() {
       expect(sourceMenu, findsOneWidget);
     });
 
-    testWidgets('while the menu is open, L, V and T are for the menu', (
+    testWidgets('while the modal is open, L, V and T are for the modal', (
       tester,
     ) async {
       await pumpOverlay(tester);
@@ -485,7 +485,7 @@ void main() {
       expect(chosen(), NowPlayingViewMode.coverOnly);
     });
 
-    testWidgets('does nothing when no pill is there', (tester) async {
+    testWidgets('does nothing when no song plays', (tester) async {
       await pumpScreen(tester, tracks: const []);
       expect(find.byType(LyricsSourceButton), findsOneWidget);
       await pressL(tester);
@@ -558,7 +558,7 @@ void main() {
       expect(translation().show, isFalse);
     });
 
-    testWidgets('narrow: an open source menu keeps T out', (tester) async {
+    testWidgets('narrow: an open lyrics modal keeps T out', (tester) async {
       startSettings = AppSettings(
         translation: TranslationPrefs(
           service: testTranslatePlugin,

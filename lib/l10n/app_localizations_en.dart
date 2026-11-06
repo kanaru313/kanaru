@@ -3757,14 +3757,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAuto(String label) {
-    return 'Auto · $label';
-  }
-
-  @override
-  String get lyricsSourceMenuHeader => 'Lyrics for this song';
-
-  @override
   String lyricsSourceMenuFrom(String source) {
     return 'Lyrics from $source';
   }
@@ -3776,30 +3768,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourceLocalTag => 'In the tag';
 
   @override
-  String get lyricsSourceLocalMissing => 'No lyrics found in the file';
-
-  @override
-  String lyricsSourceOnlineSubtitle(String kind, String length) {
-    return '$kind · $length';
-  }
-
-  @override
-  String get lyricsSourceMenuSection => 'Source';
-
-  @override
   String get lyricsSourceOnlineVersion => 'Online version';
 
   @override
-  String get lyricsSourceRemovedPlugin => 'removed plugin';
-
-  @override
-  String get lyricsSourceSwitch => 'Lyrics for this song';
-
-  @override
   String get lyricsSourceKeep => 'Keep this one';
-
-  @override
-  String get lyricsSourceSave => 'Save current lyrics…';
 
   @override
   String get lyricsOffTitle => 'Lyrics are off for this song';
@@ -5710,4 +5682,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsSourceBarKept => 'Using the kept version';
+
+  @override
+  String get lyricsSourceButtonHint =>
+      'Click: lyrics options · Right-click: turn on/off · L';
 }

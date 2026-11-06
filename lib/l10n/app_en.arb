@@ -3408,19 +3408,6 @@
       }
     }
   },
-  "lyricsSourceAuto": "Auto · {label}",
-  "@lyricsSourceAuto": {
-    "description": "Lyrics source button label when the lyrics were picked automatically; label says which",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsSourceMenuHeader": "Lyrics for this song",
-  "@lyricsSourceMenuHeader": {
-    "description": "Heading of the lyrics source menu"
-  },
   "lyricsSourceMenuFrom": "Lyrics from {source}",
   "@lyricsSourceMenuFrom": {
     "description": "Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as \"Demo · Synced\" or \".lrc file\"",
@@ -3438,45 +3425,13 @@
   "@lyricsSourceLocalTag": {
     "description": "Subtitle of the file item when the lyrics are in the song's tags"
   },
-  "lyricsSourceLocalMissing": "No lyrics found in the file",
-  "@lyricsSourceLocalMissing": {
-    "description": "Subtitle of the file item when the song has no own lyrics"
-  },
-  "lyricsSourceOnlineSubtitle": "{kind} · {length}",
-  "@lyricsSourceOnlineSubtitle": {
-    "description": "Subtitle of the chosen online item; kind is Synced or Plain, length is m:ss",
-    "placeholders": {
-      "kind": {
-        "type": "String"
-      },
-      "length": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsSourceMenuSection": "Source",
-  "@lyricsSourceMenuSection": {
-    "description": "Heading of the lyrics source menu (shown in capitals)"
-  },
   "lyricsSourceOnlineVersion": "Online version",
   "@lyricsSourceOnlineVersion": {
     "description": "Title of the lyrics source menu row for the online version the user picked; its subtitle names the source"
   },
-  "lyricsSourceRemovedPlugin": "removed plugin",
-  "@lyricsSourceRemovedPlugin": {
-    "description": "Dim note after the name of a lyrics source whose plugin was uninstalled but whose saved lyrics are still shown"
-  },
-  "lyricsSourceSwitch": "Lyrics for this song",
-  "@lyricsSourceSwitch": {
-    "description": "Switch at the end of the lyrics source menu: off hides lyrics for the song, on goes back to Automatic"
-  },
   "lyricsSourceKeep": "Keep this one",
   "@lyricsSourceKeep": {
     "description": "Lyrics source menu item that picks the automatic match for good"
-  },
-  "lyricsSourceSave": "Save current lyrics…",
-  "@lyricsSourceSave": {
-    "description": "Lyrics source menu item that opens the save dialog"
   },
   "lyricsOffTitle": "Lyrics are off for this song",
   "@lyricsOffTitle": {
@@ -5738,5 +5693,9 @@
   "lyricsSourceBarKept": "Using the kept version",
   "@lyricsSourceBarKept": {
     "description": "Bottom bar text for lyrics the user kept"
+  },
+  "lyricsSourceButtonHint": "Click: lyrics options · Right-click: turn on/off · L",
+  "@lyricsSourceButtonHint": {
+    "description": "Second line of the lyrics button tooltip: what a click and a right click do"
   }
 }

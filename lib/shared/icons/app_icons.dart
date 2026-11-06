@@ -24,6 +24,7 @@ abstract final class AppIcons {
   static const IconData equalizer = FluentIcons.options_24_regular;
   static const IconData equalizerRounded = FluentIcons.options_24_regular;
   static const IconData lyrics = FluentIcons.subtitles_24_regular;
+  static const IconData lyricsOff = FluentIcons.closed_caption_off_24_regular;
   static const IconData viewSplit = FluentIcons.layout_column_two_24_regular;
   static const IconData viewCover = FluentIcons.image_24_regular;
   static const IconData dragHandle =

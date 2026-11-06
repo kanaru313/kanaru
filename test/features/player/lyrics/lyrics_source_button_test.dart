@@ -1,952 +1,116 @@
-import 'package:drift/native.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/database/library_database.dart' hide Track;
-import 'package:kanaru/core/database/library_startup.dart';
-import 'package:kanaru/core/lyrics/lyrics.dart';
-import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_source_names.dart';
-import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
-import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
-import 'package:kanaru/core/lyrics/online/playing_lyrics_resolution_provider.dart';
-import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
-import 'package:kanaru/core/lyrics/playing_local_lyrics_provider.dart';
-import 'package:kanaru/core/player/player_service.dart';
-import 'package:kanaru/core/player/track.dart';
-import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
-import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
-import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
+import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
+import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 
-import '../../../core/lyrics/online/fake_lyrics_provider.dart';
-import '../../../core/player/fake_audio_backend.dart';
-import 'fake_playing_lyrics_resolution.dart';
+import 'lyrics_source_button_harness.dart';
 
-const _uri = '/m/song.flac';
-const _song = Track(
-  uri: _uri,
-  title: 'Song',
-  artist: 'Artist',
-  duration: Duration(seconds: 200),
-);
-const _other = Track(
-  uri: '/m/other.flac',
-  title: 'Other',
-  artist: 'Artist',
-  duration: Duration(seconds: 200),
-);
-
-Lyrics _lyrics({
-  bool synced = true,
-  LyricsSource source = LyricsSource.sidecar,
-}) => Lyrics(
-  lines: const [LyricLine(Duration.zero, 'words')],
-  synced: synced,
-  source: source,
-);
-
-OnlineLyricsOrigin _origin({required bool pinned, String remoteId = '1'}) =>
-    OnlineLyricsOrigin(providerId: 'fake', remoteId: remoteId, pinned: pinned);
-
-/// Records what the menu asks the actions to do instead of doing it.
-class _RecordingActions extends OnlineLyricsActions {
-  _RecordingActions(super.ref, this.log);
-
-  final List<String> log;
-
-  @override
-  Future<void> turnOn(LyricsTarget target) async =>
-      log.add('turnOn ${target.trackKey}');
-
-  @override
-  Future<void> choose(LyricsTarget target, LyricsChoice choice) async =>
-      log.add('choose ${choice.name} ${target.trackKey}');
-
-  @override
-  Future<void> keep(LyricsTarget target, OnlineLyricsOrigin origin) async =>
-      log.add('keep ${origin.remoteId} ${target.trackKey}');
-
-  @override
-  Future<void> reject(
-    LyricsTarget target,
-    OnlineLyricsOrigin origin,
-    Lyrics shown,
-  ) async => log.add('reject ${origin.remoteId} ${target.trackKey}');
-
-  @override
-  Future<void> retry(LyricsTarget target) async =>
-      log.add('retry ${target.trackKey}');
-
-  @override
-  Future<LyricsSaveOutcome> save(
-    LyricsTarget target,
-    OnlineLyricsOrigin origin, {
-    bool replace = false,
-  }) async {
-    log.add('save ${origin.remoteId} ${target.trackKey}');
-    return (result: LrcWriteResult.written, kept: null);
-  }
+/// The open modal's marquee text never stops animating, so no pumpAndSettle.
+Future<void> settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
-/// A mockup state: the resolution and the menu it must show, top to bottom.
-/// `✓` marks the checked row (or the switch when on), `(off)` a disabled one.
-typedef _State = ({
-  String name,
-  LyricsSourceResolution Function() resolution,
-  String label,
-  List<String> menu,
-});
-
 void main() {
-  late FakePlayingLyricsResolution resolution;
-  late ProviderContainer container;
-  late List<String> log;
-  late ValueNotifier<bool Function()?> opener;
-  late List<bool> menuEvents;
-
-  final findPill = find.byType(NowPlayingHeaderPill);
-  Finder item(String title) => find.widgetWithText(MenuItemButton, title);
-
-  /// The rows of the open menu: title, with `✓ ` when checked and ` (off)`
-  /// when disabled.
-  List<String> menuRows(WidgetTester tester) => [
-    for (final button in tester.widgetList<MenuItemButton>(
-      find.byType(MenuItemButton),
-    ))
-      () {
-        final row = find.byWidget(button);
-        final title = tester
-            .widget<Text>(
-              find.descendant(of: row, matching: find.byType(Text)).first,
-            )
-            .data!;
-        // Choice rows are radio rows; the selected one is the choice in effect.
-        final radio = find.ancestor(
-          of: row,
-          matching: find.byType(RadioMenuButton<bool>),
-        );
-        final toggle = find.descendant(of: row, matching: find.byType(Switch));
-        final checked = toggle.evaluate().isNotEmpty
-            ? tester.widget<Switch>(toggle).value
-            : radio.evaluate().isNotEmpty &&
-                  tester.widget<RadioMenuButton<bool>>(radio).groupValue ==
-                      true;
-        return '${checked ? '✓ ' : ''}$title'
-            '${button.onPressed == null ? ' (off)' : ''}';
-      }(),
-  ];
-
-  Future<void> pump(
-    WidgetTester tester,
-    LyricsSourceResolution? initial, {
-    Track track = _song,
-    bool library = true,
-    double? room = 240,
-    Lyrics? ownLyrics,
-    String? ownUri,
-    Locale locale = const Locale('en'),
-    double textScale = 1,
-    Size size = const Size(900, 700),
-    List<Override> overrides = const [],
-    List<LyricsProviderRegistration>? providers,
-  }) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    tester.platformDispatcher.textScaleFactorTestValue = textScale;
-    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final db = LibraryDatabase(NativeDatabase.memory());
-    addTearDown(db.close);
-    log = [];
-    menuEvents = [];
-    opener = ValueNotifier<bool Function()?>(null);
-    resolution = FakePlayingLyricsResolution(initial);
-    container = ProviderContainer(
-      overrides: [
-        audioBackendProvider.overrideWithValue(FakeAudioBackend()),
-        playingLyricsResolutionProvider.overrideWith(() => resolution),
-        playingLocalLyricsProvider.overrideWith(
-          (ref) async => ownLyrics == null
-              ? null
-              : (uri: ownUri ?? track.uri, lyrics: ownLyrics),
-        ),
-        lyricsProvidersProvider.overrideWithValue(
-          providers ?? [LyricsProviderRegistration(FakeLyricsProvider())],
-        ),
-        libraryDatabaseProvider.overrideWithValue(library ? db : null),
-        onlineLyricsActionsProvider.overrideWith(
-          (ref) => _RecordingActions(ref, log),
-        ),
-        ...overrides,
-      ],
-    );
-    addTearDown(container.dispose);
-    // The real resolution keeps the song's own lyrics alive; here nothing
-    // else watches them.
-    final keepOwnLyrics = container.listen(
-      playingLocalLyricsProvider,
-      (_, _) {},
-    );
-    addTearDown(keepOwnLyrics.close);
-    await container.read(playingLocalLyricsProvider.future);
-    await container.read(playerServiceProvider.notifier).openTracks([track]);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          locale: locale,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            ...GlobalMaterialLocalizations.delegates,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: Align(
-              alignment: Alignment.topLeft,
-              child: LyricsSourceButton(
-                maxLabelWidth: room,
-                menuOpener: opener,
-                onMenuChanged: menuEvents.add,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> openMenu(WidgetTester tester) async {
-    await tester.tap(find.byType(LyricsSourceButton));
-    await tester.pumpAndSettle();
-  }
-
-  LyricsSourceResolution found(
-    Lyrics lyrics, {
-    OnlineLyricsOrigin? origin,
-    LyricsChoice? chosen,
-    LyricsChoice? effective,
-    bool hasLocal = false,
-    bool pick = false,
-  }) => fakeResolution(
-    LyricsFound(_uri, lyrics, origin: origin),
-    chosen: chosen,
-    effective: effective,
-    hasLocal: hasLocal,
-    pin: pick ? fakePin(lyrics: _lyrics()) : null,
+  final modalTitle = find.text('Lyrics for this song');
+  final shown = fakeResolution(
+    LyricsFound(modalUri, modalLyrics()),
+    effective: LyricsChoice.local,
+    hasLocal: true,
   );
 
-  final states = <_State>[
-    (
-      name: 'automatic, the song\'s .lrc',
-      resolution: () => found(_lyrics(), hasLocal: true),
-      label: '.lrc file',
-      menu: [
-        'Lyrics in the file',
-        'Find lyrics online…',
-        'Save current lyrics… (off)',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'the chosen online version over the .lrc',
-      resolution: () => found(
-        _lyrics(),
-        origin: _origin(pinned: true, remoteId: '7'),
-        chosen: LyricsChoice.online,
-        effective: LyricsChoice.online,
-        hasLocal: true,
-        pick: true,
-      ),
-      label: 'Fake · Synced',
-      menu: [
-        'Lyrics in the file',
-        '✓ Online version',
-        'Find lyrics online…',
-        'Save current lyrics…',
-        'Not the current lyrics',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'the file chosen, the online pick kept',
-      resolution: () => found(
-        _lyrics(),
-        chosen: LyricsChoice.local,
-        effective: LyricsChoice.local,
-        hasLocal: true,
-        pick: true,
-      ),
-      label: '.lrc file',
-      menu: [
-        '✓ Lyrics in the file',
-        'Online version',
-        'Find lyrics online…',
-        'Save current lyrics… (off)',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'the file chosen but gone',
-      resolution: () => found(
-        _lyrics(),
-        origin: _origin(pinned: false),
-        chosen: LyricsChoice.local,
-        pick: true,
-      ),
-      label: 'Auto · Fake',
-      menu: [
-        'Lyrics in the file (off)',
-        'Online version',
-        'Keep this one',
-        'Find lyrics online…',
-        'Save current lyrics…',
-        'Not the current lyrics',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'automatic, found online',
-      resolution: () => found(_lyrics(), origin: _origin(pinned: false)),
-      label: 'Auto · Fake',
-      menu: [
-        'Keep this one',
-        'Find lyrics online…',
-        'Save current lyrics…',
-        'Not the current lyrics',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'searching',
-      resolution: () => fakeResolution(const LyricsSearching(_uri, 'fake')),
-      label: 'Searching…',
-      menu: [
-        'Find lyrics online…',
-        'Save current lyrics… (off)',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'no lyrics',
-      resolution: () =>
-          fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
-      label: 'No lyrics',
-      menu: [
-        'Find lyrics online…',
-        'Save current lyrics… (off)',
-        '✓ Lyrics for this song',
-      ],
-    ),
-    (
-      name: 'lyrics off',
-      resolution: () => fakeResolution(
-        const LyricsNone(_uri, LyricsNoneReason.off),
-        chosen: LyricsChoice.off,
-        effective: LyricsChoice.off,
-        hasLocal: true,
-      ),
-      label: 'Lyrics off',
-      menu: [
-        'Lyrics in the file',
-        'Find lyrics online…',
-        'Save current lyrics… (off)',
-        'Lyrics for this song',
-      ],
-    ),
-  ];
-
-  group('every state', () {
-    for (final state in states) {
-      testWidgets(state.name, (tester) async {
-        await pump(tester, state.resolution(), ownLyrics: _lyrics());
-        expect(find.text(state.label), findsOneWidget);
-        await openMenu(tester);
-        expect(menuRows(tester), state.menu);
-      });
-    }
-  });
-
-  group('the pill', () {
-    testWidgets('is quiet while nothing is found, primary once found', (
-      tester,
-    ) async {
-      await pump(tester, fakeResolution(const LyricsSearching(_uri, 'fake')));
-      Color? iconColor() => tester
-          .widget<Icon>(
-            find.descendant(of: findPill, matching: find.byType(Icon)),
-          )
-          .color;
-      expect(iconColor(), isNull);
-      resolution.emit(found(_lyrics(), origin: _origin(pinned: false)));
-      await tester.pump();
-      expect(
-        iconColor(),
-        Theme.of(tester.element(findPill)).colorScheme.primary,
-      );
-    });
-
-    for (final room in [null, 63.0]) {
-      testWidgets('is the round icon with the label as tooltip at room $room', (
-        tester,
-      ) async {
-        await pump(tester, found(_lyrics(), hasLocal: true), room: room);
-        expect(findPill, findsNothing);
-        expect(find.text('.lrc file'), findsNothing);
-        expect(find.byTooltip('Lyrics from .lrc file'), findsOneWidget);
-        expect(find.byType(IconButton), findsOneWidget);
-      });
-    }
-
-    testWidgets('grows a label from 64 px of room', (tester) async {
-      await pump(tester, found(_lyrics(), hasLocal: true), room: 64);
-      expect(findPill, findsOneWidget);
-    });
-
-    testWidgets('the menu heading is the same with or without lyrics', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
-      );
-      await openMenu(tester);
-      expect(find.text('SOURCE'), findsOneWidget);
-      expect(find.text('Lyrics for this song'), findsOneWidget);
-      expect(find.byTooltip('Lyrics for this song'), findsOneWidget);
-    });
-
-    testWidgets('with lyrics the tooltip names the source', (tester) async {
-      await pump(tester, found(_lyrics(), hasLocal: true));
-      await openMenu(tester);
-      expect(find.text('SOURCE'), findsOneWidget);
-      expect(find.byTooltip('Lyrics from .lrc file'), findsOneWidget);
-    });
-
-    testWidgets('names a known source that is not enabled', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: OnlineLyricsOrigin(
-            providerId: 'disabled',
-            remoteId: '1',
-            pinned: true,
-          ),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': const LyricsSourceName(displayName: 'Fake'),
-            'disabled': const LyricsSourceName(displayName: 'Off source'),
-          }),
-        ],
-      );
-      expect(find.text('Off source · Synced'), findsOneWidget);
-    });
-
-    testWidgets('credits a removed plugin with (removed)', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: OnlineLyricsOrigin(
-            providerId: 'gone',
-            remoteId: '1',
-            pinned: true,
-          ),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': const LyricsSourceName(displayName: 'Fake'),
-            'gone': const LyricsSourceName(
-              displayName: 'NetEase',
-              author: 'hieu05',
-              removed: true,
-            ),
-          }),
-        ],
-      );
-      expect(find.text('NetEase (removed) · Synced'), findsOneWidget);
-      await openMenu(tester);
-      expect(
-        find.byTooltip('Lyrics from NetEase (removed) · Synced'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('credits a removed plugin in Vietnamese', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: OnlineLyricsOrigin(
-            providerId: 'gone',
-            remoteId: '1',
-            pinned: true,
-          ),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        locale: const Locale('vi'),
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': const LyricsSourceName(displayName: 'Fake'),
-            'gone': const LyricsSourceName(
-              displayName: 'NetEase',
-              removed: true,
-            ),
-          }),
-        ],
-      );
-      await openMenu(tester);
-      expect(
-        find.byTooltip('Lời từ NetEase (đã gỡ) · Đồng bộ'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('an 80-character plugin name ellipsizes without overflow', (
-      tester,
-    ) async {
-      final longName = List.filled(80, 'N').join();
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: OnlineLyricsOrigin(
-            providerId: 'long',
-            remoteId: '1',
-            pinned: true,
-          ),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        room: 160,
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': const LyricsSourceName(displayName: 'Fake'),
-            'long': LyricsSourceName(displayName: longName),
-          }),
-        ],
-      );
-      expect(tester.takeException(), isNull);
-      expect(tester.getSize(findPill).width, lessThan(260));
-    });
-
-    testWidgets('the Online version row marks a removed plugin', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true, remoteId: '7'),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        // The test font is as wide as it is tall, wider than any real font:
-        // a smaller scale keeps the fixed tail of the subtitle in the row.
-        textScale: 0.6,
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': const LyricsSourceName(
-              displayName: 'NetEase',
-              removed: true,
-            ),
-          }),
-        ],
-      );
-      await openMenu(tester);
-      expect(find.text('Online version'), findsOneWidget);
-      expect(find.text('NetEase'), findsOneWidget);
-      expect(find.text(' · removed plugin'), findsOneWidget);
-      expect(find.text(' · Synced · 4:05'), findsOneWidget);
-    });
-
-    testWidgets('a long plugin name is cut in the menu row', (tester) async {
-      final longName = List.filled(80, 'N').join();
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true, remoteId: '7'),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-        overrides: [
-          lyricsSourceNamesProvider.overrideWithValue({
-            'fake': LyricsSourceName(displayName: longName),
-          }),
-        ],
-      );
-      await openMenu(tester);
-      expect(tester.takeException(), isNull);
-      // The kind and the length stay whole beside the cut name.
-      expect(find.text(' · Synced · 4:05'), findsOneWidget);
-    });
-
-    testWidgets('speaks Vietnamese', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true),
-          effective: LyricsChoice.online,
-          hasLocal: true,
-        ),
-        locale: const Locale('vi'),
-        ownLyrics: _lyrics(),
-      );
-      expect(find.text('Fake · Đồng bộ'), findsOneWidget);
-      await openMenu(tester);
-      expect(find.byTooltip('Lời từ Fake · Đồng bộ'), findsOneWidget);
-      expect(find.text('Nguồn'.toUpperCase()), findsOneWidget);
-      expect(find.text('Lời cho bài này'), findsOneWidget);
-      expect(find.text('Lưu lời đang hiện…'), findsOneWidget);
-    });
-
-    testWidgets('ellipsizes at text scale 2 without overflow', (tester) async {
-      await pump(
-        tester,
-        found(_lyrics(), origin: _origin(pinned: true)),
-        textScale: 2,
-        room: 100,
-      );
-      expect(tester.takeException(), isNull);
-      expect(tester.getSize(findPill).width, lessThan(260));
-    });
-
-    testWidgets('shows nothing while nothing plays', (tester) async {
-      await pump(tester, null);
-      expect(findPill, findsNothing);
-      expect(find.byType(IconButton), findsNothing);
-      expect(opener.value, isNull);
-    });
-  });
-
-  group('the menu rows', () {
-    testWidgets('subtitles name what each choice is', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: true, remoteId: '7'),
-          chosen: LyricsChoice.online,
-          effective: LyricsChoice.online,
-          hasLocal: true,
-          pick: true,
-        ),
-        ownLyrics: _lyrics(source: LyricsSource.embedded),
-      );
-      await openMenu(tester);
-      expect(find.text('In the tag'), findsOneWidget);
-      expect(find.text(' · Synced · 4:05'), findsOneWidget);
-      expect(find.text('Fake'), findsOneWidget);
-    });
-
-    testWidgets('a missing file says so', (tester) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: false),
-          chosen: LyricsChoice.local,
-        ),
-      );
-      await openMenu(tester);
-      expect(find.text('No lyrics found in the file'), findsOneWidget);
-    });
-
-    testWidgets('an automatic match does not tick Online version', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        found(
-          _lyrics(),
-          origin: _origin(pinned: false),
-          chosen: LyricsChoice.local,
-          effective: LyricsChoice.online,
-          pick: true,
-        ),
-      );
-      await openMenu(tester);
-      final rows = menuRows(tester);
-      expect(rows, contains('Online version'));
-      expect(rows, isNot(contains('✓ Online version')));
-    });
-
-    for (final (name, library, track) in [
-      ('without a library', false, _song),
-      (
-        'for a song that is not a file',
-        true,
-        const Track(uri: 'http://x/y.mp3', title: 'Stream'),
-      ),
-    ]) {
-      testWidgets('choices are disabled and Find online is gone $name', (
-        tester,
-      ) async {
-        await pump(
-          tester,
-          fakeResolution(
-            LyricsFound(track.uri, _lyrics(), origin: _origin(pinned: false)),
-            hasLocal: true,
-          ),
-          library: library,
-          track: track,
-        );
-        await openMenu(tester);
-        expect(menuRows(tester), [
-          'Lyrics in the file (off)',
-          'Keep this one (off)',
-          'Save current lyrics… (off)',
-          'Not the current lyrics (off)',
-          '✓ Lyrics for this song (off)',
-        ]);
-      });
-    }
-  });
-
-  group('each row', () {
-    for (final (title, expected) in [
-      ('Lyrics in the file', 'choose local $_uri'),
-      ('Online version', 'choose online $_uri'),
-      ('Lyrics for this song', 'choose off $_uri'),
-      ('Not the current lyrics', 'reject 7 $_uri'),
-    ]) {
-      testWidgets('$title acts on the song', (tester) async {
-        await pump(
-          tester,
-          found(
-            _lyrics(),
-            origin: _origin(pinned: true, remoteId: '7'),
-            chosen: LyricsChoice.online,
-            effective: LyricsChoice.online,
-            hasLocal: true,
-            pick: true,
-          ),
-          ownLyrics: _lyrics(),
-        );
-        await openMenu(tester);
-        await tester.tap(item(title));
-        await tester.pumpAndSettle();
-        expect(log, [expected]);
-      });
-    }
-
-    testWidgets('Keep this one keeps the automatic match', (tester) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      await tester.tap(item('Keep this one'));
-      await tester.pumpAndSettle();
-      expect(log, ['keep 1 $_uri']);
-    });
-
-    testWidgets('Find lyrics online asks for consent first', (tester) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      await tester.tap(item('Find lyrics online…'));
-      await tester.pumpAndSettle();
-      expect(find.text('Search lyrics online?'), findsOneWidget);
-    });
-
-    testWidgets('Save lyrics saves the record on screen', (tester) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      await tester.tap(item('Save current lyrics…'));
-      await tester.pumpAndSettle();
-      expect(find.text('Save lyrics'), findsOneWidget);
-      await tester.tap(find.text('Save').last);
-      await tester.pumpAndSettle();
-      expect(log, ['save 1 $_uri']);
-    });
-  });
-
-  group('the snapshot', () {
-    testWidgets('a track change closes the open menu', (tester) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-
-      await container.read(playerServiceProvider.notifier).openTracks([_other]);
-      resolution.emit(
-        fakeResolution(
-          LyricsFound(
-            '/m/other.flac',
-            _lyrics(),
-            origin: _origin(pinned: false),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Lyrics for this song'), findsNothing);
-      expect(menuEvents, [true, false]);
-    });
-
-    testWidgets(
-      'a dialog open across a track change still saves the old song',
-      (tester) async {
-        await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-        await openMenu(tester);
-        await tester.tap(item('Save current lyrics…'));
-        await tester.pumpAndSettle();
-        expect(find.text('Save lyrics'), findsOneWidget);
-
-        await container.read(playerServiceProvider.notifier).openTracks([
-          _other,
-        ]);
-        resolution.emit(
-          fakeResolution(
-            LyricsFound(
-              '/m/other.flac',
-              _lyrics(),
-              origin: _origin(pinned: false, remoteId: '9'),
-            ),
-          ),
-        );
-        await tester.pump();
-        await tester.tap(find.text('Save').last);
-        await tester.pumpAndSettle();
-
-        expect(log, ['save 1 $_uri']);
-      },
+  Future<void> rightClick(WidgetTester tester) async {
+    await tester.tap(
+      find.byType(LyricsSourceButton),
+      buttons: kSecondaryButton,
     );
+    await tester.pump();
+  }
 
-    testWidgets('the menu keeps its rows when the source changes under it', (
-      tester,
-    ) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      final before = menuRows(tester);
-      resolution.emit(
-        fakeResolution(const LyricsNone(_uri, LyricsNoneReason.noLyrics)),
-      );
-      await tester.pumpAndSettle();
-      expect(menuRows(tester), before);
-    });
+  testWidgets('a press opens the modal and reports it open, then closed', (
+    tester,
+  ) async {
+    final h = await pumpLyricsButton(tester, shown);
+    await tester.tap(find.byType(LyricsSourceButton));
+    await settle(tester);
+    expect(modalTitle, findsOneWidget);
+    expect(h.events, [true]);
+
+    await tester.tap(find.byTooltip('Close'));
+    await settle(tester);
+    expect(modalTitle, findsNothing);
+    expect(h.events, [true, false]);
   });
 
-  group('a song that just changed', () {
-    LyricsSourceResolution otherSource() => fakeResolution(
-      LyricsFound('/m/other.flac', _lyrics(), origin: _origin(pinned: true)),
-      effective: LyricsChoice.online,
-      hasLocal: true,
-      pin: fakePin(),
-    );
+  testWidgets('the opener callback opens the modal once', (tester) async {
+    final h = await pumpLyricsButton(tester, shown);
+    final open = h.opener.value!;
+    expect(open(), isTrue);
+    await settle(tester);
+    expect(modalTitle, findsOneWidget);
+    expect(open(), isFalse);
+  });
 
-    testWidgets('does not take the previous song\'s own lyrics', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        otherSource(),
-        track: _other,
-        ownLyrics: _lyrics(),
-        ownUri: _uri,
-      );
-      await openMenu(tester);
-      expect(find.text('Lyrics in the file'), findsOneWidget);
-      expect(find.text('.lrc file'), findsNothing);
-      expect(find.text('In the tag'), findsNothing);
+  testWidgets('the opener is cleared when nothing plays and when it leaves', (
+    tester,
+  ) async {
+    final h = await pumpLyricsButton(tester, shown);
+    expect(h.opener.value, isNotNull);
+    h.resolution.emit(null);
+    await tester.pump();
+    await tester.pump();
+    expect(h.opener.value, isNull);
+    expect(find.byType(IconButton), findsNothing);
+
+    h.resolution.emit(shown);
+    await tester.pump();
+    await tester.pump();
+    expect(h.opener.value, isNotNull);
+    await tester.pumpWidget(const SizedBox());
+    expect(h.opener.value, isNull);
+  });
+
+  testWidgets('another song closes the open modal', (tester) async {
+    final h = await pumpLyricsButton(tester, shown);
+    await tester.tap(find.byType(LyricsSourceButton));
+    await settle(tester);
+    h.resolution.emit(
+      fakeResolution(LyricsFound(otherTrack.uri, modalLyrics())),
+    );
+    await settle(tester);
+    expect(modalTitle, findsNothing);
+    expect(h.events.last, isFalse);
+  });
+
+  group('a right click', () {
+    testWidgets('turns lyrics off', (tester) async {
+      final h = await pumpLyricsButton(tester, shown);
+      await rightClick(tester);
+      expect(h.log, ['choose off']);
+      expect(modalTitle, findsNothing);
     });
 
-    testWidgets('the switch turns lyrics back on', (tester) async {
-      await pump(
+    testWidgets('turns them back on when they are off', (tester) async {
+      final h = await pumpLyricsButton(
         tester,
         fakeResolution(
-          const LyricsNone(_uri, LyricsNoneReason.off),
+          LyricsNone(modalUri, LyricsNoneReason.off),
           chosen: LyricsChoice.off,
           effective: LyricsChoice.off,
           hasLocal: true,
         ),
-        ownLyrics: _lyrics(),
       );
-      await openMenu(tester);
-      await tester.tap(item('Lyrics for this song'));
-      await tester.pumpAndSettle();
-      expect(log, ['turnOn $_uri']);
+      await rightClick(tester);
+      expect(h.log, ['turnOn']);
     });
 
-    testWidgets('acts on the playing song when the library target is stale', (
-      tester,
-    ) async {
-      await pump(
-        tester,
-        otherSource(),
-        track: _other,
-        overrides: [
-          lyricsTargetProvider.overrideWith(
-            (ref) => Stream.value(LyricsTarget.fromTrack(_song)),
-          ),
-        ],
-      );
-      await openMenu(tester);
-      await tester.tap(item('Lyrics for this song'));
-      await tester.pumpAndSettle();
-      expect(log, ['choose off /m/other.flac']);
-    });
-
-    testWidgets('does not open for a source of another song', (tester) async {
-      await pump(tester, found(_lyrics()), track: _other);
-      await tester.tap(find.byType(LyricsSourceButton));
-      await tester.pumpAndSettle();
-      expect(find.text('Lyrics for this song'), findsNothing);
-      expect(opener.value!(), isFalse);
-      expect(find.text('Lyrics for this song'), findsNothing);
-      // The press left a tooltip timer behind: let it run out.
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(seconds: 2));
-    });
-  });
-
-  group('opening', () {
-    testWidgets('reports to the header and clears the report on removal', (
-      tester,
-    ) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      await openMenu(tester);
-      expect(menuEvents, [true]);
-      await tester.pumpWidget(const SizedBox());
-      expect(menuEvents, [true, false]);
-    });
-
-    testWidgets('the key callback opens the menu on the first row', (
-      tester,
-    ) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      expect(opener.value, isNotNull);
-      opener.value!();
-      await tester.pumpAndSettle();
-      FocusNode focusOf(String title) =>
-          Focus.of(tester.element(find.text(title)));
-      expect(focusOf('Keep this one').hasPrimaryFocus, isTrue);
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-      await tester.pump();
-      expect(focusOf('Find lyrics online…').hasPrimaryFocus, isTrue);
-    });
-
-    testWidgets('the callback is cleared when the button leaves', (
-      tester,
-    ) async {
-      await pump(tester, found(_lyrics(), origin: _origin(pinned: false)));
-      expect(opener.value, isNotNull);
-      await tester.pumpWidget(const SizedBox());
-      expect(opener.value, isNull);
+    testWidgets('does nothing without the library', (tester) async {
+      final h = await pumpLyricsButton(tester, shown, library: false);
+      await rightClick(tester);
+      expect(h.log, isEmpty);
     });
   });
 }
