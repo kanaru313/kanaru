@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
 import 'package:kanaru/core/lyrics/online/candidate_content_hash.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
@@ -16,6 +15,7 @@ import 'bodyless_lyrics_provider.dart';
 import 'counting_http_client.dart';
 import 'fake_lyrics_provider.dart';
 import 'lookup_test_harness.dart';
+import 'support/http_test_lyrics_provider.dart';
 
 const _json = {'content-type': 'application/json; charset=utf-8'};
 const _words = LyricsBody(syncedLrc: '[00:01.00] fetched words');
@@ -289,7 +289,7 @@ void main() {
     });
   });
 
-  group('LRCLIB', () {
+  group('HTTP test provider', () {
     late LoopbackServer server;
 
     Map<String, Object?> record(int id) => {
@@ -303,16 +303,16 @@ void main() {
       'plainLyrics': 'hi\nthere',
     };
 
-    Future<void> lrclib(Reply Function(RecordedRequest) handler) async {
+    Future<void> serve(Reply Function(RecordedRequest) handler) async {
       server = await LoopbackServer.start(handler);
       addTearDown(server.close);
       final client = RewritingHttpClient(server.baseUri);
       addTearDown(() => client.close(force: true));
-      registration = LyricsProviderRegistration(LrclibProvider());
+      registration = LyricsProviderRegistration(HttpTestLyricsProvider());
       h = await createHarness([registration], client: client);
     }
 
-    Future<OnlineLyricsLookupResult> runLrclib() => runOnlineLyricsLookup(
+    Future<OnlineLyricsLookupResult> runServed() => runOnlineLyricsLookup(
       registration: registration,
       http: LyricsHttp.forTesting(
         client: RewritingHttpClient(server.baseUri),
@@ -324,9 +324,9 @@ void main() {
     );
 
     test('an exact hit is one request and the text is kept', () async {
-      await lrclib((_) => Reply(200, jsonEncode(record(5)), headers: _json));
+      await serve((_) => Reply(200, jsonEncode(record(5)), headers: _json));
 
-      expect(await runLrclib(), OnlineLyricsLookupResult.found);
+      expect(await runServed(), OnlineLyricsLookupResult.found);
 
       expect(server.requests.map((r) => r.uri.path), ['/api/get']);
       final row = (await rows()).single;
@@ -335,7 +335,7 @@ void main() {
     });
 
     test('a search hit is two requests and no fetch', () async {
-      await lrclib(
+      await serve(
         (r) => r.uri.path == '/api/get'
             ? const Reply(
                 404,
@@ -345,7 +345,7 @@ void main() {
             : Reply(200, jsonEncode([record(9)]), headers: _json),
       );
 
-      expect(await runLrclib(), OnlineLyricsLookupResult.found);
+      expect(await runServed(), OnlineLyricsLookupResult.found);
 
       expect(server.requests.map((r) => r.uri.path), [
         '/api/get',

@@ -160,7 +160,7 @@ void main() {
       );
       final l10n = lookupAppLocalizations(const Locale('en'));
       expect(find.text(l10n.lyricsSourcesTitle), findsOneWidget);
-      expect(find.text('LRCLIB, NetEase · 2 on'), findsOneWidget);
+      expect(find.text('NetEase · 1 on'), findsOneWidget);
       // It sits at the top of the Lyrics section.
       expect(
         top(tester, l10n.lyricsSourcesTitle),
@@ -172,11 +172,6 @@ void main() {
       await openSettings(
         tester,
         overrides: sources(const [
-          LyricsSourcePrefRow(
-            providerId: 'lrclib',
-            enabled: false,
-            position: 0,
-          ),
           LyricsSourcePrefRow(
             providerId: 'plugin-aaaaaaaaaaaa',
             enabled: false,
@@ -196,7 +191,7 @@ void main() {
     testWidgets('opens the sources page', (tester) async {
       await openSettings(tester, overrides: sources(const []));
       final l10n = lookupAppLocalizations(const Locale('en'));
-      await tester.tap(find.text('LRCLIB, NetEase, Kugou · 3 on'));
+      await tester.tap(find.text('NetEase, Kugou · 2 on'));
       await tester.pumpAndSettle();
       // The page's Get more plugins row is only on the sources page.
       expect(find.text(l10n.lyricsSourcesGetMore), findsOneWidget);

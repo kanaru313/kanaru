@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import '../lrc_parser.dart';
 import '../lyrics.dart';
-import 'lrclib_record.dart' show sanitizeLyricsText;
+import 'lyrics_text_sanitize.dart';
 import 'lyrics_fetch_exception.dart';
 import 'lyrics_provider.dart';
 

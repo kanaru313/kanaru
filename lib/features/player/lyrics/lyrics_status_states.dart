@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/library_startup.dart';
-import '../../../core/database/lyrics_plugin_spec.dart' show lrclibSourceId;
 import '../../../core/lyrics/online/lyrics_provider_registry.dart';
 import '../../../core/lyrics/online/lyrics_source_names.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
@@ -93,9 +92,8 @@ class LyricsNoneView extends ConsumerWidget {
         .map((r) => lyricsSourceNameText(l10n, names, r.id))
         .join(', ');
     // View log leads to one plugin's file: only when the one source that
-    // runs is that plugin (with LRCLIB beside it the failure may be LRCLIB's).
-    final onlyPlugin =
-        enabled.length == 1 && enabled.first.id != lrclibSourceId;
+    // runs is that plugin.
+    final onlyPlugin = enabled.length == 1;
     final reason = none.reason;
 
     Widget find(String label, VoidCallback onPressed) =>

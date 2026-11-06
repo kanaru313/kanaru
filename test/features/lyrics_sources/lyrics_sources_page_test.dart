@@ -31,19 +31,12 @@ void main() {
   double top(WidgetTester tester, String text) =>
       tester.getTopLeft(find.text(text)).dy;
 
-  testWidgets('lists LRCLIB first, then plugins with author and source', (
-    tester,
-  ) async {
+  testWidgets('lists the plugins with author and source', (tester) async {
     await pumpSources(tester, records: two, plugins: FakePlugins());
 
     expect(find.text(en.lyricsSourcesTitle), findsOneWidget);
-    expect(top(tester, 'LRCLIB'), lessThan(top(tester, 'Alpha')));
     expect(top(tester, 'Alpha'), lessThan(top(tester, 'Beta')));
-    expect(find.text(en.lyricsSourceBuiltIn), findsOneWidget);
-    expect(
-      find.text(en.lyricsSourceBuiltInHosts('lrclib.net')),
-      findsOneWidget,
-    );
+    expect(find.text(en.lyricsSourceBuiltIn), findsNothing);
     expect(
       find.text('hieu05 (self-declared) · v3 · File: demo.zip'),
       findsOneWidget,
@@ -92,9 +85,9 @@ void main() {
     expect(find.text(en.lyricsSourcesEmptyHint), findsNothing);
   });
 
-  testWidgets('an empty plugin list shows LRCLIB and a hint', (tester) async {
+  testWidgets('an empty plugin list shows only a hint', (tester) async {
     await pumpSources(tester, plugins: FakePlugins());
-    expect(find.text('LRCLIB'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
     expect(find.text(en.lyricsSourcesEmptyHint), findsOneWidget);
   });
 
@@ -102,13 +95,13 @@ void main() {
     final plugins = FakePlugins();
     await pumpSources(tester, records: two, plugins: plugins);
 
-    await tester.tap(find.byType(Switch).at(1));
+    await tester.tap(find.byType(Switch).at(0));
     await tester.pump();
     expect(plugins.enabled, [(idA, false)]);
 
-    await tester.tap(find.byType(Switch).first);
+    await tester.tap(find.byType(Switch).at(1));
     await tester.pump();
-    expect(plugins.enabled.last, ('lrclib', false));
+    expect(plugins.enabled.last, (idB, false));
   });
 
   testWidgets('switching on a plugin that needs config reports it', (
@@ -128,7 +121,7 @@ void main() {
     );
 
     // Off: nothing to report. On: the plugin stays on and is reported.
-    await tester.tap(find.byType(Switch).at(1));
+    await tester.tap(find.byType(Switch).at(0));
     await tester.pumpAndSettle();
     expect(plugins.enabled, [(idA, true)]);
     final notice = container.read(pluginNeedsConfigNoticesProvider);
@@ -136,7 +129,7 @@ void main() {
     expect(notice?.name, 'Alpha');
 
     // Switching off reports nothing.
-    await tester.tap(find.byType(Switch).at(2));
+    await tester.tap(find.byType(Switch).at(1));
     await tester.pumpAndSettle();
     expect(container.read(pluginNeedsConfigNoticesProvider)?.seq, 1);
   });
@@ -159,7 +152,7 @@ void main() {
       tester.element(find.byType(Switch).first),
     );
 
-    await tester.tap(find.byType(Switch).at(1));
+    await tester.tap(find.byType(Switch).at(0));
     await tester.pumpAndSettle();
 
     expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
@@ -176,7 +169,7 @@ void main() {
       ],
     );
     final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
-    expect([for (final s in switches) s.value], [true, true, false]);
+    expect([for (final s in switches) s.value], [true, false]);
   });
 
   testWidgets('dragging a handle calls reorder with the new id order', (
@@ -185,7 +178,7 @@ void main() {
     final plugins = FakePlugins();
     await pumpSources(tester, records: two, plugins: plugins);
 
-    final handle = find.byIcon(AppIcons.dragHandle).at(1);
+    final handle = find.byIcon(AppIcons.dragHandle).at(0);
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 100));
     await gesture.moveBy(const Offset(0, 80));
@@ -196,7 +189,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(plugins.reorders, [
-      ['lrclib', idB, idA],
+      [idB, idA],
     ]);
   });
 
@@ -204,13 +197,13 @@ void main() {
     final plugins = FakePlugins();
     await pumpSources(tester, records: two, plugins: plugins);
 
-    // Focus the first handle (LRCLIB).
+    // Focus the first handle.
     Focus.of(tester.element(find.byIcon(AppIcons.dragHandle).first))
         .requestFocus();
     await tester.pump();
     await altKey(tester, LogicalKeyboardKey.arrowDown);
     expect(plugins.reorders, [
-      [idA, 'lrclib', idB],
+      [idB, idA],
     ]);
   });
 
@@ -225,12 +218,9 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('a plugin row opens its page; LRCLIB has none', (tester) async {
+  testWidgets('a plugin row opens its page', (tester) async {
     await pumpSources(tester, records: two, plugins: FakePlugins());
 
-    await tester.tap(find.text('LRCLIB'));
-    await tester.pumpAndSettle();
-    // Still on the list: its Get more plugins row shows and no plugin page opened.
     expect(find.text(en.lyricsSourcesGetMore), findsOneWidget);
     expect(find.byTooltip(en.pluginUninstall), findsNothing);
 

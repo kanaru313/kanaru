@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/track.dart';
@@ -20,6 +21,7 @@ import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/lyrics/fake_lyrics_readers.dart';
+import '../../../core/lyrics/online/fake_lyrics_provider.dart';
 import '../../../core/player/fake_audio_backend.dart';
 import 'fake_playing_lyrics_status.dart';
 
@@ -313,7 +315,7 @@ void main() {
   group('layout stays put across online lyrics states', () {
     const uri = '/m/sung.flac';
     const origin = OnlineLyricsOrigin(
-      providerId: 'lrclib',
+      providerId: 'demo',
       remoteId: '1',
       pinned: false,
     );
@@ -331,7 +333,7 @@ void main() {
       final steps = <PlayingLyricsStatus>[
         LyricsFound(uri, fakeSyncedLyrics()),
         const LyricsNone(uri, LyricsNoneReason.noLyrics),
-        const LyricsSearching(uri, 'lrclib'),
+        const LyricsSearching(uri, 'demo'),
         LyricsFound(uri, fakePlainLyrics('Online words'), origin: origin),
         const LyricsNone(
           uri,
@@ -382,7 +384,12 @@ void main() {
       final status = fresh();
       await pump(
         tester,
-        overrides: [playingLyricsStatusProvider.overrideWith(() => status)],
+        overrides: [
+          playingLyricsStatusProvider.overrideWith(() => status),
+          lyricsProvidersProvider.overrideWithValue([
+            LyricsProviderRegistration(FakeLyricsProvider(id: 'demo')),
+          ]),
+        ],
       );
       await walk(
         tester,
@@ -399,9 +406,8 @@ void main() {
           final text = switch (step) {
             LyricsFound(origin: null) => 'First words',
             LyricsFound() => 'Online words',
-            LyricsSearching() => 'Searching LRCLIB…',
-            LyricsNone(reason: LyricsNoneReason.error) =>
-              "Couldn't reach LRCLIB",
+            LyricsSearching() => 'Searching Fake…',
+            LyricsNone(reason: LyricsNoneReason.error) => "Couldn't reach Fake",
             _ => 'No lyrics for this song',
           };
           expect(find.text(text), findsOneWidget, reason: '$step');

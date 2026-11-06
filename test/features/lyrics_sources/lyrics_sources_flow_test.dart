@@ -36,7 +36,7 @@ void main() {
     WidgetTester tester, {
     bool settle = true,
   }) async {
-    final handle = find.byIcon(AppIcons.dragHandle).at(1);
+    final handle = find.byIcon(AppIcons.dragHandle).at(0);
     final gesture = await tester.startGesture(tester.getCenter(handle));
     await tester.pump(const Duration(milliseconds: 100));
     await gesture.moveBy(const Offset(0, 80));
@@ -65,21 +65,11 @@ void main() {
       expect(top(tester, 'Beta'), lessThan(top(tester, 'Alpha')));
 
       // The database confirms, then another change puts Alpha first again.
-      input.add(
-        LyricsSourcesInput(
-          [a, b],
-          [_pref('lrclib', 0), _pref(idB, 1), _pref(idA, 2)],
-        ),
-      );
+      input.add(LyricsSourcesInput([a, b], [_pref(idB, 0), _pref(idA, 1)]));
       await tester.pumpAndSettle();
       expect(top(tester, 'Beta'), lessThan(top(tester, 'Alpha')));
 
-      input.add(
-        LyricsSourcesInput(
-          [a, b],
-          [_pref('lrclib', 0), _pref(idA, 1), _pref(idB, 2)],
-        ),
-      );
+      input.add(LyricsSourcesInput([a, b], [_pref(idA, 0), _pref(idB, 1)]));
       await tester.pumpAndSettle();
       expect(top(tester, 'Alpha'), lessThan(top(tester, 'Beta')));
     });

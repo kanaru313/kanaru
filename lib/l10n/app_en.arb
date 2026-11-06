@@ -3119,6 +3119,10 @@
   "@lyricsPickerUse": {
     "description": "Button that pins the selected lyrics to the song"
   },
+  "lyricsPickerNoSource": "No online lyrics source is on.",
+  "@lyricsPickerNoSource": {
+    "description": "Results pane text when no online lyrics source is turned on, so nothing can be searched"
+  },
   "lyricsPickerNoPreview": "Select a result to preview its lyrics",
   "@lyricsPickerNoPreview": {
     "description": "Preview pane text when nothing is selected"

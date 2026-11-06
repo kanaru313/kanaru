@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http_address_class.dart';
@@ -15,6 +14,7 @@ import 'package:kanaru/core/lyrics/plugins/plugin_fetch_bridge.dart';
 import 'package:kanaru/core/plugin_runtime/plugin_runtime.dart';
 
 import '../plugins/repo/repo_test_support.dart';
+import 'support/http_test_lyrics_provider.dart';
 
 PluginFetchCall _fetch(Uri url) => PluginFetchCall(
   method: 'GET',
@@ -26,8 +26,8 @@ PluginFetchCall _fetch(Uri url) => PluginFetchCall(
 );
 
 void main() {
-  final lrclib = LyricsProviderRegistration(LrclibProvider());
-  final url = Uri.parse('https://lrclib.net/api/get?q=x');
+  final testSource = LyricsProviderRegistration(HttpTestLyricsProvider());
+  final url = Uri.parse('https://lyrics.test.net/api/get?q=x');
   late TestServer plain;
   late TestServer tls;
 
@@ -61,7 +61,7 @@ void main() {
     test('a public name that resolves to loopback is blockedHost, nothing '
         'is sent', () async {
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           ['127.0.0.1'],
         ],
       });
@@ -70,7 +70,7 @@ void main() {
       addTearDown(() => client.close(force: true));
 
       expect(
-        await kindOf(LyricsHttp(lrclib, client).get(url)),
+        await kindOf(LyricsHttp(testSource, client).get(url)),
         LyricsFetchKind.blockedHost,
       );
       expect(dialer.dialed, isEmpty);
@@ -89,13 +89,13 @@ void main() {
         [fakePublicIp, '127.0.0.1'],
       ]) {
         final resolver = FakeResolver({
-          'lrclib.net': [answer],
+          'lyrics.test.net': [answer],
         });
         final dialer = RecordingDialer(plain);
         final client = guarded(resolver, dialer);
         addTearDown(() => client.close(force: true));
         expect(
-          await kindOf(LyricsHttp(lrclib, client).get(url)),
+          await kindOf(LyricsHttp(testSource, client).get(url)),
           LyricsFetchKind.blockedHost,
           reason: '$answer',
         );
@@ -110,7 +110,7 @@ void main() {
         await r.response.close();
       };
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           [fakePublicIp],
         ],
       });
@@ -118,10 +118,10 @@ void main() {
       final client = guarded(resolver, dialer);
       addTearDown(() => client.close(force: true));
 
-      // The test certificate is for repo.example.test, not lrclib.net: the
+      // The test certificate is for repo.example.test, not lyrics.test.net: the
       // handshake must fail on the name, proving the name is what is checked.
       expect(
-        await kindOf(LyricsHttp(lrclib, client).get(url)),
+        await kindOf(LyricsHttp(testSource, client).get(url)),
         LyricsFetchKind.network,
       );
       expect(dialer.dialed.single.address, fakePublicIp);
@@ -174,14 +174,14 @@ void main() {
   group('plugin fetch bridge', () {
     test('a refused address is reported like a blocked host', () async {
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           ['10.1.2.3'],
         ],
       });
       final dialer = RecordingDialer(plain);
       final client = guarded(resolver, dialer);
       addTearDown(() => client.close(force: true));
-      final bridge = PluginFetchBridge(LyricsHttp(lrclib, client));
+      final bridge = PluginFetchBridge(LyricsHttp(testSource, client));
 
       final answer = await bridge.call(_fetch(url));
 
@@ -436,7 +436,7 @@ void main() {
   });
 
   group('behind a proxy', () {
-    final target = Uri.parse('https://lrclib.net/api/get');
+    final target = Uri.parse('https://lyrics.test.net/api/get');
 
     LyricsConnectionFactory proxied(LyricsHostResolver resolver) =>
         lyricsPublicOnlyConnectionFactory(
@@ -447,7 +447,7 @@ void main() {
     test('a name that resolves locally to a non-public address is refused, '
         'the proxy is not contacted', () async {
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           ['127.0.0.1'],
         ],
       });
@@ -455,7 +455,7 @@ void main() {
         proxied(resolver.call)(target, '127.0.0.1', plain.port),
         throwsA(isA<LyricsBlockedAddressException>()),
       );
-      expect(resolver.lookups, ['lrclib.net']);
+      expect(resolver.lookups, ['lyrics.test.net']);
       expect(plain.requests, isEmpty);
     });
 
@@ -474,7 +474,7 @@ void main() {
 
     test('a public answer connects to the proxy', () async {
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           [fakePublicIp],
         ],
       });
@@ -506,7 +506,7 @@ void main() {
 
     test('a fake-ip answer (198.18.0.0/15) counts as public', () async {
       final resolver = FakeResolver({
-        'lrclib.net': [
+        'lyrics.test.net': [
           ['198.18.0.7'],
         ],
       });

@@ -4,9 +4,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../database/lyrics_plugin_spec.dart' show lrclibSourceId;
 import '../plugins/lyrics_sources_provider.dart';
-import 'lrclib_provider.dart';
 import 'lyrics_provider_registry.dart';
 
 export '../plugins/lyrics_sources_provider.dart'
@@ -55,16 +53,14 @@ class _NameMap extends UnmodifiableMapView<String, LyricsSourceName> {
       entries.fold(0, (h, e) => h ^ Object.hash(e.key, e.value));
 }
 
-/// Every source whose stored lyrics may be shown, by provider id: LRCLIB (a
-/// known provider, named even when turned off), the enabled sources and
-/// every plugin record, installed (on or off) or removed. A removed record
-/// is only a name for lyrics it saved. It decides what is listed and how it
-/// is named; [lyricsProvidersProvider] decides what runs.
+/// Every source whose stored lyrics may be shown, by provider id: the enabled
+/// sources and every plugin record, installed (on or off) or removed. A
+/// removed record is only a name for lyrics it saved. It decides what is
+/// listed and how it is named; [lyricsProvidersProvider] decides what runs.
 final lyricsSourceNamesProvider = Provider<Map<String, LyricsSourceName>>((
   ref,
 ) {
   final names = <String, LyricsSourceName>{
-    lrclibSourceId: LyricsSourceName(displayName: LrclibProvider().displayName),
     for (final r in ref.watch(lyricsProvidersProvider))
       r.id: LyricsSourceName(displayName: r.displayName),
   };

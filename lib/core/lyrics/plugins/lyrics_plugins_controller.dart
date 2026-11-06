@@ -200,7 +200,7 @@ class LyricsPluginsController {
     }
   }
 
-  /// Puts [ids] (`lrclib` and plugin ids) first, in order; returns the ids
+  /// Puts [ids] (plugin ids) first, in order; returns the ids
   /// that were written and the ones skipped (removed or unknown plugins).
   Future<({List<String> written, List<String> skipped})> reorder(
     List<String> ids,

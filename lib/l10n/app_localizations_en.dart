@@ -3498,6 +3498,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsPickerUse => 'Use these lyrics';
 
   @override
+  String get lyricsPickerNoSource => 'No online lyrics source is on.';
+
+  @override
   String get lyricsPickerNoPreview => 'Select a result to preview its lyrics';
 
   @override

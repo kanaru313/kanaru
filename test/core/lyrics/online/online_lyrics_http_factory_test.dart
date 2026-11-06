@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http_retry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
@@ -8,9 +7,10 @@ import 'package:kanaru/core/lyrics/online/online_lyrics_http_factory.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
 import 'counting_http_client.dart';
+import 'support/http_test_lyrics_provider.dart';
 
 void main() {
-  final lrclib = LyricsProviderRegistration(LrclibProvider());
+  final testSource = LyricsProviderRegistration(HttpTestLyricsProvider());
   late CountingHttpClient client;
 
   ProviderContainer containerWith(OnlineLyricsPrefs prefs) {
@@ -41,10 +41,13 @@ void main() {
         .read(onlineLyricsHttpFactoryProvider);
 
     expect(
-      kindOf(() => factory.forManual(lrclib)),
+      kindOf(() => factory.forManual(testSource)),
       LyricsFetchKind.notConsented,
     );
-    expect(kindOf(() => factory.forAuto(lrclib)), LyricsFetchKind.notConsented);
+    expect(
+      kindOf(() => factory.forAuto(testSource)),
+      LyricsFetchKind.notConsented,
+    );
     expect(client.opened, 0);
   });
 
@@ -52,8 +55,11 @@ void main() {
     final factory = containerWith(const OnlineLyricsPrefs(manualConsent: true))
         .read(onlineLyricsHttpFactoryProvider);
 
-    expect(kindOf(() => factory.forManual(lrclib)), isNull);
-    expect(kindOf(() => factory.forAuto(lrclib)), LyricsFetchKind.notConsented);
+    expect(kindOf(() => factory.forManual(testSource)), isNull);
+    expect(
+      kindOf(() => factory.forAuto(testSource)),
+      LyricsFetchKind.notConsented,
+    );
     expect(client.opened, 0);
   });
 
@@ -61,9 +67,9 @@ void main() {
     final factory = containerWith(const OnlineLyricsPrefs(autoConsent: true))
         .read(onlineLyricsHttpFactoryProvider);
 
-    expect(kindOf(() => factory.forAuto(lrclib)), isNull);
+    expect(kindOf(() => factory.forAuto(testSource)), isNull);
     expect(
-      kindOf(() => factory.forManual(lrclib)),
+      kindOf(() => factory.forManual(testSource)),
       LyricsFetchKind.notConsented,
     );
   });
@@ -73,15 +79,15 @@ void main() {
       const OnlineLyricsPrefs(manualConsent: true, autoConsent: true),
     ).read(onlineLyricsHttpFactoryProvider);
 
-    expect(kindOf(() => factory.forManual(lrclib)), isNull);
-    expect(kindOf(() => factory.forAuto(lrclib)), isNull);
+    expect(kindOf(() => factory.forManual(testSource)), isNull);
+    expect(kindOf(() => factory.forAuto(testSource)), isNull);
   });
 
   test('consent given later is seen by an existing factory', () {
     final container = containerWith(const OnlineLyricsPrefs());
     final factory = container.read(onlineLyricsHttpFactoryProvider);
     expect(
-      kindOf(() => factory.forManual(lrclib)),
+      kindOf(() => factory.forManual(testSource)),
       LyricsFetchKind.notConsented,
     );
 
@@ -89,7 +95,7 @@ void main() {
         .read(settingsProvider.notifier)
         .acknowledgeOnlineLyricsNotice(auto: false);
 
-    expect(kindOf(() => factory.forManual(lrclib)), isNull);
+    expect(kindOf(() => factory.forManual(testSource)), isNull);
   });
 
   test('consent is checked again before every send of the same client', () {
@@ -99,11 +105,11 @@ void main() {
       prefs: () => prefs,
       client: () => unused,
     );
-    final http = factory.forManual(lrclib);
+    final http = factory.forManual(testSource);
     prefs = const OnlineLyricsPrefs();
 
     expect(
-      http.get(Uri.parse('https://lrclib.net/api/get')),
+      http.get(Uri.parse('https://lyrics.test.net/api/get')),
       throwsA(
         isA<LyricsFetchException>().having(
           (e) => e.kind,
@@ -122,11 +128,11 @@ void main() {
       client: () => unused,
     );
     var abandoned = false;
-    final http = factory.forManual(lrclib, abandoned: () => abandoned);
+    final http = factory.forManual(testSource, abandoned: () => abandoned);
     abandoned = true;
 
     expect(
-      http.get(Uri.parse('https://lrclib.net/api/get')),
+      http.get(Uri.parse('https://lyrics.test.net/api/get')),
       throwsA(isA<LyricsRequestAbandoned>()),
     );
     expect(unused.opened, 0);
@@ -139,7 +145,7 @@ void main() {
     expect(client.connectionTimeout, const Duration(seconds: 10));
     container.dispose();
     expect(
-      () => client.getUrl(Uri.parse('https://lrclib.net')),
+      () => client.getUrl(Uri.parse('https://lyrics.test.net')),
       throwsA(isA<StateError>()),
     );
   });

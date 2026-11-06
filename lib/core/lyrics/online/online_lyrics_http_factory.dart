@@ -72,7 +72,7 @@ class OnlineLyricsHttpFactory {
 /// How long opening a connection may take.
 const lyricsConnectTimeout = Duration(seconds: 10);
 
-/// The shared client for online lyrics (LRCLIB and plugin `fetch`), closed
+/// The shared client for online lyrics (plugin `fetch`), closed
 /// with its container. Its connections go through the public-only pinned
 /// factory: a host name that resolves to a loopback, private or otherwise
 /// non-public address fails with `blockedHost` before anything is sent.

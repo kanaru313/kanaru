@@ -19,7 +19,7 @@ import 'plugin_config_save.dart';
 
 final _log = Logger('lyrics_sources');
 
-/// The lyrics sources page: LRCLIB and the installed plugins in one list the
+/// The lyrics sources page: the installed plugins in one list the
 /// user reorders (drag, or Alt + arrows on a handle) and switches on or off.
 /// A plugin row opens the plugin's page.
 class LyricsSourcesPage extends ConsumerStatefulWidget {
@@ -137,7 +137,7 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
             footer: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!shown.any((e) => e.record != null))
+                if (shown.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
@@ -165,9 +165,7 @@ class _LyricsSourcesPageState extends ConsumerState<LyricsSourcesPage> {
                     // already gone from the list, so nothing is shown.
                     : (on) => unawaited(_toggle(controller, entry, on)),
                 onMove: (delta) => _move(shown, index, delta),
-                onOpen: entry.record == null
-                    ? null
-                    : () => context.go(lyricsPluginRoute(entry.id)),
+                onOpen: () => context.go(lyricsPluginRoute(entry.id)),
               );
             },
           ),

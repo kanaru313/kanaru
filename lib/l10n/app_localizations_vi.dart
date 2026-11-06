@@ -3221,6 +3221,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsPickerUse => 'Dùng lời này';
 
   @override
+  String get lyricsPickerNoSource =>
+      'Chưa có nguồn lời trực tuyến nào đang bật.';
+
+  @override
   String get lyricsPickerNoPreview => 'Chọn một kết quả để xem trước lời';
 
   @override

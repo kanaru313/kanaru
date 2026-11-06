@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/online_lyrics_queries.dart';
-import 'package:kanaru/core/lyrics/online/lrclib_provider.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_fetch_exception.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
@@ -17,6 +16,7 @@ import 'package:kanaru/core/lyrics/online/playing_lyrics_status_provider.dart';
 
 import '../../lyrics_translation/loopback_server.dart';
 import 'lookup_test_harness.dart';
+import 'support/http_test_lyrics_provider.dart';
 
 const _json = {'content-type': 'application/json; charset=utf-8'};
 const _notFound = Reply(
@@ -49,7 +49,7 @@ class _FlakyClient extends RewritingHttpClient {
       : super.openUrl(method, url);
 }
 
-/// The real LRCLIB client against a loopback server standing in for it.
+/// The HTTP test provider against a loopback server standing in for a source.
 void main() {
   late LoopbackServer server;
   late _FlakyClient client;
@@ -71,7 +71,7 @@ void main() {
     client = _FlakyClient(server.baseUri);
     addTearDown(() => client.close(force: true));
     h = await createHarness(
-      [LyricsProviderRegistration(LrclibProvider())],
+      [LyricsProviderRegistration(HttpTestLyricsProvider())],
       client: client,
       autoConsent: autoConsent,
       overrides: [
@@ -97,7 +97,7 @@ void main() {
         (await h.db.watchOnlineLyrics(fakeTarget.cacheKey).first).single;
     expect(
       (row.providerId, row.status, row.remoteId),
-      ('lrclib', 'found', '5'),
+      ('test-http', 'found', '5'),
     );
     expect(server.requests.single.uri.path, '/api/get');
   });

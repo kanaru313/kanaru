@@ -1513,6 +1513,7 @@
   "lyricsPickerRetry": "Thử lại",
   "lyricsPickerFooter": "Kết quả từ {hosts} · lời bạn chọn được ghim vào bài này",
   "lyricsPickerUse": "Dùng lời này",
+  "lyricsPickerNoSource": "Chưa có nguồn lời trực tuyến nào đang bật.",
   "lyricsPickerNoPreview": "Chọn một kết quả để xem trước lời",
   "lyricsPickerNoBody": "Không xem trước hoặc dùng được lời này",
   "lyricsPickerInstrumentalPreview": "Bài này không có lời",

@@ -4994,6 +4994,12 @@ abstract class AppLocalizations {
   /// **'Use these lyrics'**
   String get lyricsPickerUse;
 
+  /// Results pane text when no online lyrics source is turned on, so nothing can be searched
+  ///
+  /// In en, this message translates to:
+  /// **'No online lyrics source is on.'**
+  String get lyricsPickerNoSource;
+
   /// Preview pane text when nothing is selected
   ///
   /// In en, this message translates to:

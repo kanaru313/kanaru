@@ -40,7 +40,7 @@ const maxLookupFetches = 3;
 ///
 /// A plain-only `lookup` record also runs the `search`; its best good match
 /// replaces the record when that one has synced text (a match without lyrics
-/// counts only after its fetch): two requests for LRCLIB, three when the best
+/// counts only after its fetch): two requests, three when the best
 /// match has to be fetched. If that extra search or fetch fails with a
 /// `LyricsFetchException` other than `notConsented`, the plain record is
 /// kept.
@@ -97,7 +97,7 @@ Future<OnlineLyricsLookupResult> runOnlineLyricsLookup({
   // A good exact record without lyrics is fetched like a search result.
   final exactBodyless = exactIsGood && !exact.hasBody;
   // A plain-only exact hit may have a synced twin in the search: two requests
-  // for LRCLIB, three when the best match has to be fetched.
+  // in all, three when the best match has to be fetched.
   final exactNeedsSynced =
       exactIsGood &&
       !exactBodyless &&
