@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/database/lyrics_plugin_spec.dart';
 import '../../../../../core/lyrics/plugins/lyrics_plugin_record.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_controller.dart';
@@ -19,6 +20,7 @@ import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
+import 'translation_ai_badge.dart';
 import 'translation_modal_navigation.dart';
 
 /// Sentinel value for the `"Default (<language>)"` entry in the target picker.
@@ -88,6 +90,10 @@ Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
           record: _recordFor(records, service.value),
           size: 24,
         ),
+        badge:
+            _recordFor(records, service.value)?.kind == PluginKind.aiTranslate
+            ? const TranslationAiBadge()
+            : null,
       ),
   ];
   final picked = await showSelectionPicker<TranslationServiceId>(

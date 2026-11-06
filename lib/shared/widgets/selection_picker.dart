@@ -17,6 +17,7 @@ class SelectionPickerItem<T> {
     required this.name,
     this.description,
     this.leading,
+    this.badge,
   });
 
   /// Value returned by the picker when this entry is chosen.
@@ -30,6 +31,9 @@ class SelectionPickerItem<T> {
 
   /// Optional widget before the title.
   final Widget? leading;
+
+  /// Optional tag after the row text (see [SelectionRow.badge]).
+  final Widget? badge;
 }
 
 /// Opens a layered selection modal with [title], a close button, and one
@@ -179,6 +183,7 @@ class _SelectionPickerContentState<T>
               title: item.name,
               subtitle: item.description,
               leading: item.leading,
+              badge: item.badge,
               selected: item.value == widget.selected,
               onTap: () => Navigator.of(context).pop(item.value),
             ),

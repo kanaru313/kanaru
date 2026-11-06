@@ -161,6 +161,7 @@ abstract final class AppIcons {
   static const IconData lyricsTranslateOutlined =
       FluentIcons.translate_24_regular;
   static const IconData lyricsTranslate = FluentIcons.translate_24_filled;
+  static const IconData aiTune = FluentIcons.options_24_regular;
   static const IconData lyricsKeep = FluentIcons.bookmark_24_regular;
   static const IconData lyricsFile = FluentIcons.document_24_regular;
   static const IconData lyricsSave = FluentIcons.save_24_regular;

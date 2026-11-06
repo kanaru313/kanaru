@@ -27,7 +27,8 @@ extension LyricTranslationQueries on LibraryDatabase {
     return (select(lyricTranslationPrefs)
           ..where((t) => t.contentHash.equals(hash)))
         .watchSingleOrNull()
-        .map((row) => row?.targetLang);
+        .map((row) => row?.targetLang)
+        .distinct();
   }
 
   /// Sets the per-song target; null removes the choice. The row goes when
@@ -43,7 +44,8 @@ extension LyricTranslationQueries on LibraryDatabase {
     return (select(lyricTranslationPrefs)
           ..where((t) => t.contentHash.equals(hash)))
         .watchSingleOrNull()
-        .map((row) => row?.instruction);
+        .map((row) => row?.instruction)
+        .distinct();
   }
 
   Future<String?> songTranslationInstruction(String hash) async {

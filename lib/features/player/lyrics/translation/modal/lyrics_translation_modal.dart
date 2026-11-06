@@ -75,6 +75,9 @@ class _LyricsTranslationModalState
     extends ConsumerState<LyricsTranslationModal> {
   bool _closing = false;
 
+  // The lyrics hash the modal opened on; another song closes the stack.
+  String? _openedHash;
+
   void _scheduleCloseStack() {
     if (_closing) return;
     _closing = true;
@@ -131,7 +134,8 @@ class _LyricsTranslationModalState
   Widget build(BuildContext context) {
     final state = ref.watch(lyricsTranslationProvider(widget.appLang));
     final info = translationInfoOf(state);
-    if (info == null) {
+    _openedHash ??= info?.hash;
+    if (info == null || info.hash != _openedHash) {
       _scheduleCloseStack();
       return const SizedBox.shrink();
     }

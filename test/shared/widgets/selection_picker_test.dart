@@ -235,4 +235,29 @@ void main() {
     await tester.pump();
     expect(find.text('hint note', skipOffstage: false), findsOneWidget);
   });
+
+  testWidgets('an item badge shows on its row only', (tester) async {
+    await _pumpPickerHost<String>(
+      tester,
+      items: const [
+        SelectionPickerItem(value: 'a', name: 'Alpha', badge: Text('TAG')),
+        SelectionPickerItem(value: 'b', name: 'Beta'),
+      ],
+      onResult: (_) {},
+    );
+    expect(
+      find.descendant(
+        of: find.widgetWithText(SelectionRow, 'Alpha'),
+        matching: find.text('TAG'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.widgetWithText(SelectionRow, 'Beta'),
+        matching: find.text('TAG'),
+      ),
+      findsNothing,
+    );
+  });
 }

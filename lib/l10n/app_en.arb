@@ -5740,5 +5740,63 @@
   "lyricsSourceButtonHint": "Click: lyrics options · Right-click: turn on/off · L",
   "@lyricsSourceButtonHint": {
     "description": "Second line of the lyrics button tooltip: what a click and a right click do"
+  },
+  "lyricsTranslationModalTitle": "Lyrics translation",
+  "@lyricsTranslationModalTitle": {
+    "description": "Title of the lyrics translation modal header (next to the settings and close buttons)"
+  },
+  "translationAiBadge": "AI",
+  "@translationAiBadge": {
+    "description": "Small badge on a translation service that translates with an AI model"
+  },
+  "translationAiTuneRow": "AI tuning",
+  "@translationAiTuneRow": {
+    "description": "Title of the row (and of the child modal it opens) that tunes the AI translation service: model, style and a note for the song"
+  },
+  "translationAiModel": "Model",
+  "@translationAiModel": {
+    "description": "Label of the AI model choice in the AI tuning modal"
+  },
+  "translationAiStyle": "Style",
+  "@translationAiStyle": {
+    "description": "Label of the translation style choice in the AI tuning modal"
+  },
+  "translationSongInstruction": "Note for this song",
+  "@translationSongInstruction": {
+    "description": "Label of the box in the AI tuning modal where the user writes a note that only applies to the current song's translation"
+  },
+  "translationAiTuneHint": "Set by the plugin {name}. Saved for this plugin.",
+  "@translationAiTuneHint": {
+    "description": "Note under the AI tuning modal's fields",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiTuneDone": "Done",
+  "@translationAiTuneDone": {
+    "description": "Button that closes the AI tuning modal"
+  },
+  "translationAiOptionGone": "{value} (no longer supported)",
+  "@translationAiOptionGone": {
+    "description": "Shown for a saved model or style that the plugin no longer offers",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "translationAiNotChosen": "Not chosen",
+  "@translationAiNotChosen": {
+    "description": "Shown in the AI tuning modal when a model or style has no value"
+  },
+  "translationAiNoModels": "No models yet",
+  "@translationAiNoModels": {
+    "description": "Shown in the AI tuning modal when the plugin has no model to pick yet"
+  },
+  "translationAiOpenPluginSettings": "Open plugin settings",
+  "@translationAiOpenPluginSettings": {
+    "description": "Button in the AI tuning modal that opens the translation plugin's settings page"
   }
 }

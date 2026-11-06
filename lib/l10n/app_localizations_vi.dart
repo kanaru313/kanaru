@@ -5390,4 +5390,44 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get lyricsSourceButtonHint =>
       'Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L';
+
+  @override
+  String get lyricsTranslationModalTitle => 'Dịch lời';
+
+  @override
+  String get translationAiBadge => 'AI';
+
+  @override
+  String get translationAiTuneRow => 'Tinh chỉnh AI';
+
+  @override
+  String get translationAiModel => 'Model';
+
+  @override
+  String get translationAiStyle => 'Phong cách';
+
+  @override
+  String get translationSongInstruction => 'Lời dặn cho bài này';
+
+  @override
+  String translationAiTuneHint(String name) {
+    return 'Do plugin $name khai báo. Lựa chọn được nhớ cho plugin này.';
+  }
+
+  @override
+  String get translationAiTuneDone => 'Xong';
+
+  @override
+  String translationAiOptionGone(String value) {
+    return '$value (không còn hỗ trợ)';
+  }
+
+  @override
+  String get translationAiNotChosen => 'Chưa chọn';
+
+  @override
+  String get translationAiNoModels => 'Chưa có model nào';
+
+  @override
+  String get translationAiOpenPluginSettings => 'Mở cài đặt plugin';
 }

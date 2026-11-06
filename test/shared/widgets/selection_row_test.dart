@@ -89,6 +89,52 @@ void main() {
     },
   );
 
+  testWidgets('a badge sits before the check slot and takes its own width', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SelectionRow(
+              key: const ValueKey('plain'),
+              title: 'Gemini',
+              selected: true,
+              onTap: () {},
+            ),
+            SelectionRow(
+              key: const ValueKey('tagged'),
+              title: 'Gemini',
+              badge: const Text('AI'),
+              selected: true,
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    expect(find.text('AI'), findsOneWidget);
+    final plain = tester.getRect(
+      find.descendant(
+        of: find.byKey(const ValueKey('plain')),
+        matching: find.byType(MarqueeText),
+      ),
+    );
+    final tagged = tester.getRect(
+      find.descendant(
+        of: find.byKey(const ValueKey('tagged')),
+        matching: find.byType(MarqueeText),
+      ),
+    );
+    expect(tagged.width, lessThan(plain.width));
+    // The check keeps its place at the trailing edge.
+    expect(
+      tester.getRect(find.byIcon(AppIcons.check).last).right,
+      tester.getRect(find.byIcon(AppIcons.check).first).right,
+    );
+  });
+
   testWidgets('tap, Enter and Space invoke onTap', (tester) async {
     var taps = 0;
     await tester.pumpWidget(

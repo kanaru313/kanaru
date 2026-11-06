@@ -2137,5 +2137,17 @@
   "lyricsSourceStatusFailed": "Lần tìm gần nhất bị lỗi",
   "lyricsSourceBarAuto": "Tự tìm thấy",
   "lyricsSourceBarKept": "Đang dùng bản đã giữ",
-  "lyricsSourceButtonHint": "Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L"
+  "lyricsSourceButtonHint": "Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L",
+  "lyricsTranslationModalTitle": "Dịch lời",
+  "translationAiBadge": "AI",
+  "translationAiTuneRow": "Tinh chỉnh AI",
+  "translationAiModel": "Model",
+  "translationAiStyle": "Phong cách",
+  "translationSongInstruction": "Lời dặn cho bài này",
+  "translationAiTuneHint": "Do plugin {name} khai báo. Lựa chọn được nhớ cho plugin này.",
+  "translationAiTuneDone": "Xong",
+  "translationAiOptionGone": "{value} (không còn hỗ trợ)",
+  "translationAiNotChosen": "Chưa chọn",
+  "translationAiNoModels": "Chưa có model nào",
+  "translationAiOpenPluginSettings": "Mở cài đặt plugin"
 }

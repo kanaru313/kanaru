@@ -43,6 +43,7 @@ LyricsPluginRecord translateRecord(
   PluginKind kind = PluginKind.translate,
   String? name,
   List<String> hosts = const ['api.example.com'],
+  List<PluginConfigField> config = const [],
 }) => LyricsPluginRecord(
   kind: kind,
   installId: id,
@@ -50,7 +51,7 @@ LyricsPluginRecord translateRecord(
   version: 1,
   apiVersion: 1,
   hosts: hosts,
-  config: const [],
+  config: config,
   packageDir: '$id/v1-1',
   sourceKind: LyricsPluginSourceKind.file,
   sourceName: 'x.zip',

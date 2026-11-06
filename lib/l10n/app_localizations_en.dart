@@ -5729,4 +5729,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsSourceButtonHint =>
       'Click: lyrics options · Right-click: turn on/off · L';
+
+  @override
+  String get lyricsTranslationModalTitle => 'Lyrics translation';
+
+  @override
+  String get translationAiBadge => 'AI';
+
+  @override
+  String get translationAiTuneRow => 'AI tuning';
+
+  @override
+  String get translationAiModel => 'Model';
+
+  @override
+  String get translationAiStyle => 'Style';
+
+  @override
+  String get translationSongInstruction => 'Note for this song';
+
+  @override
+  String translationAiTuneHint(String name) {
+    return 'Set by the plugin $name. Saved for this plugin.';
+  }
+
+  @override
+  String get translationAiTuneDone => 'Done';
+
+  @override
+  String translationAiOptionGone(String value) {
+    return '$value (no longer supported)';
+  }
+
+  @override
+  String get translationAiNotChosen => 'Not chosen';
+
+  @override
+  String get translationAiNoModels => 'No models yet';
+
+  @override
+  String get translationAiOpenPluginSettings => 'Open plugin settings';
 }

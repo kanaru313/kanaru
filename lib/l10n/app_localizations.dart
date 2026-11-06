@@ -8293,6 +8293,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Click: lyrics options · Right-click: turn on/off · L'**
   String get lyricsSourceButtonHint;
+
+  /// Title of the lyrics translation modal header (next to the settings and close buttons)
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation'**
+  String get lyricsTranslationModalTitle;
+
+  /// Small badge on a translation service that translates with an AI model
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get translationAiBadge;
+
+  /// Title of the row (and of the child modal it opens) that tunes the AI translation service: model, style and a note for the song
+  ///
+  /// In en, this message translates to:
+  /// **'AI tuning'**
+  String get translationAiTuneRow;
+
+  /// Label of the AI model choice in the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get translationAiModel;
+
+  /// Label of the translation style choice in the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get translationAiStyle;
+
+  /// Label of the box in the AI tuning modal where the user writes a note that only applies to the current song's translation
+  ///
+  /// In en, this message translates to:
+  /// **'Note for this song'**
+  String get translationSongInstruction;
+
+  /// Note under the AI tuning modal's fields
+  ///
+  /// In en, this message translates to:
+  /// **'Set by the plugin {name}. Saved for this plugin.'**
+  String translationAiTuneHint(String name);
+
+  /// Button that closes the AI tuning modal
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get translationAiTuneDone;
+
+  /// Shown for a saved model or style that the plugin no longer offers
+  ///
+  /// In en, this message translates to:
+  /// **'{value} (no longer supported)'**
+  String translationAiOptionGone(String value);
+
+  /// Shown in the AI tuning modal when a model or style has no value
+  ///
+  /// In en, this message translates to:
+  /// **'Not chosen'**
+  String get translationAiNotChosen;
+
+  /// Shown in the AI tuning modal when the plugin has no model to pick yet
+  ///
+  /// In en, this message translates to:
+  /// **'No models yet'**
+  String get translationAiNoModels;
+
+  /// Button in the AI tuning modal that opens the translation plugin's settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Open plugin settings'**
+  String get translationAiOpenPluginSettings;
 }
 
 class _AppLocalizationsDelegate
