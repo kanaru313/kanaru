@@ -36,7 +36,6 @@ void main() {
 
     expect(find.text(en.lyricsSourcesTitle), findsOneWidget);
     expect(top(tester, 'Alpha'), lessThan(top(tester, 'Beta')));
-    expect(find.text(en.lyricsSourceBuiltIn), findsNothing);
     expect(
       find.text('hieu05 (self-declared) · v3 · File: demo.zip'),
       findsOneWidget,

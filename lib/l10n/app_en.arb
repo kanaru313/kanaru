@@ -3214,6 +3214,10 @@
   },
   "settingsAutoOnlineLyrics": "Find lyrics online automatically",
   "settingsAutoOnlineLyricsHint": "While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.",
+  "settingsAutoOnlineLyricsNoSource": "No online lyrics source is on · Add a plugin in Lyrics sources",
+  "@settingsAutoOnlineLyricsNoSource": {
+    "description": "Subtitle of the automatic online lyrics switch when no lyrics source is on, so the switch is disabled"
+  },
   "settingsSavedLyrics": "Saved lyrics",
   "settingsSavedLyricsSongs": "{count, plural, =1{1 song with lyrics} other{{count} songs with lyrics}}",
   "@settingsSavedLyricsSongs": {
@@ -3419,7 +3423,7 @@
   },
   "lyricsSourceMenuFrom": "Lyrics from {source}",
   "@lyricsSourceMenuFrom": {
-    "description": "Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as \"LRCLIB · Synced\" or \".lrc file\"",
+    "description": "Heading of the lyrics source menu and tooltip of its button when lyrics are shown; source says where they come from, such as \"Demo · Synced\" or \".lrc file\"",
     "placeholders": {
       "source": {
         "type": "String"
@@ -3544,16 +3548,6 @@
     "description": "Subtitle of the Get more plugins row on the lyrics sources page"
   },
   "lyricsSourcesEmptyHint": "No plugins installed yet. You can add some from the Plugin store.",
-  "lyricsSourceBuiltIn": "Built in",
-  "lyricsSourceBuiltInHosts": "Built in · {hosts}",
-  "@lyricsSourceBuiltInHosts": {
-    "description": "Subline of the built-in LRCLIB source; hosts is the address it connects to",
-    "placeholders": {
-      "hosts": {
-        "type": "String"
-      }
-    }
-  },
   "lyricsSourceDragHandle": "Drag to reorder (keyboard: Alt + Up or Down arrow)",
   "lyricsSourceUnknownAuthor": "Unknown author",
   "lyricsSourceAuthor": "{author} (self-declared)",

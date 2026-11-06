@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/lyrics/online/lyrics_provider_registry.dart';
+import '../../core/lyrics/online/lyrics_source_names.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/online_lyrics_notice_dialog.dart';
@@ -21,6 +23,11 @@ class LyricsSettingRows extends ConsumerWidget {
     final l10n = context.l10n;
     final playback = ref.watch(settingsProvider.select((s) => s.playback));
     final online = ref.watch(settingsProvider.select((s) => s.onlineLyrics));
+    // With the sources read and none on, no lookup can run: the switch shows
+    // it off and cannot be turned on. The stored choice is left as it is.
+    final noSource =
+        ref.watch(lyricsSourcesLoadedProvider) &&
+        ref.watch(lyricsProvidersProvider).isEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,26 +44,32 @@ class LyricsSettingRows extends ConsumerWidget {
         ),
         SettingRow.single(
           title: l10n.settingsAutoOnlineLyrics,
-          subtitle: l10n.settingsAutoOnlineLyricsHint,
+          subtitle: noSource
+              ? l10n.settingsAutoOnlineLyricsNoSource
+              : l10n.settingsAutoOnlineLyricsHint,
           control: Switch(
             // Only with the automatic consent, so a stale flag never shows
             // "on" while lookups are refused.
-            value: online.autoAllowed,
-            onChanged: (on) {
-              final settings = ref.read(settingsProvider.notifier);
-              if (!on) {
-                // Consent stays: turning it on again asks nothing.
-                settings.setOnlineLyrics(online.copyWith(autoFetch: false));
-                return;
-              }
-              unawaited(
-                confirmOnlineLyricsNotice(
-                  Navigator.of(context, rootNavigator: true),
-                  ProviderScope.containerOf(context),
-                  auto: true,
-                ),
-              );
-            },
+            value: !noSource && online.autoAllowed,
+            onChanged: noSource
+                ? null
+                : (on) {
+                    final settings = ref.read(settingsProvider.notifier);
+                    if (!on) {
+                      // Consent stays: turning it on again asks nothing.
+                      settings.setOnlineLyrics(
+                        online.copyWith(autoFetch: false),
+                      );
+                      return;
+                    }
+                    unawaited(
+                      confirmOnlineLyricsNotice(
+                        Navigator.of(context, rootNavigator: true),
+                        ProviderScope.containerOf(context),
+                        auto: true,
+                      ),
+                    );
+                  },
           ),
         ),
       ],

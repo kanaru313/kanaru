@@ -3566,6 +3566,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'While Now Playing is open, for songs without lyrics on this computer. \"Find lyrics online…\" in the song menu always works.';
 
   @override
+  String get settingsAutoOnlineLyricsNoSource =>
+      'No online lyrics source is on · Add a plugin in Lyrics sources';
+
+  @override
   String get settingsSavedLyrics => 'Saved lyrics';
 
   @override
@@ -3850,14 +3854,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsSourcesEmptyHint =>
       'No plugins installed yet. You can add some from the Plugin store.';
-
-  @override
-  String get lyricsSourceBuiltIn => 'Built in';
-
-  @override
-  String lyricsSourceBuiltInHosts(String hosts) {
-    return 'Built in · $hosts';
-  }
 
   @override
   String get lyricsSourceDragHandle =>
