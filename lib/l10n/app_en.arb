@@ -3038,6 +3038,10 @@
   "@lyricsFindOnline": {
     "description": "Track menu row that opens the Choose lyrics dialog"
   },
+  "lyricsPickerBack": "Back",
+  "@lyricsPickerBack": {
+    "description": "Tooltip of the back arrow of the Choose lyrics dialog when it is stacked over the lyrics modal"
+  },
   "lyricsPickerTitle": "Choose lyrics",
   "@lyricsPickerTitle": {
     "description": "Title of the dialog to pick online lyrics for a song"

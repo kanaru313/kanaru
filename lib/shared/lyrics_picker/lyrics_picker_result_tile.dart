@@ -4,6 +4,7 @@ import '../../core/lyrics/online/lyrics_match.dart';
 import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../l10n/l10n.dart';
 import '../format_duration.dart';
+import '../widgets/selection_row.dart';
 
 /// One search result: title, "artist · album", a body badge, the length
 /// (with the difference to the song's when it is over the match limit) and
@@ -53,70 +54,54 @@ class LyricsPickerResultTile extends StatelessWidget {
     final small = theme.textTheme.bodySmall?.copyWith(
       color: colors.onSurfaceVariant,
     );
-    return Opacity(
-      opacity: !result.selectable
-          ? 0.5
-          : result.rejected
-          ? 0.65
-          : 1,
-      child: ListTile(
-        selected: selected,
-        enabled: result.selectable,
-        selectedTileColor: colors.secondaryContainer,
-        selectedColor: colors.onSecondaryContainer,
-        onTap: onTap,
-        title: Text(
-          candidate.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final row = SelectionRow(
+      title: candidate.title,
+      subtitle: byline,
+      subtitleMaxLines: 1,
+      selected: selected,
+      onTap: result.selectable ? onTap : null,
+      details: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 2,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(byline, maxLines: 1, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 8,
-              runSpacing: 2,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                if (sourceName != null)
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 180),
-                    child: Text(
-                      sourceName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: small?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                if (badge != null) _Badge(badge),
-                if (result.rejected)
-                  _Badge(
-                    l10n.lyricsPickerRejected,
-                    background: colors.errorContainer,
-                    foreground: colors.onErrorContainer,
-                  ),
-                if (duration != null)
-                  Text(formatDuration(duration), style: small),
-                if (delta != null && delta > maxDurationDelta)
-                  Text(
-                    l10n.lyricsPickerDelta(
-                      (delta.inMilliseconds / 1000).ceil(),
-                    ),
-                    style: small?.copyWith(color: colors.error),
-                  ),
-                if (result.match.goodMatch && !result.bodyMissing)
-                  Text(
-                    l10n.lyricsPickerGoodMatch,
-                    style: small?.copyWith(color: colors.primary),
-                  ),
-              ],
-            ),
+            if (sourceName != null)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 180),
+                child: Text(
+                  sourceName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: small?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+            if (badge != null) _Badge(badge),
+            if (result.rejected)
+              _Badge(
+                l10n.lyricsPickerRejected,
+                background: colors.errorContainer,
+                foreground: colors.onErrorContainer,
+              ),
+            if (duration != null) Text(formatDuration(duration), style: small),
+            if (delta != null && delta > maxDurationDelta)
+              Text(
+                l10n.lyricsPickerDelta((delta.inMilliseconds / 1000).ceil()),
+                style: small?.copyWith(color: colors.error),
+              ),
+            if (result.match.goodMatch && !result.bodyMissing)
+              Text(
+                l10n.lyricsPickerGoodMatch,
+                style: small?.copyWith(color: colors.primary),
+              ),
           ],
         ),
       ),
     );
+    return result.rejected && result.selectable
+        ? Opacity(opacity: 0.65, child: row)
+        : row;
   }
 }
 

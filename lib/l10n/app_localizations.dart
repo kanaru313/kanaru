@@ -4904,6 +4904,12 @@ abstract class AppLocalizations {
   /// **'Find lyrics online…'**
   String get lyricsFindOnline;
 
+  /// Tooltip of the back arrow of the Choose lyrics dialog when it is stacked over the lyrics modal
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get lyricsPickerBack;
+
   /// Title of the dialog to pick online lyrics for a song
   ///
   /// In en, this message translates to:

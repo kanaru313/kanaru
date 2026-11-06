@@ -148,13 +148,15 @@ class LyricsActionRunner {
     return _run((target) => _actions.reject(target, origin, status.lyrics));
   }
 
-  /// Opens the Choose lyrics dialog, after the consent notice.
-  Future<void> findOnline() => _run(
+  /// Opens the Choose lyrics dialog, after the consent notice. With a
+  /// [parentModalContext] it stacks over that modal (see [showLyricsPicker]).
+  Future<void> findOnline({BuildContext? parentModalContext}) => _run(
     (target) => showLyricsPicker(
       navigator: navigator,
       container: container,
       target: target,
       messenger: messenger,
+      parentModalContext: parentModalContext,
     ),
   );
 

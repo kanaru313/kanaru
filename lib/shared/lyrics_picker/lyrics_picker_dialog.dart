@@ -8,16 +8,17 @@ import '../../core/lyrics/online/lyrics_search_controller.dart';
 import '../../core/lyrics/online/lyrics_source_names.dart';
 import '../../core/lyrics/online/lyrics_target.dart';
 import '../../l10n/l10n.dart';
-import '../format_duration.dart';
 import 'lyrics_failure_message.dart';
+import 'lyrics_picker_actions.dart';
 import 'lyrics_picker_dialog_size.dart';
 import 'lyrics_picker_preview.dart';
 import 'lyrics_picker_result_sources.dart';
 import 'lyrics_picker_results_pane.dart';
 import 'lyrics_picker_search_row.dart';
+import 'lyrics_picker_title_row.dart';
 import 'lyrics_source_name_text.dart';
 
-/// The Choose lyrics dialog: a query field, the ranked results of the manual
+/// The content of the Choose lyrics modal: a query field, the ranked results of the manual
 /// search and a preview of the selected one. Pops the chosen
 /// [LyricsCandidate], or `null` on Cancel. The content is 840 px wide and tall
 /// by the window (see [lyricsPickerContentHeight]); it scrolls inside a smaller
@@ -104,7 +105,6 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
     final registrations = ref.watch(lyricsProvidersProvider);
     final names = ref.watch(lyricsSourceNamesProvider);
     final query = widget.target.query;
-    final duration = query.duration;
     final selection = state.selection;
     final sources = lyricsResultSources(state.results);
     final providerNames = {
@@ -119,111 +119,72 @@ class _LyricsPickerDialogState extends ConsumerState<LyricsPickerDialog> {
             providerNames[selection?.candidate.providerId] ?? '',
           )
         : null;
-    return Dialog(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          child: SizedBox(
-            width: lyricsPickerContentWidth,
-            height: lyricsPickerContentHeight(
-              MediaQuery.sizeOf(context).height,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.lyricsPickerTitle,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.lyricsPickerSong(
-                      query.title ?? '-',
-                      query.artist ?? '-',
-                      duration == null ? '-' : formatDuration(duration),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  LyricsPickerSearchRow(
-                    query: _query,
-                    sources: sources,
-                    providerNames: providerNames,
-                    sourceFilter: _sourceFilter,
-                    onSourceFilter: _filterBySource,
-                    onSearch: _search,
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: lyricsPickerListWidth,
-                          child: LyricsPickerResultsPane(
-                            state: state,
-                            scrollController: _listScroll,
-                            searchPending: _searchesOnOpen,
-                            noSource:
-                                ref.watch(lyricsSourcesLoadedProvider) &&
-                                registrations.isEmpty,
-                            providerNames: providerNames,
-                            sourceFilter: effectiveSourceFilter(
-                              _sourceFilter,
-                              sources,
-                            ),
-                            onSelect: _controller.select,
-                            onRetry: _controller.retry,
-                          ),
-                        ),
-                        const VerticalDivider(width: 24),
-                        Expanded(
-                          child: LyricsPickerPreview(
-                            candidate: selection?.candidate,
-                            loading: fetch?.phase == BodyFetchPhase.loading,
-                            failure: failure,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.lyricsPickerFooter(
-                      registrations.expand((r) => r.hosts).toSet().join(', '),
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+        child: SizedBox(
+          width: lyricsPickerContentWidth,
+          height: lyricsPickerContentHeight(MediaQuery.sizeOf(context).height),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LyricsPickerTitleRow(query: query),
+                const SizedBox(height: 16),
+                LyricsPickerSearchRow(
+                  query: _query,
+                  sources: sources,
+                  providerNames: providerNames,
+                  sourceFilter: _sourceFilter,
+                  onSourceFilter: _filterBySource,
+                  onSearch: _search,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Row(
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          MaterialLocalizations.of(context).cancelButtonLabel,
+                      SizedBox(
+                        width: lyricsPickerListWidth,
+                        child: LyricsPickerResultsPane(
+                          state: state,
+                          scrollController: _listScroll,
+                          searchPending: _searchesOnOpen,
+                          noSource:
+                              ref.watch(lyricsSourcesLoadedProvider) &&
+                              registrations.isEmpty,
+                          providerNames: providerNames,
+                          sourceFilter: effectiveSourceFilter(
+                            _sourceFilter,
+                            sources,
+                          ),
+                          onSelect: _controller.select,
+                          onRetry: _controller.retry,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      FilledButton(
-                        // Stays off until the lyrics are there.
-                        onPressed: selection != null && selection.hasBody
-                            ? () =>
-                                  Navigator.of(context).pop(selection.candidate)
-                            : null,
-                        child: Text(l10n.lyricsPickerUse),
+                      const VerticalDivider(width: 24),
+                      Expanded(
+                        child: LyricsPickerPreview(
+                          candidate: selection?.candidate,
+                          loading: fetch?.phase == BodyFetchPhase.loading,
+                          failure: failure,
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.lyricsPickerFooter(
+                    registrations.expand((r) => r.hosts).toSet().join(', '),
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                LyricsPickerActions(selection: selection),
+              ],
             ),
           ),
         ),

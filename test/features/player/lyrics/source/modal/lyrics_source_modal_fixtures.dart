@@ -2,6 +2,7 @@ import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/lrc_sidecar_writer.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_choice.dart';
+import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_target.dart';
 import 'package:kanaru/core/lyrics/online/online_lyrics_actions.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
@@ -88,6 +89,10 @@ class RecordingActions extends OnlineLyricsActions {
 
   @override
   Future<void> retry(LyricsTarget target) async => log.add('retry');
+
+  @override
+  Future<void> pick(LyricsTarget target, LyricsCandidate candidate) async =>
+      log.add('pick ${candidate.remoteId}');
 
   @override
   Future<LyricsSaveOutcome> save(

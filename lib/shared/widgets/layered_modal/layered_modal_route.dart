@@ -6,11 +6,13 @@ import '../context_modal/context_modal_frame_scope.dart';
 import '../context_modal/context_modal_sheet_frame.dart';
 import '../context_modal/context_modal_shell.dart';
 import 'layered_modal_child_frame.dart';
+import 'layered_modal_wide_frame.dart';
 
 export 'layered_modal_body.dart';
 export 'layered_modal_child_frame.dart';
 export 'layered_modal_stack.dart';
 export 'layered_modal_top_bar.dart';
+export 'layered_modal_wide_frame.dart';
 
 /// Nesting depth of a modal opened with [showLayeredModal]: `0` for the parent
 /// modal, `1` for a child modal opened from it, `2` for a child of that child.
@@ -53,6 +55,10 @@ class LayeredModalDepth extends InheritedWidget {
 ///   then 64 px, or a 72% bottom sheet), with a 0.35 scrim so the parent stays
 ///   visible underneath.
 ///
+/// With [wide] the modal is a [LayeredModalWideFrame] instead: a centered
+/// dialog sized by its content, at any depth, with no sheet variant. Depth
+/// still counts, so a child of a wide modal is depth + 1.
+///
 /// Switches live between dialog and sheet on resize without losing the body's
 /// state. Esc, a scrim tap, or the close button dismisses only the top modal.
 ///
@@ -62,6 +68,7 @@ Future<T?> showLayeredModal<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   String? semanticLabel,
+  bool wide = false,
 }) {
   final depth = LayeredModalDepth.nextOf(context);
   final reduce = MediaQuery.disableAnimationsOf(context);
@@ -77,6 +84,7 @@ Future<T?> showLayeredModal<T>(
         : const Duration(milliseconds: 140),
     pageBuilder: (routeContext, _, _) => _LayeredModalShell(
       depth: depth,
+      wide: wide,
       semanticLabel: semanticLabel,
       builder: builder,
     ),
@@ -89,10 +97,12 @@ class _LayeredModalShell extends StatefulWidget {
   const _LayeredModalShell({
     required this.depth,
     required this.builder,
+    this.wide = false,
     this.semanticLabel,
   });
 
   final int depth;
+  final bool wide;
   final WidgetBuilder builder;
   final String? semanticLabel;
 
@@ -117,7 +127,9 @@ class _LayeredModalShellState extends State<_LayeredModalShell> {
       key: _contentKey,
       child: Builder(builder: widget.builder),
     );
-    final frame = widget.depth == 0
+    final frame = widget.wide
+        ? LayeredModalWideFrame(depth: widget.depth, child: content)
+        : widget.depth == 0
         ? (isSheet
               ? ContextModalSheetFrame(onClose: _close, child: content)
               : ContextModalDialogFrame(child: content))

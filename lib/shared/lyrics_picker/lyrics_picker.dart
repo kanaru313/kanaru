@@ -10,6 +10,7 @@ import '../../core/lyrics/online/online_lyrics_actions.dart';
 import '../../l10n/l10n.dart';
 import '../online_lyrics_notice_dialog.dart';
 import '../widgets/app_snack_bar.dart';
+import '../widgets/layered_modal/layered_modal_route.dart';
 import 'lyrics_picker_dialog.dart';
 
 final _log = Logger('lyrics_picker');
@@ -22,11 +23,17 @@ final _log = Logger('lyrics_picker');
 /// built on the navigator's context under [container]. After a pick the
 /// lyrics are pinned (no file is written) and
 /// [messenger] (else the navigator's) tells the result.
+///
+/// The dialog is a wide layered modal. With a [parentModalContext] (the
+/// lyrics modal) it stacks over that modal, which stays open underneath;
+/// closing the picker returns to it, and a pick closes the whole stack first.
+/// Without one it is a top-level modal.
 Future<void> showLyricsPicker({
   required NavigatorState navigator,
   required ProviderContainer container,
   required LyricsTarget target,
   ScaffoldMessengerState? messenger,
+  BuildContext? parentModalContext,
 }) async {
   final accepted = await confirmOnlineLyricsNotice(
     navigator,
@@ -38,14 +45,19 @@ Future<void> showLyricsPicker({
   // one cache key whichever menu opened the dialog.
   final song = await _libraryTarget(container, target);
   if (!navigator.mounted) return;
-  final picked = await showDialog<LyricsCandidate>(
-    context: navigator.context,
+  final picked = await showLayeredModal<LyricsCandidate>(
+    parentModalContext ?? navigator.context,
+    wide: true,
+    semanticLabel: navigator.context.l10n.lyricsPickerTitle,
     builder: (_) => UncontrolledProviderScope(
       container: container,
       child: LyricsPickerDialog(target: song),
     ),
   );
   if (picked == null || !navigator.mounted) return;
+  if (parentModalContext != null && parentModalContext.mounted) {
+    closeLayeredModalStack(parentModalContext);
+  }
   await _pin(navigator, container, song, picked, messenger);
 }
 

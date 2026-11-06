@@ -308,4 +308,40 @@ void main() {
       greaterThan(tester.getTopLeft(find.text('Sub')).dy),
     );
   });
+
+  testWidgets('subtitleMaxLines ellipsizes the subtitle; null shows it all', (
+    tester,
+  ) async {
+    const long = 'A long subtitle that goes on and on and on and on and on '
+        'and on and on and on and on and on and on and on and on';
+    await tester.pumpWidget(
+      _host(
+        Column(
+          children: [
+            SelectionRow(
+              title: 'a',
+              subtitle: long,
+              subtitleMaxLines: 1,
+              selected: false,
+              onTap: () {},
+            ),
+            SelectionRow(
+              title: 'b',
+              subtitle: long,
+              selected: false,
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    final texts = tester.widgetList<Text>(find.text(long)).toList();
+    expect(texts[0].maxLines, 1);
+    expect(texts[0].overflow, TextOverflow.ellipsis);
+    expect(texts[1].maxLines, isNull);
+    expect(
+      tester.getSize(find.text(long).first).height,
+      lessThan(tester.getSize(find.text(long).last).height),
+    );
+  });
 }

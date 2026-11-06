@@ -3446,6 +3446,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsFindOnline => 'Find lyrics online…';
 
   @override
+  String get lyricsPickerBack => 'Back';
+
+  @override
   String get lyricsPickerTitle => 'Choose lyrics';
 
   @override

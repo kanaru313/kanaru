@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -11,9 +13,9 @@ import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/lyrics_source_routes.dart';
 import '../../../../../shared/widgets/selection_row.dart';
 import '../../../now_playing/now_playing_modal_navigation.dart';
+import '../../lyrics_action_runner.dart';
 import '../lyrics_source_labels.dart';
 import 'lyrics_save_targets_modal.dart';
-import 'lyrics_source_modal_run.dart';
 
 /// Action rows under the choices: "Find lyrics online…" (or its all-off
 /// variant), "Add an online lyrics source" when no plugin is installed, and
@@ -21,7 +23,7 @@ import 'lyrics_source_modal_run.dart';
 ///
 /// Only the add row needs no song; the others show when [canChoose]. Nothing
 /// shows until the sources are [loaded].
-class LyricsSourceModalActions extends ConsumerWidget {
+class LyricsSourceModalActions extends ConsumerStatefulWidget {
   const LyricsSourceModalActions({
     super.key,
     required this.source,
@@ -36,8 +38,36 @@ class LyricsSourceModalActions extends ConsumerWidget {
   final bool loaded;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!loaded) return const SizedBox.shrink();
+  ConsumerState<LyricsSourceModalActions> createState() =>
+      _LyricsSourceModalActionsState();
+}
+
+class _LyricsSourceModalActionsState
+    extends ConsumerState<LyricsSourceModalActions> {
+  /// A Find lookup is under way (the consent notice or the picker is open), so
+  /// a second tap opens nothing.
+  bool _finding = false;
+
+  Future<void> _find() async {
+    if (_finding) return;
+    _finding = true;
+    try {
+      await LyricsActionRunner.snapshot(
+        context,
+        source: widget.source,
+        messenger: widget.messenger,
+      ).findOnline(parentModalContext: context);
+    } finally {
+      _finding = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final source = widget.source;
+    final messenger = widget.messenger;
+    final canChoose = widget.canChoose;
+    if (!widget.loaded) return const SizedBox.shrink();
     final l10n = context.l10n;
     final entries = ref.watch(lyricsSourcesProvider);
     final names = ref.watch(lyricsSourceNamesProvider);
@@ -78,12 +108,8 @@ class LyricsSourceModalActions extends ConsumerWidget {
             leading: const Icon(AppIcons.search),
             trailing: chevron,
             selected: false,
-            onTap: () => closeStackThenRun(
-              context,
-              source: source,
-              messenger: messenger,
-              action: (runner) => runner.findOnline(),
-            ),
+            // The modal stays open under the picker.
+            onTap: () => unawaited(_find()),
           )
         else if (canChoose)
           SelectionRow(
