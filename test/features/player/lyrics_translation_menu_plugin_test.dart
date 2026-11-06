@@ -30,6 +30,7 @@ void main() {
   final plugin = TranslationServiceId.tryParse(_id)!;
   final other = TranslationServiceId.tryParse(_otherId)!;
   late ProviderContainer container;
+  late FakeTranslationController fake;
 
   TranslationPrefs prefs() => container.read(settingsProvider).translation;
 
@@ -48,11 +49,10 @@ void main() {
       translateRecord(_id, name: pluginName),
       translateRecord(_otherId, name: 'Other'),
     ];
+    fake = FakeTranslationController(TranslationOff(fakeTranslationInfo()));
     container = ProviderContainer(
       overrides: [
-        fakeTranslationOverride(
-          FakeTranslationController(TranslationOff(fakeTranslationInfo())),
-        ),
+        fakeTranslationOverride(fake),
         initialSettingsProvider.overrideWithValue(
           AppSettings(translation: settings),
         ),
@@ -82,16 +82,10 @@ void main() {
     }
   }
 
-  Finder radio(String name) =>
-      find.widgetWithText(MenuItemButton, name);
+  Finder radio(String name) => find.widgetWithText(MenuItemButton, name);
 
-  testWidgets('the service submenu lists plugins by name', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      settings: TranslationPrefs(noticeAcknowledged: {other}),
-    );
+  testWidgets('the service submenu lists plugins by name', (tester) async {
+    await pump(tester, settings: TranslationPrefs(noticeAcknowledged: {other}));
 
     expect(radio('Gemini'), findsOneWidget);
     expect(radio('Other'), findsOneWidget);
@@ -169,6 +163,28 @@ void main() {
     expect(prefs().service?.value, 'plugin-zzzzzzzzzzzz');
   });
 
+  testWidgets('switching service while on does not resend to the old one', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      settings: TranslationPrefs(
+        show: true,
+        service: other,
+        noticeAcknowledged: {other, plugin},
+      ),
+    );
+
+    await tester.tap(radio('Gemini'));
+    await tester.pumpAndSettle();
+
+    expect(prefs().service, plugin);
+    expect(prefs().show, isTrue);
+    // The controller rebuilds on the settings change and asks for the new
+    // service itself; no forced run goes out for the previous key.
+    expect(fake.retranslateCalls, 0);
+  });
+
   testWidgets('Cancel on the notice changes nothing', (tester) async {
     await pump(
       tester,
@@ -191,10 +207,7 @@ void main() {
   testWidgets(
     'picking a plugin from null asks the notice and turns translation on; Cancel leaves it null',
     (tester) async {
-      await pump(
-        tester,
-        settings: const TranslationPrefs(),
-      );
+      await pump(tester, settings: const TranslationPrefs());
 
       await tester.tap(radio('Gemini'));
       await tester.pumpAndSettle();

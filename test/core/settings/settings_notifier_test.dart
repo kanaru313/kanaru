@@ -81,9 +81,7 @@ void main() {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.setTranslation(
-      TranslationPrefs(service: plugin),
-    );
+    notifier.setTranslation(TranslationPrefs(service: plugin));
     notifier.acknowledgeTranslationNotice(plugin);
 
     final translation = container.read(settingsProvider).translation;
@@ -92,7 +90,7 @@ void main() {
     expect(translation.noticeAcknowledged, {plugin});
   });
 
-  test('translation never turns on for an unacknowledged service', () async {
+  test('translation never turns on without a service', () {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
@@ -103,15 +101,24 @@ void main() {
     expect(container.read(settingsProvider).translation.show, isFalse);
   });
 
+  test('translation never turns on for a service without the notice', () {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+
+    notifier.setTranslation(TranslationPrefs(show: true, service: plugin));
+    expect(container.read(settingsProvider).translation.show, isFalse);
+    expect(container.read(settingsProvider).translation.service, plugin);
+
+    notifier.toggleLyricsTranslation();
+    expect(container.read(settingsProvider).translation.show, isFalse);
+  });
+
   test('setTranslation cannot add an acknowledgment', () {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
     notifier.setTranslation(
-      TranslationPrefs(
-        show: true,
-        noticeAcknowledged: {plugin},
-      ),
+      TranslationPrefs(show: true, noticeAcknowledged: {plugin}),
     );
 
     final translation = container.read(settingsProvider).translation;
@@ -123,9 +130,7 @@ void main() {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);
 
-    notifier.setTranslation(
-      TranslationPrefs(service: plugin),
-    );
+    notifier.setTranslation(TranslationPrefs(service: plugin));
     notifier.acknowledgeTranslationNotice(plugin);
     notifier.setTranslation(
       container.read(settingsProvider).translation.withTargetLanguage('vi'),

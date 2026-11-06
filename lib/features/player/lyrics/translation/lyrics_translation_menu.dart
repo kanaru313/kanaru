@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -88,16 +86,11 @@ List<Widget> lyricsTranslationMenuItems(
   final container = ProviderScope.containerOf(context);
 
   Future<void> pickService(TranslationServiceId service) async {
-    final previous = prefs.service;
     if (prefs.service == null ||
         (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
     } else {
       settings.setTranslation(prefs.copyWith(service: service));
-    }
-    final current = ref.read(settingsProvider).translation;
-    if (current.show && current.service != previous) {
-      unawaited(controller.retranslate());
     }
   }
 
@@ -131,10 +124,7 @@ List<Widget> lyricsTranslationMenuItems(
           child: Text(
             label,
             style: isSelected
-                ? TextStyle(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w600,
-                  )
+                ? TextStyle(color: scheme.primary, fontWeight: FontWeight.w600)
                 : null,
           ),
         ),
