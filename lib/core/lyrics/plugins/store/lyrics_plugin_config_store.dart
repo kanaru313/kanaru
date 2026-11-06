@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:logging/logging.dart';
 
 import '../../../database/library_database.dart';
@@ -38,8 +36,11 @@ class LyricsPluginConfigStore {
     Object? value,
   ) async {
     final record = await _live(installId);
-    final field = record?.field(key);
-    if (field == null) return PluginConfigWrite.unknownKey;
+    final declared = record?.field(key);
+    if (declared == null) return PluginConfigWrite.unknownKey;
+    final stored = await _stored(installId);
+    // A choice the user added is a legal value of a `custom` select.
+    final field = pluginEffectiveField(declared, stored);
     final cleared = value == null || value == '';
     if (!cleared && !pluginValueFits(field, value)) {
       return PluginConfigWrite.invalidValue;
@@ -56,10 +57,83 @@ class LyricsPluginConfigStore {
       }
       return PluginConfigWrite.written;
     }
-    final values = await _stored(installId);
-    cleared ? values.remove(key) : values[key] = value;
-    return _save(installId, values);
+    cleared ? stored.remove(key) : stored[key] = value;
+    return _save(installId, stored);
   }
+
+  /// Adds [value] (a model name) to the choices of the plugin's `custom`
+  /// `model` select and selects it, in one write. A name that is already a
+  /// choice (the plugin's or an earlier one) is only selected. The name is
+  /// stripped of control characters and trimmed; empty, over
+  /// [pluginCustomChoiceMaxValue] code points, a note over
+  /// [pluginCustomChoiceMaxSubtitle], or a list that would pass
+  /// [pluginConfigMaxItems] (the plugin's options and the user's together)
+  /// is `invalidValue`.
+  Future<PluginConfigWrite> addCustomModel(
+    String installId,
+    String value, {
+    String? subtitle,
+  }) async {
+    final field = (await _live(installId))?.field(pluginModelKey);
+    if (field == null || !field.custom) return PluginConfigWrite.unknownKey;
+    final name = _cleanChoiceText(value);
+    final note = subtitle == null ? '' : _cleanChoiceText(subtitle);
+    if (name.isEmpty ||
+        name.runes.length > pluginCustomChoiceMaxValue ||
+        note.runes.length > pluginCustomChoiceMaxSubtitle) {
+      return PluginConfigWrite.invalidValue;
+    }
+    final stored = await _stored(installId);
+    final known = pluginEffectiveField(field, stored).options;
+    if (!known.any((o) => o.value == name)) {
+      if (known.length >= pluginConfigMaxItems) {
+        return PluginConfigWrite.invalidValue;
+      }
+      final raw = stored[pluginCustomChoicesKey(field.key)];
+      stored[pluginCustomChoicesKey(field.key)] = [
+        if (raw is List) ...raw,
+        {'value': name, if (note.isNotEmpty) 'subtitle': note},
+      ];
+    }
+    stored[field.key] = name;
+    return _save(installId, stored);
+  }
+
+  /// Removes [value] from the user's own choices of the `model` select. If it
+  /// was the selected model the first remaining choice is selected, or the
+  /// selection is cleared when none is left. A value that is not one of the
+  /// user's choices is `invalidValue`.
+  Future<PluginConfigWrite> removeCustomModel(
+    String installId,
+    String value,
+  ) async {
+    final field = (await _live(installId))?.field(pluginModelKey);
+    if (field == null || !field.custom) return PluginConfigWrite.unknownKey;
+    final stored = await _stored(installId);
+    final listKey = pluginCustomChoicesKey(field.key);
+    final raw = stored[listKey];
+    final isCustom = pluginEffectiveField(
+      field,
+      stored,
+    ).options.any((o) => o.custom && o.value == value);
+    if (raw is! List || !isCustom) return PluginConfigWrite.invalidValue;
+    final kept = [
+      for (final item in raw)
+        if (!(item is Map && item['value'] == value)) item,
+    ];
+    kept.isEmpty ? stored.remove(listKey) : stored[listKey] = kept;
+    if (stored[field.key] == value) {
+      final first = pluginEffectiveField(field, stored).options.firstOrNull;
+      first == null
+          ? stored.remove(field.key)
+          : stored[field.key] = first.value;
+    }
+    return _save(installId, stored);
+  }
+
+  // Control characters out, ends trimmed.
+  static String _cleanChoiceText(String text) =>
+      text.replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), '').trim();
 
   /// Everything a script may read, typed: stored values, then the form's
   /// defaults for the rest, then secrets. A toggle reads a bool, a number a
@@ -81,10 +155,12 @@ class LyricsPluginConfigStore {
         }
         continue;
       }
-      final value = stored[field.key] ?? field.defaultValue;
-      if (value != null && pluginValueFits(field, value)) {
-        out[field.key] = _typed(value);
-      }
+      // The effective field, so a model the user added reaches the script.
+      final value = pluginEffectiveValue(
+        pluginEffectiveField(field, stored),
+        stored,
+      );
+      if (value != null) out[field.key] = _typed(value);
     }
     return out;
   }
@@ -165,7 +241,7 @@ class LyricsPluginConfigStore {
       }
     }
     for (final key in values.keys.toList()) {
-      if (!keepsStoredValue(before, after, key, values[key])) {
+      if (!keepsStoredValue(before, after, key, values[key], values)) {
         values.remove(key);
         changed = true;
       }
@@ -181,14 +257,7 @@ class LyricsPluginConfigStore {
 
   Future<Map<String, Object?>> _stored(String installId) async {
     final row = await _db.lyricsPluginDataFor(installId);
-    if (row == null) return {};
-    try {
-      final value = jsonDecode(row.configValues);
-      if (value is Map<String, dynamic>) return {...value};
-    } on FormatException {
-      // Unreadable text counts as no values.
-    }
-    return {};
+    return row == null ? {} : decodeStoredPluginConfig(row.configValues);
   }
 
   Future<PluginConfigWrite> _save(

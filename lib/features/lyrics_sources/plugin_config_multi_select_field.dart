@@ -55,6 +55,24 @@ class _State extends ConsumerState<PluginConfigMultiSelectField>
       ..addAll(saved.whereType<String>());
   }
 
+  List<String> _payloadOf(Iterable<Object?> values) => [
+    for (final option in widget.field.options)
+      if (values.contains(option.value)) option.value,
+  ];
+
+  @override
+  void didUpdateWidget(PluginConfigMultiSelectField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    commitExternal(_payloadOf(widget.initialValues));
+  }
+
+  @override
+  void onExternalValue(Object? payload) {
+    _chosen
+      ..clear()
+      ..addAll(payload is List ? payload.whereType<String>() : const []);
+  }
+
   @override
   void initState() {
     super.initState();

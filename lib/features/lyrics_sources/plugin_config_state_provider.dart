@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
+import '../../core/lyrics/plugins/plugin_config_values_provider.dart';
 import '../../core/lyrics/plugins/store/plugin_config_schema_codec.dart';
 
 /// What the config form shows when it opens.
@@ -27,7 +28,10 @@ class PluginConfigState {
 /// update (which can change the form) reads the values again.
 typedef PluginConfigKey = ({String installId, int updatedAt});
 
-/// The saved values of the plugin's form, read once per opening.
+/// The saved values of the plugin's form. The non-secret values follow
+/// [pluginStoredConfigProvider], so a value written from elsewhere (the
+/// translation window) reaches the form; the secrets are read again with
+/// them.
 final pluginConfigStateProvider = FutureProvider.autoDispose
     .family<PluginConfigState, PluginConfigKey>((ref, key) async {
       final controller = ref.watch(lyricsPluginsControllerProvider);
@@ -50,7 +54,9 @@ final pluginConfigStateProvider = FutureProvider.autoDispose
         }
       }
       return PluginConfigState(
-        stored: await controller.storedConfig(key.installId),
+        stored: await ref.watch(
+          pluginStoredConfigProvider(key.installId).future,
+        ),
         savedSecrets: saved,
         secretsUsingFallback: secretKeys.isNotEmpty
             ? await controller.secretsUsingFallback()

@@ -32,10 +32,15 @@ class PluginConfigOption {
     required this.value,
     required this.title,
     this.subtitle,
+    this.custom = false,
   });
 
   final String value;
   final String title;
+
+  /// Added by the user, not declared by the plugin; only the effective field
+  /// of a `custom` select has any.
+  final bool custom;
 
   /// Optional second line under the title.
   final String? subtitle;

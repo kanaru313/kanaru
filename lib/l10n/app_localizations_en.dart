@@ -5422,6 +5422,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pluginConfigMapValueLabel => 'Value';
 
   @override
+  String get pluginConfigCustomModelTag => 'Custom';
+
+  @override
+  String get pluginConfigRemoveCustomModel => 'Remove this model';
+
+  @override
+  String get pluginConfigAddModel => 'Add model…';
+
+  @override
+  String get pluginConfigAddModelTitle => 'Add model';
+
+  @override
+  String get pluginConfigAddModelName =>
+      'Model name, exactly as the server expects';
+
+  @override
+  String get pluginConfigAddModelNote => 'Note (optional), e.g. Ollama at home';
+
+  @override
+  String get pluginConfigAddAndSelect => 'Add and select';
+
+  @override
+  String get pluginConfigNoModel => 'No model yet';
+
+  @override
   String pluginNeedsConfigTitle(String name) {
     return '$name needs configuration';
   }

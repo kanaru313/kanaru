@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
+import 'package:kanaru/shared/lyrics_plugins/config/plugin_config_text_field.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -175,8 +178,9 @@ void main() {
       );
       expect(find.text('Create one in the console.'), findsOneWidget);
       final labelY = tester.getTopLeft(find.text('API Key')).dy;
-      final subtitleY =
-          tester.getTopLeft(find.text('Create one in the console.')).dy;
+      final subtitleY = tester
+          .getTopLeft(find.text('Create one in the console.'))
+          .dy;
       expect(subtitleY, greaterThan(labelY));
     });
   });
@@ -277,8 +281,9 @@ void main() {
       );
       expect(find.text('Minimal or Low answers faster.'), findsOneWidget);
       final labelY = tester.getTopLeft(find.text('Thinking')).dy;
-      final subtitleY =
-          tester.getTopLeft(find.text('Minimal or Low answers faster.')).dy;
+      final subtitleY = tester
+          .getTopLeft(find.text('Minimal or Low answers faster.'))
+          .dy;
       expect(subtitleY, greaterThan(labelY));
     });
 
@@ -442,6 +447,147 @@ void main() {
       await blur(tester);
       expect(find.text(en.pluginConfigKeyDuplicate), findsNothing);
       expect(plugins.configWrites.single.$3, {'a': '1', 'b': ''});
+    });
+  });
+  group('live values', () {
+    testWidgets('a value written from elsewhere shows in the open editor', (
+      tester,
+    ) async {
+      final plugins = FakePlugins()..stored = {'k': 'first'};
+      await open(tester, _input(PluginInputFormat.text), plugins: plugins);
+      expect(find.text('first'), findsOneWidget);
+
+      plugins.emitStored({'k': 'from the other screen'});
+      await tester.pumpAndSettle();
+
+      expect(find.text('from the other screen'), findsOneWidget);
+      expect(find.text('first'), findsNothing);
+      // Showing it is not a save.
+      expect(plugins.configWrites, isEmpty);
+    });
+
+    testWidgets('picking the earlier value again after an outside change '
+        'is saved', (tester) async {
+      final plugins = FakePlugins()..stored = {'k': 'eu'};
+      const select = PluginConfigField(
+        key: 'k',
+        title: 'Region',
+        mode: PluginConfigMode.select,
+        options: _options,
+      );
+      await open(tester, select, plugins: plugins);
+      expect(find.text('Europe'), findsOneWidget);
+
+      plugins.emitStored({'k': 'as'});
+      await tester.pumpAndSettle();
+      expect(find.text('Asia'), findsOneWidget);
+
+      await tester.tap(find.text('Asia'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Europe').last);
+      await tester.pumpAndSettle();
+
+      expect(plugins.configWrites.map((w) => w.$3), ['eu']);
+    });
+  });
+  group('own saves come back on the live values', () {
+    testWidgets('Enter saves without rebuilding the text box', (tester) async {
+      final plugins = FakePlugins()..stored = {'k': 'a'};
+      await open(tester, _input(PluginInputFormat.text), plugins: plugins);
+      final before = tester.state(find.byType(PluginConfigTextField));
+      await tester.tap(find.byType(TextField));
+      await tester.enterText(find.byType(TextField), 'abc');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(plugins.configWrites.map((w) => w.$3), ['abc']);
+      // The save came back on the live values and changed nothing here.
+      expect(
+        identical(tester.state(find.byType(PluginConfigTextField)), before),
+        isTrue,
+      );
+      expect(find.text('abc'), findsOneWidget);
+    });
+
+    testWidgets('Add item after editing a row keeps the new row', (
+      tester,
+    ) async {
+      final plugins = FakePlugins()
+        ..stored = {
+          'k': ['a'],
+        };
+      await open(
+        tester,
+        const PluginConfigField(
+          key: 'k',
+          title: 'Hosts',
+          mode: PluginConfigMode.list,
+        ),
+        plugins: plugins,
+      );
+      await tester.tap(find.byType(TextField).first);
+      await tester.enterText(find.byType(TextField).first, 'a2');
+      await tester.pump();
+      await tester.tap(find.text(en.pluginConfigAddItem));
+      await tester.pumpAndSettle();
+
+      expect(plugins.configWrites.last.$3, ['a2']);
+      final rows = find.byType(TextField);
+      expect(rows, findsNWidgets(2));
+      expect(tester.widget<TextField>(rows.last).focusNode?.hasFocus, isTrue);
+    });
+
+    testWidgets('chip picks made quickly are all saved and shown', (
+      tester,
+    ) async {
+      final plugins = FakePlugins()..configGate = Completer<void>();
+      const chips = PluginConfigField(
+        key: 'k',
+        title: 'Regions',
+        mode: PluginConfigMode.select,
+        selectFormat: PluginSelectFormat.multiple,
+        options: _options,
+      );
+      await open(tester, chips, plugins: plugins);
+      await tester.tap(find.text('Europe'));
+      await tester.pump();
+      await tester.tap(find.text('Asia'));
+      await tester.pump();
+      plugins.configGate!.complete();
+      await tester.pumpAndSettle();
+
+      expect(plugins.configWrites.map((w) => w.$3), [
+        ['eu'],
+        ['eu', 'as'],
+      ]);
+      bool selected(String label) => tester
+          .widget<FilterChip>(find.widgetWithText(FilterChip, label))
+          .selected;
+      expect(selected('Europe'), isTrue);
+      expect(selected('Asia'), isTrue);
+    });
+
+    testWidgets('a toggle keeps its state after saving', (tester) async {
+      final plugins = FakePlugins();
+      await open(
+        tester,
+        const PluginConfigField(
+          key: 'k',
+          title: 'Switch',
+          mode: PluginConfigMode.toggle,
+        ),
+        plugins: plugins,
+      );
+      await tester.tap(find.widgetWithText(SwitchListTile, 'Switch'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<SwitchListTile>(
+              find.widgetWithText(SwitchListTile, 'Switch'),
+            )
+            .value,
+        isTrue,
+      );
     });
   });
 }

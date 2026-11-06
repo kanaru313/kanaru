@@ -11,7 +11,10 @@ import 'lyrics_sources_harness.dart';
 
 /// Answers saves from a script, one entry per call (then `written`).
 class _ScriptedPlugins extends FakePlugins {
-  _ScriptedPlugins(this.script);
+  // The script decides the answer, so a save is not echoed on its own.
+  _ScriptedPlugins(this.script) {
+    echoesWrites = false;
+  }
 
   final List<PluginConfigWrite> script;
 

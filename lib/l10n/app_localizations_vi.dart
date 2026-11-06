@@ -5097,6 +5097,31 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pluginConfigMapValueLabel => 'Giá trị';
 
   @override
+  String get pluginConfigCustomModelTag => 'Tự thêm';
+
+  @override
+  String get pluginConfigRemoveCustomModel => 'Xóa model này';
+
+  @override
+  String get pluginConfigAddModel => 'Thêm model…';
+
+  @override
+  String get pluginConfigAddModelTitle => 'Thêm model';
+
+  @override
+  String get pluginConfigAddModelName => 'Tên model, đúng như máy chủ yêu cầu';
+
+  @override
+  String get pluginConfigAddModelNote =>
+      'Ghi chú (tùy chọn), ví dụ: Ollama máy nhà';
+
+  @override
+  String get pluginConfigAddAndSelect => 'Thêm và chọn';
+
+  @override
+  String get pluginConfigNoModel => 'Chưa có model';
+
+  @override
   String pluginNeedsConfigTitle(String name) {
     return '$name cần được cấu hình';
   }

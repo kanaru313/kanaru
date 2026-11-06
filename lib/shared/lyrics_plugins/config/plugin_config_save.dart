@@ -35,19 +35,24 @@ class PluginConfigSaveResult {
   bool get saved => message == null;
 }
 
-/// Saves one config value; see [PluginConfigSaveResult].
+/// Saves one config value; see [PluginConfigSaveResult]. A saved value makes
+/// the failed translations of the plugin start over unless [forgetFailures]
+/// is false (an editor that must not disturb a translation under way).
 Future<PluginConfigSaveResult> savePluginConfigValue(
   BuildContext context,
   WidgetRef ref,
   String installId,
   String key,
-  Object? value,
-) {
+  Object? value, {
+  bool forgetFailures = true,
+}) {
   // Read before the await: the page may close while the save runs.
   final jobs = ref.read(translationJobsProvider.notifier);
   return savePluginConfigValueWith(
     controller: ref.read(lyricsPluginsControllerProvider),
-    onSaved: () => forgetTranslationFailures(jobs, installId),
+    onSaved: forgetFailures
+        ? () => forgetTranslationFailures(jobs, installId)
+        : null,
     l10n: context.l10n,
     installId: installId,
     key: key,

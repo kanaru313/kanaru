@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../package/plugin_config_field.dart';
 import 'plugin_config_value_rules.dart';
 
@@ -209,6 +211,7 @@ PluginConfigField pluginEffectiveField(
         value: value,
         title: value,
         subtitle: subtitle is String && subtitle.isNotEmpty ? subtitle : null,
+        custom: true,
       ),
     );
   }
@@ -244,4 +247,24 @@ String combinedInstruction(String shared, String? song) {
   return runes.length <= aiInstructionMaxRunes
       ? text
       : String.fromCharCodes(runes.take(aiInstructionMaxRunes));
+}
+
+/// The key of the standard model select of an `ai-translate` plugin, the one
+/// field that may be `custom`.
+const pluginModelKey = 'model';
+
+/// Longest name of a model the user adds, and its note (code points).
+const pluginCustomChoiceMaxValue = 200;
+const pluginCustomChoiceMaxSubtitle = 300;
+
+/// The values stored as JSON text, decoded. Unreadable text, or text that is
+/// not an object, counts as no values.
+Map<String, Object?> decodeStoredPluginConfig(String text) {
+  try {
+    final value = jsonDecode(text);
+    if (value is Map<String, dynamic>) return {...value};
+  } on FormatException {
+    // Unreadable text counts as no values.
+  }
+  return {};
 }

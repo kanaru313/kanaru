@@ -73,6 +73,32 @@ class _State extends ConsumerState<PluginConfigMapField>
     return out;
   }
 
+  @override
+  void didUpdateWidget(PluginConfigMapField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    commitExternal({
+      for (final e in widget.initialEntries.entries)
+        if (e.key.isNotEmpty || e.value.isNotEmpty) e.key: e.value,
+    });
+  }
+
+  @override
+  void onExternalValue(Object? payload) {
+    final old = [..._rows];
+    _rows
+      ..clear()
+      ..addAll([
+        if (payload is Map)
+          for (final e in payload.entries) _newRow('${e.key}', '${e.value}'),
+      ]);
+    // The old boxes are still in this frame's tree.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final row in old) {
+        row.dispose();
+      }
+    });
+  }
+
   _Row _newRow(String key, String value) => _Row(key, value, commitOnBlur);
 
   /// What is wrong with the name of the row at [index], or null.

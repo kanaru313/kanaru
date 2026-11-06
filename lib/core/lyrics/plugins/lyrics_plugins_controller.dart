@@ -235,6 +235,32 @@ class LyricsPluginsController {
     Object? value,
   ) => _queue.run(() => _config.setValue(installId, key, value));
 
+  /// Adds a model to the plugin's `custom` model select and selects it; see
+  /// [LyricsPluginConfigStore.addCustomModel].
+  Future<PluginConfigWrite> addCustomModel(
+    String installId,
+    String value, {
+    String? subtitle,
+  }) => _queue.run(
+    () => _config.addCustomModel(installId, value, subtitle: subtitle),
+  );
+
+  /// Removes a model the user added; see
+  /// [LyricsPluginConfigStore.removeCustomModel]. When no model is left to
+  /// select, a plugin that is on and now lacks a required value is reported.
+  Future<PluginConfigWrite> removeCustomModel(
+    String installId,
+    String value,
+  ) async {
+    final result = await _queue.run(
+      () => _config.removeCustomModel(installId, value),
+    );
+    if (result == PluginConfigWrite.written) {
+      unawaited(_reportIfNeedsConfig(installId));
+    }
+    return result;
+  }
+
   /// What a script run reads as `localConfig`, secrets included.
   Future<PluginConfigMap> configForRun(String installId) =>
       _config.configForRun(installId);

@@ -35,8 +35,7 @@ class PluginConfigListField extends ConsumerStatefulWidget {
 class _State extends ConsumerState<PluginConfigListField>
     with PluginConfigCommit<PluginConfigListField> {
   late final List<PluginConfigRowBox> _rows = [
-    for (final item in widget.initialItems)
-      _newRow(item is num ? pluginNumberText(item) : '$item'),
+    for (final item in widget.initialItems) _newRow(_itemText(item)),
   ];
 
   PluginListFormat get _format =>
@@ -61,6 +60,35 @@ class _State extends ConsumerState<PluginConfigListField>
     PluginListFormat.integer => pluginParseFinite(text, whole: true) ?? text,
     _ => text,
   };
+
+  static String _itemText(Object? item) =>
+      item is num ? pluginNumberText(item) : '$item';
+
+  @override
+  void didUpdateWidget(PluginConfigListField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    commitExternal([
+      for (final item in widget.initialItems)
+        if (_itemText(item).trim().isNotEmpty) _typed(_itemText(item)),
+    ]);
+  }
+
+  @override
+  void onExternalValue(Object? payload) {
+    final old = [..._rows];
+    _rows
+      ..clear()
+      ..addAll([
+        for (final item in payload is List ? payload : const [])
+          _newRow(_itemText(item)),
+      ]);
+    // The old boxes are still in this frame's tree.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final row in old) {
+        row.dispose();
+      }
+    });
+  }
 
   PluginConfigRowBox _newRow(String text) =>
       PluginConfigRowBox(text, onBlur: commitOnBlur);

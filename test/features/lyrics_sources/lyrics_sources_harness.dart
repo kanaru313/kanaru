@@ -11,6 +11,7 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_config_values_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
@@ -117,13 +118,85 @@ class FakePlugins extends Fake implements LyricsPluginsController {
     configWrites.add((installId, key, value));
     final gate = configGate;
     if (gate != null) await gate.future;
+    // As the database does: a saved value comes back on the live stream.
+    if (echoesWrites && configResult == PluginConfigWrite.written) {
+      emitStored({
+        for (final e in stored.entries)
+          if (e.key != key) e.key: e.value,
+        if (value != null && value != '') key: value,
+      });
+    }
     return configResult;
   }
+
+  /// Whether `setConfigValue` reaches the live values when it saves.
+  bool echoesWrites = true;
 
   @override
   Future<Map<String, Object?>> storedConfig(String installId) async {
     if (storedError != null) throw storedError!;
     return stored;
+  }
+
+  final _storedChanges = StreamController<Map<String, Object?>>.broadcast();
+
+  /// What the live values provider answers: [stored] now, then every
+  /// [emitStored].
+  Stream<Map<String, Object?>> storedStream(String installId) async* {
+    if (storedError != null) throw storedError!;
+    yield {...stored};
+    yield* _storedChanges.stream;
+  }
+
+  /// Makes [values] the saved values and tells the open forms, as a write
+  /// from another screen would.
+  void emitStored(Map<String, Object?> values) {
+    stored = values;
+    _storedChanges.add({...values});
+  }
+
+  final customModelAdds = <(String, String, String?)>[];
+  final customModelRemoves = <(String, String)>[];
+
+  @override
+  Future<PluginConfigWrite> addCustomModel(
+    String installId,
+    String value, {
+    String? subtitle,
+  }) async {
+    customModelAdds.add((installId, value, subtitle));
+    if (configResult == PluginConfigWrite.written) {
+      final raw = stored['model.custom'];
+      emitStored({
+        ...stored,
+        'model': value,
+        'model.custom': [
+          if (raw is List) ...raw,
+          {'value': value, 'subtitle': ?subtitle},
+        ],
+      });
+    }
+    return configResult;
+  }
+
+  @override
+  Future<PluginConfigWrite> removeCustomModel(
+    String installId,
+    String value,
+  ) async {
+    customModelRemoves.add((installId, value));
+    if (configResult == PluginConfigWrite.written) {
+      final raw = stored['model.custom'];
+      emitStored({
+        ...stored,
+        'model.custom': [
+          if (raw is List)
+            for (final item in raw)
+              if (!(item is Map && item['value'] == value)) item,
+        ],
+      });
+    }
+    return configResult;
   }
 
   @override
@@ -221,6 +294,9 @@ Future<GoRouter> pumpSources(
           (ref) => input ?? Stream.value(LyricsSourcesInput(records, prefs)),
         ),
         pluginDataStatsProvider.overrideWith((ref, id) async => stats),
+        pluginStoredConfigProvider.overrideWith(
+          (ref, id) => plugins?.storedStream(id) ?? Stream.value(const {}),
+        ),
         ...overrides,
       ],
       child: MaterialApp.router(

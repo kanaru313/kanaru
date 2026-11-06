@@ -7826,6 +7826,54 @@ abstract class AppLocalizations {
   /// **'Value'**
   String get pluginConfigMapValueLabel;
 
+  /// No description provided for @pluginConfigCustomModelTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get pluginConfigCustomModelTag;
+
+  /// No description provided for @pluginConfigRemoveCustomModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this model'**
+  String get pluginConfigRemoveCustomModel;
+
+  /// No description provided for @pluginConfigAddModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add model…'**
+  String get pluginConfigAddModel;
+
+  /// No description provided for @pluginConfigAddModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add model'**
+  String get pluginConfigAddModelTitle;
+
+  /// No description provided for @pluginConfigAddModelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name, exactly as the server expects'**
+  String get pluginConfigAddModelName;
+
+  /// No description provided for @pluginConfigAddModelNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional), e.g. Ollama at home'**
+  String get pluginConfigAddModelNote;
+
+  /// No description provided for @pluginConfigAddAndSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Add and select'**
+  String get pluginConfigAddAndSelect;
+
+  /// No description provided for @pluginConfigNoModel.
+  ///
+  /// In en, this message translates to:
+  /// **'No model yet'**
+  String get pluginConfigNoModel;
+
   /// Snack bar: a plugin has an empty required setting and was not run
   ///
   /// In en, this message translates to:

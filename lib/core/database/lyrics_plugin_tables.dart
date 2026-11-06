@@ -38,8 +38,9 @@ import 'package:drift/drift.dart';
 // 7. `lyrics_plugin_data` holds one row per live plugin: non-secret config
 //    values and the script's localStorage, both JSON objects (default `{}`),
 //    each at most 64 KiB. No source list or lyrics stream watches the table,
-//    so a config or storage write never rebuilds them. The row goes with the
-//    plugin on uninstall.
+//    so a config or storage write never rebuilds them. Only the config forms
+//    watch `config_values`, through a distinct stream of that text. The row
+//    goes with the plugin on uninstall.
 // 8. `lyrics_source_prefs` has one row per lyrics source the user changed or
 //    ordered. A source with no row is enabled and goes after the rows. Rows
 //    for ids with no plugin record are ignored. Translate plugins never get a
