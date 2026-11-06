@@ -8,6 +8,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
+import 'package:kanaru/shared/lyrics_plugins/plugin_icon.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
 import 'package:kanaru/shared/widgets/selection_row.dart';
 import 'package:material_ui/material_ui.dart';
@@ -164,6 +165,18 @@ void main() {
     expect(h.prefs.service, plugin);
     expect(h.prefs.show, isTrue);
     expect(h.container.read(pluginNeedsConfigNoticesProvider)?.installId, _id);
+  });
+
+  testWidgets('each plugin row shows that plugin\'s icon', (tester) async {
+    await pump(tester, settings: const TranslationPrefs());
+    for (final entry in {'Gemini': _id, 'Other': _otherId}.entries) {
+      final icon = find.descendant(
+        of: row(entry.key),
+        matching: find.byType(PluginIcon),
+      );
+      expect(icon, findsOneWidget);
+      expect(tester.widget<PluginIcon>(icon).record?.installId, entry.value);
+    }
   });
 
   testWidgets('uninstalled plugin shows Not selected and no checkmark', (

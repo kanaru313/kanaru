@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/lyrics/plugins/lyrics_plugin_record.dart';
+import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_language.dart';
@@ -11,6 +13,7 @@ import '../../../../../core/lyrics_translation/translation_service_resolution.da
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
+import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_language_name.dart';
 import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
@@ -75,11 +78,16 @@ Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
   final l10n = context.l10n;
   final plugins = ref.read(translationPluginInfosProvider);
   final settings = ref.read(settingsProvider.notifier);
+  final records = ref.read(lyricsPluginRecordsProvider);
   final items = <SelectionPickerItem<TranslationServiceId>>[
     for (final service in choices.services)
       SelectionPickerItem(
         value: service,
         name: translationServiceName(l10n, plugins, service),
+        leading: PluginIcon(
+          record: _recordFor(records, service.value),
+          size: 24,
+        ),
       ),
   ];
   final picked = await showSelectionPicker<TranslationServiceId>(
@@ -100,6 +108,17 @@ Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
   } else {
     settings.setTranslation(prefs.copyWith(service: picked));
   }
+}
+
+/// The installed plugin record for [installId], or null when none matches.
+LyricsPluginRecord? _recordFor(
+  List<LyricsPluginRecord> records,
+  String installId,
+) {
+  for (final r in records) {
+    if (r.installId == installId) return r;
+  }
+  return null;
 }
 
 class _GetMorePluginsRow extends StatelessWidget {
