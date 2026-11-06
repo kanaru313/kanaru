@@ -30,6 +30,7 @@ class ResolvedStream {
     required this.allowed,
     this.mimeType,
     this.expiresAt,
+    this.redirectAllowed,
   });
 
   /// Already checked by the resolver; the proxy fetches it as it is.
@@ -48,6 +49,10 @@ class ResolvedStream {
   /// Asked before every upstream request: false once the user withdrew the
   /// consent that let this stream be fetched.
   final bool Function() allowed;
+
+  /// Whether an upstream redirect to a URL may be followed: the same rules
+  /// the resolver checked [url] with. Null: no redirect is followed.
+  final bool Function(Uri url)? redirectAllowed;
 }
 
 /// Why a resolve gave nothing. Carries no URL.

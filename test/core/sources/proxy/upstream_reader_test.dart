@@ -195,6 +195,54 @@ void main() {
   });
 
   test(
+    'a redirect the stream allows is followed with the same range',
+    () async {
+      resolver.redirectAllowed = (url) => url.path == '/elsewhere';
+      upstream.redirected.add('/s1');
+      final answer = await open('bytes=0-');
+      expect(answer.status, 206);
+      expect(await body(answer), bytes);
+      // Every chunk asks the resolved URL and follows its redirect.
+      expect(
+        [for (final r in upstream.requests.take(4)) '${r.path} ${r.range}'],
+        [
+          '/s1 bytes=0-999',
+          '/elsewhere bytes=0-999',
+          '/s1 bytes=1000-1999',
+          '/elsewhere bytes=1000-1999',
+        ],
+      );
+      expect(resolver.calls, [false]);
+    },
+  );
+
+  test('a redirect the stream does not allow answers 502', () async {
+    resolver.redirectAllowed = (url) => false;
+    upstream.redirected.add('/s1');
+    final answer = await open('bytes=0-');
+    expect(answer.status, 502);
+    expect([for (final r in upstream.requests) r.path], ['/s1']);
+  });
+
+  test('more than $maxUpstreamRedirects redirects answer 502', () async {
+    resolver.redirectAllowed = (url) => true;
+    upstream
+      ..redirected.addAll(['/s1', '/r1', '/r2', '/r3'])
+      ..redirectTo.addAll({
+        '/s1': '/r1',
+        '/r1': '/r2',
+        '/r2': '/r3',
+        '/r3': '/r4',
+      });
+    final answer = await open('bytes=0-');
+    expect(answer.status, 502);
+    expect(
+      [for (final r in upstream.requests) r.path],
+      ['/s1', '/r1', '/r2', '/r3'],
+    );
+  });
+
+  test(
     'an answer with neither Content-Range nor Content-Length: 502',
     () async {
       upstream.omitLengths = true;

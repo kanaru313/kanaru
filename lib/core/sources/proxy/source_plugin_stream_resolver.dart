@@ -72,7 +72,8 @@ class SourcePluginStreamResolver implements TrackStreamResolver {
     } on SourceFailure catch (e) {
       throw ResolveFailure(e.kind.name);
     }
-    if (!sourceStreamUrlAllowed(stream.url, PluginHostSet(hosts))) {
+    final allowedHosts = PluginHostSet(hosts);
+    if (!sourceStreamUrlAllowed(stream.url, allowedHosts)) {
       throw const ResolveFailure('blockedHost');
     }
     return ResolvedStream(
@@ -81,6 +82,7 @@ class SourcePluginStreamResolver implements TrackStreamResolver {
       mimeType: stream.mimeType,
       expiresAt: stream.expiresAt,
       allowed: () => _consented(installId),
+      redirectAllowed: (url) => sourceStreamUrlAllowed(url, allowedHosts),
     );
   }
 

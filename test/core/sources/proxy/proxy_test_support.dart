@@ -36,8 +36,10 @@ class FakeUpstream {
   /// Paths answered 403 once they served the given number of requests.
   final forbiddenAfter = <String, int>{};
 
-  /// Paths answered 302 to another place.
+  /// Paths answered 302 to another place: [redirectTo] when it names one
+  /// for the path, else `/elsewhere`.
   final redirected = <String>{};
+  final redirectTo = <String, String>{};
 
   /// Paths that serve another body than [bytes] (another file).
   final bodies = <String, List<int>>{};
@@ -89,7 +91,10 @@ class FakeUpstream {
     if (redirected.contains(path)) {
       response
         ..statusCode = HttpStatus.found
-        ..headers.set('location', url('/elsewhere').toString());
+        ..headers.set(
+          'location',
+          url(redirectTo[path] ?? '/elsewhere').toString(),
+        );
       await response.close();
       return;
     }
@@ -189,6 +194,9 @@ class CountingResolver implements TrackStreamResolver {
   /// Makes the next calls fail.
   bool failing = false;
 
+  /// Handed to the streams as their redirect rule; null follows none.
+  bool Function(Uri url)? redirectAllowed;
+
   /// Completes the calls only when set; null answers at once.
   Completer<void>? gate;
 
@@ -215,6 +223,7 @@ class CountingResolver implements TrackStreamResolver {
       mimeType: mimeType,
       expiresAt: expiresAt,
       allowed: () => allowed,
+      redirectAllowed: redirectAllowed,
     );
   }
 }
