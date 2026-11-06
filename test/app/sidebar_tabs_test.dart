@@ -95,6 +95,20 @@ void main() {
       ]);
     });
 
+    test('lists Online right after Home only when asked', () {
+      expect(visibleSidebarGroups(SidebarTab.values.toSet())[0], [
+        AppDestination.home,
+      ]);
+      final groups = visibleSidebarGroups(
+        SidebarTab.values.toSet(),
+        online: true,
+      );
+      expect(groups[0], [AppDestination.home, AppDestination.online]);
+      expect(groups.expand((g) => g).where((d) => d == AppDestination.online), [
+        AppDestination.online,
+      ]);
+    });
+
     test('hides songs', () {
       final tabs = SidebarTab.values.toSet()..remove(SidebarTab.songs);
       expect(flat(tabs), isNot(contains(AppDestination.songs)));
@@ -137,7 +151,10 @@ void main() {
     for (final d in AppDestination.values) {
       final shows =
           sidebarTabOf(d) == null || _twoHidden.contains(sidebarTabOf(d));
-      if (d == AppDestination.search || d == AppDestination.settings) {
+      // Not listed here: Online needs a source plugin.
+      if (d == AppDestination.search ||
+          d == AppDestination.settings ||
+          d == AppDestination.online) {
         continue;
       }
       expect(

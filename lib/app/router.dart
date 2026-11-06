@@ -23,6 +23,8 @@ import '../features/library/onboarding/onboarding_screen.dart';
 import '../features/library/songs/songs_screen.dart';
 import '../features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import '../features/lyrics_sources/lyrics_sources_routes.dart';
+import '../features/lyrics_sources/plugin_detail_page.dart';
+import '../features/online_sources/online_sources_screen.dart';
 import '../features/playlists/favorites_routes.dart';
 import '../features/playlists/favorites_screen.dart';
 import '../features/playlists/playlist_screen.dart';
@@ -32,6 +34,7 @@ import '../features/playlists/queue_history_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/settings/settings_section_routes.dart';
+import '../shared/online_routes.dart';
 import 'shell/app_destination.dart';
 import 'shell/app_shell.dart';
 import 'shell/branch_transition_container.dart';
@@ -84,6 +87,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   builder: (context, state) => _buildPage(state, destination),
                   routes: switch (destination) {
                     AppDestination.home => homeRoutes,
+                    AppDestination.online => [
+                      GoRoute(
+                        path: onlineSourcePluginRoutePattern,
+                        builder: (context, state) => PluginDetailPage(
+                          installId:
+                              state.pathParameters[onlineSourcePluginIdParam]!,
+                        ),
+                      ),
+                    ],
                     AppDestination.languages => languagesRoutes,
                     AppDestination.albums => [
                       GoRoute(
@@ -148,6 +160,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 Widget _buildPage(GoRouterState state, AppDestination destination) {
   return switch (destination) {
     AppDestination.home => const HomeScreen(),
+    AppDestination.online => const OnlineSourcesScreen(),
     AppDestination.songs => const SongsScreen(),
     AppDestination.albums => const AlbumsScreen(),
     AppDestination.artists => const ArtistsScreen(),

@@ -7,6 +7,7 @@ import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/online_routes.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
 import 'package:kanaru/shared/widgets/app_snack_bar.dart';
@@ -53,6 +54,10 @@ void main() {
         GoRoute(
           path: translationPluginRoutePattern,
           builder: (_, _) => const Text('translate plugin page'),
+        ),
+        GoRoute(
+          path: '$onlineRoute/$onlineSourcePluginRoutePattern',
+          builder: (_, _) => const Text('source plugin page'),
         ),
       ],
     );
@@ -159,6 +164,20 @@ void main() {
 
     expect(location(), translationPluginRoute(_id));
     expect(container.read(nowPlayingOpenProvider), isFalse);
+  });
+
+  testWidgets('a source plugin: the action opens its page under Online', (
+    tester,
+  ) async {
+    await pump(tester);
+    report(PluginKind.source);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open config'));
+    await tester.pumpAndSettle();
+
+    expect(location(), onlineSourcePluginRoute(_id));
+    expect(find.text('source plugin page'), findsOneWidget);
   });
 
   // Another feature's snack bar, shown through the same messenger.

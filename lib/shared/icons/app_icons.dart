@@ -84,6 +84,8 @@ abstract final class AppIcons {
   // Navigation and layout.
   static const IconData home = FluentIcons.home_24_filled;
   static const IconData homeOutlined = FluentIcons.home_24_regular;
+  static const IconData online = FluentIcons.globe_24_filled;
+  static const IconData onlineOutlined = FluentIcons.globe_24_regular;
   static const IconData settings = FluentIcons.settings_24_filled;
   static const IconData settingsOutlined = FluentIcons.settings_24_regular;
   static const IconData menu = FluentIcons.navigation_24_regular;

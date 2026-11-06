@@ -5626,4 +5626,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String lyricsTranslationRetranslated(String service) {
     return 'Retranslated with $service';
   }
+
+  @override
+  String get navOnline => 'Online';
+
+  @override
+  String get onlineSourceTooltip => 'Source';
+
+  @override
+  String onlineSourceSemantics(String name) {
+    return 'Source: $name';
+  }
+
+  @override
+  String get onlineSearchHint => 'Search songs, or paste a link';
+
+  @override
+  String get onlineSearchButton => 'Search';
+
+  @override
+  String get onlineIdle =>
+      'Search for a song, or paste a video or playlist link.';
+
+  @override
+  String onlineEmpty(String query) {
+    return 'No results for “$query”.';
+  }
+
+  @override
+  String get onlineRetry => 'Retry';
+
+  @override
+  String get onlineErrorAuth => 'The service refused the sign-in.';
+
+  @override
+  String get onlineErrorRateLimited => 'Too many requests. Try again later.';
+
+  @override
+  String get onlineErrorUnavailable =>
+      'The service is not available right now.';
+
+  @override
+  String get onlineErrorNetwork =>
+      'Could not reach the service. Check your connection.';
+
+  @override
+  String get onlineErrorInvalidOutput =>
+      'The plugin returned something Kanaru cannot read.';
+
+  @override
+  String get onlineErrorBusy =>
+      'The plugin runtime is busy. Try again in a moment.';
+
+  @override
+  String get onlineErrorInternal => 'Something went wrong inside Kanaru.';
+
+  @override
+  String onlineErrorPluginMessage(String message) {
+    return 'Plugin message: $message';
+  }
+
+  @override
+  String get onlineNeedsConfigBody =>
+      'Fill in its required settings, then search again.';
+
+  @override
+  String onlineConsentTitle(String name) {
+    return 'Allow $name to go online?';
+  }
+
+  @override
+  String onlineConsentBody(String name, String hosts) {
+    return '$name will contact $hosts to search and to stream audio. What you type and the songs you play are sent to those sites. Kanaru sends nothing until you accept.';
+  }
+
+  @override
+  String get onlineConsentAccept => 'Accept and search';
+
+  @override
+  String get onlineNoPluginBody =>
+      'Install a source plugin to search and play music from the web.';
+
+  @override
+  String get onlineNoPluginStore => 'Open plugin store';
 }

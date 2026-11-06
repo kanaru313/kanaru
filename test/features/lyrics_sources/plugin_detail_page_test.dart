@@ -11,6 +11,7 @@ import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanaru/features/lyrics_sources/plugin_config_save.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/online_routes.dart';
 import 'package:kanaru/shared/translation_plugin_routes.dart';
 
 import 'lyrics_sources_harness.dart';
@@ -293,6 +294,50 @@ void main() {
 
     expect(fake.enabled, [(idA, false)]);
     expect(container.read(pluginNeedsConfigNoticesProvider), isNull);
+  });
+
+  group('a source plugin under the Online page', () {
+    final source = testRecord(
+      idA,
+      name: 'Tube',
+      pluginKind: PluginKind.source,
+      config: const [_text],
+    );
+
+    Future<FakePlugins> openSource(WidgetTester tester) async {
+      final plugins = FakePlugins();
+      await pumpSources(
+        tester,
+        records: [source],
+        plugins: plugins,
+        location: onlineSourcePluginRoute(idA),
+        withOnline: true,
+      );
+      return plugins;
+    }
+
+    testWidgets('opens with settings and info, without switch or lyrics rows', (
+      tester,
+    ) async {
+      await openSource(tester);
+
+      expect(find.text('Tube'), findsOneWidget);
+      expect(find.text('Display name'), findsOneWidget);
+      expect(find.byType(Switch), findsNothing);
+      expect(find.text(en.pluginSavedLyricsTitle), findsNothing);
+      expect(find.text(en.pluginStorageTitle), findsOneWidget);
+    });
+
+    testWidgets('uninstalling goes back to the Online page', (tester) async {
+      final plugins = await openSource(tester);
+      await tester.tap(find.byTooltip(en.pluginUninstall));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(en.pluginUninstallConfirm));
+      await tester.pumpAndSettle();
+
+      expect(plugins.uninstalls, [idA]);
+      expect(find.text('online page'), findsOneWidget);
+    });
   });
 
   group('settings form', () {

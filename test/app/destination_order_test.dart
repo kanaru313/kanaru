@@ -19,6 +19,13 @@ void main() {
       expect(destinationScreenOrder.length, AppDestination.values.length);
     });
 
+    test('ranks Online right after Home', () {
+      expect(
+        destinationScreenOrder.indexOf(AppDestination.online),
+        destinationScreenOrder.indexOf(AppDestination.home) + 1,
+      );
+    });
+
     test('ends with most played', () {
       expect(destinationScreenOrder.last, AppDestination.mostPlayed);
     });
@@ -50,6 +57,16 @@ void main() {
 
       checkSubset(SidebarTab.values.toSet(), 'all tabs shown');
       checkSubset(<SidebarTab>{}, 'all tabs hidden');
+      test('Online shown keeps the order', () {
+        final visible = visibleSidebarGroups(
+          SidebarTab.values.toSet(),
+          online: true,
+        ).expand((g) => g).toList();
+        expect(visible, [
+          for (final d in destinationScreenOrder)
+            if (visible.contains(d)) d,
+        ]);
+      });
       checkSubset(
         SidebarTab.values.toSet()..remove(SidebarTab.albums),
         'one tab (albums) hidden',

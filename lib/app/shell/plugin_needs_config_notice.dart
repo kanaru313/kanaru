@@ -8,6 +8,7 @@ import '../../core/lyrics_translation/translation_service_needs_config_watch.dar
 import '../../features/player/now_playing/now_playing_open_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/lyrics_source_routes.dart';
+import '../../shared/online_routes.dart';
 import '../../shared/settings_routes.dart';
 import '../../shared/translation_plugin_routes.dart';
 import '../../shared/widgets/app_snack_bar.dart';
@@ -177,9 +178,11 @@ String _title(AppLocalizations l10n, List<String> names) => switch (names) {
 String _route(List<_Entry> entries) {
   if (entries.length == 1) {
     final e = entries.single;
-    return e.kind == PluginKind.translate
-        ? translationPluginRoute(e.installId)
-        : lyricsPluginRoute(e.installId);
+    return switch (e.kind) {
+      PluginKind.translate => translationPluginRoute(e.installId),
+      PluginKind.source => onlineSourcePluginRoute(e.installId),
+      _ => lyricsPluginRoute(e.installId),
+    };
   }
   return entries.every((e) => e.kind == PluginKind.translate)
       ? settingsFocusLocation(SettingsAnchor.playbackTranslation)
