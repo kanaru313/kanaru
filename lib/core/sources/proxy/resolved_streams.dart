@@ -15,6 +15,10 @@ const streamResolveDeadline = Duration(seconds: 20);
 /// A resolved URL is not used once it is this close to its expiry.
 const streamExpiryMargin = Duration(seconds: 60);
 
+/// How many item keys keep their playthrough: the last ones begun. A key
+/// past them is forgotten unless a body of it is still being sent.
+const maxPlaythroughKeys = 16;
+
 /// The playthrough of [Playthrough.key] has ended (superseded, its owner
 /// dropped) or its item is dead: nothing more is resolved for it.
 class PlaythroughEnded implements Exception {
@@ -32,7 +36,10 @@ class PlaythroughEnded implements Exception {
 ///
 /// A playthrough superseded by a newer one of the same key hands its
 /// requests on to it, so a body still being sent goes on with the newer
-/// playthrough's stream; one whose owner was dropped fails them.
+/// playthrough's stream; one whose owner was dropped fails them. The newer
+/// one takes over the resolve in flight or cached (with its validity) and
+/// the count of open bodies, but starts with its own fresh budget and not
+/// dead; the resolve of a dead playthrough is not taken over.
 class Playthrough {
   Playthrough._(this.key, this.owner, this._resolve, this._clock, this._limit);
 
@@ -48,12 +55,30 @@ class Playthrough {
   bool _dead = false;
   bool _ended = false;
   Playthrough? _successor;
+  int _openBodies = 0;
 
   /// Superseded by a newer playthrough of [key], or its owner was dropped.
   bool get ended => _ended;
 
   /// A second 403 or a failed resolve: no request of it can succeed.
   bool get dead => _dead;
+
+  /// A body of this playthrough is being sent; [bodyClosed] when it ends.
+  /// Counted on the newest playthrough of the key.
+  void bodyOpened() => _latest._openBodies++;
+
+  /// A body counted by [bodyOpened] has ended.
+  void bodyClosed() => _latest._openBodies--;
+
+  /// The newest playthrough of the key this one handed its requests to, or
+  /// itself.
+  Playthrough get _latest {
+    var playthrough = this;
+    for (var next = _successor; next != null; next = next._successor) {
+      playthrough = next;
+    }
+    return playthrough;
+  }
 
   /// The shared resolve, started when there is none or the one there is
   /// past its margin. Fails with [PlaythroughEnded] once ended or dead.
@@ -89,28 +114,45 @@ class Playthrough {
     _successor = successor;
   }
 
+  /// Supersedes [previous], a playthrough of the same key.
+  void _takeOver(Playthrough previous) {
+    _openBodies = previous._openBodies;
+    if (!previous._dead) {
+      _current = previous._current;
+      _validUntil = previous._validUntil;
+    }
+    previous._end(this);
+  }
+
   Future<ResolvedStream> _start({required bool fresh}) {
     _validUntil = null;
     var timedOut = false;
     late final Future<ResolvedStream> started;
-    started = _resolve(key, fresh: fresh, abandoned: () => _ended || timedOut)
-        .timeout(
-          _limit,
-          onTimeout: () {
-            timedOut = true;
-            throw const ResolveFailure('timeout');
-          },
-        )
-        .then(
-          (stream) {
-            if (identical(_current, started)) _validUntil = _validity(stream);
-            return stream;
-          },
-          onError: (Object error, StackTrace trace) {
-            if (identical(_current, started)) _dead = true;
-            Error.throwWithStackTrace(error, trace);
-          },
-        );
+    // Abandoned only when the playthrough holding it now was dropped: a
+    // newer playthrough of the key takes the resolve over.
+    started =
+        _resolve(key, fresh: fresh, abandoned: () => _latest._ended || timedOut)
+            .timeout(
+              _limit,
+              onTimeout: () {
+                timedOut = true;
+                throw const ResolveFailure('timeout');
+              },
+            )
+            .then(
+              (stream) {
+                final holder = _latest;
+                if (identical(holder._current, started)) {
+                  holder._validUntil = holder._validity(stream);
+                }
+                return stream;
+              },
+              onError: (Object error, StackTrace trace) {
+                final holder = _latest;
+                if (identical(holder._current, started)) holder._dead = true;
+                Error.throwWithStackTrace(error, trace);
+              },
+            );
     // Callers may all be gone; the failure is theirs, not the zone's.
     started.ignore();
     return started;
@@ -127,7 +169,9 @@ class Playthrough {
   }
 }
 
-/// The playthroughs of the proxy, one per item key.
+/// The playthroughs of the proxy, one per item key, for the last
+/// [maxPlaythroughKeys] keys begun and any older key with a body still being
+/// sent.
 class ResolvedStreams {
   ResolvedStreams(
     this._resolve, {
@@ -141,16 +185,34 @@ class ResolvedStreams {
   final Duration _limit;
   final _byKey = <String, Playthrough>{};
 
-  /// Starts a new playthrough of [key], ending the one before (whose
-  /// requests go on with the new one).
+  /// Starts a new playthrough of [key], superseding the one before (whose
+  /// requests go on with the new one), and makes [key] the newest one
+  /// begun. Then forgets the keys past the last [maxPlaythroughKeys] begun
+  /// that have no body being sent.
   Playthrough begin(String key, String owner) {
     final next = Playthrough._(key, owner, _resolve, _clock, _limit);
-    _byKey[key]?._end(next);
-    return _byKey[key] = next;
+    final previous = _byKey.remove(key);
+    if (previous != null) next._takeOver(previous);
+    _byKey[key] = next;
+    _forgetOld();
+    return next;
   }
 
-  /// The current playthrough of [key], or null when none was begun.
+  /// The current playthrough of [key], or null when none was begun or it
+  /// was forgotten.
   Playthrough? lookup(String key) => _byKey[key];
+
+  /// Removes old keys from the map only: a resolve or body of theirs still
+  /// going ends on its own, and their next request is not served.
+  void _forgetOld() {
+    final over = _byKey.length - maxPlaythroughKeys;
+    if (over <= 0) return;
+    final old = [
+      for (final MapEntry(:key, :value) in _byKey.entries.take(over))
+        if (value._openBodies <= 0) key,
+    ];
+    old.forEach(_byKey.remove);
+  }
 
   /// Ends and forgets every playthrough of [owner].
   void dropOwner(String owner) {

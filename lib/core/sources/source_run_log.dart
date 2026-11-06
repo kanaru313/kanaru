@@ -89,8 +89,9 @@ bool sourceRunIsLogged(SourceFailureKind? kind) =>
 /// Writes one source run to the plugin's log file (when it failed or printed
 /// to the console) and, for a failure, one INFO line to the app log. [query]
 /// is the script input (the search text included: the file stays on this
-/// device). A failure whose first refused `fetch` was a blocked host is
-/// written as `blockedHost`, so the app log names the host.
+/// device). [blockedHost] writes the failure as `blockedHost`, so the app
+/// log names the host; [recordFinishedSourceRun] sets it only when the
+/// failure came from that blocked `fetch`.
 void recordSourceRun(
   PluginRunLog log, {
   required LyricsPluginRow row,
@@ -155,7 +156,16 @@ void recordFinishedSourceRun(
     stack: result.jsError?.stack,
     console: [...result.logs, for (final n in notes) 'dropped: $n'],
     requests: outcome.requests,
-    blockedHost:
-        result.fetchFailure?.kind == PluginFetchFailureKind.blockedHost,
+    blockedHost: _failedOnBlockedHost(result, failure),
   );
 }
+
+/// Whether [failure] is the `unavailable` a blocked `fetch` gave: a script
+/// error without a kind of its own (or `server`) after a refused host. A
+/// failure of another kind (the script's `auth`, bad output) keeps its name.
+bool _failedOnBlockedHost(PluginRunResult result, SourceFailureKind? failure) =>
+    failure == SourceFailureKind.unavailable &&
+    result.status == PluginRunStatus.scriptError &&
+    (result.errorKind == PluginRunErrorKind.server ||
+        result.errorKind == PluginRunErrorKind.none) &&
+    result.fetchFailure?.kind == PluginFetchFailureKind.blockedHost;

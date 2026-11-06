@@ -480,6 +480,65 @@ void main() {
       },
     );
 
+    test('a blocked host is the logged kind only when the failure came '
+        'from it', () async {
+      const blocked = PluginFetchFailure(
+        kind: PluginFetchFailureKind.blockedHost,
+        message: 'blockedHost',
+      );
+      onSearch(
+        () => const PluginRunResult(
+          status: PluginRunStatus.scriptError,
+          errorMessage: 'TypeError at search.js:3',
+          fetchFailure: blocked,
+        ),
+      );
+      expect(
+        await _failureOf(search()),
+        _failure(SourceFailureKind.unavailable),
+      );
+
+      onSearch(
+        () => const PluginRunResult(
+          status: PluginRunStatus.scriptError,
+          errorKind: PluginRunErrorKind.auth,
+          errorMessage: 'sign in please',
+          fetchFailure: blocked,
+        ),
+      );
+      expect(await _failureOf(search()), _failure(SourceFailureKind.auth));
+
+      onSearch(
+        () => const PluginRunResult(
+          status: PluginRunStatus.scriptError,
+          errorKind: PluginRunErrorKind.invalidResponse,
+          errorMessage: 'odd answer',
+          fetchFailure: blocked,
+        ),
+      );
+      expect(
+        await _failureOf(search()),
+        _failure(SourceFailureKind.unavailable),
+      );
+
+      onSearch(
+        () => const PluginRunResult(
+          status: PluginRunStatus.ok,
+          outputJson: '[]',
+          fetchFailure: blocked,
+        ),
+      );
+      expect(
+        await _failureOf(search()),
+        _failure(SourceFailureKind.invalidOutput),
+      );
+
+      expect(
+        [for (final e in await events()) e['kind']],
+        ['blockedHost', 'auth', 'unavailable', 'invalidOutput'],
+      );
+    });
+
     test('a thrown error without a fetch is unavailable', () async {
       onSearch(
         () => const PluginRunResult(

@@ -26,8 +26,9 @@ final _log = Logger('source_proxy');
 /// a random session token as the first path segment; both stay the same
 /// until [close]. A request is served only when its `Host` is exactly
 /// `127.0.0.1:<port>`, its method is `GET` (else 405) and its path is
-/// `/<token>/<kind>/<installId>/<itemId>` of a begun playthrough (else 404,
-/// empty body). The item is resolved lazily, on the first request.
+/// `/<token>/<kind>/<installId>/<itemId>` of a begun playthrough that is
+/// still kept (else 404, empty body; see [maxPlaythroughKeys]). The item is
+/// resolved lazily, on the first request.
 class StreamProxyServer implements PluginDropTarget {
   StreamProxyServer({
     required Map<RemoteStreamKind, TrackStreamResolver> resolvers,
@@ -181,9 +182,12 @@ class StreamProxyServer implements PluginDropTarget {
       return Response(answer.status, headers: answer.headers);
     }
     final open = _open.putIfAbsent(owner, () => <ProxyAnswer>{})..add(answer);
+    // Keeps the key's playthrough while its body is being sent.
+    playthrough.bodyOpened();
     unawaited(
       answer.done.then((sent) {
         open.remove(answer);
+        playthrough.bodyClosed();
         _log.fine('$owner ${answer.status} sent $sent bytes');
       }),
     );

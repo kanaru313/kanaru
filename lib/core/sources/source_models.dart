@@ -114,7 +114,8 @@ enum SourceFailureKind {
 }
 
 /// A failed source plugin call. [message] is the text the script passed to
-/// `Response.error`, else empty; it is for the log, not for the screen.
+/// `Response.error`, else empty; it goes to the log, and the Online screen
+/// shows it under a failed search.
 class SourceFailure implements Exception {
   const SourceFailure({required this.kind, this.message = ''});
 

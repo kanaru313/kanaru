@@ -70,7 +70,7 @@ Output:
 | Field | What the app keeps |
 |---|---|
 | `items` | at most 200 items; an item that breaks a rule below is dropped (with a note in the log), the others stay |
-| `id` | 1 to 200 characters, no control characters |
+| `id` | 1 to 200 characters, no control characters, not exactly `.` or `..` (they cannot travel in the proxy URL) |
 | `title` | 1 to 300 characters after the usual name cleaning |
 | `artist` | at most 200 characters, else none |
 | `durationMs` | an integer from 1 to 86 400 000; anything else (a plugin's `0` included) means unknown |
@@ -120,7 +120,7 @@ A script reports a failure with `Response.error(message, {kind})`. The kinds are
 | the plugin is missing, removed, being updated, or the app no longer wants the answer | `skipped`; nothing is shown |
 | the runtime failed, or the plugin's files or settings cannot be read | `internal` |
 
-A `fetch` failure the script caught does not fail a call that then returns valid output, except a send refused for want of consent. The `Response.error` message is kept with the failure for the log; the screen never shows it.
+A `fetch` failure the script caught does not fail a call that then returns valid output, except a send refused for want of consent. The `Response.error` message is kept with the failure: it goes to the log, and the Online screen shows it under a failed search ("Plugin message: …", at most three lines; the runtime cuts it at 1000 characters). Write it for the user, and keep secrets out of it.
 
 Every failed run, and every run that printed to the console, is written to the plugin's log as for lyrics plugins (the script input is the `query`, so a search text is in it; the file stays on the device). Skipped, busy and not consented calls are not logged. The stream URL and headers a `stream.js` returned are never logged.
 
@@ -138,8 +138,8 @@ A source plugin may send nothing until the user accepts a notice for **that plug
 
 The app does not hand the stream URL of a plugin to the player. A remote item plays through a small loopback HTTP proxy inside the app (`lib/core/sources/proxy/`): the player is given `http://127.0.0.1:<port>/<token>/source-plugin/<installId>/<item id>` (the item id percent-encoded as one path segment), and the proxy fetches the bytes upstream on its behalf. The port is chosen by the OS when the first item is played and the token is 32 random bytes; both stay the same for the app session, so the URL is useful to no other program or page.
 
-- **Who may ask.** The `Host` header must be exactly `127.0.0.1:<port>`, the method `GET` (else `405`), and the path `/<token>/source-plugin/<installId>/<item id>` of an item the player has opened (else `404` with an empty body).
-- **Lazy resolve.** `stream.js` runs when the player first requests the proxy URL, not when the item is queued. Each time the player opens an item (every play, every move to the next track) a new *playthrough* starts; every request of it (the player opens several at once for a WebM file, and one per seek or reconnect) shares one resolve. A resolve that takes longer than 20 seconds is given up.
+- **Who may ask.** The `Host` header must be exactly `127.0.0.1:<port>` (else `404`), the method `GET` (else `405`), and the path `/<token>/source-plugin/<installId>/<item id>` of an item the player has opened (else `404` with an empty body). Only the last 16 items opened are kept, plus any older one whose answer is still being sent: a request for an item past them is `404` too, without running `stream.js`, until the player opens it again.
+- **Lazy resolve.** `stream.js` runs when the player first requests the proxy URL, not when the item is queued. Each time the player opens an item (every play, every move to the next track) a new *playthrough* starts; every request of it (the player opens several at once for a WebM file, and one per seek or reconnect) shares one resolve. Opening an item that is already open (repeat all on a one-track queue) starts a playthrough that takes over the resolve already made or still running, so `stream.js` does not run again and a request waiting on it still gets its answer; only the `fresh` budget and the dead mark start anew. A resolve that takes longer than 20 seconds is given up.
 - **Checks on the URL.** Before anything is fetched, the URL must be `https`, without a port or user info, on a host the plugin declared; the connection then goes only to public addresses (as for `fetch`).
 - **Expiry.** A resolved URL is used until 60 seconds before `expiresAtMs`; after that, one plain resolve (no `fresh`) replaces it. Without `expiresAtMs` it is used until the host refuses it. An `expiresAtMs` already inside those 60 seconds counts as unknown.
 - **`fresh` on 403.** The first `403` from the host spends the playthrough's one `fresh: true` resolve and retries the same bytes with the new URL. A second `403` marks the item dead for that playthrough: every further request for it fails at once without running `stream.js`, until the player opens the item again. A failed resolve does the same.

@@ -1,12 +1,31 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
+import 'package:kanaru/core/sources/proxy/resolved_streams.dart';
 import 'package:kanaru/core/sources/proxy/stream_proxy_server.dart';
 import 'package:kanaru/core/sources/proxy/stream_resolver.dart';
 import 'package:kanaru/core/sources/remote_source_ref.dart';
 
 import 'proxy_test_support.dart';
+
+/// Fails a resolve the proxy abandoned while it ran, as the source plugin
+/// resolver does (`skipped`).
+class _AbandoningResolver extends CountingResolver {
+  _AbandoningResolver(super.upstream);
+
+  @override
+  Future<ResolvedStream> resolve(
+    String key, {
+    required bool fresh,
+    required bool Function() abandoned,
+  }) async {
+    final stream = await super.resolve(key, fresh: fresh, abandoned: abandoned);
+    if (abandoned()) throw const ResolveFailure('skipped');
+    return stream;
+  }
+}
 
 void main() {
   late FakeUpstream upstream;
@@ -19,7 +38,7 @@ void main() {
 
   setUp(() async {
     upstream = await FakeUpstream.start(bytes);
-    resolver = CountingResolver(upstream);
+    resolver = _AbandoningResolver(upstream);
     dropped = [];
     client = HttpClient()..autoUncompress = false;
     proxy = StreamProxyServer(
@@ -105,6 +124,61 @@ void main() {
     await rawRequest(url, range: 'bytes=2250-');
     await rawRequest(url, range: 'bytes=512-');
     expect(resolver.calls, [false]);
+  });
+
+  test('the same item begun again while its first request waits on the '
+      'resolve: that request is answered and stream.js ran once', () async {
+    resolver.gate = Completer<void>();
+    final url = await urlFor();
+    final waiting = rawRequest(url, range: 'bytes=0-');
+    await until(() => resolver.calls.isNotEmpty);
+
+    // Repeat all on a one-track queue opens the item and queues it again.
+    expect(await urlFor(), url);
+    resolver.gate!.complete();
+
+    final answer = await waiting.timeout(const Duration(seconds: 5));
+    expect(answer.status, 206);
+    expect(answer.body, bytes);
+    expect(resolver.calls, [false]);
+    expect((await rawRequest(url, range: 'bytes=2000-')).status, 206);
+    expect(resolver.calls, [false]);
+  });
+
+  test('only the last 16 items begun are served; an item whose body is '
+      'being sent is kept past them', () async {
+    upstream
+      ..piece = 100
+      ..pause = const Duration(milliseconds: 40);
+    const gone = RemoteSourceRef(installId: testInstallId, itemId: 'gone');
+    final goneUrl = await urlFor(gone);
+    final url = await urlFor();
+    final open = await OpenRawRequest.send(url, range: 'bytes=0-');
+    addTearDown(open.destroy);
+    await until(() => open.received.length > 300);
+
+    // A supersede of the item hands its open body on.
+    await urlFor();
+    for (var i = 0; i <= maxPlaythroughKeys; i++) {
+      await urlFor(RemoteSourceRef(installId: testInstallId, itemId: 'o$i'));
+    }
+
+    final calls = resolver.calls.length;
+    final forgotten = await rawRequest(goneUrl, range: 'bytes=0-');
+    expect(forgotten.status, 404);
+    expect(forgotten.body, isEmpty);
+    expect(resolver.calls, hasLength(calls));
+
+    upstream.pause = Duration.zero;
+    final kept = await rawRequest(url, range: 'bytes=2000-');
+    expect(kept.status, 206);
+    expect(kept.body, bytes.sublist(2000));
+
+    // Begun again later, the forgotten item has a new playthrough.
+    final again = await rawRequest(await urlFor(gone), range: 'bytes=0-');
+    expect(again.status, 206);
+    expect(resolver.keys.last, '$testInstallId/gone');
+    expect(resolver.calls, hasLength(calls + 1));
   });
 
   test('a Host other than 127.0.0.1:<port> is refused with 404', () async {
