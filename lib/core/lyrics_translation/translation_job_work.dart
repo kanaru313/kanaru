@@ -12,11 +12,15 @@ import 'translation_song_context.dart';
 
 /// What chunks already translated in this session, by source line.
 class JobPartial {
-  JobPartial([this.version]);
+  JobPartial([this.version, this.settings]);
 
   /// The `updatedAt` of the plugin record the chunks came from; a different
   /// value (the plugin was updated) makes them unusable.
   final int? version;
+
+  /// The AI settings snapshot the chunks were made under; chunks made under
+  /// other settings must not be saved under a new snapshot.
+  final String? settings;
 
   final texts = <String, String>{};
   final detected = <String, String?>{};
@@ -89,8 +93,9 @@ Future<Map<String, String>?> saveJobResult(
   TranslationServiceId service,
   List<String> lines,
   TranslationLanguage target,
-  JobPartial partial,
-) async {
+  JobPartial partial, {
+  String? settingsJson,
+}) async {
   final map = <String, String>{};
   for (final line in lines) {
     final text = partial.texts[line]!;
@@ -110,17 +115,22 @@ Future<Map<String, String>?> saveJobResult(
       targetLang: target.code,
       sourceLang: Value(source),
       linesJson: encodeTranslationLines(map),
+      settingsJson: Value(settingsJson),
       createdAt: DateTime.now().millisecondsSinceEpoch,
     ),
   );
   return map;
 }
 
-/// A number that is equal for equal [lines] whatever their order, so a view
-/// can tell whether a row is the one a job saved without keeping the lines.
-int linesFingerprint(Map<String, String> lines) => Object.hash(
-  lines.length,
-  Object.hashAllUnordered(
-    lines.entries.map((e) => Object.hash(e.key, e.value)),
-  ),
-);
+/// A number that is equal for equal [lines] (whatever their order) and equal
+/// [settingsJson], so a view can tell whether a row is the one a job saved
+/// without keeping either. A job that saves the same lines under other
+/// settings gives another number.
+int translationFingerprint(Map<String, String> lines, String? settingsJson) =>
+    Object.hash(
+      lines.length,
+      Object.hashAllUnordered(
+        lines.entries.map((e) => Object.hash(e.key, e.value)),
+      ),
+      settingsJson,
+    );

@@ -34,6 +34,24 @@ void main() {
       expect(c.lines, {'hi': 'chào'});
     });
 
+    test('keeps the settings snapshot of the row', () {
+      final row = LyricTranslationRow(
+        contentHash: 'h',
+        provider: _plugin.value,
+        targetLang: 'vi',
+        sourceLang: 'en',
+        linesJson: '{"hi":"chào"}',
+        settingsJson: '{"model":"pro"}',
+        createdAt: 1,
+      );
+      expect(decodeTranslationRow(row)!.settingsJson, '{"model":"pro"}');
+      expect(
+        decodeTranslationRow(_row(_plugin.value, '{"hi":"chào"}'))!
+            .settingsJson,
+        isNull,
+      );
+    });
+
     test('bad JSON gives null', () {
       expect(decodeTranslationRow(_row(_plugin.value, '{oops')), isNull);
     });

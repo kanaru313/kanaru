@@ -31,6 +31,7 @@ class PluginTranslator implements LyricsTranslator {
     required this._jobLines,
     required this._allowed,
     required this._stillWanted,
+    this._configAppend = const {},
   });
 
   @override
@@ -41,6 +42,10 @@ class PluginTranslator implements LyricsTranslator {
   final List<String> _jobLines;
   final bool Function() _allowed;
   final bool Function() _stillWanted;
+
+  /// Text added to config values of every chunk (see `PluginRunCore.run`),
+  /// fixed for the job.
+  final Map<String, String> _configAppend;
 
   PluginTranslateSong? _song;
 
@@ -76,6 +81,7 @@ class PluginTranslator implements LyricsTranslator {
         context,
         allowed: _allowed,
         stillWanted: _stillWanted,
+        configAppend: _configAppend,
       );
     } on TranslationException catch (e) {
       // Refused because the user turned translation off or switched service

@@ -9,11 +9,14 @@ import '../lyrics/plugins/lyrics_plugins_provider.dart';
 import '../lyrics/plugins/lyrics_sources_provider.dart';
 import '../lyrics/plugins/translate/plugin_translate_gate.dart'
     show TranslationSuperseded;
+import '../lyrics/plugins/translate/plugin_translate_runner.dart'
+    show PluginTranslateInfo;
 import '../lyrics/plugins/translate/plugin_translate_runner_provider.dart';
 import '../secrets/secret_store.dart';
 import '../settings/settings_provider.dart';
 import 'lyrics_translation_derive.dart';
 import 'lyrics_translator.dart';
+import 'translation_ai_tune.dart';
 import 'translation_cache.dart';
 import 'translation_failure.dart';
 import 'translation_job_work.dart';
@@ -52,8 +55,9 @@ class TranslationJobStatus {
   const TranslationJobStatus.failed(TranslationFailureKind this.failure)
     : saved = null;
 
-  /// The job finished and saved lines with this [linesFingerprint]; the view
-  /// hides an older row until the row stream shows this one.
+  /// The job finished and saved lines and settings with this
+  /// [translationFingerprint]; the view hides an older row until the row stream
+  /// shows this one.
   const TranslationJobStatus.saved(int this.saved) : failure = null;
 
   final TranslationFailureKind? failure;
@@ -171,15 +175,23 @@ class TranslationJobs
         return null;
       }
       if (!ref.mounted || !owns()) return null;
-      final (translator, version) = await _translatorFor(
+      final (translator, version, settings) = await _translatorFor(
         key,
         uniqueLines,
         token,
       );
       if (!ref.mounted || !owns()) return null;
       checkJobLimits(uniqueLines, target, translator);
-      if (force || _partial[key]?.version != version) _partial.remove(key);
-      final partial = _partial.putIfAbsent(key, () => JobPartial(version));
+      final resumed = _partial[key];
+      if (force ||
+          resumed?.version != version ||
+          resumed?.settings != settings) {
+        _partial.remove(key);
+      }
+      final partial = _partial.putIfAbsent(
+        key,
+        () => JobPartial(version, settings),
+      );
       held = partial;
       await translateMissingLines(
         translator,
@@ -204,6 +216,7 @@ class TranslationJobs
         uniqueLines,
         target,
         partial,
+        settingsJson: settings,
       );
       if (map == null) {
         _dropPartial(key, partial);
@@ -212,7 +225,9 @@ class TranslationJobs
         );
       }
       _dropPartial(key, partial);
-      return end(TranslationJobStatus.saved(linesFingerprint(map)));
+      return end(
+        TranslationJobStatus.saved(translationFingerprint(map, settings)),
+      );
     } on TranslationSuperseded {
       if (owns()) _remove(key);
       return null;
@@ -260,9 +275,11 @@ class TranslationJobs
         );
   }
 
-  /// The translator of the key's service, and the version of the plugin it
-  /// runs (its `updatedAt`). A plugin that is missing is a `server` failure.
-  Future<(LyricsTranslator, int?)> _translatorFor(
+  /// The translator of the key's service, the version of the plugin it runs
+  /// (its `updatedAt`), and the AI settings snapshot to save with the result
+  /// (null for a plugin without AI settings, or when they cannot be read).
+  /// A plugin that is missing is a `server` failure.
+  Future<(LyricsTranslator, int?, String?)> _translatorFor(
     TranslationJobKey key,
     List<String> uniqueLines,
     Object? forcedToken,
@@ -290,6 +307,7 @@ class TranslationJobs
           ref.read(effectiveTranslationServiceProvider) == service;
     }
 
+    final (:append, :settings) = await _aiSettings(key, record, info);
     final translator = PluginTranslator(
       service: service,
       runner: runner,
@@ -299,8 +317,47 @@ class TranslationJobs
       stillWanted: () => forcedToken != null
           ? identical(_forced[key], forcedToken)
           : _current == key,
+      configAppend: append,
     );
-    return (translator, record.updatedAt);
+    return (translator, record.updatedAt, settings);
+  }
+
+  /// For an `ai-translate` plugin: the song's note to add to the instruction
+  /// of every chunk, and the snapshot of the settings the job starts with
+  /// (read once, so a change made while it runs shows as different). Both
+  /// stay empty for other plugins; a failed read of the stored config costs the
+  /// snapshot, a failed read of the note costs the note, never the job.
+  Future<({Map<String, String> append, String? settings})> _aiSettings(
+    TranslationJobKey key,
+    LyricsPluginRecord record,
+    PluginTranslateInfo info,
+  ) async {
+    final tune = aiTuneOf(record.kind, info.config);
+    if (tune == null) return (append: const <String, String>{}, settings: null);
+    String? note;
+    try {
+      final db = ref.read(libraryDatabaseProvider);
+      if (db != null) note = await db.songTranslationInstruction(key.hash);
+    } on Object catch (e) {
+      _log.warning('reading the song instruction failed: ${e.runtimeType}');
+    }
+    final append = <String, String>{
+      if (note != null && note.isNotEmpty) aiInstructionKey: note,
+    };
+    try {
+      final controller = ref.read(lyricsPluginsControllerProvider);
+      final stored = controller == null
+          ? null
+          : await controller.storedConfig(record.installId);
+      return (
+        append: append,
+        settings: stored == null ? null : encodeAiSnapshot(tune, stored, note),
+      );
+    } on Object catch (e) {
+      // Only the type, never the stored values.
+      _log.warning('reading the AI settings failed: ${e.runtimeType}');
+      return (append: append, settings: null);
+    }
   }
 
   void _set(TranslationJobKey key, TranslationJobStatus status) {

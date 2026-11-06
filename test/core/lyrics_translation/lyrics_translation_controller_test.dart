@@ -739,7 +739,9 @@ void main() {
           sourceLang: 'ja',
           lines: {'a': text},
         );
-    final saved = TranslationJobStatus.saved(linesFingerprint({'a': 'new'}));
+    final saved = TranslationJobStatus.saved(
+      translationFingerprint({'a': 'new'}, null),
+    );
 
     LyricsTranslationState derive(List<CachedTranslation> rows) =>
         deriveTranslation(

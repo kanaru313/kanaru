@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -29,6 +30,19 @@ void main() {
     final rows = await db.watchLyricTranslations('h1', 'vi').first;
     final byProvider = {for (final r in rows) r.provider: r.linesJson};
     expect(byProvider, {'google': '{"a":"1"}', 'plugin-a': '{"a":"3"}'});
+  });
+
+  test('the settings snapshot round-trips and a save overwrites it', () async {
+    Future<String?> snapshot() async =>
+        (await db.watchLyricTranslations('h1', 'vi').first).single.settingsJson;
+    await db.saveLyricTranslation(
+      _row('plugin-a').copyWith(settingsJson: const Value('{"model":"pro"}')),
+    );
+    expect(await snapshot(), '{"model":"pro"}');
+    await db.saveLyricTranslation(
+      _row('plugin-a').copyWith(settingsJson: const Value(null)),
+    );
+    expect(await snapshot(), isNull);
   });
 
   test('watch filters by hash and language and emits after a save', () async {

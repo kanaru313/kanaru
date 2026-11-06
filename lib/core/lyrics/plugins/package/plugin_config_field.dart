@@ -121,7 +121,18 @@ class PluginConfigField {
   final Object? defaultValue;
 
   /// This field with [value] as its default; every other attribute stays.
-  PluginConfigField withDefault(Object? value) => PluginConfigField(
+  PluginConfigField withDefault(Object? value) =>
+      _copy(newDefault: true, defaultValue: value);
+
+  /// This field with [value] as its options; every other attribute stays.
+  PluginConfigField withOptions(List<PluginConfigOption> value) =>
+      _copy(options: value);
+
+  PluginConfigField _copy({
+    List<PluginConfigOption>? options,
+    bool newDefault = false,
+    Object? defaultValue,
+  }) => PluginConfigField(
     key: key,
     title: title,
     mode: mode,
@@ -130,7 +141,7 @@ class PluginConfigField {
     inputFormat: inputFormat,
     selectFormat: selectFormat,
     listFormat: listFormat,
-    options: options,
+    options: options ?? this.options,
     custom: custom,
     placeholder: placeholder,
     minLength: minLength,
@@ -141,7 +152,7 @@ class PluginConfigField {
     step: step,
     minItems: minItems,
     maxItems: maxItems,
-    defaultValue: value,
+    defaultValue: newDefault ? defaultValue : this.defaultValue,
   );
 
   /// The normalized format: `text`, `multiline`, `number`, `integer`,

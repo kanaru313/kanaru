@@ -16,6 +16,7 @@ class CachedTranslation {
     required this.targetLang,
     required this.sourceLang,
     required this.lines,
+    this.settingsJson,
   });
 
   final TranslationServiceId service;
@@ -24,6 +25,10 @@ class CachedTranslation {
 
   /// Source line to translation; unmodifiable.
   final Map<String, String> lines;
+
+  /// The AI settings the version was made with (see `encodeAiSnapshot`);
+  /// null for a plugin without them and for rows saved before they were kept.
+  final String? settingsJson;
 }
 
 /// Decodes [row]; null for a provider that is not a plugin id (retired
@@ -41,6 +46,7 @@ CachedTranslation? decodeTranslationRow(LyricTranslationRow row) {
           targetLang: row.targetLang,
           sourceLang: row.sourceLang,
           lines: Map.unmodifiable(Map<String, String>.from(decoded)),
+          settingsJson: row.settingsJson,
         );
       }
     } on FormatException {

@@ -102,6 +102,7 @@ class TranslationReady extends LyricsTranslationState {
     this.fromOtherService, {
     this.refreshing = false,
     this.retranslateFailure,
+    this.settingsJson,
   });
 
   final TranslationTargetInfo info;
@@ -112,6 +113,10 @@ class TranslationReady extends LyricsTranslationState {
   final bool refreshing;
   final TranslationFailureKind? retranslateFailure;
 
+  /// The AI settings this version was made with, or null (see
+  /// `CachedTranslation.settingsJson`).
+  final String? settingsJson;
+
   @override
   List<Object?> get _props => [
     info,
@@ -120,6 +125,7 @@ class TranslationReady extends LyricsTranslationState {
     fromOtherService,
     refreshing,
     retranslateFailure,
+    settingsJson,
     ...lines,
   ];
 }

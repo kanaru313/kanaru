@@ -71,6 +71,7 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
           other,
           refreshing: refreshing,
           retranslateFailure: failure,
+          settingsJson: row.settingsJson,
         );
 
   final current = picked.current;
@@ -86,7 +87,9 @@ List<String?> _linesOf(CachedTranslation row, Lyrics lyrics) {
   }
   final saved = job?.saved;
   if (saved != null &&
-      (current == null || linesFingerprint(current.lines) != saved)) {
+      (current == null ||
+          translationFingerprint(current.lines, current.settingsJson) !=
+              saved)) {
     // The job saved a row the stream has not shown yet; what is shown now is
     // the row it replaced, or the other service's. If the row was deleted
     // since, the request is made again.
