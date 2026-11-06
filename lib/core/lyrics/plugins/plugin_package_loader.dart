@@ -29,6 +29,7 @@ class LoadedPluginPackage {
     this.searchScript,
     this.lyricsScript,
     this.translateScript,
+    this.streamScript,
     this.translate,
   });
 
@@ -41,6 +42,7 @@ class LoadedPluginPackage {
   final String? searchScript;
   final String? lyricsScript;
   final String? translateScript;
+  final String? streamScript;
 
   /// The `translate` block, for a translate plugin.
   final PluginTranslateSpec? translate;
@@ -116,6 +118,7 @@ class PluginPackageLoader {
         searchScript: manifest.searchScript,
         lyricsScript: manifest.lyricsScript,
         translateScript: manifest.translateScript,
+        streamScript: manifest.streamScript,
         translate: manifest.translate,
       );
     } on PluginPackageUnreadable {

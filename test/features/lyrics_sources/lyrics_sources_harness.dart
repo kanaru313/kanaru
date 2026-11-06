@@ -14,8 +14,10 @@ import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_data_stats_provider.dart';
 import 'package:kanaru/features/lyrics_plugin_store/lyrics_plugin_store_routes.dart';
 import 'package:kanaru/features/lyrics_sources/lyrics_sources_routes.dart';
+import 'package:kanaru/features/lyrics_sources/plugin_detail_page.dart';
 import 'package:kanaru/l10n/l10n.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
+import 'package:kanaru/shared/online_routes.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Id of the first test plugin.
@@ -157,7 +159,9 @@ class FakePlugins extends Fake implements LyricsPluginsController {
 /// Opens the sources routes nested under a `/settings` page like the app's
 /// router. [withStore] mounts the plugin store twice, as the router does:
 /// under the sources page and at `/settings/plugins`. Runs inside a shell
-/// with a [Scaffold] (snackbars need one).
+/// with a [Scaffold] (snackbars need one). [withOnline] also mounts the
+/// Online page (`/online`, a text) with the source plugin page below it, as
+/// the router does.
 Future<GoRouter> pumpSources(
   WidgetTester tester, {
   List<LyricsPluginRecord> records = const [],
@@ -169,6 +173,7 @@ Future<GoRouter> pumpSources(
   List<Override> overrides = const [],
   Stream<LyricsSourcesInput>? input,
   bool withStore = false,
+  bool withOnline = false,
 }) async {
   tester.view.physicalSize = const Size(1000, 1600);
   tester.view.devicePixelRatio = 1;
@@ -199,6 +204,19 @@ Future<GoRouter> pumpSources(
               if (withStore) lyricsRootStoreMount(),
             ],
           ),
+          if (withOnline)
+            GoRoute(
+              path: onlineRoute,
+              builder: (context, state) => const Text('online page'),
+              routes: [
+                GoRoute(
+                  path: onlineSourcePluginRoutePattern,
+                  builder: (context, state) => PluginDetailPage(
+                    installId: state.pathParameters[onlineSourcePluginIdParam]!,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     ],

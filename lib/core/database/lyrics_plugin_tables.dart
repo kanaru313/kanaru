@@ -49,7 +49,7 @@ import 'package:drift/drift.dart';
 //    `last_fetched_at` is the last successful fetch.
 // 10. No foreign keys and no CHECK constraints: readers skip values they do
 //    not know, so a newer build's rows do not break an older one.
-// 11. `kind` is `lyrics` or `translate`, set at first install and never
+// 11. `kind` is `lyrics`, `translate` or `source`, set at first install and never
 //    changed by an update; only a revive of a removed record may write it.
 //    A revive that changes the kind keeps the old saved lyrics, pins and
 //    rejects under the id: they stay named and go only with the global

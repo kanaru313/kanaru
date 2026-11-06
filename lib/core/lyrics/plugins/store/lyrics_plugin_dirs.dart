@@ -64,6 +64,7 @@ class LyricsPluginDirs {
             searchScript: manifest.searchScript,
             lyricsScript: manifest.lyricsScript,
             translateScript: manifest.translateScript,
+            streamScript: manifest.streamScript,
             translate: manifest.translate,
             config: manifest.config,
           ),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../app_identity.dart';
 import '../../logging/app_logging.dart';
+import '../plugins/plugin_run_deadline.dart' show pluginScriptWallTime;
 import '../../lyrics_translation/translation_http.dart'
     show translationRequestTimeout;
 import 'lyrics_fetch_exception.dart';
@@ -11,6 +12,7 @@ import 'lyrics_http_request.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_http_send_loop.dart';
 import 'lyrics_provider_registry.dart';
+import 'plugin_host_patterns.dart';
 
 export 'lyrics_http_request.dart';
 
@@ -27,7 +29,9 @@ typedef LyricsHttpResponse = ({
 /// not register.
 ///
 /// GET ([get], LRCLIB) or GET and POST ([send], plugin sources), `https`
-/// only, no explicit port, no user info; a request to anything else fails
+/// only, no explicit port, no user info, to a host the [PluginHostSet] of
+/// the registered hosts allows (a plain name, or one label under a `*.`
+/// wildcard a source plugin listed); a request to anything else fails
 /// with `blockedHost` before a socket is opened. Timeouts
 /// are 10 s to connect and 20 s per send, and 30 s for the whole call with
 /// its waits (then `network`); the body is at most 4 MiB
@@ -88,6 +92,31 @@ class LyricsHttp {
          perSendCap: null,
        );
 
+  /// For a source plugin: the strict rules of the main constructor over the
+  /// plugin's own [hosts] (its `*.` wildcards included), no retry of a busy
+  /// answer and no cap per send: a send is bound only by the time left of the
+  /// call, at most [pluginScriptWallTime] (the wall time of a source
+  /// script). [allowed] is the plugin's consent and [abandoned] tells that
+  /// the caller no longer wants the answer (a newer search started); both
+  /// are asked before every send.
+  LyricsHttp.forPluginSource(
+    Iterable<String> hosts,
+    HttpClient client, {
+    bool Function()? allowed,
+    bool Function()? abandoned,
+    LyricsSleep sleep = realLyricsSleep,
+  }) : this._(
+         client,
+         hosts,
+         strict: true,
+         sleep: sleep,
+         abandoned: abandoned,
+         allowed: allowed,
+         maxRetries: 0,
+         overallTimeout: pluginScriptWallTime,
+         perSendCap: null,
+       );
+
   /// For tests: allows `http`, a port and any host in [hosts], so a loopback
   /// server can stand in for the service.
   @visibleForTesting
@@ -122,7 +151,7 @@ class LyricsHttp {
     required int maxRetries,
     required this._overallTimeout,
     Duration? perSendCap = translationRequestTimeout,
-  }) : _hosts = Set.unmodifiable(hosts),
+  }) : _hosts = PluginHostSet(hosts),
        _loop = LyricsSendLoop(
          client: client,
          sleep: sleep,
@@ -132,7 +161,7 @@ class LyricsHttp {
          perSendCap: perSendCap,
        );
 
-  final Set<String> _hosts;
+  final PluginHostSet _hosts;
   final bool _strict;
   final Duration _overallTimeout;
   final LyricsSendLoop _loop;
@@ -226,7 +255,7 @@ class LyricsHttp {
   }
 
   bool _allows(Uri uri) {
-    if (uri.host.isEmpty || !_hosts.contains(uri.host)) return false;
+    if (!_hosts.allows(uri.host)) return false;
     if (!_strict) return true;
     return uri.scheme == 'https' && !uri.hasPort && uri.userInfo.isEmpty;
   }

@@ -618,4 +618,112 @@ void main() {
       );
     });
   });
+
+  group('source plugins', () {
+    Map<String, dynamic> sourceManifest({
+      List<String> hosts = const ['www.youtube.com', '*.googlevideo.com'],
+      Map<String, dynamic>? script,
+    }) => <String, dynamic>{
+      'metadata': {
+        'apiVersion': 1,
+        'type': 'source',
+        'name': 'YouTube',
+        'version': 1,
+        'hosts': hosts,
+      },
+      'script': script ?? {'search': 'search.js', 'stream': 'stream.js'},
+    };
+
+    test('a source manifest has search and stream, no lyrics', () {
+      final manifest = parse(sourceManifest());
+      expect(manifest.kind, PluginKind.source);
+      expect(manifest.searchScript, 'search.js');
+      expect(manifest.streamScript, 'stream.js');
+      expect(manifest.lyricsScript, isNull);
+      expect(manifest.translateScript, isNull);
+      expect(manifest.translate, isNull);
+      expect(manifest.entryScripts, ['search.js', 'stream.js']);
+      expect(manifest.hosts, ['www.youtube.com', '*.googlevideo.com']);
+    });
+
+    test('a source manifest without stream is invalid', () {
+      expectProblem(
+        sourceManifest(script: {'search': 'search.js'}),
+        invalid,
+        'script.stream',
+      );
+    });
+
+    test('a source manifest without search is invalid', () {
+      expectProblem(
+        sourceManifest(script: {'stream': 'stream.js'}),
+        invalid,
+        'script.search',
+      );
+    });
+
+    test('a lyrics manifest still parses without stream', () {
+      final manifest = parse(validManifest());
+      expect(manifest.streamScript, isNull);
+      expect(manifest.entryScripts, ['search.js', 'lyrics.js']);
+    });
+
+    test('a lyrics manifest ignores a stream script it does not use', () {
+      final json = validManifest();
+      (json['script'] as Map)['stream'] = 'stream.js';
+      expect(parse(json).streamScript, isNull);
+    });
+
+    for (final type in ['lyrics', 'translate']) {
+      test('a $type manifest with a wildcard host is badHost', () {
+        final json = type == 'lyrics'
+            ? withMeta((m) => m['hosts'] = ['*.googlevideo.com'])
+            : (sourceManifest()
+                ..['script'] = {'translate': 'translate.js'}
+                ..['translate'] = {
+                  'languages': ['vi'],
+                });
+        (json['metadata'] as Map)['type'] = type;
+        (json['metadata'] as Map)['hosts'] = ['*.googlevideo.com'];
+        expectProblem(
+          json,
+          PluginPackageProblemKind.badHost,
+          '*.googlevideo.com',
+        );
+      });
+    }
+
+    test('a wildcard over a shared-hosting suffix is badHost', () {
+      expectProblem(
+        sourceManifest(hosts: ['*.workers.dev']),
+        PluginPackageProblemKind.badHost,
+        '*.workers.dev',
+      );
+    });
+
+    test('a fourth wildcard is badHost', () {
+      expectProblem(
+        sourceManifest(
+          hosts: [for (var i = 0; i < 4; i++) '*.h$i.example.com'],
+        ),
+        PluginPackageProblemKind.badHost,
+        '*.h3.example.com',
+      );
+    });
+
+    test('three wildcards are accepted', () {
+      final hosts = [for (var i = 0; i < 3; i++) '*.h$i.example.com'];
+      expect(parse(sourceManifest(hosts: hosts)).hosts, hosts);
+    });
+
+    for (final host in ['*', '*.com', 'a.*.b.com', '*foo.com', '**.a.com']) {
+      test('a source manifest refuses host $host', () {
+        expectProblem(
+          sourceManifest(hosts: [host]),
+          PluginPackageProblemKind.badHost,
+          host,
+        );
+      });
+    }
+  });
 }

@@ -216,6 +216,60 @@ void main() {
       expect(catalog.dropped, 1);
     });
 
+    test('type source is kept, and may list wildcard hosts', () {
+      final catalog = parse(
+        _catalog([
+          _entry({
+            'slug': 'yt',
+            'type': 'source',
+            'hosts': ['www.youtube.com', '*.googlevideo.com'],
+          }),
+        ]),
+      );
+      expect(catalog.entries.single.kind, PluginKind.source);
+      expect(catalog.entries.single.hosts, [
+        'www.youtube.com',
+        '*.googlevideo.com',
+      ]);
+    });
+
+    test('a wildcard host drops a lyrics or translate entry', () {
+      for (final type in ['lyrics', 'translate']) {
+        final catalog = parse(
+          _catalog([
+            _entry({
+              'slug': 'bad',
+              'type': type,
+              'hosts': ['*.googlevideo.com'],
+            }),
+            _entry(),
+          ]),
+        );
+        expect(catalog.entries.map((e) => e.slug), ['netease'], reason: type);
+        expect(catalog.dropped, 1);
+      }
+    });
+
+    test('a source entry with a refused wildcard is dropped', () {
+      final bad = <List<String>>[
+        ['*.workers.dev'],
+        ['*.com'],
+        ['a.*.example.com'],
+        [for (var i = 0; i < 4; i++) '*.h$i.example.com'],
+      ];
+      for (final hosts in bad) {
+        final catalog = parse(
+          _catalog([
+            _entry({'slug': 'bad', 'type': 'source', 'hosts': hosts}),
+            _entry(),
+          ]),
+        );
+        expect(catalog.entries.map((e) => e.slug), [
+          'netease',
+        ], reason: '$hosts');
+      }
+    });
+
     test('invalid fields drop the entry', () {
       final bad = <Map<String, Object?>>[
         {'name': ''},

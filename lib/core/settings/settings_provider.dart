@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../lyrics/plugins/store/plugin_install_id.dart';
 import '../lyrics_translation/translation_service.dart';
 import 'app_settings.dart';
+import 'online_sources_prefs_codec.dart' show maxAcknowledgedSourcePlugins;
 import 'settings_file.dart';
 
 export 'app_settings.dart';
@@ -220,6 +222,43 @@ class SettingsNotifier extends Notifier<AppSettings> {
         autoFetch: false,
         manualConsent: false,
         autoConsent: false,
+      ),
+    ),
+  );
+
+  /// Records that the user accepted the notice of the source plugin
+  /// [installId]: it may send from now on. Call it only after the user
+  /// accepted that plugin's notice. At most 64 plugins are kept; past that,
+  /// or for a string that is not a plugin id, nothing changes.
+  void acknowledgeSourceNotice(String installId) {
+    final ids = state.onlineSources.noticeAcknowledged;
+    if (!pluginInstallIdPattern.hasMatch(installId) ||
+        ids.contains(installId) ||
+        ids.length >= maxAcknowledgedSourcePlugins) {
+      return;
+    }
+    _setSourceNotices({...ids, installId});
+  }
+
+  /// Withdraws the consent of [installId]: its next send is refused.
+  void withdrawSourceNotice(String installId) => _setSourceNotices({
+    for (final id in state.onlineSources.noticeAcknowledged)
+      if (id != installId) id,
+  });
+
+  /// Forgets the consent of every source plugin outside [live] (a plugin
+  /// installed again asks the notice again). One write, and none when
+  /// nothing changes. Call it only with the ids of records that were read
+  /// from the database.
+  void dropUninstalledSourceNotices(Set<String> live) => _setSourceNotices({
+    for (final id in state.onlineSources.noticeAcknowledged)
+      if (live.contains(id)) id,
+  });
+
+  void _setSourceNotices(Set<String> ids) => _update(
+    state.copyWith(
+      onlineSources: state.onlineSources.copyWith(
+        noticeAcknowledged: Set.unmodifiable(ids),
       ),
     ),
   );

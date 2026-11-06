@@ -8,6 +8,7 @@ import '../../shared/icons/app_icons.dart';
 /// this order), so it keeps its own navigation stack.
 enum AppDestination {
   home('/home', AppIcons.homeOutlined, AppIcons.home),
+  online('/online', AppIcons.onlineOutlined, AppIcons.online),
   songs('/songs', AppIcons.musicNoteOutlined, AppIcons.musicNote),
   albums('/albums', AppIcons.albumOutlined, AppIcons.album),
   artists('/artists', AppIcons.artistOutline, AppIcons.artist),
@@ -34,6 +35,7 @@ enum AppDestination {
 
   String label(AppLocalizations l10n) => switch (this) {
     home => l10n.navHome,
+    online => l10n.navOnline,
     songs => l10n.navSongs,
     albums => l10n.navAlbums,
     artists => l10n.navArtists,
@@ -71,6 +73,7 @@ SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
   AppDestination.languages => SidebarTab.languages,
   AppDestination.folders => SidebarTab.folders,
   AppDestination.home ||
+  AppDestination.online ||
   AppDestination.favorites ||
   AppDestination.history ||
   AppDestination.mostPlayed ||
@@ -80,17 +83,21 @@ SidebarTab? sidebarTabOf(AppDestination destination) => switch (destination) {
   AppDestination.settings => null,
 };
 
-/// Rows listed in the sidebar, grouped by dividers: Home; the library pages
-/// whose tab is in [tabs]; playlists, favorites, queues, history and most
-/// played (always). Search and settings are reached from the top bar instead. A
-/// group left empty is dropped, so no two dividers sit side by side.
-List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
+/// Rows listed in the sidebar, grouped by dividers: Home, then Online when
+/// [online] (a source plugin is installed); the library pages whose tab is in
+/// [tabs]; playlists, favorites, queues, history and most played (always).
+/// Search and settings are reached from the top bar instead. A group left
+/// empty is dropped, so no two dividers sit side by side.
+List<List<AppDestination>> visibleSidebarGroups(
+  Set<SidebarTab> tabs, {
+  bool online = false,
+}) {
   final library = [
     for (final d in sidebarLibraryOrder)
       if (tabs.contains(sidebarTabOf(d))) d,
   ];
   return [
-    [AppDestination.home],
+    [AppDestination.home, if (online) AppDestination.online],
     if (library.isNotEmpty) library,
     [
       AppDestination.playlists,
@@ -104,7 +111,7 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
 
 /// Every page in the order it sits on screen, top to bottom: search and
 /// settings (top bar, above the page area, search before settings left to
-/// right), then the sidebar rows with every tab shown
+/// right), then the sidebar rows with every tab shown and Online listed
 /// ([visibleSidebarGroups] with all of [SidebarTab.values]). This is only
 /// used to rank destinations for [branchDirection]; the actual sidebar render
 /// order (which hides tabs) stays [visibleSidebarGroups]. Hiding a tab only drops
@@ -113,7 +120,10 @@ List<List<AppDestination>> visibleSidebarGroups(Set<SidebarTab> tabs) {
 final destinationScreenOrder = <AppDestination>[
   AppDestination.search,
   AppDestination.settings,
-  ...visibleSidebarGroups(SidebarTab.values.toSet()).expand((g) => g),
+  ...visibleSidebarGroups(
+    SidebarTab.values.toSet(),
+    online: true,
+  ).expand((g) => g),
 ];
 
 /// Where [AppDestination.to] sits relative to [AppDestination.from] in

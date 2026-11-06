@@ -2,6 +2,7 @@ import 'display_prefs.dart';
 import 'library_scan_prefs.dart';
 import 'library_sort.dart';
 import 'online_lyrics_prefs.dart';
+import 'online_sources_prefs.dart';
 import 'playback_prefs.dart';
 import 'translation_prefs.dart';
 
@@ -9,6 +10,7 @@ export 'display_prefs.dart';
 export 'library_scan_prefs.dart';
 export 'library_sort.dart';
 export 'online_lyrics_prefs.dart';
+export 'online_sources_prefs.dart';
 export 'playback_prefs.dart';
 export 'translation_prefs.dart';
 
@@ -52,6 +54,7 @@ class AppSettings {
     this.display = const DisplayPrefs(),
     this.translation = const TranslationPrefs(),
     this.onlineLyrics = const OnlineLyricsPrefs(),
+    this.onlineSources = const OnlineSourcesPrefs(),
   });
 
   final ThemePreference theme;
@@ -108,6 +111,9 @@ class AppSettings {
   /// Online lyrics options (automatic lookup and its consent).
   final OnlineLyricsPrefs onlineLyrics;
 
+  /// Online sources options (the per-plugin consent of source plugins).
+  final OnlineSourcesPrefs onlineSources;
+
   AppSettings copyWith({
     ThemePreference? theme,
     TitleBarPreference? titleBar,
@@ -126,6 +132,7 @@ class AppSettings {
     DisplayPrefs? display,
     TranslationPrefs? translation,
     OnlineLyricsPrefs? onlineLyrics,
+    OnlineSourcesPrefs? onlineSources,
   }) => AppSettings(
     theme: theme ?? this.theme,
     languageCode: languageCode,
@@ -146,6 +153,7 @@ class AppSettings {
     display: display ?? this.display,
     translation: translation ?? this.translation,
     onlineLyrics: onlineLyrics ?? this.onlineLyrics,
+    onlineSources: onlineSources ?? this.onlineSources,
   );
 
   /// Separate from [copyWith] because `null` is a valid language here.
@@ -168,6 +176,7 @@ class AppSettings {
     display: display,
     translation: translation,
     onlineLyrics: onlineLyrics,
+    onlineSources: onlineSources,
   );
 
   @override
@@ -190,7 +199,8 @@ class AppSettings {
       other.playback == playback &&
       other.display == display &&
       other.translation == translation &&
-      other.onlineLyrics == onlineLyrics;
+      other.onlineLyrics == onlineLyrics &&
+      other.onlineSources == onlineSources;
 
   @override
   int get hashCode => Object.hash(
@@ -212,6 +222,7 @@ class AppSettings {
     display,
     translation,
     onlineLyrics,
+    onlineSources,
   );
 
   @override
@@ -226,5 +237,6 @@ class AppSettings {
       'recordListenHistory: $recordListenHistory, animations: $animations, '
       'confirmPluginUninstall: $confirmPluginUninstall, '
       'libraryScan: $libraryScan, playback: $playback, display: $display, '
-      'translation: $translation, onlineLyrics: $onlineLyrics)';
+      'translation: $translation, onlineLyrics: $onlineLyrics, '
+      'onlineSources: $onlineSources)';
 }

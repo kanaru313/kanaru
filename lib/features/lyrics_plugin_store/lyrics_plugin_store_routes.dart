@@ -62,6 +62,9 @@ void _openInstalled(BuildContext context, String id, PluginKind? kind) {
       context.go(translationPluginRoute(id));
     case PluginKind.lyrics:
       context.go(lyricsPluginRoute(id));
+    case PluginKind.source:
+      // A source plugin has no page of its own yet.
+      break;
     case null:
       break;
   }

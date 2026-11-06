@@ -51,6 +51,23 @@ void main() {
     expect(find.text('two.example.com'), findsOneWidget);
   });
 
+  testWidgets('a wildcard host reads as any subdomain', (tester) async {
+    final wild = repoOf(
+      repoA,
+      'Kho A',
+      entries: [
+        entryOf('plain', hosts: ['*.example.com', 'api.example.com']),
+      ],
+    );
+    await pumpStore(tester, _Opened().page(), repos: [wild]);
+    expect(
+      find.text(en.pluginInfoHostAnySubdomain('example.com')),
+      findsOneWidget,
+    );
+    expect(find.text('api.example.com'), findsOneWidget);
+    expect(find.text('*.example.com'), findsNothing);
+  });
+
   testWidgets('Vietnamese marks the author as self-declared', (tester) async {
     await pumpStore(
       tester,

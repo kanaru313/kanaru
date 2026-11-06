@@ -15,6 +15,7 @@ class PluginManifest {
     this.searchScript,
     this.lyricsScript,
     this.translateScript,
+    this.streamScript,
     this.translate,
     this.author = '',
     this.description = '',
@@ -27,14 +28,17 @@ class PluginManifest {
   final String name;
   final int version;
 
-  /// Lower-case, deduplicated, each passed `lyricsHostProblem`.
+  /// Lower-case, deduplicated, each passed `pluginHostListProblem`: plain host
+  /// names, plus `*.` wildcards for a source plugin only.
   final List<String> hosts;
 
   /// File names inside `src/`: `search` and `lyrics` for a lyrics plugin,
-  /// `translate` for a translate plugin; the others are null.
+  /// `translate` for a translate plugin, `search` and `stream` for a source
+  /// plugin; the others are null.
   final String? searchScript;
   final String? lyricsScript;
   final String? translateScript;
+  final String? streamScript;
 
   /// The `translate` block; set exactly for a translate plugin.
   final PluginTranslateSpec? translate;
@@ -51,5 +55,6 @@ class PluginManifest {
     ?searchScript,
     ?lyricsScript,
     ?translateScript,
+    ?streamScript,
   ];
 }

@@ -68,7 +68,9 @@ class PluginDataRows extends ConsumerWidget {
     final songs = stats?.foundCount ?? 0;
     final theme = Theme.of(context);
     final canWrite = ref.watch(lyricsPluginsControllerProvider) != null;
-    final isTranslate = record.kind == PluginKind.translate;
+    // Saved lyrics and lyrics lookups belong to lyrics plugins only.
+    final isLyrics =
+        record.kind != PluginKind.translate && record.kind != PluginKind.source;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -103,7 +105,7 @@ class PluginDataRows extends ConsumerWidget {
                   child: Text(l10n.pluginDataClear),
                 ),
               ),
-              if (!isTranslate) ...[
+              if (isLyrics) ...[
                 Divider(
                   height: 1,
                   indent: 16,

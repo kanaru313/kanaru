@@ -497,6 +497,80 @@ void main() {
     });
   });
 
+  group('source plugin consent', () {
+    const a = 'plugin-abc123def456';
+    const b = 'plugin-keep12345678';
+    Set<String> idsOf(ProviderContainer c) =>
+        c.read(settingsProvider).onlineSources.noticeAcknowledged;
+
+    test('acknowledging adds the plugin and is saved', () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+
+      notifier.acknowledgeSourceNotice(a);
+      await notifier.flush();
+
+      expect(idsOf(container), {a});
+      expect(container.read(settingsProvider).onlineSources.allows(a), isTrue);
+      expect((stored()['onlineSources']! as Map)['noticeAcknowledged'], [a]);
+    });
+
+    test('a string that is not a plugin id is not acknowledged', () {
+      final container = containerFor();
+
+      container.read(settingsProvider.notifier).acknowledgeSourceNotice('x');
+
+      expect(idsOf(container), isEmpty);
+    });
+
+    test('at most 64 plugins are acknowledged', () {
+      final container = containerFor(
+        initial: AppSettings(
+          onlineSources: OnlineSourcesPrefs(
+            noticeAcknowledged: {
+              for (var i = 0; i < 64; i++)
+                'plugin-${i.toString().padLeft(12, '0')}',
+            },
+          ),
+        ),
+      );
+
+      container.read(settingsProvider.notifier).acknowledgeSourceNotice(a);
+
+      expect(idsOf(container), hasLength(64));
+      expect(idsOf(container), isNot(contains(a)));
+    });
+
+    test('withdrawing removes only that plugin', () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+      notifier.acknowledgeSourceNotice(a);
+      notifier.acknowledgeSourceNotice(b);
+
+      notifier.withdrawSourceNotice(a);
+      await notifier.flush();
+
+      expect(idsOf(container), {b});
+      expect((stored()['onlineSources']! as Map)['noticeAcknowledged'], [b]);
+    });
+
+    test('dropping keeps the live plugins only, in one write', () async {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+      notifier.acknowledgeSourceNotice(a);
+      notifier.acknowledgeSourceNotice(b);
+      await notifier.flush();
+      var writes = 0;
+      container.listen(settingsProvider, (_, _) => writes++);
+
+      notifier.dropUninstalledSourceNotices({b});
+      notifier.dropUninstalledSourceNotices({b});
+
+      expect(idsOf(container), {b});
+      expect(writes, 1);
+    });
+  });
+
   group('under a slow file', () {
     late _GatedFile gated;
 

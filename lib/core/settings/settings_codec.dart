@@ -4,6 +4,7 @@ import 'library_scan_prefs_codec.dart';
 import 'playback_prefs_codec.dart';
 import 'library_sort_codec.dart';
 import 'online_lyrics_prefs_codec.dart';
+import 'online_sources_prefs_codec.dart';
 import 'settings_codec_values.dart';
 import 'translation_prefs_codec.dart';
 
@@ -28,6 +29,7 @@ const _playbackKey = 'playback';
 const _displayKey = 'display';
 const _translationKey = 'lyricsTranslation';
 const _onlineLyricsKey = 'onlineLyrics';
+const _onlineSourcesKey = 'onlineSources';
 const _knownKeys = {
   _versionKey,
   _themeKey,
@@ -46,6 +48,7 @@ const _knownKeys = {
   _displayKey,
   _translationKey,
   _onlineLyricsKey,
+  _onlineSourcesKey,
 };
 
 final _languagePattern = RegExp(r'^[a-z]{2,3}$');
@@ -74,8 +77,8 @@ class DecodedSettings {
   final Map<String, Object?> librarySortExtra;
 
   /// For each of `libraryScan`, `playback`, `display`,
-  /// `lyricsTranslation` and `onlineLyrics`: the keys inside it this
-  /// version does not know, kept for the same reason.
+  /// `lyricsTranslation`, `onlineLyrics` and `onlineSources`: the keys inside
+  /// it this version does not know, kept for the same reason.
   final Map<String, Map<String, Object?>> groupExtras;
 }
 
@@ -101,6 +104,9 @@ DecodedSettings decodeSettings(Object? json) {
   );
   final (onlineLyrics, onlineLyricsExtra) = decodeOnlineLyricsPrefs(
     json[_onlineLyricsKey],
+  );
+  final (onlineSources, onlineSourcesExtra) = decodeOnlineSourcesPrefs(
+    json[_onlineSourcesKey],
   );
   return DecodedSettings(
     AppSettings(
@@ -160,6 +166,7 @@ DecodedSettings decodeSettings(Object? json) {
       display: display,
       translation: translation,
       onlineLyrics: onlineLyrics,
+      onlineSources: onlineSources,
     ),
     version is int && version > 0 ? version : settingsSchemaVersion,
     {
@@ -176,6 +183,7 @@ DecodedSettings decodeSettings(Object? json) {
       _displayKey: displayExtra,
       _translationKey: translationExtra,
       _onlineLyricsKey: onlineLyricsExtra,
+      _onlineSourcesKey: onlineSourcesExtra,
     },
   );
 }
@@ -225,5 +233,9 @@ Map<String, Object?> encodeSettings(
   _onlineLyricsKey: encodeOnlineLyricsPrefs(
     settings.onlineLyrics,
     extra: groupExtras[_onlineLyricsKey] ?? const {},
+  ),
+  _onlineSourcesKey: encodeOnlineSourcesPrefs(
+    settings.onlineSources,
+    extra: groupExtras[_onlineSourcesKey] ?? const {},
   ),
 };

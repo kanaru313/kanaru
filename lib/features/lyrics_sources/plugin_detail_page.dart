@@ -17,6 +17,7 @@ import '../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../shared/lyrics_plugins/plugin_record_text.dart';
 import '../../shared/lyrics_plugins/plugin_uninstall_dialog.dart';
 import '../../shared/lyrics_source_routes.dart';
+import '../../shared/online_routes.dart';
 import '../../shared/settings_routes.dart';
 import '../../shared/translation_plugin_routes.dart';
 import '../../shared/widgets/app_snack_bar.dart';
@@ -90,17 +91,15 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     if (mounted) setState(() => _uninstalling = false);
     // The user may have gone elsewhere while the files were deleted.
     final here = router.routeInformationProvider.value.uri.path;
-    final isTranslate = record.kind == PluginKind.translate;
-    final pagePath = Uri.parse(
-      isTranslate ? translationPluginRoute(_id) : lyricsPluginRoute(_id),
-    ).path;
-    if (here == pagePath) {
-      router.go(
-        isTranslate
-            ? settingsFocusLocation(SettingsAnchor.playbackTranslation)
-            : lyricsSourcesRoute,
-      );
-    }
+    final (pageRoute, leaveRoute) = switch (record.kind) {
+      PluginKind.translate => (
+        translationPluginRoute(_id),
+        settingsFocusLocation(SettingsAnchor.playbackTranslation),
+      ),
+      PluginKind.source => (onlineSourcePluginRoute(_id), onlineRoute),
+      _ => (lyricsPluginRoute(_id), lyricsSourcesRoute),
+    };
+    if (here == Uri.parse(pageRoute).path) router.go(leaveRoute);
     // Already gone before we got there: nothing was removed by this click.
     if (outcome == LyricsPluginUninstall.missing ||
         outcome == LyricsPluginUninstall.alreadyRemoved) {
@@ -123,7 +122,8 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
         .watch(lyricsSourcesProvider)
         .where((e) => e.id == _id && e.record != null)
         .firstOrNull;
-    // A translate plugin is in no source list: find it among the live records.
+    // A translate or source plugin is in no lyrics source list: find it among
+    // the live records.
     final record =
         entry?.record ??
         ref
@@ -132,7 +132,8 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
               (r) =>
                   r.installId == _id &&
                   !r.isRemoved &&
-                  r.kind == PluginKind.translate,
+                  (r.kind == PluginKind.translate ||
+                      r.kind == PluginKind.source),
             )
             .firstOrNull;
     if (record == null) {

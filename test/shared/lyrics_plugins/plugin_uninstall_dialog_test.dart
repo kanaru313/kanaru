@@ -55,4 +55,21 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets('a source plugin says only that the library is not affected', (
+    tester,
+  ) async {
+    await open(tester, PluginKind.source);
+    expect(
+      find.textContaining(en.pluginUninstallKeepNothingSource),
+      findsOneWidget,
+    );
+    expect(find.textContaining(en.pluginUninstallKeepLrc), findsNothing);
+    expect(find.textContaining(en.pluginUninstallKeepPinned), findsNothing);
+    expect(find.textContaining(en.pluginUninstallKeepLyrics(2)), findsNothing);
+    expect(
+      find.textContaining(en.pluginUninstallKeepTranslations),
+      findsNothing,
+    );
+  });
 }

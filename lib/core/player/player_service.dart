@@ -6,6 +6,8 @@ import 'package:logging/logging.dart';
 
 import '../database/library_startup.dart';
 import '../settings/settings_provider.dart';
+import '../sources/proxy/stream_proxy_server.dart';
+import '../sources/source_plugin_drops.dart';
 import 'album_run_lookup.dart';
 import 'audio_backend.dart';
 import 'audio_output_devices_provider.dart';
@@ -32,12 +34,20 @@ part 'sleep_timer_stop_after_current.dart';
 final _log = Logger('player');
 
 /// Audio engine for the app session. Tests override it with a fake so they
-/// never load libmpv.
+/// never load libmpv. The stream proxy is read only when a remote track is
+/// opened, so building the engine neither starts it nor reads plugin records.
 final audioBackendProvider = Provider<AudioBackend>((ref) {
-  final backend = MediaKitBackend();
+  final backend = mediaKitBackendFor(ref);
   ref.onDispose(backend.dispose);
   return backend;
 });
+
+/// The mpv engine wired to the stream proxy, which it reads only when a
+/// remote track is opened. `main()` builds its engine through this too: an
+/// engine made without it hands mpv the `kanaru-source:` uri itself.
+MediaKitBackend mediaKitBackendFor(Ref ref) => MediaKitBackend(
+  remoteUrl: (remote) => ref.read(sourceStreamProxyProvider).urlFor(remote),
+);
 
 final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(
   PlayerService.new,
@@ -102,6 +112,7 @@ class PlayerService extends _PlayerCore
         state = state.copyWith(duration: v);
       }),
       _backend.failed.listen(_onFailed),
+      ref.read(sourcePluginDropsProvider).stream.listen(_onPluginDropped),
     ];
     ref.onDispose(() {
       for (final subscription in subscriptions) {
@@ -185,6 +196,15 @@ class PlayerService extends _PlayerCore
       _markStopped(ended: true, resetPosition: false);
     }
     if (counts) _announceTrackEnd();
+  }
+
+  /// The stream proxy cut [installId]'s streams (uninstall or withdrawn
+  /// consent). The current track is stopped when it is one of them; a queued
+  /// one is left, and fails fast later when it is tried.
+  void _onPluginDropped(String installId) {
+    if (state.queue.current?.remote?.installId == installId) {
+      unawaited(stop());
+    }
   }
 
   void _onFailed(PlaybackError error) {

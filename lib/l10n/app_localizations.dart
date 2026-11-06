@@ -5660,6 +5660,12 @@ abstract class AppLocalizations {
   /// **'Can only connect to'**
   String get pluginInfoHosts;
 
+  /// A wildcard host of a plugin in its details: the plugin may connect to one level of subdomain under the host
+  ///
+  /// In en, this message translates to:
+  /// **'Any subdomain of {host}'**
+  String pluginInfoHostAnySubdomain(String host);
+
   /// No description provided for @pluginInfoInstalled.
   ///
   /// In en, this message translates to:
@@ -5887,6 +5893,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved translations, until you choose Clear saved translations'**
   String get pluginUninstallKeepTranslations;
+
+  /// No description provided for @pluginUninstallKeepNothingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is not affected'**
+  String get pluginUninstallKeepNothingSource;
 
   /// No description provided for @pluginUninstallKeepPinned.
   ///
@@ -6121,6 +6133,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translate'**
   String get lyricsStoreKindTranslate;
+
+  /// Music source plugin kind: Type filter value and tag on store rows
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get lyricsStoreKindSource;
 
   /// Source filter value and row subtitle of a plugin installed from a zip file
   ///
@@ -8137,6 +8155,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retranslated with {service}'**
   String lyricsTranslationRetranslated(String service);
+
+  /// Sidebar label and title of the Online screen (search in a source plugin)
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get navOnline;
+
+  /// Tooltip of the plugin icon button in the Online header that opens the source plugin page
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get onlineSourceTooltip;
+
+  /// Screen reader label of the plugin icon button in the Online header
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {name}'**
+  String onlineSourceSemantics(String name);
+
+  /// Hint of the search field of the Online screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search songs, or paste a link'**
+  String get onlineSearchHint;
+
+  /// Button next to the search field of the Online screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get onlineSearchButton;
+
+  /// Online screen before any search
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a song, or paste a video or playlist link.'**
+  String get onlineIdle;
+
+  /// Online screen: the search found nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No results for “{query}”.'**
+  String onlineEmpty(String query);
+
+  /// Button of the Online error view that runs the search again
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get onlineRetry;
+
+  /// Online error: the source plugin was refused its credentials
+  ///
+  /// In en, this message translates to:
+  /// **'The service refused the sign-in.'**
+  String get onlineErrorAuth;
+
+  /// Online error: the service asks to wait
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Try again later.'**
+  String get onlineErrorRateLimited;
+
+  /// Online error: the service failed or answered something unreadable
+  ///
+  /// In en, this message translates to:
+  /// **'The service is not available right now.'**
+  String get onlineErrorUnavailable;
+
+  /// Online error: a request failed or timed out
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the service. Check your connection.'**
+  String get onlineErrorNetwork;
+
+  /// Online error: the plugin output breaks the documented shape
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin returned something Kanaru cannot read.'**
+  String get onlineErrorInvalidOutput;
+
+  /// Online error: every plugin worker was busy
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin runtime is busy. Try again in a moment.'**
+  String get onlineErrorBusy;
+
+  /// Online error: the app failed to run the plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong inside Kanaru.'**
+  String get onlineErrorInternal;
+
+  /// Online error: the text the plugin gave with its error
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin message: {message}'**
+  String onlineErrorPluginMessage(String message);
+
+  /// Online screen: the source plugin has an empty required setting
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in its required settings, then search again.'**
+  String get onlineNeedsConfigBody;
+
+  /// Online consent notice title
+  ///
+  /// In en, this message translates to:
+  /// **'Allow {name} to go online?'**
+  String onlineConsentTitle(String name);
+
+  /// Online consent notice body naming the plugin and the hosts it may reach
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will contact {hosts} to search and to stream audio. What you type and the songs you play are sent to those sites. Kanaru sends nothing until you accept.'**
+  String onlineConsentBody(String name, String hosts);
+
+  /// Button of the Online consent notice
+  ///
+  /// In en, this message translates to:
+  /// **'Accept and search'**
+  String get onlineConsentAccept;
+
+  /// Online screen with no source plugin installed
+  ///
+  /// In en, this message translates to:
+  /// **'Install a source plugin to search and play music from the web.'**
+  String get onlineNoPluginBody;
+
+  /// Button of the Online screen with no source plugin: opens the plugin store
+  ///
+  /// In en, this message translates to:
+  /// **'Open plugin store'**
+  String get onlineNoPluginStore;
 }
 
 class _AppLocalizationsDelegate

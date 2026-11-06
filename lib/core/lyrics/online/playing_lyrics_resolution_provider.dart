@@ -7,6 +7,7 @@ import '../../database/library_startup.dart';
 import '../../player/local_path_of.dart';
 import '../../player/player_service.dart';
 import '../../settings/settings_provider.dart';
+import '../../sources/remote_source_ref.dart';
 import '../lyrics.dart';
 import '../playing_local_lyrics_provider.dart';
 import 'auto_lyrics_lookup_provider.dart';
@@ -26,6 +27,9 @@ final _log = Logger('online_lyrics');
 /// Wires the inputs of [resolveChoice] for the playing song: the pin, the
 /// song's own lyrics, the target, the cache, the lookups and the pause.
 /// `null` when nothing plays.
+///
+/// A remote track (a source plugin's) always resolves to "no lyrics" with no
+/// read and no lookup.
 ///
 /// Without a library, or when the pin, fields or cache cannot be read, only
 /// local lyrics are used and nothing is requested. Resolving never writes.
@@ -56,6 +60,16 @@ class PlayingLyricsResolutionNotifier
       playerServiceProvider.select((s) => s.queue.current?.uri),
     );
     if (uri == null) return null;
+    // A track found through a source plugin has no file, no pin and no cache
+    // row: it shows "no lyrics" at once and nothing is read or requested.
+    if (isRemoteTrackUri(uri)) {
+      return _result(
+        LyricsNone(uri, LyricsNoneReason.noLyrics),
+        null,
+        null,
+        false,
+      );
+    }
     final local = ref.watch(playingLocalLyricsProvider);
     if (ref.watch(libraryDatabaseProvider) == null) {
       return _localOnly(uri, local);
