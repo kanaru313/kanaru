@@ -12,6 +12,7 @@ import 'lyrics_plugin_dirs.dart';
 import 'plugin_config_schema_codec.dart';
 import 'plugin_install_id.dart';
 import 'plugin_install_outcome.dart';
+import 'plugin_translate_spec_codec.dart';
 
 final _log = Logger('lyrics_plugins');
 
@@ -217,6 +218,9 @@ class LyricsPluginInstaller {
       apiVersion: manifest.apiVersion,
       hosts: manifest.hosts,
       configSchema: encodePluginConfigSchema(manifest.config),
+      translateSpec: manifest.translate == null
+          ? null
+          : encodePluginTranslateSpec(manifest.translate!),
       packageDir: relative,
       sourceKind: source.kind,
       sourceName: source.name,

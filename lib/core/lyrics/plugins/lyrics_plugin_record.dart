@@ -3,7 +3,9 @@ import 'dart:convert';
 import '../../database/library_database.dart';
 import '../../database/lyrics_plugin_spec.dart';
 import 'package/plugin_manifest.dart';
+import 'package/plugin_translate_spec.dart';
 import 'store/plugin_config_schema_codec.dart';
+import 'store/plugin_translate_spec_codec.dart';
 
 /// Dart view of one `lyrics_plugins` row, with the hosts and the config form
 /// already parsed. Removed records (only a name for saved lyrics) have
@@ -19,6 +21,7 @@ class LyricsPluginRecord {
     required this.apiVersion,
     required this.hosts,
     required this.config,
+    this.translate,
     required this.packageDir,
     required this.sourceKind,
     required this.sourceName,
@@ -39,6 +42,7 @@ class LyricsPluginRecord {
     apiVersion: row.apiVersion,
     hosts: _hosts(row.hosts),
     config: decodePluginConfigSchema(row.configSchema),
+    translate: decodePluginTranslateSpec(row.translateSpec),
     packageDir: row.packageDir,
     sourceKind: row.sourceKind == LyricsPluginSourceKind.repo.value
         ? LyricsPluginSourceKind.repo
@@ -65,6 +69,10 @@ class LyricsPluginRecord {
 
   /// The config form the package declares, in manifest order.
   final List<PluginConfigField> config;
+
+  /// The `translate` block of a translation plugin; null for lyrics plugins
+  /// and for a record whose block is missing or unreadable.
+  final PluginTranslateSpec? translate;
 
   /// Directory of the current package, relative to the plugin root.
   final String packageDir;

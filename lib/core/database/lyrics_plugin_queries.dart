@@ -64,6 +64,7 @@ extension LyricsPluginQueries on LibraryDatabase {
           apiVersion: spec.apiVersion,
           hosts: jsonEncode(spec.hosts),
           configSchema: spec.configSchema,
+          translateSpec: Value(spec.translateSpec),
           packageDir: spec.packageDir,
           sourceKind: spec.sourceKind.value,
           sourceName: spec.sourceName,
@@ -101,7 +102,7 @@ extension LyricsPluginQueries on LibraryDatabase {
         'package_dir = ?8, source_kind = ?9, source_name = ?10, '
         'repo_url = ?11, repo_slug = ?12, installed_at = ?13, '
         'updated_at = MAX(?13, updated_at + 1), removed_at = NULL, '
-        'kind = ?15 '
+        'kind = ?15, translate_spec = ?16 '
         'WHERE install_id = ?14 AND removed_at IS NOT NULL',
         variables: [
           Variable<String>(spec.name),
@@ -119,6 +120,7 @@ extension LyricsPluginQueries on LibraryDatabase {
           Variable<int>(now),
           Variable<String>(installId),
           Variable<String>(spec.kind.value),
+          Variable<String>(spec.translateSpec),
         ],
         updates: {lyricsPlugins},
         updateKind: UpdateKind.update,
@@ -137,7 +139,8 @@ extension LyricsPluginQueries on LibraryDatabase {
 
   /// Points a live record at a new package version: `kind` (the caller only
   /// switches within the translation family), `package_dir`, `version`,
-  /// `api_version`, `hosts`, `config_schema`, the descriptive fields and `updated_at` change in one statement, so a reader sees all
+  /// `api_version`, `hosts`, `config_schema`, `translate_spec`, the descriptive
+  /// fields and `updated_at` change in one statement, so a reader sees all
   /// old or all new. Config values, storage, preferences and the install
   /// source are kept. `updated_at` is [now], or one more than before if that
   /// is not later, so a guarded write from an earlier run never matches.
@@ -152,7 +155,8 @@ extension LyricsPluginQueries on LibraryDatabase {
       final changed = await customUpdate(
         'UPDATE lyrics_plugins SET name = ?, author = ?, description = ?, '
         'version = ?, api_version = ?, hosts = ?, config_schema = ?, '
-        'package_dir = ?, kind = ?, updated_at = MAX(?, updated_at + 1) '
+        'package_dir = ?, kind = ?, translate_spec = ?, '
+        'updated_at = MAX(?, updated_at + 1) '
         'WHERE install_id = ? AND removed_at IS NULL',
         variables: [
           Variable<String>(spec.name),
@@ -164,6 +168,7 @@ extension LyricsPluginQueries on LibraryDatabase {
           Variable<String>(spec.configSchema),
           Variable<String>(spec.packageDir),
           Variable<String>(spec.kind.value),
+          Variable<String>(spec.translateSpec),
           Variable<int>(now),
           Variable<String>(installId),
         ],

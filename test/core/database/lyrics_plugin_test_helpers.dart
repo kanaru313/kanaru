@@ -10,6 +10,7 @@ LyricsPluginSpec pluginSpec({
   int version = 1,
   String packageDir = 'plugin-a/v1-100',
   String configSchema = '[]',
+  String? translateSpec,
   List<String> hosts = const ['api.example.com'],
   String? repoUrl,
   String? repoSlug,
@@ -20,6 +21,7 @@ LyricsPluginSpec pluginSpec({
   apiVersion: 1,
   hosts: hosts,
   configSchema: configSchema,
+  translateSpec: translateSpec,
   packageDir: packageDir,
   sourceKind: repoUrl == null
       ? LyricsPluginSourceKind.file

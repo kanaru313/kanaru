@@ -60,6 +60,44 @@ void main() {
     expect(values, [null, 'vi', 'en', null]);
   });
 
+  test('an instruction can be set without a target', () async {
+    await db.setSongTranslationInstruction('h1', 'be formal');
+    expect(await db.songTranslationInstruction('h1'), 'be formal');
+    expect(await db.watchSongTranslationTarget('h1').first, isNull);
+    expect(await db.songTranslationInstruction('h2'), isNull);
+  });
+
+  test('clearing the target keeps the instruction', () async {
+    await db.setSongTranslationTarget('h1', 'vi');
+    await db.setSongTranslationInstruction('h1', 'be formal');
+    await db.setSongTranslationTarget('h1', null);
+    expect(await db.songTranslationInstruction('h1'), 'be formal');
+    expect(await db.watchSongTranslationTarget('h1').first, isNull);
+  });
+
+  test(
+    'clearing the instruction keeps the target; both null drop the row',
+    () async {
+      await db.setSongTranslationTarget('h1', 'vi');
+      await db.setSongTranslationInstruction('h1', 'x');
+      await db.setSongTranslationInstruction('h1', '');
+      expect(await db.songTranslationInstruction('h1'), isNull);
+      expect(await db.watchSongTranslationTarget('h1').first, 'vi');
+      await db.setSongTranslationTarget('h1', null);
+      final left = await db
+          .customSelect('SELECT COUNT(*) AS n FROM lyric_translation_prefs')
+          .getSingle();
+      expect(left.read<int>('n'), 0);
+    },
+  );
+
+  test('clearing saved translations keeps targets and instructions', () async {
+    await db.saveLyricTranslation(_row('google'));
+    await db.setSongTranslationInstruction('h1', 'x');
+    await db.clearLyricTranslations();
+    expect(await db.songTranslationInstruction('h1'), 'x');
+  });
+
   test('stats count rows and sum UTF-8 bytes', () async {
     const text = '{"a":"Xin chào"}';
     await db.saveLyricTranslation(_row('google', json: text));

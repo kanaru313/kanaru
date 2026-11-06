@@ -83,6 +83,7 @@ class LyricsPluginSpec {
     required this.apiVersion,
     required this.hosts,
     required this.configSchema,
+    this.translateSpec,
     required this.packageDir,
     this.sourceKind = LyricsPluginSourceKind.file,
     required this.sourceName,
@@ -90,8 +91,8 @@ class LyricsPluginSpec {
     this.repoSlug,
   });
 
-  /// Written by an insert and a revive only; a package switch keeps the
-  /// stored kind.
+  /// Written by an insert, a revive and a package switch (the caller only
+  /// switches within the translation family).
   final PluginKind kind;
   final String name;
   final String? author;
@@ -104,6 +105,9 @@ class LyricsPluginSpec {
 
   /// JSON text, stored as given.
   final String configSchema;
+
+  /// JSON of the `translate` block; null for lyrics plugins.
+  final String? translateSpec;
   final String packageDir;
   final LyricsPluginSourceKind sourceKind;
   final String sourceName;

@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import '../database/library_database.dart';
 import '../database/library_startup.dart';
 import '../database/lyric_translation_queries.dart';
+import '../lyrics/plugins/lyrics_plugins_provider.dart';
 import '../lyrics/plugins/lyrics_sources_provider.dart';
 import '../lyrics/plugins/translate/plugin_translate_gate.dart'
     show TranslationSuperseded;
@@ -276,6 +277,8 @@ class TranslationJobs
     if (runner == null || record == null) {
       throw const TranslationException(TranslationFailureKind.server);
     }
+    // The translate spec of an old record is filled by the startup backfill.
+    await ref.read(lyricsPluginsControllerProvider)?.ready;
     final info = await runner.spec(service.value);
     // Both read on every chunk: the user may switch service or turn
     // translation off while a long song waits for its turn.

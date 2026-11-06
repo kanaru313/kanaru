@@ -17,6 +17,7 @@ import 'store/lyrics_plugin_config_store.dart';
 import 'store/lyrics_plugin_dirs.dart';
 import 'store/lyrics_plugin_installer.dart';
 import 'store/lyrics_plugin_sweep.dart';
+import 'store/lyrics_plugin_translate_spec_backfill.dart';
 import 'store/lyrics_plugin_uninstaller.dart';
 import 'store/plugin_config_required.dart';
 import 'store/plugin_config_schema_codec.dart';
@@ -66,7 +67,10 @@ class LyricsPluginsController {
       logDir: _logDir,
       clock: clock,
     );
-    _ready = _queue.run(() => sweepLyricsPlugins(_db, _dirs, _logDir));
+    _ready = _queue.run(() async {
+      await sweepLyricsPlugins(_db, _dirs, _logDir);
+      await backfillTranslateSpecs(_db, _dirs);
+    });
   }
 
   final LibraryDatabase _db;
@@ -86,7 +90,8 @@ class LyricsPluginsController {
   final void Function(String installId, String name, PluginKind? kind)?
   onNeedsConfig;
 
-  /// Completes when the startup sweep has finished.
+  /// Completes when the startup sweep and the translate spec backfill have
+  /// finished.
   Future<void> get ready => _ready;
 
   /// Every record, removed ones included, oldest install first.

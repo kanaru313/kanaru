@@ -25,15 +25,16 @@ import 'package:drift/drift.dart';
 // 3. `(repo_url, repo_slug)` is unique among records with a `repo_url`; file
 //    installs have none. Removed records count, so a revive finds its record.
 // 4. `package_dir` is the relative directory of the current package. A new
-//    version switches `package_dir`, `version`, `hosts`, `config_schema` and
-//    `updated_at` in one statement; config values, storage and preferences
-//    are kept. Directories no record points to are swept at startup.
+//    version switches `package_dir`, `version`, `hosts`, `config_schema`,
+//    `translate_spec` and `updated_at` in one statement; config values,
+//    storage and preferences are kept. Directories no record points to are swept at startup.
 // 5. `updated_at` changes on every install, revive and package switch. A
 //    script run remembers it and writes its storage back only while it still
 //    matches (`setLyricsPluginStorage`), so a run that outlived an uninstall
 //    or an update writes nothing.
-// 6. `hosts` and `config_schema` are JSON text the plugin layer owns; this
-//    layer stores them as given. Secret config values are never stored here.
+// 6. `hosts`, `config_schema` and `translate_spec` are JSON text the plugin
+//    layer owns; this layer stores them as given. Secret config values are
+//    never stored here.
 // 7. `lyrics_plugin_data` holds one row per live plugin: non-secret config
 //    values and the script's localStorage, both JSON objects (default `{}`),
 //    each at most 64 KiB. No source list or lyrics stream watches the table,
@@ -80,6 +81,11 @@ class LyricsPlugins extends Table {
 
   /// JSON text of the config form the package declares.
   TextColumn get configSchema => text()();
+
+  /// JSON of the `translate` block (`PluginTranslateSpec.toJson`) for
+  /// translation plugins; null for lyrics plugins, and for a translation
+  /// plugin installed before the column existed until the startup backfill.
+  TextColumn get translateSpec => text().nullable()();
 
   /// Relative directory of the current package.
   TextColumn get packageDir => text()();

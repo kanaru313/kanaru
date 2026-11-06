@@ -553,7 +553,7 @@ void main() {
     expect(info.hosts, ['api.example.com']);
   });
 
-  test('spec errors: missing, other kind, unreadable package', () async {
+  test('spec errors: missing, other kind', () async {
     expect(
       await _error(runner.spec('missing')),
       _failure(TranslationFailureKind.server),
@@ -566,13 +566,27 @@ void main() {
       await _error(runner.spec(lyrics.installId)),
       _failure(TranslationFailureKind.server),
     );
+  });
+
+  test('spec comes from the record, not from the package files', () async {
     store.packageDir(record.packageDir).deleteSync(recursive: true);
+    final info = await runner.spec(record.installId);
+    expect(info.spec.languages, ['vi', 'en']);
+  });
+
+  test('spec of a record with no translate spec is invalidResponse', () async {
+    await store.db.customStatement(
+      'UPDATE lyrics_plugins SET translate_spec = NULL WHERE install_id = ?',
+      [record.installId],
+    );
     expect(
       await _error(runner.spec(record.installId)),
       _failure(TranslationFailureKind.invalidResponse),
     );
     await PluginRunLog.idle();
-    expect(_events(store.logs, record.installId), hasLength(1));
+    final events = _events(store.logs, record.installId);
+    expect(events, hasLength(1));
+    expect(jsonEncode(events.single), contains('no translate spec'));
   });
 
   test('an uninstall during a run cancels it', () async {

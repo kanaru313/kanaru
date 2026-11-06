@@ -5083,6 +5083,17 @@ class $LyricTranslationsTable extends LyricTranslations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _settingsJsonMeta = const VerificationMeta(
+    'settingsJson',
+  );
+  @override
+  late final GeneratedColumn<String> settingsJson = GeneratedColumn<String>(
+    'settings_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5101,6 +5112,7 @@ class $LyricTranslationsTable extends LyricTranslations
     targetLang,
     sourceLang,
     linesJson,
+    settingsJson,
     createdAt,
   ];
   @override
@@ -5156,6 +5168,15 @@ class $LyricTranslationsTable extends LyricTranslations
     } else if (isInserting) {
       context.missing(_linesJsonMeta);
     }
+    if (data.containsKey('settings_json')) {
+      context.handle(
+        _settingsJsonMeta,
+        settingsJson.isAcceptableOrUnknown(
+          data['settings_json']!,
+          _settingsJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -5193,6 +5214,10 @@ class $LyricTranslationsTable extends LyricTranslations
         DriftSqlType.string,
         data['${effectivePrefix}lines_json'],
       )!,
+      settingsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}settings_json'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -5222,6 +5247,9 @@ class LyricTranslationRow extends DataClass
 
   /// `{"source line": "translation"}`.
   final String linesJson;
+
+  /// Snapshot of the AI settings of the run; see invariant 8.
+  final String? settingsJson;
   final int createdAt;
   const LyricTranslationRow({
     required this.contentHash,
@@ -5229,6 +5257,7 @@ class LyricTranslationRow extends DataClass
     required this.targetLang,
     this.sourceLang,
     required this.linesJson,
+    this.settingsJson,
     required this.createdAt,
   });
   @override
@@ -5241,6 +5270,9 @@ class LyricTranslationRow extends DataClass
       map['source_lang'] = Variable<String>(sourceLang);
     }
     map['lines_json'] = Variable<String>(linesJson);
+    if (!nullToAbsent || settingsJson != null) {
+      map['settings_json'] = Variable<String>(settingsJson);
+    }
     map['created_at'] = Variable<int>(createdAt);
     return map;
   }
@@ -5254,6 +5286,9 @@ class LyricTranslationRow extends DataClass
           ? const Value.absent()
           : Value(sourceLang),
       linesJson: Value(linesJson),
+      settingsJson: settingsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settingsJson),
       createdAt: Value(createdAt),
     );
   }
@@ -5269,6 +5304,7 @@ class LyricTranslationRow extends DataClass
       targetLang: serializer.fromJson<String>(json['targetLang']),
       sourceLang: serializer.fromJson<String?>(json['sourceLang']),
       linesJson: serializer.fromJson<String>(json['linesJson']),
+      settingsJson: serializer.fromJson<String?>(json['settingsJson']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
@@ -5281,6 +5317,7 @@ class LyricTranslationRow extends DataClass
       'targetLang': serializer.toJson<String>(targetLang),
       'sourceLang': serializer.toJson<String?>(sourceLang),
       'linesJson': serializer.toJson<String>(linesJson),
+      'settingsJson': serializer.toJson<String?>(settingsJson),
       'createdAt': serializer.toJson<int>(createdAt),
     };
   }
@@ -5291,6 +5328,7 @@ class LyricTranslationRow extends DataClass
     String? targetLang,
     Value<String?> sourceLang = const Value.absent(),
     String? linesJson,
+    Value<String?> settingsJson = const Value.absent(),
     int? createdAt,
   }) => LyricTranslationRow(
     contentHash: contentHash ?? this.contentHash,
@@ -5298,6 +5336,7 @@ class LyricTranslationRow extends DataClass
     targetLang: targetLang ?? this.targetLang,
     sourceLang: sourceLang.present ? sourceLang.value : this.sourceLang,
     linesJson: linesJson ?? this.linesJson,
+    settingsJson: settingsJson.present ? settingsJson.value : this.settingsJson,
     createdAt: createdAt ?? this.createdAt,
   );
   LyricTranslationRow copyWithCompanion(LyricTranslationsCompanion data) {
@@ -5313,6 +5352,9 @@ class LyricTranslationRow extends DataClass
           ? data.sourceLang.value
           : this.sourceLang,
       linesJson: data.linesJson.present ? data.linesJson.value : this.linesJson,
+      settingsJson: data.settingsJson.present
+          ? data.settingsJson.value
+          : this.settingsJson,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -5325,6 +5367,7 @@ class LyricTranslationRow extends DataClass
           ..write('targetLang: $targetLang, ')
           ..write('sourceLang: $sourceLang, ')
           ..write('linesJson: $linesJson, ')
+          ..write('settingsJson: $settingsJson, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -5337,6 +5380,7 @@ class LyricTranslationRow extends DataClass
     targetLang,
     sourceLang,
     linesJson,
+    settingsJson,
     createdAt,
   );
   @override
@@ -5348,6 +5392,7 @@ class LyricTranslationRow extends DataClass
           other.targetLang == this.targetLang &&
           other.sourceLang == this.sourceLang &&
           other.linesJson == this.linesJson &&
+          other.settingsJson == this.settingsJson &&
           other.createdAt == this.createdAt);
 }
 
@@ -5357,6 +5402,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
   final Value<String> targetLang;
   final Value<String?> sourceLang;
   final Value<String> linesJson;
+  final Value<String?> settingsJson;
   final Value<int> createdAt;
   final Value<int> rowid;
   const LyricTranslationsCompanion({
@@ -5365,6 +5411,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
     this.targetLang = const Value.absent(),
     this.sourceLang = const Value.absent(),
     this.linesJson = const Value.absent(),
+    this.settingsJson = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5374,6 +5421,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
     required String targetLang,
     this.sourceLang = const Value.absent(),
     required String linesJson,
+    this.settingsJson = const Value.absent(),
     required int createdAt,
     this.rowid = const Value.absent(),
   }) : contentHash = Value(contentHash),
@@ -5387,6 +5435,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
     Expression<String>? targetLang,
     Expression<String>? sourceLang,
     Expression<String>? linesJson,
+    Expression<String>? settingsJson,
     Expression<int>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -5396,6 +5445,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
       if (targetLang != null) 'target_lang': targetLang,
       if (sourceLang != null) 'source_lang': sourceLang,
       if (linesJson != null) 'lines_json': linesJson,
+      if (settingsJson != null) 'settings_json': settingsJson,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5407,6 +5457,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
     Value<String>? targetLang,
     Value<String?>? sourceLang,
     Value<String>? linesJson,
+    Value<String?>? settingsJson,
     Value<int>? createdAt,
     Value<int>? rowid,
   }) {
@@ -5416,6 +5467,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
       targetLang: targetLang ?? this.targetLang,
       sourceLang: sourceLang ?? this.sourceLang,
       linesJson: linesJson ?? this.linesJson,
+      settingsJson: settingsJson ?? this.settingsJson,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -5439,6 +5491,9 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
     if (linesJson.present) {
       map['lines_json'] = Variable<String>(linesJson.value);
     }
+    if (settingsJson.present) {
+      map['settings_json'] = Variable<String>(settingsJson.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -5456,6 +5511,7 @@ class LyricTranslationsCompanion extends UpdateCompanion<LyricTranslationRow> {
           ..write('targetLang: $targetLang, ')
           ..write('sourceLang: $sourceLang, ')
           ..write('linesJson: $linesJson, ')
+          ..write('settingsJson: $settingsJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -5487,12 +5543,23 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
   late final GeneratedColumn<String> targetLang = GeneratedColumn<String>(
     'target_lang',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _instructionMeta = const VerificationMeta(
+    'instruction',
   );
   @override
-  List<GeneratedColumn> get $columns => [contentHash, targetLang];
+  late final GeneratedColumn<String> instruction = GeneratedColumn<String>(
+    'instruction',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [contentHash, targetLang, instruction];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5521,8 +5588,15 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
         _targetLangMeta,
         targetLang.isAcceptableOrUnknown(data['target_lang']!, _targetLangMeta),
       );
-    } else if (isInserting) {
-      context.missing(_targetLangMeta);
+    }
+    if (data.containsKey('instruction')) {
+      context.handle(
+        _instructionMeta,
+        instruction.isAcceptableOrUnknown(
+          data['instruction']!,
+          _instructionMeta,
+        ),
+      );
     }
     return context;
   }
@@ -5543,7 +5617,11 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
       targetLang: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}target_lang'],
-      )!,
+      ),
+      instruction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}instruction'],
+      ),
     );
   }
 
@@ -5556,23 +5634,37 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
 class LyricTranslationPrefRow extends DataClass
     implements Insertable<LyricTranslationPrefRow> {
   final String contentHash;
-  final String targetLang;
+  final String? targetLang;
+
+  /// Free text appended to the plugin's own instruction for this song.
+  final String? instruction;
   const LyricTranslationPrefRow({
     required this.contentHash,
-    required this.targetLang,
+    this.targetLang,
+    this.instruction,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['content_hash'] = Variable<String>(contentHash);
-    map['target_lang'] = Variable<String>(targetLang);
+    if (!nullToAbsent || targetLang != null) {
+      map['target_lang'] = Variable<String>(targetLang);
+    }
+    if (!nullToAbsent || instruction != null) {
+      map['instruction'] = Variable<String>(instruction);
+    }
     return map;
   }
 
   LyricTranslationPrefsCompanion toCompanion(bool nullToAbsent) {
     return LyricTranslationPrefsCompanion(
       contentHash: Value(contentHash),
-      targetLang: Value(targetLang),
+      targetLang: targetLang == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLang),
+      instruction: instruction == null && nullToAbsent
+          ? const Value.absent()
+          : Value(instruction),
     );
   }
 
@@ -5583,7 +5675,8 @@ class LyricTranslationPrefRow extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return LyricTranslationPrefRow(
       contentHash: serializer.fromJson<String>(json['contentHash']),
-      targetLang: serializer.fromJson<String>(json['targetLang']),
+      targetLang: serializer.fromJson<String?>(json['targetLang']),
+      instruction: serializer.fromJson<String?>(json['instruction']),
     );
   }
   @override
@@ -5591,15 +5684,20 @@ class LyricTranslationPrefRow extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'contentHash': serializer.toJson<String>(contentHash),
-      'targetLang': serializer.toJson<String>(targetLang),
+      'targetLang': serializer.toJson<String?>(targetLang),
+      'instruction': serializer.toJson<String?>(instruction),
     };
   }
 
-  LyricTranslationPrefRow copyWith({String? contentHash, String? targetLang}) =>
-      LyricTranslationPrefRow(
-        contentHash: contentHash ?? this.contentHash,
-        targetLang: targetLang ?? this.targetLang,
-      );
+  LyricTranslationPrefRow copyWith({
+    String? contentHash,
+    Value<String?> targetLang = const Value.absent(),
+    Value<String?> instruction = const Value.absent(),
+  }) => LyricTranslationPrefRow(
+    contentHash: contentHash ?? this.contentHash,
+    targetLang: targetLang.present ? targetLang.value : this.targetLang,
+    instruction: instruction.present ? instruction.value : this.instruction,
+  );
   LyricTranslationPrefRow copyWithCompanion(
     LyricTranslationPrefsCompanion data,
   ) {
@@ -5610,6 +5708,9 @@ class LyricTranslationPrefRow extends DataClass
       targetLang: data.targetLang.present
           ? data.targetLang.value
           : this.targetLang,
+      instruction: data.instruction.present
+          ? data.instruction.value
+          : this.instruction,
     );
   }
 
@@ -5617,57 +5718,65 @@ class LyricTranslationPrefRow extends DataClass
   String toString() {
     return (StringBuffer('LyricTranslationPrefRow(')
           ..write('contentHash: $contentHash, ')
-          ..write('targetLang: $targetLang')
+          ..write('targetLang: $targetLang, ')
+          ..write('instruction: $instruction')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(contentHash, targetLang);
+  int get hashCode => Object.hash(contentHash, targetLang, instruction);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is LyricTranslationPrefRow &&
           other.contentHash == this.contentHash &&
-          other.targetLang == this.targetLang);
+          other.targetLang == this.targetLang &&
+          other.instruction == this.instruction);
 }
 
 class LyricTranslationPrefsCompanion
     extends UpdateCompanion<LyricTranslationPrefRow> {
   final Value<String> contentHash;
-  final Value<String> targetLang;
+  final Value<String?> targetLang;
+  final Value<String?> instruction;
   final Value<int> rowid;
   const LyricTranslationPrefsCompanion({
     this.contentHash = const Value.absent(),
     this.targetLang = const Value.absent(),
+    this.instruction = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LyricTranslationPrefsCompanion.insert({
     required String contentHash,
-    required String targetLang,
+    this.targetLang = const Value.absent(),
+    this.instruction = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : contentHash = Value(contentHash),
-       targetLang = Value(targetLang);
+  }) : contentHash = Value(contentHash);
   static Insertable<LyricTranslationPrefRow> custom({
     Expression<String>? contentHash,
     Expression<String>? targetLang,
+    Expression<String>? instruction,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (contentHash != null) 'content_hash': contentHash,
       if (targetLang != null) 'target_lang': targetLang,
+      if (instruction != null) 'instruction': instruction,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   LyricTranslationPrefsCompanion copyWith({
     Value<String>? contentHash,
-    Value<String>? targetLang,
+    Value<String?>? targetLang,
+    Value<String?>? instruction,
     Value<int>? rowid,
   }) {
     return LyricTranslationPrefsCompanion(
       contentHash: contentHash ?? this.contentHash,
       targetLang: targetLang ?? this.targetLang,
+      instruction: instruction ?? this.instruction,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5681,6 +5790,9 @@ class LyricTranslationPrefsCompanion
     if (targetLang.present) {
       map['target_lang'] = Variable<String>(targetLang.value);
     }
+    if (instruction.present) {
+      map['instruction'] = Variable<String>(instruction.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5692,6 +5804,7 @@ class LyricTranslationPrefsCompanion
     return (StringBuffer('LyricTranslationPrefsCompanion(')
           ..write('contentHash: $contentHash, ')
           ..write('targetLang: $targetLang, ')
+          ..write('instruction: $instruction, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7347,6 +7460,17 @@ class $LyricsPluginsTable extends LyricsPlugins
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _translateSpecMeta = const VerificationMeta(
+    'translateSpec',
+  );
+  @override
+  late final GeneratedColumn<String> translateSpec = GeneratedColumn<String>(
+    'translate_spec',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _packageDirMeta = const VerificationMeta(
     'packageDir',
   );
@@ -7455,6 +7579,7 @@ class $LyricsPluginsTable extends LyricsPlugins
     apiVersion,
     hosts,
     configSchema,
+    translateSpec,
     packageDir,
     sourceKind,
     sourceName,
@@ -7542,6 +7667,15 @@ class $LyricsPluginsTable extends LyricsPlugins
       );
     } else if (isInserting) {
       context.missing(_configSchemaMeta);
+    }
+    if (data.containsKey('translate_spec')) {
+      context.handle(
+        _translateSpecMeta,
+        translateSpec.isAcceptableOrUnknown(
+          data['translate_spec']!,
+          _translateSpecMeta,
+        ),
+      );
     }
     if (data.containsKey('package_dir')) {
       context.handle(
@@ -7651,6 +7785,10 @@ class $LyricsPluginsTable extends LyricsPlugins
         DriftSqlType.string,
         data['${effectivePrefix}config_schema'],
       )!,
+      translateSpec: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}translate_spec'],
+      ),
       packageDir: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}package_dir'],
@@ -7710,6 +7848,11 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
   /// JSON text of the config form the package declares.
   final String configSchema;
 
+  /// JSON of the `translate` block (`PluginTranslateSpec.toJson`) for
+  /// translation plugins; null for lyrics plugins, and for a translation
+  /// plugin installed before the column existed until the startup backfill.
+  final String? translateSpec;
+
   /// Relative directory of the current package.
   final String packageDir;
 
@@ -7723,8 +7866,8 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
   final int installedAt;
   final int updatedAt;
 
-  /// `lyrics` or `translate`; see invariant 11. Rows from before the column
-  /// existed read as `lyrics` through the SQL default.
+  /// `lyrics`, `translate` or `ai-translate`; see invariant 11. Rows from
+  /// before the column existed read as `lyrics` through the SQL default.
   final String kind;
 
   /// Set while the record is only a name for saved lyrics.
@@ -7738,6 +7881,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     required this.apiVersion,
     required this.hosts,
     required this.configSchema,
+    this.translateSpec,
     required this.packageDir,
     required this.sourceKind,
     required this.sourceName,
@@ -7763,6 +7907,9 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     map['api_version'] = Variable<int>(apiVersion);
     map['hosts'] = Variable<String>(hosts);
     map['config_schema'] = Variable<String>(configSchema);
+    if (!nullToAbsent || translateSpec != null) {
+      map['translate_spec'] = Variable<String>(translateSpec);
+    }
     map['package_dir'] = Variable<String>(packageDir);
     map['source_kind'] = Variable<String>(sourceKind);
     map['source_name'] = Variable<String>(sourceName);
@@ -7795,6 +7942,9 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       apiVersion: Value(apiVersion),
       hosts: Value(hosts),
       configSchema: Value(configSchema),
+      translateSpec: translateSpec == null && nullToAbsent
+          ? const Value.absent()
+          : Value(translateSpec),
       packageDir: Value(packageDir),
       sourceKind: Value(sourceKind),
       sourceName: Value(sourceName),
@@ -7827,6 +7977,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       apiVersion: serializer.fromJson<int>(json['apiVersion']),
       hosts: serializer.fromJson<String>(json['hosts']),
       configSchema: serializer.fromJson<String>(json['configSchema']),
+      translateSpec: serializer.fromJson<String?>(json['translateSpec']),
       packageDir: serializer.fromJson<String>(json['packageDir']),
       sourceKind: serializer.fromJson<String>(json['sourceKind']),
       sourceName: serializer.fromJson<String>(json['sourceName']),
@@ -7850,6 +8001,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       'apiVersion': serializer.toJson<int>(apiVersion),
       'hosts': serializer.toJson<String>(hosts),
       'configSchema': serializer.toJson<String>(configSchema),
+      'translateSpec': serializer.toJson<String?>(translateSpec),
       'packageDir': serializer.toJson<String>(packageDir),
       'sourceKind': serializer.toJson<String>(sourceKind),
       'sourceName': serializer.toJson<String>(sourceName),
@@ -7871,6 +8023,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     int? apiVersion,
     String? hosts,
     String? configSchema,
+    Value<String?> translateSpec = const Value.absent(),
     String? packageDir,
     String? sourceKind,
     String? sourceName,
@@ -7889,6 +8042,9 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     apiVersion: apiVersion ?? this.apiVersion,
     hosts: hosts ?? this.hosts,
     configSchema: configSchema ?? this.configSchema,
+    translateSpec: translateSpec.present
+        ? translateSpec.value
+        : this.translateSpec,
     packageDir: packageDir ?? this.packageDir,
     sourceKind: sourceKind ?? this.sourceKind,
     sourceName: sourceName ?? this.sourceName,
@@ -7915,6 +8071,9 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
       configSchema: data.configSchema.present
           ? data.configSchema.value
           : this.configSchema,
+      translateSpec: data.translateSpec.present
+          ? data.translateSpec.value
+          : this.translateSpec,
       packageDir: data.packageDir.present
           ? data.packageDir.value
           : this.packageDir,
@@ -7946,6 +8105,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           ..write('apiVersion: $apiVersion, ')
           ..write('hosts: $hosts, ')
           ..write('configSchema: $configSchema, ')
+          ..write('translateSpec: $translateSpec, ')
           ..write('packageDir: $packageDir, ')
           ..write('sourceKind: $sourceKind, ')
           ..write('sourceName: $sourceName, ')
@@ -7969,6 +8129,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
     apiVersion,
     hosts,
     configSchema,
+    translateSpec,
     packageDir,
     sourceKind,
     sourceName,
@@ -7991,6 +8152,7 @@ class LyricsPluginRow extends DataClass implements Insertable<LyricsPluginRow> {
           other.apiVersion == this.apiVersion &&
           other.hosts == this.hosts &&
           other.configSchema == this.configSchema &&
+          other.translateSpec == this.translateSpec &&
           other.packageDir == this.packageDir &&
           other.sourceKind == this.sourceKind &&
           other.sourceName == this.sourceName &&
@@ -8011,6 +8173,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
   final Value<int> apiVersion;
   final Value<String> hosts;
   final Value<String> configSchema;
+  final Value<String?> translateSpec;
   final Value<String> packageDir;
   final Value<String> sourceKind;
   final Value<String> sourceName;
@@ -8030,6 +8193,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     this.apiVersion = const Value.absent(),
     this.hosts = const Value.absent(),
     this.configSchema = const Value.absent(),
+    this.translateSpec = const Value.absent(),
     this.packageDir = const Value.absent(),
     this.sourceKind = const Value.absent(),
     this.sourceName = const Value.absent(),
@@ -8050,6 +8214,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     required int apiVersion,
     required String hosts,
     required String configSchema,
+    this.translateSpec = const Value.absent(),
     required String packageDir,
     required String sourceKind,
     required String sourceName,
@@ -8080,6 +8245,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     Expression<int>? apiVersion,
     Expression<String>? hosts,
     Expression<String>? configSchema,
+    Expression<String>? translateSpec,
     Expression<String>? packageDir,
     Expression<String>? sourceKind,
     Expression<String>? sourceName,
@@ -8100,6 +8266,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
       if (apiVersion != null) 'api_version': apiVersion,
       if (hosts != null) 'hosts': hosts,
       if (configSchema != null) 'config_schema': configSchema,
+      if (translateSpec != null) 'translate_spec': translateSpec,
       if (packageDir != null) 'package_dir': packageDir,
       if (sourceKind != null) 'source_kind': sourceKind,
       if (sourceName != null) 'source_name': sourceName,
@@ -8122,6 +8289,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     Value<int>? apiVersion,
     Value<String>? hosts,
     Value<String>? configSchema,
+    Value<String?>? translateSpec,
     Value<String>? packageDir,
     Value<String>? sourceKind,
     Value<String>? sourceName,
@@ -8142,6 +8310,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
       apiVersion: apiVersion ?? this.apiVersion,
       hosts: hosts ?? this.hosts,
       configSchema: configSchema ?? this.configSchema,
+      translateSpec: translateSpec ?? this.translateSpec,
       packageDir: packageDir ?? this.packageDir,
       sourceKind: sourceKind ?? this.sourceKind,
       sourceName: sourceName ?? this.sourceName,
@@ -8181,6 +8350,9 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
     }
     if (configSchema.present) {
       map['config_schema'] = Variable<String>(configSchema.value);
+    }
+    if (translateSpec.present) {
+      map['translate_spec'] = Variable<String>(translateSpec.value);
     }
     if (packageDir.present) {
       map['package_dir'] = Variable<String>(packageDir.value);
@@ -8226,6 +8398,7 @@ class LyricsPluginsCompanion extends UpdateCompanion<LyricsPluginRow> {
           ..write('apiVersion: $apiVersion, ')
           ..write('hosts: $hosts, ')
           ..write('configSchema: $configSchema, ')
+          ..write('translateSpec: $translateSpec, ')
           ..write('packageDir: $packageDir, ')
           ..write('sourceKind: $sourceKind, ')
           ..write('sourceName: $sourceName, ')
@@ -12685,6 +12858,7 @@ typedef $$LyricTranslationsTableCreateCompanionBuilder =
       required String targetLang,
       Value<String?> sourceLang,
       required String linesJson,
+      Value<String?> settingsJson,
       required int createdAt,
       Value<int> rowid,
     });
@@ -12695,6 +12869,7 @@ typedef $$LyricTranslationsTableUpdateCompanionBuilder =
       Value<String> targetLang,
       Value<String?> sourceLang,
       Value<String> linesJson,
+      Value<String?> settingsJson,
       Value<int> createdAt,
       Value<int> rowid,
     });
@@ -12730,6 +12905,11 @@ class $$LyricTranslationsTableFilterComposer
 
   ColumnFilters<String> get linesJson => $composableBuilder(
     column: $table.linesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get settingsJson => $composableBuilder(
+    column: $table.settingsJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12773,6 +12953,11 @@ class $$LyricTranslationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get settingsJson => $composableBuilder(
+    column: $table.settingsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -12808,6 +12993,11 @@ class $$LyricTranslationsTableAnnotationComposer
 
   GeneratedColumn<String> get linesJson =>
       $composableBuilder(column: $table.linesJson, builder: (column) => column);
+
+  GeneratedColumn<String> get settingsJson => $composableBuilder(
+    column: $table.settingsJson,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -12858,6 +13048,7 @@ class $$LyricTranslationsTableTableManager
                 Value<String> targetLang = const Value.absent(),
                 Value<String?> sourceLang = const Value.absent(),
                 Value<String> linesJson = const Value.absent(),
+                Value<String?> settingsJson = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationsCompanion(
@@ -12866,6 +13057,7 @@ class $$LyricTranslationsTableTableManager
                 targetLang: targetLang,
                 sourceLang: sourceLang,
                 linesJson: linesJson,
+                settingsJson: settingsJson,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -12876,6 +13068,7 @@ class $$LyricTranslationsTableTableManager
                 required String targetLang,
                 Value<String?> sourceLang = const Value.absent(),
                 required String linesJson,
+                Value<String?> settingsJson = const Value.absent(),
                 required int createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationsCompanion.insert(
@@ -12884,6 +13077,7 @@ class $$LyricTranslationsTableTableManager
                 targetLang: targetLang,
                 sourceLang: sourceLang,
                 linesJson: linesJson,
+                settingsJson: settingsJson,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -12930,13 +13124,15 @@ typedef $$LyricTranslationsTableProcessedTableManager =
 typedef $$LyricTranslationPrefsTableCreateCompanionBuilder =
     LyricTranslationPrefsCompanion Function({
       required String contentHash,
-      required String targetLang,
+      Value<String?> targetLang,
+      Value<String?> instruction,
       Value<int> rowid,
     });
 typedef $$LyricTranslationPrefsTableUpdateCompanionBuilder =
     LyricTranslationPrefsCompanion Function({
       Value<String> contentHash,
-      Value<String> targetLang,
+      Value<String?> targetLang,
+      Value<String?> instruction,
       Value<int> rowid,
     });
 
@@ -12956,6 +13152,11 @@ class $$LyricTranslationPrefsTableFilterComposer
 
   ColumnFilters<String> get targetLang => $composableBuilder(
     column: $table.targetLang,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get instruction => $composableBuilder(
+    column: $table.instruction,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -12978,6 +13179,11 @@ class $$LyricTranslationPrefsTableOrderingComposer
     column: $table.targetLang,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get instruction => $composableBuilder(
+    column: $table.instruction,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LyricTranslationPrefsTableAnnotationComposer
@@ -12996,6 +13202,11 @@ class $$LyricTranslationPrefsTableAnnotationComposer
 
   GeneratedColumn<String> get targetLang => $composableBuilder(
     column: $table.targetLang,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get instruction => $composableBuilder(
+    column: $table.instruction,
     builder: (column) => column,
   );
 }
@@ -13047,21 +13258,25 @@ class $$LyricTranslationPrefsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> contentHash = const Value.absent(),
-                Value<String> targetLang = const Value.absent(),
+                Value<String?> targetLang = const Value.absent(),
+                Value<String?> instruction = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationPrefsCompanion(
                 contentHash: contentHash,
                 targetLang: targetLang,
+                instruction: instruction,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String contentHash,
-                required String targetLang,
+                Value<String?> targetLang = const Value.absent(),
+                Value<String?> instruction = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationPrefsCompanion.insert(
                 contentHash: contentHash,
                 targetLang: targetLang,
+                instruction: instruction,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -13938,6 +14153,7 @@ typedef $$LyricsPluginsTableCreateCompanionBuilder =
       required int apiVersion,
       required String hosts,
       required String configSchema,
+      Value<String?> translateSpec,
       required String packageDir,
       required String sourceKind,
       required String sourceName,
@@ -13959,6 +14175,7 @@ typedef $$LyricsPluginsTableUpdateCompanionBuilder =
       Value<int> apiVersion,
       Value<String> hosts,
       Value<String> configSchema,
+      Value<String?> translateSpec,
       Value<String> packageDir,
       Value<String> sourceKind,
       Value<String> sourceName,
@@ -14017,6 +14234,11 @@ class $$LyricsPluginsTableFilterComposer
 
   ColumnFilters<String> get configSchema => $composableBuilder(
     column: $table.configSchema,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get translateSpec => $composableBuilder(
+    column: $table.translateSpec,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14115,6 +14337,11 @@ class $$LyricsPluginsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get translateSpec => $composableBuilder(
+    column: $table.translateSpec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get packageDir => $composableBuilder(
     column: $table.packageDir,
     builder: (column) => ColumnOrderings(column),
@@ -14200,6 +14427,11 @@ class $$LyricsPluginsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get translateSpec => $composableBuilder(
+    column: $table.translateSpec,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get packageDir => $composableBuilder(
     column: $table.packageDir,
     builder: (column) => column,
@@ -14281,6 +14513,7 @@ class $$LyricsPluginsTableTableManager
                 Value<int> apiVersion = const Value.absent(),
                 Value<String> hosts = const Value.absent(),
                 Value<String> configSchema = const Value.absent(),
+                Value<String?> translateSpec = const Value.absent(),
                 Value<String> packageDir = const Value.absent(),
                 Value<String> sourceKind = const Value.absent(),
                 Value<String> sourceName = const Value.absent(),
@@ -14300,6 +14533,7 @@ class $$LyricsPluginsTableTableManager
                 apiVersion: apiVersion,
                 hosts: hosts,
                 configSchema: configSchema,
+                translateSpec: translateSpec,
                 packageDir: packageDir,
                 sourceKind: sourceKind,
                 sourceName: sourceName,
@@ -14321,6 +14555,7 @@ class $$LyricsPluginsTableTableManager
                 required int apiVersion,
                 required String hosts,
                 required String configSchema,
+                Value<String?> translateSpec = const Value.absent(),
                 required String packageDir,
                 required String sourceKind,
                 required String sourceName,
@@ -14340,6 +14575,7 @@ class $$LyricsPluginsTableTableManager
                 apiVersion: apiVersion,
                 hosts: hosts,
                 configSchema: configSchema,
+                translateSpec: translateSpec,
                 packageDir: packageDir,
                 sourceKind: sourceKind,
                 sourceName: sourceName,

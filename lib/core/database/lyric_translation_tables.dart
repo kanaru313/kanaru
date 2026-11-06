@@ -24,8 +24,13 @@ import 'package:drift/drift.dart';
 //    skip unknown values, retired built-in service rows (`deepl`, etc.)
 //    included.
 // 6. `lyric_translation_prefs` is a user choice: clearing translations does
-//    not touch it.
+//    not touch it. It holds a target language, a per-song instruction for AI
+//    plugins, or both; a row with both null is deleted.
 // 7. Unbounded by design (a few KB per song); settings shows count and size.
+// 8. `settings_json` is the snapshot of the AI settings a row was made with
+//    (`{"model", "style", "instructionHash"}`); null for plugins without AI
+//    settings and for rows made before the column existed. A save always
+//    writes it, null included, so a retranslate never keeps an older snapshot.
 
 /// One translation of one lyrics text by one service into one language.
 @DataClassName('LyricTranslationRow')
@@ -45,18 +50,25 @@ class LyricTranslations extends Table {
   /// `{"source line": "translation"}`.
   TextColumn get linesJson => text()();
 
+  /// Snapshot of the AI settings of the run; see invariant 8.
+  TextColumn get settingsJson => text().nullable()();
+
   IntColumn get createdAt => integer()();
 
   @override
   Set<Column> get primaryKey => {contentHash, provider, targetLang};
 }
 
-/// The target language the user picked for one lyrics text.
+/// What the user picked for one lyrics text: a target language, an
+/// instruction for AI plugins, or both (null = no choice).
 @DataClassName('LyricTranslationPrefRow')
 class LyricTranslationPrefs extends Table {
   TextColumn get contentHash => text()();
 
-  TextColumn get targetLang => text()();
+  TextColumn get targetLang => text().nullable()();
+
+  /// Free text appended to the plugin's own instruction for this song.
+  TextColumn get instruction => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {contentHash};
