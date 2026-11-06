@@ -42,8 +42,9 @@ typedef LyricsHttpResponse = ({
 /// (the user's consent) is asked; when it is false,
 /// `LyricsFetchException(notConsented)` is thrown and nothing is sent.
 ///
-/// The `User-Agent` is always the one naming the app and its repository. The
-/// address and query are never logged.
+/// The `User-Agent` of [get] is always the one naming the app and its
+/// repository; [send] uses the source's when it sets a non-blank one, else
+/// the app's. The address and query are never logged.
 class LyricsHttp {
   LyricsHttp(
     LyricsProviderRegistration registration,
@@ -167,10 +168,10 @@ class LyricsHttp {
   /// its status. The rules of [get] apply (address, consent, retries, the
   /// overall timeout and abandon), with these differences: the method is GET
   /// or POST, the source's headers are filtered by [lyricsRequestHeaders]
-  /// (the `User-Agent` is always the app's), the body is sent as given, the
-  /// bytes are not decoded, and the whole call ends at the smaller of
-  /// `request.deadline` and the overall timeout (a socket still open then is
-  /// closed too).
+  /// (the `User-Agent` is the source's when it sets a non-blank one, else the
+  /// app's), the body is sent as given, the bytes are not decoded, and the
+  /// whole call ends at the smaller of `request.deadline` and the overall
+  /// timeout (a socket still open then is closed too).
   ///
   /// [onSend] is called right before every actual send, retries included, so
   /// the caller can count sends even when the call fails.
@@ -187,6 +188,10 @@ class LyricsHttp {
     final source = request.body;
     final body = source == null ? null : Uint8List.fromList(source);
     final headers = lyricsRequestHeaders(request.headers);
+    final agent = headers['user-agent'];
+    if (agent == null || agent.trim().isEmpty) {
+      headers['user-agent'] = _userAgent;
+    }
     if (!_allows(request.uri)) {
       throw const LyricsFetchException(LyricsFetchKind.blockedHost);
     }
@@ -202,7 +207,7 @@ class LyricsHttp {
     final result = await _loop.run(
       method: method,
       uri: request.uri,
-      headers: {...headers, 'user-agent': _userAgent},
+      headers: headers,
       body: body,
       decode: false,
       timeout: timeout,

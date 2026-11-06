@@ -27,9 +27,25 @@ void main() {
       });
     });
 
+    test('user-agent is kept with a lower-cased name', () {
+      expect(lyricsRequestHeaders({'User-Agent': 'Mozilla/5.0 X'}), {
+        'user-agent': 'Mozilla/5.0 X',
+        'accept': '*/*',
+      });
+    });
+
+    test('a user-agent value with CR/LF or non-ASCII is rejected', () {
+      for (final value in ['a\r\nb: c', 'a\nb', 'caf\u00e9']) {
+        expect(
+          () => lyricsRequestHeaders({'User-Agent': value}),
+          _rejected('header value'),
+          reason: value.codeUnits.toString(),
+        );
+      }
+    });
+
     test('every denied name is dropped in any case', () {
       const denied = [
-        'user-agent',
         'host',
         'connection',
         'content-length',

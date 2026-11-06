@@ -91,18 +91,41 @@ void main() {
     },
   );
 
+  test('the source\'s user-agent is sent', () async {
+    await http().send(
+      request(headers: {'User-Agent': 'Mozilla/5.0 X', 'Host': 'evil.example'}),
+    );
+    final seen = server.requests.single;
+    expect(seen.header('user-agent'), 'Mozilla/5.0 X');
+    expect(seen.header('host'), isNot('evil.example'));
+  });
+
+  test('without a user-agent the app\'s is sent, accept defaults', () async {
+    await http().send(request());
+    await http().send(request(headers: {'accept': 'text/html'}));
+    final first = server.requests[0];
+    expect(first.header('user-agent'), startsWith('Kanaru/$kanaruVersion'));
+    expect(first.header('accept'), '*/*');
+    expect(server.requests[1].header('accept'), 'text/html');
+  });
+
+  test('a blank user-agent falls back to the app\'s', () async {
+    await http().send(request(headers: {'user-agent': ''}));
+    await http().send(request(headers: {'User-Agent': '   '}));
+    for (final seen in server.requests) {
+      expect(seen.header('user-agent'), startsWith('Kanaru/$kanaruVersion'));
+    }
+  });
+
   test(
-    'user-agent is the app\'s, accept defaults, any accept is kept',
+    'a later blank user-agent wins over an earlier one: app\'s sent once',
     () async {
       await http().send(
-        request(headers: {'User-Agent': 'evil', 'Host': 'evil.example'}),
+        request(headers: {'User-Agent': 'A', 'user-agent': ''}),
       );
-      await http().send(request(headers: {'accept': 'text/html'}));
-      final first = server.requests[0];
-      expect(first.header('user-agent'), startsWith('Kanaru/$kanaruVersion'));
-      expect(first.header('accept'), '*/*');
-      expect(first.header('host'), isNot('evil.example'));
-      expect(server.requests[1].header('accept'), 'text/html');
+      final seen = server.requests.single;
+      expect(seen.headers['user-agent'], hasLength(1));
+      expect(seen.header('user-agent'), startsWith('Kanaru/$kanaruVersion'));
     },
   );
 
@@ -117,6 +140,8 @@ void main() {
       request(headers: {'x-a': 'a\r\nb: c'}),
       request(headers: {'bad name': 'x'}),
       request(headers: {'x-a': 'caf\u00e9'}),
+      request(headers: {'user-agent': 'a\r\nb: c'}),
+      request(headers: {'User-Agent': 'caf\u00e9'}),
       request(method: 'POST', body: [1, 300]),
       request(body: [1]),
       request(method: 'POST', body: List.filled(256 * 1024 + 1, 0)),

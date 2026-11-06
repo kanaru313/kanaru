@@ -66,10 +66,11 @@ class LyricsRequestRejected implements Exception {
 /// Headers the app sets itself or that would break the exchange; a source's
 /// own are dropped without an error. `accept-encoding` is one of them: the
 /// HTTP client negotiates and decodes gzip itself, and a value such as `br`
-/// would bring back a body it cannot decode.
+/// would bring back a body it cannot decode. `user-agent` is not: a source
+/// may set its own (`LyricsHttp.send` falls back to the app's when it does
+/// not).
 const _deniedHeaders = {
   'accept-encoding',
-  'user-agent',
   'host',
   'connection',
   'content-length',
@@ -96,11 +97,11 @@ bool _validValue(String value) {
 }
 
 /// The headers to send for a source's [requested] ones: names lower-case,
-/// the denied ones (`user-agent`, `host`, `accept-encoding`, `proxy-*` and the
-/// like) dropped,
-/// `accept` defaulting to `*/*`. Names that differ only in case keep the
-/// last value. Throws [LyricsRequestRejected] for a name
-/// that is not a token or a value with a control or non-ASCII character.
+/// the denied ones (`host`, `accept-encoding`, `proxy-*` and the like)
+/// dropped, `user-agent` kept as given, `accept` defaulting to `*/*`. Names
+/// that differ only in case keep the last value. Throws
+/// [LyricsRequestRejected] for a name that is not a token or a value with a
+/// control or non-ASCII character.
 Map<String, String> lyricsRequestHeaders(Map<String, String> requested) {
   final result = <String, String>{};
   for (final entry in requested.entries) {
