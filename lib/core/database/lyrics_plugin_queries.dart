@@ -135,10 +135,9 @@ extension LyricsPluginQueries on LibraryDatabase {
     });
   }
 
-  /// Points a live record at a new package version (the kind is never
-  /// written, so an update cannot change it): `package_dir`,
-  /// `version`, `api_version`, `hosts`, `config_schema`, the descriptive
-  /// fields and `updated_at` change in one statement, so a reader sees all
+  /// Points a live record at a new package version: `kind` (the caller only
+  /// switches within the translation family), `package_dir`, `version`,
+  /// `api_version`, `hosts`, `config_schema`, the descriptive fields and `updated_at` change in one statement, so a reader sees all
   /// old or all new. Config values, storage, preferences and the install
   /// source are kept. `updated_at` is [now], or one more than before if that
   /// is not later, so a guarded write from an earlier run never matches.
@@ -153,7 +152,7 @@ extension LyricsPluginQueries on LibraryDatabase {
       final changed = await customUpdate(
         'UPDATE lyrics_plugins SET name = ?, author = ?, description = ?, '
         'version = ?, api_version = ?, hosts = ?, config_schema = ?, '
-        'package_dir = ?, updated_at = MAX(?, updated_at + 1) '
+        'package_dir = ?, kind = ?, updated_at = MAX(?, updated_at + 1) '
         'WHERE install_id = ? AND removed_at IS NULL',
         variables: [
           Variable<String>(spec.name),
@@ -164,6 +163,7 @@ extension LyricsPluginQueries on LibraryDatabase {
           Variable<String>(jsonEncode(spec.hosts)),
           Variable<String>(spec.configSchema),
           Variable<String>(spec.packageDir),
+          Variable<String>(spec.kind.value),
           Variable<int>(now),
           Variable<String>(installId),
         ],

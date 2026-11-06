@@ -140,7 +140,9 @@ class LyricsPluginInstaller {
       throw const PluginUpdateRefusedException(PluginUpdateRefusal.notFromRepo);
     }
     // Before any secret is touched or any run blocked.
-    if (old.kind != package.manifest.kind) {
+    // A translate plugin may become an ai-translate one and back; lyrics and
+    // translation never swap.
+    if (!package.manifest.kind.accepts(row.kind)) {
       throw const PluginUpdateRefusedException(PluginUpdateRefusal.kindChanged);
     }
     if (package.manifest.version < old.version) {

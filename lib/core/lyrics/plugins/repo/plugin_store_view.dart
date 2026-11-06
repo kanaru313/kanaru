@@ -55,6 +55,7 @@ class PluginStoreView {
     required this.hasFileSource,
     required this.facets,
     required this.filters,
+    required this.showKindTag,
     this.available = true,
   });
 
@@ -93,8 +94,10 @@ class PluginStoreView {
   /// Rows listed, in all sections.
   int get shownCount => updates.length + installed.length + notInstalled.length;
 
-  /// Rows show their kind unless exactly one kind is picked.
-  bool get showKindTag => filters.selected(StoreFacet.kind).length != 1;
+  /// Rows show their kind when the rows that pass the filters (counted
+  /// before the search text, so tags do not flicker while typing) are of
+  /// more than one kind.
+  final bool showKindTag;
 
   /// At least one group is worth showing, so the filter button is too.
   bool get hasFilters => facets.any((g) => g.visible);
@@ -160,6 +163,10 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
   bool searched(StoreRow row) => _matches(row, query);
   bool shown(StoreRow row) =>
       searched(row) && input.filters.matches(storeRowFacetKeys(row));
+  final kinds = {
+    for (final row in [...updates, ...installed, ...notInstalled])
+      if (input.filters.matches(storeRowFacetKeys(row))) row.kind,
+  };
   final facets = computeStoreFacets(
     [...updates, ...installed, ...notInstalled],
     input.filters,
@@ -180,6 +187,7 @@ PluginStoreView buildPluginStoreView(PluginStoreInput input) {
     hasFileSource: live.any((r) => r.sourceKind == LyricsPluginSourceKind.file),
     facets: facets,
     filters: input.filters,
+    showKindTag: kinds.length > 1,
     available: input.available,
   );
 }

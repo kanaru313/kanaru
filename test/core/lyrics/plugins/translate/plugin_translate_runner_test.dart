@@ -91,10 +91,11 @@ void main() {
   Future<LyricsPluginRecord> install({
     int timeoutSec = 15,
     List<PluginConfigField> config = const [],
+    PluginKind kind = PluginKind.translate,
   }) => store.controller.installPackage(
     PluginPackage(
       manifest: PluginManifest(
-        kind: PluginKind.translate,
+        kind: kind,
         apiVersion: 1,
         name: 'Tr',
         version: 1,
@@ -140,6 +141,38 @@ void main() {
     allowed: allowed ?? () => true,
     stillWanted: stillWanted,
   );
+
+  test('an ai-translate plugin runs and reports its spec', () async {
+    // The package is read back through the manifest parser, so it must
+    // declare the standard settings.
+    const select = [PluginConfigOption(value: 'a', title: 'A')];
+    final ai = await install(
+      kind: PluginKind.aiTranslate,
+      config: const [
+        PluginConfigField(
+          key: 'model',
+          title: 'Model',
+          mode: PluginConfigMode.select,
+          options: select,
+        ),
+        PluginConfigField(
+          key: 'style',
+          title: 'Style',
+          mode: PluginConfigMode.select,
+          options: select,
+        ),
+        PluginConfigField(
+          key: 'customInstruction',
+          title: 'Instruction',
+          mode: PluginConfigMode.input,
+        ),
+      ],
+    );
+    expect(ai.kind, PluginKind.aiTranslate);
+    runtime.handlers['translate.js'] = (_, _, _) => _ok(['x', 'y']);
+    expect(await translate(id: ai.installId), hasLength(2));
+    expect((await runner.spec(ai.installId)).spec.languages, ['vi', 'en']);
+  });
 
   test(
     'an empty required field fails needsConfig, no script, no log',

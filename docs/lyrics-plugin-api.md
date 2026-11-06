@@ -1,6 +1,6 @@
 # Lyrics plugin API
 
-What a plugin script can rely on. A plugin is a package of JavaScript files in its `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Two kinds exist: a **lyrics** plugin (`search.js` and `lyrics.js`, see [Lyrics scripts](#lyrics-scripts-in-a-lookup)) and a **translate** plugin (`translate.js`, see [Translate scripts](#translate-scripts)). Sections marked *lyrics* or *translate* apply to that kind only; the rest applies to both. Architecture: [system-architecture-lyrics-plugins.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
+What a plugin script can rely on. A plugin is a package of JavaScript files in its `src/` folder; the app runs them in the Rust plugin runtime (`rust/src/plugin_runtime/`). Three types exist: a **lyrics** plugin (`search.js` and `lyrics.js`, see [Lyrics scripts](#lyrics-scripts-in-a-lookup)) and two translate types, **translate** and **ai-translate**, which share the same script (`translate.js`, see [Translate scripts](#translate-scripts)); an `ai-translate` plugin also declares three standard settings (see [`ai-translate` settings](#ai-translate-settings)). Sections marked *lyrics* or *translate* apply to that kind only (*translate* covers both translate types); the rest applies to both. Architecture: [system-architecture-lyrics-plugins.md](./system-architecture-lyrics-plugins.md#plugin-runtime).
 
 ## Data and consent
 
@@ -350,7 +350,7 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | Field | Rule |
 |---|---|
 | `metadata.apiVersion` | int. `1` is supported; greater: `needsNewerApp`; anything else: `invalidManifest` |
-| `metadata.type` | `"lyrics"` or `"translate"`, else `wrongType` (type must be lyrics or translate). The kind is fixed for a live plugin: an update with another type is refused (`kindChanged`) |
+| `metadata.type` | `"lyrics"`, `"translate"` or `"ai-translate"`, else `wrongType`. An update may switch between `translate` and `ai-translate` (the install keeps its id, config and saved translations); an update between lyrics and a translate type is refused (`kindChanged`) |
 | `metadata.name` | 1 to 80 code points after control, format (bidi, zero-width, BOM) and line-separator characters are removed and the text is trimmed |
 | `metadata.version` | int, 1 to 2147483647 |
 | `metadata.hosts` | 1 to 20 strings, trimmed, lower-cased, deduplicated; each must pass `lyricsHostProblem()` (public DNS name only: no IP, `localhost`, single label, `.local`, and the last label must start with a letter, so `127.0.0.0x1` fails). The check is by name only; names that resolve to private addresses are not blocked here (the fetcher does that at connect time, see "Cookies and private addresses"), else `badHost` with the host |
@@ -358,11 +358,11 @@ Unknown fields are ignored. Every length below counts Unicode code points, not U
 | `metadata.description` | optional, at most 500 characters (newlines kept) |
 | `metadata.languages` | optional list of language codes the plugin serves, used only by the store's Language filter. ISO 639-1 is recommended (`"vi"`, `"zh"`); 639-2 and region or script tags are accepted (`"vie"`, `"zh-Hant"`) and are normalized to ISO 639-2/T. `"*"`, `"all"` or `"any"` (any case) anywhere means global. Missing, empty, not a list, over 50 items or with no usable code is global (listed under the store's Global language, not under a specific language). Items that are not strings, are empty, are `und`, `zxx` or `mul`, or are not a 2 to 3 letter code are skipped; repeats are removed; at most 20 are kept. It never makes the package invalid and is not compared with the catalog at install. The app writes the normalized codes (`vie`) back to the installed `plugin.json` |
 | `script.search`, `script.lyrics` | lyrics plugin: both required; file names matching the name pattern above; a name not in `src/` is `missingScript` |
-| `script.translate` | translate plugin: required (and the only script entry); same rules |
-| `translate` | translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
+| `script.translate` | translate or ai-translate plugin: required (and the only script entry); same rules |
+| `translate` | translate or ai-translate plugin: required object. `languages`: 1 to 200 strings; codes must match the app's table exactly (for example `vi`, `zh-Hans`); others, and repeats, are dropped, none left is `invalidManifest` (`translate.languages`). `maxLines` int 10 to 200 (default 50), `maxChars` int 1000 to 20000 (default 4000), `timeoutSec` int 1 to 600 (default 15), clamped to 90 by the app, not refused |
 | `config` | optional object, at most 20 fields, kept in order |
 
-Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`. Common optional attributes: `subtitle` (help text under the title, at most 300 characters, newlines kept), `required` (boolean, default `false`) and `default`. Attributes that do not apply to a field's mode and format are ignored (`pattern` and `patternMessage` included), except `format`: a `format` on a `toggle`, or any `format` but `text` on a `map`, or an unknown one anywhere, is invalid (`config.<key>.format`).
+Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 characters and a `mode`. Common optional attributes: `subtitle` (help text under the title, at most 300 characters, newlines kept), `required` (boolean, default `false`) and `default`. Attributes that do not apply to a field's mode and format are ignored (`pattern` and `patternMessage` included), except `format` and `custom`: a `custom` on any field but a `select` is invalid (`config.<key>.custom`); a `format` on a `toggle`, or any `format` but `text` on a `map`, or an unknown one anywhere, is invalid (`config.<key>.format`).
 
 | mode | `format` | Extra attributes | `default` |
 |---|---|---|---|
@@ -378,7 +378,7 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 | `list` | `text` (default), `number`, `integer`, `url` | `placeholder`, `minItems`, `maxItems` | list of that item kind |
 | `map` | none (or `text`) | `maxItems` | object of string values |
 
-- `select` `options` is 1 to 50 items of `{value, title, subtitle?}`; `value` and `title` are required and values are unique. `minItems` and `maxItems` of a `multiple` select cannot exceed the number of options.
+- `select` `options` is 1 to 50 items of `{value, title, subtitle?}`; `value` and `title` are required and values are unique. Use `title` for the short name and `subtitle` for the detail; the app shows both, so do not pack the detail into the title. `custom: true` (a single `select` only, and only the `model` field of an `ai-translate` plugin; anywhere else, a multiple select included, is `config.<key>.custom`) lets `options` be empty or left out: the user adds model names of their own on the plugin's settings page, and the script still reads `config.model` as a plain string. A `model` with `custom` must be `required: true` (`config.model.required`), so an empty list reads as *needs configuration*. `minItems` and `maxItems` of a `multiple` select cannot exceed the number of options.
 - Caps: at most 20 fields; at most 50 list items, map entries and options; text values, list items, map values, URLs and secrets at most 2000 characters; `placeholder` at most 200; `maxLength` at most 2000; integers within plus or minus 9007199254740991 (the largest a script reads exactly); numbers are finite.
 - `url` accepts `https` only (scheme in any case), with a host, no user name or password (`https://@host` included), no whitespace and no control or invisible characters, because the plugin `fetch` refuses anything else. The port is not checked.
 - Map keys are 1 to 100 characters with no control or format characters and no space at either end; `__proto__` is refused; keys are case sensitive and unique. Values are strings, 0 to 2000 characters.
@@ -388,6 +388,18 @@ Each `config` key matches `^[A-Za-z0-9_]{1,40}$` and has a `title` of 1 to 80 ch
 - A default that breaks the field's own rules makes the manifest invalid (`config.<key>.default`). Defaults are typed as in the table: a number, an integer, a boolean, a list or an object where the field holds one.
 
 The user fills these in the plugin's page (*Lyrics sources* > the plugin). A script reads a value with `localConfig.getItem(key)`, as a typed value (see [`localConfig.getItem`](#localconfiggetitemkey)). An `input` field with `format: "secret"` is kept in the system keyring (or the `secrets.json` fallback, see [system-architecture.md](./system-architecture.md#6-storage-locations)), never in the database, `settings.json` or the logs; the other values are kept in the library database.
+
+### `ai-translate` settings
+
+An `ai-translate` plugin must declare these `config` fields, else the package is refused with `invalidManifest` and the detail `config.<key>`:
+
+| key | mode | meaning |
+|---|---|---|
+| `model` | `select`, `single`; at least one option unless `custom` is set | the model to call. The script reads the chosen value as a string |
+| `style` | `select`, `single`; at least one option | the translation style; its option `title` is the short summary the app shows (for example in the translation card) |
+| `customInstruction` | `input`, format `text` (or no `format`); not `multiline` or `secret` | the user's standing instruction. When a run starts the app joins it with the instruction the user wrote for the song (general first, then song, separated by a newline) and the script reads the result as `customInstruction` |
+
+Other settings (keys, temperature, thinking and so on) are free.
 
 ### `apiVersion` policy
 
@@ -485,7 +497,7 @@ A repository is one URL the user types; it serves a catalog (JSON) that lists pl
 ```
 
 - At most 1 MiB and 500 entries (more entries: `invalidCatalog`; over the size: `tooLarge`). `metadata.name` is required (1 to 80 characters).
-- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics` or `translate` (the package must declare the same type, else `catalogMismatch`). `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
+- An entry is identified by the repository URL plus `slug` (`^[a-z0-9_-]{1,64}$`, a repeated slug is dropped). `type` must be `lyrics`, `translate` or `ai-translate` (the package must declare the same type, else `catalogMismatch`). `name`, `version`, `hosts`, `author` and `description` follow the `plugin.json` rules (cleaned text, same lengths, `hosts` each through `lyricsHostProblem()`). `apiVersion` is an int of at least 1; an entry for a newer API is kept, for the store to hide and count.
 - `languages` is optional and follows the `metadata.languages` rules; a bad value never drops the entry, it means global. The store prefers the catalog value and falls back to the installed `plugin.json`. An entry that declares global (`"*"`, `"all"` or `"any"`) or no languages counts as not declared, so an installed plugin's own `plugin.json` value is used until the plugin is updated.
 - An entry that breaks a rule is dropped and counted. A non-empty `data` with no usable entry is `invalidCatalog`; an empty `data` is a valid empty catalog.
 - `path` and `icon` may be relative; they are resolved against the address the catalog was served from (after redirects) and checked against the address rules below. A bad `path` drops the entry, a bad `icon` only the icon. A fetched icon must pass the package icon rules (PNG, at most 256 x 256, at most 64 KiB) or it is dropped.

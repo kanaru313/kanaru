@@ -17,7 +17,8 @@ void main() {
       expect(PluginKind.aiTranslate.isTranslation, isTrue);
     });
 
-    test('accepts matches exact kind or any translation kind for translation family', () {
+    test('accepts matches the exact kind or any kind of the translation '
+        'family', () {
       expect(PluginKind.lyrics.accepts('lyrics'), isTrue);
       expect(PluginKind.lyrics.accepts('translate'), isFalse);
       expect(PluginKind.lyrics.accepts('ai-translate'), isFalse);

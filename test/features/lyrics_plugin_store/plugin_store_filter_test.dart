@@ -143,7 +143,7 @@ void main() {
     ) async {
       await pump(tester, initialKind: PluginKind.translate);
       expectRows(['Tr Glob', 'FileTr']);
-      expect(find.byType(PluginStoreKindTag), findsNWidgets(2));
+      expect(find.byType(PluginStoreKindTag), findsNothing);
       expect(_badge(tester), 1);
       await _openModal(tester);
       expect(_selected(tester, 'Translate'), isTrue);
@@ -152,6 +152,30 @@ void main() {
       expectRows(all);
       expect(find.byType(PluginStoreKindTag), findsNWidgets(5));
       expect(_badge(tester), isNull);
+    });
+
+    testWidgets('translate and ai-translate rows both carry a kind tag', (
+      tester,
+    ) async {
+      await pumpStore(
+        tester,
+        _page(initialKind: PluginKind.translate),
+        repos: [
+          repoOf(
+            repoA,
+            'Kho A',
+            entries: [
+              _entry('tr', 'Plain Tr', kind: PluginKind.translate),
+              _entry('ai', 'Smart Tr', kind: PluginKind.aiTranslate),
+            ],
+          ),
+        ],
+        records: const [],
+        size: const Size(1000, 1600),
+      );
+      expect(find.text('Plain Tr'), findsOneWidget);
+      expect(find.text('Smart Tr'), findsOneWidget);
+      expect(find.byType(PluginStoreKindTag), findsNWidgets(2));
     });
 
     testWidgets('picks add up and unpick back to all', (tester) async {

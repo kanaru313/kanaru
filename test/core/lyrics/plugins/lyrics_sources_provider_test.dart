@@ -321,6 +321,7 @@ void main() {
         addTearDown(env.dispose);
         await insert(env, 'plugin-tttttttttttt', PluginKind.translate);
         await insert(env, 'plugin-rrrrrrrrrrrr', PluginKind.translate);
+        await insert(env, 'plugin-aaaaaaaaaaaa', PluginKind.aiTranslate);
         await insert(env, 'plugin-llllllllllll', PluginKind.lyrics);
         await env.db.customStatement(
           "UPDATE lyrics_plugins SET removed_at = 9 "
@@ -336,7 +337,7 @@ void main() {
         final translate = container.read(translatePluginRecordsProvider);
         expect(
           [for (final r in translate.requireValue) r.installId],
-          ['plugin-tttttttttttt'],
+          ['plugin-aaaaaaaaaaaa', 'plugin-tttttttttttt'],
         );
         expect(
           [for (final e in container.read(lyricsSourcesProvider)) e.id],
@@ -344,7 +345,7 @@ void main() {
         );
         expect(
           container.read(lyricsPluginRecordsProvider).length,
-          3,
+          4,
           reason: 'the record list keeps every kind and removed ones',
         );
       },

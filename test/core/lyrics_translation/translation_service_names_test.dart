@@ -36,6 +36,13 @@ void main() {
     expect(m[_id]!.hosts, ['api.example.com']);
   });
 
+  test('an ai-translate plugin is a translation service too', () {
+    final m = infos([translateRecord(_id, kind: PluginKind.aiTranslate)]);
+
+    expect(name(m, _id), 'Plugin $_id');
+    expect(m.keys, [_id]);
+  });
+
   test('a removed record keeps its name, marked removed', () {
     final m = infos([translateRecord(_removedId, removed: true)]);
 

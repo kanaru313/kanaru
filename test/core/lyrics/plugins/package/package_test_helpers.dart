@@ -19,6 +19,26 @@ Map<String, dynamic> validManifest() => <String, dynamic>{
   'script': <String, dynamic>{'search': 'search.js', 'lyrics': 'lyrics.js'},
 };
 
+/// The `config` entries an `ai-translate` manifest must declare.
+Map<String, dynamic> aiTuneConfig() => <String, dynamic>{
+  'model': {
+    'title': 'Model',
+    'mode': 'select',
+    'options': [
+      {'value': 'fast', 'title': 'Fast'},
+      {'value': 'smart', 'title': 'Smart', 'subtitle': 'slower'},
+    ],
+  },
+  'style': {
+    'title': 'Style',
+    'mode': 'select',
+    'options': [
+      {'value': 'plain', 'title': 'Plain'},
+    ],
+  },
+  'customInstruction': {'title': 'Instruction', 'mode': 'input'},
+};
+
 /// Smallest valid PNG header: signature + IHDR for [width] x [height].
 Uint8List pngHeader(int width, int height) {
   final bytes = Uint8List(33);

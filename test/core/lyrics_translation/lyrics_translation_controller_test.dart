@@ -19,6 +19,7 @@ import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_translate_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_provider.dart';
@@ -592,7 +593,10 @@ void main() {
     group('with another service on screen', () {
       const otherId = 'plugin-bbbbbbbbbbbb';
 
-      Future<Rig> rigWithOther(FakePluginRunner plugin) async {
+      Future<Rig> rigWithOther(
+        FakePluginRunner plugin, {
+        PluginKind otherKind = PluginKind.translate,
+      }) async {
         final rig = Rig(
           db,
           plugin: plugin,
@@ -600,7 +604,7 @@ void main() {
             runner: plugin,
             records: [
               translateRecord(testTranslatePluginId),
-              translateRecord(otherId),
+              translateRecord(otherId, kind: otherKind),
             ],
           ),
         );
@@ -609,6 +613,17 @@ void main() {
         await settle(_idle);
         return rig;
       }
+
+      test('an ai-translate plugin counts as a known other service', () async {
+        final rig = await rigWithOther(
+          FakePluginRunner(),
+          otherKind: PluginKind.aiTranslate,
+        );
+        final ready = rig.state as TranslationReady;
+        expect(ready.fromOtherService, isTrue);
+        expect(ready.service.value, otherId);
+        rig.dispose();
+      });
 
       test('retranslate keeps it, then shows the selected service', () async {
         final plugin = FakePluginRunner();

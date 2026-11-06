@@ -551,9 +551,10 @@ void main() {
       'an ai-translate manifest is accepted with PluginKind.aiTranslate',
       () {
         final manifest = parse(
-          translateManifest(
-            (j) => (j['metadata'] as Map)['type'] = 'ai-translate',
-          ),
+          translateManifest((j) {
+            (j['metadata'] as Map)['type'] = 'ai-translate';
+            j['config'] = aiTuneConfig();
+          }),
         );
         expect(manifest.kind, PluginKind.aiTranslate);
         expect(manifest.translateScript, 'translate.js');

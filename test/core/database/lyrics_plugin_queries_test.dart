@@ -217,6 +217,15 @@ void main() {
       expect(row.installedAt, 100);
     });
 
+    test('writes the kind of the new package', () async {
+      await db.switchLyricsPluginPackage(
+        'plugin-a',
+        pluginSpec(kind: PluginKind.aiTranslate, version: 2),
+        now: 200,
+      );
+      expect((await db.lyricsPluginById('plugin-a'))!.kind, 'ai-translate');
+    });
+
     test('keeps config, storage and preferences', () async {
       await db.switchLyricsPluginPackage('plugin-a', pluginSpec(), now: 200);
       final data = (await db.lyricsPluginDataFor('plugin-a'))!;

@@ -350,7 +350,7 @@ void main() {
       expect(v.showKindTag, isTrue);
     });
 
-    test('one kind lists only that kind in every section', () {
+    test('one kind or the translation family lists only that family', () {
       for (final kind in PluginKind.values) {
         final v = view(
           records,
@@ -358,7 +358,8 @@ void main() {
           filters: PluginStoreFilters.initial(kind),
         );
         for (final row in [...v.updates, ...v.installed, ...v.notInstalled]) {
-          expect(row.kind, kind);
+          // A translation kind lists the whole translation family.
+          expect(row.kind?.isTranslation, kind.isTranslation);
         }
         expect(v.shownCount, 3);
         expect(v.showKindTag, isFalse);
@@ -371,6 +372,28 @@ void main() {
       expect(names(tr.updates), ['TrUp']);
       expect(names(tr.installed), ['TrFile']);
       expect(names(tr.notInstalled), ['TrNew']);
+    });
+
+    test('kind tags show only when the filtered rows mix kinds', () {
+      final ai = [
+        repo(urlA, 'Alpha Repo', [
+          entry('tr', name: 'Tr', kind: PluginKind.translate),
+          entry('ai', name: 'Ai', kind: PluginKind.aiTranslate),
+        ]),
+      ];
+      final filters = PluginStoreFilters.initial(PluginKind.translate);
+      expect(view(const [], ai, filters: filters).showKindTag, isTrue);
+      // The search text does not change it.
+      expect(
+        view(const [], ai, filters: filters, search: 'Ai').showKindTag,
+        isTrue,
+      );
+      final plain = [
+        repo(urlA, 'Alpha Repo', [
+          entry('tr', name: 'Tr', kind: PluginKind.translate),
+        ]),
+      ];
+      expect(view(const [], plain, filters: filters).showKindTag, isFalse);
     });
 
     test('a record of an unknown kind is never listed', () {

@@ -54,6 +54,7 @@ class PluginConfigField {
     this.selectFormat,
     this.listFormat,
     this.options = const [],
+    this.custom = false,
     this.placeholder,
     this.minLength,
     this.maxLength,
@@ -88,6 +89,10 @@ class PluginConfigField {
 
   /// Set for `select` fields only.
   final List<PluginConfigOption> options;
+
+  /// Set for a single `select` only: the user may add choices of their own,
+  /// so [options] may be empty.
+  final bool custom;
 
   final String? placeholder;
   final int? minLength;
@@ -126,6 +131,7 @@ class PluginConfigField {
     selectFormat: selectFormat,
     listFormat: listFormat,
     options: options,
+    custom: custom,
     placeholder: placeholder,
     minLength: minLength,
     maxLength: maxLength,
