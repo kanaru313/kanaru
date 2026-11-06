@@ -11,6 +11,7 @@ import 'lyrics_http_request.dart';
 import 'lyrics_http_retry.dart';
 import 'lyrics_http_send_loop.dart';
 import 'lyrics_provider_registry.dart';
+import 'plugin_host_patterns.dart';
 
 export 'lyrics_http_request.dart';
 
@@ -27,7 +28,9 @@ typedef LyricsHttpResponse = ({
 /// not register.
 ///
 /// GET ([get], LRCLIB) or GET and POST ([send], plugin sources), `https`
-/// only, no explicit port, no user info; a request to anything else fails
+/// only, no explicit port, no user info, to a host the [PluginHostSet] of
+/// the registered hosts allows (a plain name, or one label under a `*.`
+/// wildcard a source plugin listed); a request to anything else fails
 /// with `blockedHost` before a socket is opened. Timeouts
 /// are 10 s to connect and 20 s per send, and 30 s for the whole call with
 /// its waits (then `network`); the body is at most 4 MiB
@@ -122,7 +125,7 @@ class LyricsHttp {
     required int maxRetries,
     required this._overallTimeout,
     Duration? perSendCap = translationRequestTimeout,
-  }) : _hosts = Set.unmodifiable(hosts),
+  }) : _hosts = PluginHostSet(hosts),
        _loop = LyricsSendLoop(
          client: client,
          sleep: sleep,
@@ -132,7 +135,7 @@ class LyricsHttp {
          perSendCap: perSendCap,
        );
 
-  final Set<String> _hosts;
+  final PluginHostSet _hosts;
   final bool _strict;
   final Duration _overallTimeout;
   final LyricsSendLoop _loop;
@@ -226,7 +229,7 @@ class LyricsHttp {
   }
 
   bool _allows(Uri uri) {
-    if (uri.host.isEmpty || !_hosts.contains(uri.host)) return false;
+    if (!_hosts.allows(uri.host)) return false;
     if (!_strict) return true;
     return uri.scheme == 'https' && !uri.hasPort && uri.userInfo.isEmpty;
   }
