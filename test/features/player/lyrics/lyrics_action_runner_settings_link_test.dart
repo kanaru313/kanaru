@@ -16,6 +16,52 @@ class _OpenNowPlaying extends NowPlayingOpen {
 }
 
 void main() {
+  testWidgets('a given onOpenSettings replaces the default link action and '
+      'tellNeedsTags false skips the needs-tags snackbar', (tester) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    var opened = 0;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () =>
+                    LyricsActionRunner.snapshot(
+                      context,
+                      target: LyricsTarget.fromFields(
+                        uri: '/m/a.flac',
+                        title: null,
+                      ),
+                    ).enableAutomatic(
+                      onOpenSettings: () => opened++,
+                      tellNeedsTags: false,
+                    ),
+                child: const Text('go'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open lyrics settings'));
+    await tester.pumpAndSettle();
+
+    expect(opened, 1);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
   testWidgets('the automatic notice link closes Now Playing and opens the '
       'lyrics settings without turning anything on', (tester) async {
     final container = ProviderContainer(

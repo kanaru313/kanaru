@@ -37,17 +37,19 @@ class LyricsActionRunner {
 
   /// Captures the playing song now. [target] defaults to the library's view
   /// of the playing song, else the queue track's; [source] is the lyrics
-  /// source the user saw (`null` when the caller has none).
+  /// source the user saw (`null` when the caller has none); [messenger] shows
+  /// the snackbars (defaults to the one above [context]).
   factory LyricsActionRunner.snapshot(
     BuildContext context, {
     LyricsTarget? target,
     LyricsSourceResolution? source,
+    ScaffoldMessengerState? messenger,
   }) {
     final container = ProviderScope.containerOf(context);
     return LyricsActionRunner._(
       container,
       Navigator.of(context, rootNavigator: true),
-      ScaffoldMessenger.maybeOf(context),
+      messenger ?? ScaffoldMessenger.maybeOf(context),
       target ?? _playingTarget(container, source),
       source,
     );
@@ -152,21 +154,31 @@ class LyricsActionRunner {
 
   /// Asks for consent to look lyrics up automatically and turns it on. A
   /// song that cannot be looked up automatically (no title, artist or
-  /// length) is told so, since turning it on will not find anything for it.
-  Future<void> enableAutomatic() => guarded(() async {
+  /// length) is told so, since turning it on will not find anything for it
+  /// unless [tellNeedsTags] is `false` (the caller says it itself).
+  /// [onOpenSettings] replaces the notice's "Open lyrics settings" link
+  /// action (which closes Now Playing and opens the lyrics settings).
+  Future<void> enableAutomatic({
+    VoidCallback? onOpenSettings,
+    bool tellNeedsTags = true,
+  }) => guarded(() async {
     // Taken before the dialog opens, from the root navigator's context.
     final router = GoRouter.maybeOf(navigator.context);
     final on = await confirmOnlineLyricsNotice(
       navigator,
       container,
       auto: true,
-      onOpenSettings: () {
-        container.read(nowPlayingOpenProvider.notifier).close();
-        router?.go(settingsFocusLocation(SettingsAnchor.playbackLyrics));
-      },
+      onOpenSettings:
+          onOpenSettings ??
+          () {
+            container.read(nowPlayingOpenProvider.notifier).close();
+            router?.go(settingsFocusLocation(SettingsAnchor.playbackLyrics));
+          },
     );
     final target = this.target;
-    if (!on || target == null || target.isAutoSearchable) return;
+    if (!tellNeedsTags || !on || target == null || target.isAutoSearchable) {
+      return;
+    }
     if (!navigator.mounted) return;
     messenger?.showAppSnackBar(
       AppSnackBarKind.info,

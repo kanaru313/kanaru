@@ -8137,6 +8137,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retranslated with {service}'**
   String lyricsTranslationRetranslated(String service);
+
+  /// Title of the lyrics source modal
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics for this song'**
+  String get lyricsSourceModalTitle;
+
+  /// Tooltip of the settings button in the lyrics source modal
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics settings'**
+  String get lyricsSourceModalSettings;
+
+  /// Status line of the lyrics source modal while the sources load
+  ///
+  /// In en, this message translates to:
+  /// **'Checking lyrics sources…'**
+  String get lyricsSourceModalLoading;
+
+  /// Subtitle of the disabled 'Lyrics in the file' row
+  ///
+  /// In en, this message translates to:
+  /// **'This file has no lyrics'**
+  String get lyricsSourceRowFileNone;
+
+  /// Subtitle of the Online version row for an automatic match; detail is the source and kind
+  ///
+  /// In en, this message translates to:
+  /// **'{detail} · found automatically'**
+  String lyricsSourceRowOnlineAuto(String detail);
+
+  /// Subtitle of the disabled Online version row
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found online yet'**
+  String get lyricsSourceRowOnlineNone;
+
+  /// Row of the lyrics source modal that hides lyrics for the song
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show lyrics'**
+  String get lyricsSourceRowOff;
+
+  /// Subtitle of the Find lyrics online row; counts of enabled and disabled lyrics sources
+  ///
+  /// In en, this message translates to:
+  /// **'{on} on · {off} off'**
+  String lyricsSourceFindRowSubtitle(int on, int off);
+
+  /// Subtitle of the Find lyrics online row when every installed lyrics source is off
+  ///
+  /// In en, this message translates to:
+  /// **'All online sources are off · manage them in Lyrics sources'**
+  String get lyricsSourceFindRowAllOff;
+
+  /// Row that opens the plugin store when no lyrics plugin is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Add an online lyrics source'**
+  String get lyricsSourceAddRow;
+
+  /// Subtitle of the Add an online lyrics source row
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics plugin installed · open the plugin store'**
+  String get lyricsSourceAddRowSubtitle;
+
+  /// Row of the lyrics source modal that opens the save dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save lyrics…'**
+  String get lyricsSaveRow;
+
+  /// Subtitle of the Save lyrics row; detail is the lyrics on screen
+  ///
+  /// In en, this message translates to:
+  /// **'Showing: {detail}'**
+  String lyricsSaveRowSubtitle(String detail);
+
+  /// Status line while a lookup runs; count is the enabled sources
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics on this device · searching {count, plural, one{{count} source} other{{count} sources}}…'**
+  String lyricsSourceStatusSearching(int count);
+
+  /// Status line when no lyrics plugin is installed
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics on this device · no online source yet'**
+  String get lyricsSourceStatusNoSource;
+
+  /// Status line when every lyrics source is off
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics on this device · every online source is off'**
+  String get lyricsSourceStatusAllOff;
+
+  /// Status line when automatic lookup is off
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics on this device · automatic search is off'**
+  String get lyricsSourceStatusAutoOff;
+
+  /// Button that turns on automatic lyrics lookup
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on automatic search'**
+  String get lyricsSourceStatusTurnOnAuto;
+
+  /// Status line after a lookup found nothing; count is the enabled sources
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics found, even in {count, plural, one{{count} enabled source} other{{count} enabled sources}}'**
+  String lyricsSourceStatusNotFound(int count);
+
+  /// Status line after a failed lookup
+  ///
+  /// In en, this message translates to:
+  /// **'The last search failed'**
+  String get lyricsSourceStatusFailed;
+
+  /// Bottom bar text for lyrics Kanaru matched by itself
+  ///
+  /// In en, this message translates to:
+  /// **'Found automatically'**
+  String get lyricsSourceBarAuto;
+
+  /// Bottom bar text for lyrics the user kept
+  ///
+  /// In en, this message translates to:
+  /// **'Using the kept version'**
+  String get lyricsSourceBarKept;
 }
 
 class _AppLocalizationsDelegate
