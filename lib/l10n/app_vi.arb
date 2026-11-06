@@ -2118,5 +2118,12 @@
   "lyricsTranslationModalPluginsLoading": "Đang tải plugin dịch…",
   "lyricsTranslationModalTranslatedBy": "Dịch bởi {service}",
   "lyricsTranslationModalDisplayUnder": "Dưới dòng",
-  "lyricsTranslationModalDisplayReplace": "Thay dòng"
+  "lyricsTranslationModalDisplayReplace": "Thay dòng",
+  "lyricsTranslationModalRetranslating": "Đang dịch lại…",
+  "lyricsTranslationModalRefreshingNote": "Đang dịch lại, bản cũ vẫn hiện",
+  "lyricsTranslationModalOtherVersion": "Bản có sẵn của {service}",
+  "lyricsTranslationModalShowingOther": "Đang hiện bản của {service}",
+  "lyricsTranslationModalTranslateWith": "Dịch bằng {service}",
+  "lyricsTranslationModalServiceError": "{service} báo lỗi",
+  "lyricsTranslationRetranslated": "Đã dịch lại bằng {service}"
 }

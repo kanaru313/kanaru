@@ -5312,4 +5312,36 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationModalDisplayReplace => 'Thay dòng';
+
+  @override
+  String get lyricsTranslationModalRetranslating => 'Đang dịch lại…';
+
+  @override
+  String get lyricsTranslationModalRefreshingNote =>
+      'Đang dịch lại, bản cũ vẫn hiện';
+
+  @override
+  String lyricsTranslationModalOtherVersion(String service) {
+    return 'Bản có sẵn của $service';
+  }
+
+  @override
+  String lyricsTranslationModalShowingOther(String service) {
+    return 'Đang hiện bản của $service';
+  }
+
+  @override
+  String lyricsTranslationModalTranslateWith(String service) {
+    return 'Dịch bằng $service';
+  }
+
+  @override
+  String lyricsTranslationModalServiceError(String service) {
+    return '$service báo lỗi';
+  }
+
+  @override
+  String lyricsTranslationRetranslated(String service) {
+    return 'Đã dịch lại bằng $service';
+  }
 }

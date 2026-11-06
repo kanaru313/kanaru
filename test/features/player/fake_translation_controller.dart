@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -28,7 +30,7 @@ class FakeTranslationController extends LyricsTranslationController {
   FakeTranslationController(this.scripted, {this.followSettings = false})
     : super('en');
 
-  final LyricsTranslationState scripted;
+  LyricsTranslationState scripted;
   final bool followSettings;
 
   int retranslateCalls = 0;
@@ -37,8 +39,19 @@ class FakeTranslationController extends LyricsTranslationController {
   int dismissFailureCalls = 0;
   final songTargets = <String?>[];
 
+  /// Optional completer returned by [retranslate]; when `null`, [retranslate]
+  /// completes immediately with `null`.
+  Completer<TranslationJobStatus?>? retranslateCompleter;
+
+  /// Runs inside [retranslate] before it returns, so a test can observe the
+  /// state of the world at call time.
+  VoidCallback? onRetranslate;
+
+  int get dismissRetranslateFailureCalls => dismissFailureCalls;
+
   @override
   LyricsTranslationState build() {
+    ref.keepAlive();
     if (!followSettings) return scripted;
     final on = ref.watch(
       settingsProvider.select(
@@ -50,12 +63,16 @@ class FakeTranslationController extends LyricsTranslationController {
   }
 
   /// Moves to [next], as a real state change would.
-  void emit(LyricsTranslationState next) => state = next;
+  void emit(LyricsTranslationState next) {
+    scripted = next;
+    state = next;
+  }
 
   @override
-  Future<TranslationJobStatus?> retranslate() async {
+  Future<TranslationJobStatus?> retranslate() {
     retranslateCalls++;
-    return null;
+    onRetranslate?.call();
+    return retranslateCompleter?.future ?? Future.value(null);
   }
 
   @override

@@ -5655,5 +5655,58 @@
   "lyricsTranslationModalDisplayReplace": "Replace line",
   "@lyricsTranslationModalDisplayReplace": {
     "description": "Compact segment label in the translation modal preview card: show translation as the main line"
+  },
+  "lyricsTranslationModalRetranslating": "Retranslating…",
+  "@lyricsTranslationModalRetranslating": {
+    "description": "Status line in the translation modal while a forced retranslate runs in the background"
+  },
+  "lyricsTranslationModalRefreshingNote": "Retranslating; the old version stays",
+  "@lyricsTranslationModalRefreshingNote": {
+    "description": "Provenance line in the translation modal preview card while a retranslate runs and the older version remains shown"
+  },
+  "lyricsTranslationModalOtherVersion": "Saved version from {service}",
+  "@lyricsTranslationModalOtherVersion": {
+    "description": "Provenance line in the translation modal preview card when the shown translation came from another plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalShowingOther": "Showing the version from {service}",
+  "@lyricsTranslationModalShowingOther": {
+    "description": "Bottom action bar label in the translation modal when the shown translation came from another plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalTranslateWith": "Translate with {service}",
+  "@lyricsTranslationModalTranslateWith": {
+    "description": "Bottom action bar button in the translation modal that translates with the currently selected plugin",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalServiceError": "{service} reported an error",
+  "@lyricsTranslationModalServiceError": {
+    "description": "Title of the failure block in the translation modal naming the plugin that failed",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationRetranslated": "Retranslated with {service}",
+  "@lyricsTranslationRetranslated": {
+    "description": "Success snackbar shown after a background retranslate finishes and saves",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
   }
 }

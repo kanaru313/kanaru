@@ -9,30 +9,10 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/translation_plugin_routes.dart';
 import '../../now_playing/now_playing_open_provider.dart';
 import 'lyrics_translation_labels.dart';
+import 'translation_failure_actions.dart';
 
 /// Widest the banner grows.
 const _bannerMaxWidth = 520.0;
-
-/// Whether the failure is about the service key, which Retry cannot fix.
-bool _isKeyError(TranslationFailureKind kind) =>
-    kind == TranslationFailureKind.noKey ||
-    kind == TranslationFailureKind.badKey;
-
-/// Whether the plugin's settings page can fix the failure: its key is
-/// missing, rejected, or cannot be read from a locked key store, or a
-/// required setting is empty.
-bool _opensPluginSettings(TranslationFailureKind kind) =>
-    _isKeyError(kind) ||
-    kind == TranslationFailureKind.keyStoreLocked ||
-    kind == TranslationFailureKind.needsConfig;
-
-/// Whether trying again may help. Too-long lyrics and an unsupported
-/// language fail the same way every time.
-bool _canRetry(TranslationFailureKind kind) =>
-    !_isKeyError(kind) &&
-    kind != TranslationFailureKind.needsConfig &&
-    kind != TranslationFailureKind.tooLong &&
-    kind != TranslationFailureKind.unsupportedLanguage;
 
 /// Small banner at the top of the lyrics after a failed translation: why, and
 /// the way out: open the settings or, where it can help, retry. The
@@ -78,7 +58,7 @@ class LyricsTranslationBanner extends ConsumerWidget {
         ? '${l10n.lyricsTranslationRetranslateFailed}\n$reason'
         : reason;
     final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-    final opensSettings = _opensPluginSettings(kind);
+    final opensSettings = failureOpensPluginSettings(kind);
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
@@ -113,7 +93,7 @@ class LyricsTranslationBanner extends ConsumerWidget {
                                   : l10n.lyricsTranslationBannerOpenPlugin,
                             ),
                           ),
-                        if (_canRetry(kind))
+                        if (failureCanRetry(kind))
                           TextButton(
                             onPressed: keepsOld
                                 ? controller.retranslate

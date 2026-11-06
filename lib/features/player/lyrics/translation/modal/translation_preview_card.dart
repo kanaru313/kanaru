@@ -7,6 +7,7 @@ import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
+import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../lyrics_translation_labels.dart';
@@ -18,12 +19,17 @@ const Duration _provenanceMarqueeDelay = Duration(milliseconds: 300);
 /// Preview card under the translation modal header: a caption row with the
 /// "PREVIEW" label and, while translation is on, a compact
 /// [SegmentedButton] switching between `underLine` and `replace`; the current
-/// lyric line drawn by [TranslationPreviewLine]; and the service credit line
-/// when a translation is ready.
+/// lyric line drawn by [TranslationPreviewLine]; and the provenance line when
+/// a translation is ready.
 class TranslationPreviewCard extends ConsumerWidget {
-  const TranslationPreviewCard({super.key, required this.state});
+  const TranslationPreviewCard({
+    super.key,
+    required this.state,
+    this.onRetranslate,
+  });
 
   final LyricsTranslationState state;
+  final VoidCallback? onRetranslate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,12 +46,6 @@ class TranslationPreviewCard extends ConsumerWidget {
         prefs.show && (effective == null || !needsNoticeFor(prefs, effective));
     final active = (switchOn && !noPlugins) || translationIsActive(state);
     final plugins = ref.watch(translationPluginInfosProvider);
-
-    String? credit;
-    if (state case TranslationReady(:final service) when active) {
-      final name = translationServiceName(l10n, plugins, service);
-      credit = l10n.lyricsTranslationModalTranslatedBy(name);
-    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -108,22 +108,88 @@ class TranslationPreviewCard extends ConsumerWidget {
                 display: prefs.display,
                 showTranslation: active,
               ),
-              if (credit != null)
+              if (state
+                  case TranslationReady(
+                    :final service,
+                    :final fromOtherService,
+                    :final refreshing,
+                  )
+                  when active)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Center(
-                    child: MarqueeText(
-                      text: credit,
-                      startDelay: _provenanceMarqueeDelay,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.outline,
-                      ),
-                    ),
+                  child: _ProvenanceRow(
+                    serviceName: translationServiceName(l10n, plugins, service),
+                    fromOtherService: fromOtherService,
+                    refreshing: refreshing,
+                    onRetranslate: onRetranslate,
                   ),
                 ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProvenanceRow extends StatelessWidget {
+  const _ProvenanceRow({
+    required this.serviceName,
+    required this.fromOtherService,
+    required this.refreshing,
+    required this.onRetranslate,
+  });
+
+  final String serviceName;
+  final bool fromOtherService;
+  final bool refreshing;
+  final VoidCallback? onRetranslate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final textStyle = theme.textTheme.bodySmall?.copyWith(
+      color: colors.outline,
+    );
+    final text = refreshing
+        ? l10n.lyricsTranslationModalRefreshingNote
+        : fromOtherService
+        ? l10n.lyricsTranslationModalOtherVersion(serviceName)
+        : l10n.lyricsTranslationModalTranslatedBy(serviceName);
+
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (refreshing) ...[
+            const SizedBox.square(
+              dimension: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: MarqueeText(
+              text: text,
+              startDelay: _provenanceMarqueeDelay,
+              style: textStyle,
+            ),
+          ),
+          if (!refreshing && !fromOtherService) ...[
+            const SizedBox(width: 6),
+            IconButton(
+              tooltip: l10n.lyricsTranslationRetranslate,
+              icon: const Icon(AppIcons.refresh, size: 18),
+              color: colors.outline,
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+              onPressed: onRetranslate,
+            ),
+          ],
+        ],
       ),
     );
   }

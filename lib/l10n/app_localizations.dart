@@ -8179,6 +8179,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Replace line'**
   String get lyricsTranslationModalDisplayReplace;
+
+  /// Status line in the translation modal while a forced retranslate runs in the background
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslating…'**
+  String get lyricsTranslationModalRetranslating;
+
+  /// Provenance line in the translation modal preview card while a retranslate runs and the older version remains shown
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslating; the old version stays'**
+  String get lyricsTranslationModalRefreshingNote;
+
+  /// Provenance line in the translation modal preview card when the shown translation came from another plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Saved version from {service}'**
+  String lyricsTranslationModalOtherVersion(String service);
+
+  /// Bottom action bar label in the translation modal when the shown translation came from another plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the version from {service}'**
+  String lyricsTranslationModalShowingOther(String service);
+
+  /// Bottom action bar button in the translation modal that translates with the currently selected plugin
+  ///
+  /// In en, this message translates to:
+  /// **'Translate with {service}'**
+  String lyricsTranslationModalTranslateWith(String service);
+
+  /// Title of the failure block in the translation modal naming the plugin that failed
+  ///
+  /// In en, this message translates to:
+  /// **'{service} reported an error'**
+  String lyricsTranslationModalServiceError(String service);
+
+  /// Success snackbar shown after a background retranslate finishes and saves
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslated with {service}'**
+  String lyricsTranslationRetranslated(String service);
 }
 
 class _AppLocalizationsDelegate

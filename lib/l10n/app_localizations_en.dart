@@ -5639,4 +5639,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsTranslationModalDisplayReplace => 'Replace line';
+
+  @override
+  String get lyricsTranslationModalRetranslating => 'Retranslating…';
+
+  @override
+  String get lyricsTranslationModalRefreshingNote =>
+      'Retranslating; the old version stays';
+
+  @override
+  String lyricsTranslationModalOtherVersion(String service) {
+    return 'Saved version from $service';
+  }
+
+  @override
+  String lyricsTranslationModalShowingOther(String service) {
+    return 'Showing the version from $service';
+  }
+
+  @override
+  String lyricsTranslationModalTranslateWith(String service) {
+    return 'Translate with $service';
+  }
+
+  @override
+  String lyricsTranslationModalServiceError(String service) {
+    return '$service reported an error';
+  }
+
+  @override
+  String lyricsTranslationRetranslated(String service) {
+    return 'Retranslated with $service';
+  }
 }
