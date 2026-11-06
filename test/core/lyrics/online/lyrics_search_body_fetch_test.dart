@@ -391,4 +391,41 @@ void main() {
       expect(state().selection!.hasBody, isTrue);
     });
   });
+
+  group('disabled source', () {
+    late BodylessLyricsProvider off;
+
+    setUp(() async {
+      off = BodylessLyricsProvider(id: 'off');
+      h = await createHarness(
+        [LyricsProviderRegistration(fake)],
+        client: client,
+        overrides: [
+          disabledLyricsProvidersProvider.overrideWithValue([
+            LyricsProviderRegistration(off),
+          ]),
+        ],
+      );
+      h.container.listen(lyricsSearchControllerProvider(fakeTarget), (_, _) {});
+      off.searchResult = [fakeCandidate(providerId: 'off', body: null)];
+      off.bodies['1'] = _words;
+    });
+
+    test('the body of an on-demand result is fetched', () async {
+      await controller().search('artist song');
+      await controller().searchDisabled();
+
+      expect(off.fetched, ['1']);
+      expect(state().selection!.candidate.providerId, 'off');
+      expect(state().selection!.hasBody, isTrue);
+    });
+
+    test('a disabled source that was not searched is not asked', () async {
+      await controller().search('artist song');
+      await controller().searchDisabled(ids: {'nothing'});
+
+      expect(off.searchCalls, 0);
+      expect(off.fetched, isEmpty);
+    });
+  });
 }

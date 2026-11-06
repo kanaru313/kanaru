@@ -26,10 +26,13 @@ mixin _SearchBodyFetch on Notifier<LyricsSearchState> {
       if (_autoFetches >= maxLookupFetches) return;
       _autoFetches++;
     }
-    final registration = ref
-        .read(lyricsProvidersProvider)
-        .where((r) => r.id == candidate.providerId)
-        .firstOrNull;
+    final registration = searchRegistrations(
+      enabled: ref.read(lyricsProvidersProvider),
+      disabled: state.onDemand.isEmpty
+          ? const []
+          : ref.read(disabledLyricsProvidersProvider),
+      state: state,
+    ).where((r) => r.id == candidate.providerId).firstOrNull;
     _setFetch(candidate, const BodyFetchState(BodyFetchPhase.loading));
     LyricsBody? body;
     try {

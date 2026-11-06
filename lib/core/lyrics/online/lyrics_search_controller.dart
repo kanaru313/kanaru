@@ -20,6 +20,8 @@ import 'online_lyrics_http_factory.dart';
 export 'lyrics_search_state.dart';
 
 part 'lyrics_search_body_fetch.dart';
+part 'lyrics_search_disabled_sources.dart';
+part 'lyrics_search_ranking.dart';
 
 final _log = Logger('lyrics_search');
 
@@ -35,12 +37,13 @@ final _log = Logger('lyrics_search');
 /// selected; selecting it fetches them, and [LyricsSearchState.bodyFetches]
 /// tells whether that is running or failed.
 class LyricsSearchController extends Notifier<LyricsSearchState>
-    with _SearchBodyFetch {
+    with _SearchBodyFetch, _SearchDisabledSources, _SearchRanking {
   LyricsSearchController(this.target);
 
   @override
   final LyricsTarget target;
 
+  @override
   int _generation = 0;
   @override
   final _raw = <String, List<LyricsCandidate>>{};
@@ -49,18 +52,19 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
   @override
   Set<String> _rejectedHashes = const {};
 
-  // Results whose lyrics were fetched and the provider has none.
   @override
   final _bodyMissing = <({String providerId, String remoteId})>{};
 
-  // The selection was made by the search, not by a click.
   @override
   bool _autoSelected = false;
 
-  // Automatic body fetches made for the current search; capped so a list of
-  // results without lyrics does not turn into a run of requests.
   @override
   int _autoFetches = 0;
+
+  // The load of the rejected results of this search, shared with
+  // searchDisabled so it never ranks before they are known.
+  @override
+  Future<void>? _rejectsLoad;
 
   @override
   LyricsSearchState build() =>
@@ -81,6 +85,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
     _bodyMissing.clear();
     _autoSelected = false;
     _autoFetches = 0;
+    // A new search drops the on-demand sources of the old one.
     state = LyricsSearchState(
       query: query,
       byProvider: {
@@ -88,7 +93,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
           r.id: const ProviderSearchState(ProviderSearchPhase.searching),
       },
     );
-    await _loadRejected();
+    await (_rejectsLoad = _loadRejected());
     if (!_current(generation)) return;
     await Future.wait([
       for (final r in registrations) _searchOne(r, query, generation),
@@ -112,24 +117,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
   @override
   bool _current(int generation) => ref.mounted && generation == _generation;
 
-  Future<void> _loadRejected() async {
-    try {
-      final matches = await ref
-          .read(libraryDatabaseProvider)
-          ?.rejectedMatches(target.cacheKey);
-      _rejected = {
-        for (final (providerId, remoteId)
-            in matches?.ids ?? const <(String, String)>{})
-          (providerId: providerId, remoteId: remoteId),
-      };
-      _rejectedHashes = matches?.hashes ?? const <String>{};
-    } on Object catch (e) {
-      _log.warning('could not read rejected lyrics: ${e.runtimeType}');
-      _rejected = const {};
-      _rejectedHashes = const {};
-    }
-  }
-
+  @override
   Future<void> _searchOne(
     LyricsProviderRegistration registration,
     String text,
@@ -161,7 +149,7 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
     if (!_current(generation)) return;
     _raw[registration.id] = found;
     final previous = state.selection?.candidate.ref;
-    final results = _rank();
+    final results = _rank(keep: _autoSelected ? null : previous);
     var selected = previous == null
         ? -1
         : results.indexWhere((r) => r.candidate.ref == previous);
@@ -178,24 +166,6 @@ class LyricsSearchController extends Notifier<LyricsSearchState>
     if (!kept && selected >= 0) {
       await _ensureBody(results[selected], generation);
     }
-  }
-
-  List<RankedCandidate> _rank() {
-    final ranked = rankCandidates(
-      target.query,
-      [for (final list in _raw.values) ...list],
-      rejected: _rejected,
-      rejectedHashes: _rejectedHashes,
-      keepRejected: true,
-    );
-    return [
-      for (final m in ranked.take(maxSearchResults))
-        RankedCandidate(
-          m.candidate,
-          m,
-          bodyMissing: _bodyMissing.contains(m.candidate.ref),
-        ),
-    ];
   }
 }
 

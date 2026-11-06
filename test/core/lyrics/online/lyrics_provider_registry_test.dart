@@ -1,8 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/library_startup.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics/plugins/plugin_log_paths.dart';
+import 'package:kanaru/core/plugin_runtime/plugin_runtime_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_http.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 
+import '../plugins/plugin_provider_env.dart';
 import 'support/http_test_lyrics_provider.dart';
 
 class _Stub implements LyricsProvider {
@@ -109,5 +116,41 @@ void main() {
     stub.hosts = ['evil.example.com'];
     expect(r.hosts, ['api.example.com']);
     expect(() => r.hosts.add('a.b.com'), throwsUnsupportedError);
+  });
+
+  test('enabled and disabled sources are split, in order', () async {
+    final env = await PluginProviderEnv.create();
+    addTearDown(env.dispose);
+    final a = await env.install(name: 'Alpha');
+    final b = await env.install(name: 'Beta');
+    final entries = [
+      LyricsSourceEntry(id: a.installId, enabled: true, position: 0, record: a),
+      LyricsSourceEntry(
+        id: b.installId,
+        enabled: false,
+        position: 1,
+        record: b,
+      ),
+    ];
+    final container = ProviderContainer(
+      overrides: [
+        libraryDatabaseProvider.overrideWithValue(env.db),
+        lyricsPluginDataDirectoryProvider.overrideWithValue(
+          env.store.dataDir.path,
+        ),
+        pluginRuntimeProvider.overrideWithValue(env.runtime),
+        lyricsPluginsControllerProvider.overrideWithValue(env.controller),
+        lyricsSourcesProvider.overrideWithValue(entries),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(container.read(lyricsProvidersProvider).map((r) => r.id), [
+      a.installId,
+    ]);
+    expect(container.read(disabledLyricsProvidersProvider).map((r) => r.id), [
+      b.installId,
+    ]);
+    expect(registerLyricsSourceEntries(entries, null), isEmpty);
   });
 }
