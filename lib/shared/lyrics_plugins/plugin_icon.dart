@@ -34,6 +34,7 @@ class PluginIcon extends ConsumerWidget {
     required this.record,
     this.size = 40,
     this.fallback = pluginDefaultIcon,
+    this.letterOf,
   });
 
   /// The plugin; null draws [fallback] (used for the built-in source).
@@ -41,17 +42,38 @@ class PluginIcon extends ConsumerWidget {
   final double size;
   final IconData fallback;
 
+  /// A name whose first letter replaces [fallback] when the plugin is null or
+  /// removed.
+  final String? letterOf;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
-    final placeholder = ColoredBox(
-      color: colors.secondaryContainer,
-      child: Icon(
-        fallback,
-        size: size * 0.55,
-        color: colors.onSecondaryContainer,
-      ),
-    );
+    final letter = letterOf == null || letterOf!.isEmpty
+        ? null
+        : letterOf!.characters.first.toUpperCase();
+    final useLetter = letter != null && (record == null || record!.isRemoved);
+    final placeholder = useLetter
+        ? ColoredBox(
+            color: colors.surfaceContainerHighest,
+            child: Center(
+              child: Text(
+                letter,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontSize: size * 0.5,
+                ),
+              ),
+            ),
+          )
+        : ColoredBox(
+            color: colors.secondaryContainer,
+            child: Icon(
+              fallback,
+              size: size * 0.55,
+              color: colors.onSecondaryContainer,
+            ),
+          );
     final path = record == null
         ? null
         : pluginIconPath(ref.watch(lyricsPluginDataDirectoryProvider), record!);
