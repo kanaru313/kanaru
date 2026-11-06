@@ -5264,4 +5264,52 @@ class AppLocalizationsVi extends AppLocalizations {
   String selectionPickerNoMatch(String query) {
     return 'Không có mục nào khớp «$query»';
   }
+
+  @override
+  String get lyricsTranslationModalPreview => 'Xem trước';
+
+  @override
+  String get lyricsTranslationModalSection => 'Bản dịch';
+
+  @override
+  String lyricsTranslationModalSourceDetected(String language) {
+    return '$language · tự nhận';
+  }
+
+  @override
+  String get lyricsTranslationModalSourceAuto => 'Tự nhận';
+
+  @override
+  String get lyricsTranslationModalTargetTitle => 'Dịch sang';
+
+  @override
+  String get lyricsTranslationModalServiceTitle => 'Dịch vụ dịch';
+
+  @override
+  String get lyricsTranslationModalGetPlugins => 'Tải thêm plugin dịch';
+
+  @override
+  String get lyricsTranslationModalCacheFirst =>
+      'Bản dịch đã có trong máy vẫn được dùng trước.';
+
+  @override
+  String get lyricsTranslationModalNoPluginsTitle => 'Chưa có plugin dịch';
+
+  @override
+  String get lyricsTranslationModalServiceUnset =>
+      'Lời chỉ được gửi sau khi bạn chọn';
+
+  @override
+  String get lyricsTranslationModalPluginsLoading => 'Đang tải plugin dịch…';
+
+  @override
+  String lyricsTranslationModalTranslatedBy(String service) {
+    return 'Dịch bởi $service';
+  }
+
+  @override
+  String get lyricsTranslationModalDisplayUnder => 'Dưới dòng';
+
+  @override
+  String get lyricsTranslationModalDisplayReplace => 'Thay dòng';
 }

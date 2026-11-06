@@ -8095,6 +8095,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing matches “{query}”'**
   String selectionPickerNoMatch(String query);
+
+  /// Caption above the current lyric line preview card in the translation modal
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get lyricsTranslationModalPreview;
+
+  /// Section heading for the translation controls in the translation modal
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get lyricsTranslationModalSection;
+
+  /// Read-only source language label when the lyrics language has been detected
+  ///
+  /// In en, this message translates to:
+  /// **'{language} · detected'**
+  String lyricsTranslationModalSourceDetected(String language);
+
+  /// Read-only source language label before a source language is detected
+  ///
+  /// In en, this message translates to:
+  /// **'Detected automatically'**
+  String get lyricsTranslationModalSourceAuto;
+
+  /// Title of the child modal that picks the target translation language
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to'**
+  String get lyricsTranslationModalTargetTitle;
+
+  /// Title of the child modal that picks the translation service
+  ///
+  /// In en, this message translates to:
+  /// **'Translation service'**
+  String get lyricsTranslationModalServiceTitle;
+
+  /// Footer row in the translation service picker that opens the plugin store
+  ///
+  /// In en, this message translates to:
+  /// **'Get more translation plugins'**
+  String get lyricsTranslationModalGetPlugins;
+
+  /// Hint at the bottom of the translation service picker
+  ///
+  /// In en, this message translates to:
+  /// **'Translations saved on this device are used first.'**
+  String get lyricsTranslationModalCacheFirst;
+
+  /// Title of the empty-state card in the translation modal when no translate plugin is installed
+  ///
+  /// In en, this message translates to:
+  /// **'No translation plugin'**
+  String get lyricsTranslationModalNoPluginsTitle;
+
+  /// Subtitle of the service row when no translation service is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are sent only after you choose'**
+  String get lyricsTranslationModalServiceUnset;
+
+  /// Subtitle of the service row while translation plugin records are still loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading translation plugins…'**
+  String get lyricsTranslationModalPluginsLoading;
+
+  /// Credit line under the preview card naming the service that produced the translation
+  ///
+  /// In en, this message translates to:
+  /// **'Translated by {service}'**
+  String lyricsTranslationModalTranslatedBy(String service);
+
+  /// Compact segment label in the translation modal preview card: show translation below the original line
+  ///
+  /// In en, this message translates to:
+  /// **'Under line'**
+  String get lyricsTranslationModalDisplayUnder;
+
+  /// Compact segment label in the translation modal preview card: show translation as the main line
+  ///
+  /// In en, this message translates to:
+  /// **'Replace line'**
+  String get lyricsTranslationModalDisplayReplace;
 }
 
 class _AppLocalizationsDelegate

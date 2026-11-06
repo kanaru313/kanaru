@@ -2104,5 +2104,19 @@
   "settingsFontGroupCustom": "Phông chữ tùy chỉnh",
   "settingsFontGroupCatalog": "Kho phông chữ trực tuyến",
   "selectionPickerSearchHint": "Tìm trong {count} mục",
-  "selectionPickerNoMatch": "Không có mục nào khớp «{query}»"
+  "selectionPickerNoMatch": "Không có mục nào khớp «{query}»",
+  "lyricsTranslationModalPreview": "Xem trước",
+  "lyricsTranslationModalSection": "Bản dịch",
+  "lyricsTranslationModalSourceDetected": "{language} · tự nhận",
+  "lyricsTranslationModalSourceAuto": "Tự nhận",
+  "lyricsTranslationModalTargetTitle": "Dịch sang",
+  "lyricsTranslationModalServiceTitle": "Dịch vụ dịch",
+  "lyricsTranslationModalGetPlugins": "Tải thêm plugin dịch",
+  "lyricsTranslationModalCacheFirst": "Bản dịch đã có trong máy vẫn được dùng trước.",
+  "lyricsTranslationModalNoPluginsTitle": "Chưa có plugin dịch",
+  "lyricsTranslationModalServiceUnset": "Lời chỉ được gửi sau khi bạn chọn",
+  "lyricsTranslationModalPluginsLoading": "Đang tải plugin dịch…",
+  "lyricsTranslationModalTranslatedBy": "Dịch bởi {service}",
+  "lyricsTranslationModalDisplayUnder": "Dưới dòng",
+  "lyricsTranslationModalDisplayReplace": "Thay dòng"
 }

@@ -5589,5 +5589,71 @@
         "type": "String"
       }
     }
+  },
+  "lyricsTranslationModalPreview": "Preview",
+  "@lyricsTranslationModalPreview": {
+    "description": "Caption above the current lyric line preview card in the translation modal"
+  },
+  "lyricsTranslationModalSection": "Translation",
+  "@lyricsTranslationModalSection": {
+    "description": "Section heading for the translation controls in the translation modal"
+  },
+  "lyricsTranslationModalSourceDetected": "{language} · detected",
+  "@lyricsTranslationModalSourceDetected": {
+    "description": "Read-only source language label when the lyrics language has been detected",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalSourceAuto": "Detected automatically",
+  "@lyricsTranslationModalSourceAuto": {
+    "description": "Read-only source language label before a source language is detected"
+  },
+  "lyricsTranslationModalTargetTitle": "Translate to",
+  "@lyricsTranslationModalTargetTitle": {
+    "description": "Title of the child modal that picks the target translation language"
+  },
+  "lyricsTranslationModalServiceTitle": "Translation service",
+  "@lyricsTranslationModalServiceTitle": {
+    "description": "Title of the child modal that picks the translation service"
+  },
+  "lyricsTranslationModalGetPlugins": "Get more translation plugins",
+  "@lyricsTranslationModalGetPlugins": {
+    "description": "Footer row in the translation service picker that opens the plugin store"
+  },
+  "lyricsTranslationModalCacheFirst": "Translations saved on this device are used first.",
+  "@lyricsTranslationModalCacheFirst": {
+    "description": "Hint at the bottom of the translation service picker"
+  },
+  "lyricsTranslationModalNoPluginsTitle": "No translation plugin",
+  "@lyricsTranslationModalNoPluginsTitle": {
+    "description": "Title of the empty-state card in the translation modal when no translate plugin is installed"
+  },
+  "lyricsTranslationModalServiceUnset": "Lyrics are sent only after you choose",
+  "@lyricsTranslationModalServiceUnset": {
+    "description": "Subtitle of the service row when no translation service is selected"
+  },
+  "lyricsTranslationModalPluginsLoading": "Loading translation plugins…",
+  "@lyricsTranslationModalPluginsLoading": {
+    "description": "Subtitle of the service row while translation plugin records are still loading"
+  },
+  "lyricsTranslationModalTranslatedBy": "Translated by {service}",
+  "@lyricsTranslationModalTranslatedBy": {
+    "description": "Credit line under the preview card naming the service that produced the translation",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalDisplayUnder": "Under line",
+  "@lyricsTranslationModalDisplayUnder": {
+    "description": "Compact segment label in the translation modal preview card: show translation below the original line"
+  },
+  "lyricsTranslationModalDisplayReplace": "Replace line",
+  "@lyricsTranslationModalDisplayReplace": {
+    "description": "Compact segment label in the translation modal preview card: show translation as the main line"
   }
 }

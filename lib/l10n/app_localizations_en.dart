@@ -5590,4 +5590,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String selectionPickerNoMatch(String query) {
     return 'Nothing matches “$query”';
   }
+
+  @override
+  String get lyricsTranslationModalPreview => 'Preview';
+
+  @override
+  String get lyricsTranslationModalSection => 'Translation';
+
+  @override
+  String lyricsTranslationModalSourceDetected(String language) {
+    return '$language · detected';
+  }
+
+  @override
+  String get lyricsTranslationModalSourceAuto => 'Detected automatically';
+
+  @override
+  String get lyricsTranslationModalTargetTitle => 'Translate to';
+
+  @override
+  String get lyricsTranslationModalServiceTitle => 'Translation service';
+
+  @override
+  String get lyricsTranslationModalGetPlugins => 'Get more translation plugins';
+
+  @override
+  String get lyricsTranslationModalCacheFirst =>
+      'Translations saved on this device are used first.';
+
+  @override
+  String get lyricsTranslationModalNoPluginsTitle => 'No translation plugin';
+
+  @override
+  String get lyricsTranslationModalServiceUnset =>
+      'Lyrics are sent only after you choose';
+
+  @override
+  String get lyricsTranslationModalPluginsLoading =>
+      'Loading translation plugins…';
+
+  @override
+  String lyricsTranslationModalTranslatedBy(String service) {
+    return 'Translated by $service';
+  }
+
+  @override
+  String get lyricsTranslationModalDisplayUnder => 'Under line';
+
+  @override
+  String get lyricsTranslationModalDisplayReplace => 'Replace line';
 }

@@ -56,6 +56,7 @@ class ContextModalHeader extends StatelessWidget {
     required this.leading,
     required this.lines,
     this.trailing,
+    this.trailingWidth = 48,
     this.below,
     this.onTap,
     this.tapHint,
@@ -65,6 +66,9 @@ class ContextModalHeader extends StatelessWidget {
   final Widget leading;
   final List<Widget> lines;
   final Widget? trailing;
+
+  /// Width reserved for [trailing]; defaults to 48 px for a single icon.
+  final double trailingWidth;
 
   /// Block under the row (the playlist description), inside the target.
   final Widget? below;
@@ -97,7 +101,10 @@ class ContextModalHeader extends StatelessWidget {
               ),
               if (trailing != null) ...[
                 const SizedBox(width: 8),
-                SizedBox(width: 48, child: Center(child: trailing)),
+                SizedBox(
+                  width: trailingWidth,
+                  child: Center(child: trailing),
+                ),
               ],
             ],
           ),
