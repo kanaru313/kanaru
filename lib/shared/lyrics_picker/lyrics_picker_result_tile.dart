@@ -19,6 +19,7 @@ class LyricsPickerResultTile extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.sourceName,
+    this.sourceOff = false,
   });
 
   final RankedCandidate result;
@@ -28,6 +29,9 @@ class LyricsPickerResultTile extends StatelessWidget {
   /// Display name of the source that returned the result, drawn first in the
   /// detail row; `null` leaves it out.
   final String? sourceName;
+
+  /// The source is turned off and was searched on request: the row says so.
+  final bool sourceOff;
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +81,7 @@ class LyricsPickerResultTile extends StatelessWidget {
                   style: small?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
+            if (sourceOff) _Badge(l10n.lyricsPickerSourceOff),
             if (badge != null) _Badge(badge),
             if (result.rejected)
               _Badge(

@@ -62,6 +62,7 @@ class LyricsSearchState {
     this.results = const [],
     this.selected,
     this.bodyFetches = const {},
+    this.onDemand = const {},
   });
 
   /// The text last searched, or the prefilled one before the first search.
@@ -70,7 +71,8 @@ class LyricsSearchState {
   /// Provider id to its part of the current search; empty before a search.
   final Map<String, ProviderSearchState> byProvider;
 
-  /// At most [maxSearchResults], best first.
+  /// At most [maxSearchResults], best first; one more when a hand-picked
+  /// result is kept past the limit.
   final List<RankedCandidate> results;
 
   /// Index into [results]; `null` when nothing is selected.
@@ -79,6 +81,9 @@ class LyricsSearchState {
   /// The running or failed fetches of lyrics, by result. A finished fetch
   /// is not listed: its lyrics are in the result's candidate.
   final Map<({String providerId, String remoteId}), BodyFetchState> bodyFetches;
+
+  /// Ids of the disabled sources asked in this search, on the user's request.
+  final Set<String> onDemand;
 
   bool get searching =>
       byProvider.values.any((s) => s.phase == ProviderSearchPhase.searching);
@@ -98,12 +103,14 @@ class LyricsSearchState {
     List<RankedCandidate>? results,
     required int? selected,
     Map<({String providerId, String remoteId}), BodyFetchState>? bodyFetches,
+    Set<String>? onDemand,
   }) => LyricsSearchState(
     query: query ?? this.query,
     byProvider: byProvider ?? this.byProvider,
     results: results ?? this.results,
     selected: selected,
     bodyFetches: bodyFetches ?? this.bodyFetches,
+    onDemand: onDemand ?? this.onDemand,
   );
 }
 

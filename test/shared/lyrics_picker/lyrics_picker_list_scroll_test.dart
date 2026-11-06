@@ -132,7 +132,11 @@ void main() {
 
     await tester.tap(find.text('All sources (2)'));
     await settle(tester);
-    await tester.tap(find.widgetWithText(MenuItemButton, 'Beta'));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (w) => w is SelectionRow && w.title == 'Beta' && w.trailing != null,
+      ),
+    );
     await settle(tester);
 
     expect(controller.offset, 0);

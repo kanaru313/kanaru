@@ -9,6 +9,7 @@ import 'package:kanaru/core/lyrics/online/lyrics_provider.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_provider_registry.dart';
 import 'package:kanaru/core/lyrics/online/lyrics_search_controller.dart';
 
+import 'bodyless_lyrics_provider.dart';
 import 'fake_lyrics_provider.dart';
 import 'lookup_test_harness.dart';
 
@@ -286,4 +287,172 @@ void main() {
       expect(failed.kind, LyricsFetchKind.notConsented);
     },
   );
+
+  group('disabled sources', () {
+    late BodylessLyricsProvider off;
+    late BodylessLyricsProvider off2;
+
+    setUp(() async {
+      off = BodylessLyricsProvider(id: 'off');
+      off2 = BodylessLyricsProvider(id: 'off2');
+      fake = FakeLyricsProvider();
+      h = await createHarness(
+        [LyricsProviderRegistration(fake)],
+        overrides: [
+          disabledLyricsProvidersProvider.overrideWithValue([
+            LyricsProviderRegistration(off),
+            LyricsProviderRegistration(off2),
+          ]),
+        ],
+      );
+      keepAlive();
+      off.searchResult = [fakeCandidate(providerId: 'off', remoteId: 'o')];
+      off2.searchResult = [fakeCandidate(providerId: 'off2', remoteId: 'p')];
+    });
+
+    test('a search never calls a disabled source', () async {
+      await searchWith([fakeCandidate()]);
+      expect(off.searchCalls + off2.searchCalls, 0);
+      expect(state().onDemand, isEmpty);
+    });
+
+    test('searchDisabled asks all of them once', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled();
+      await controller().searchDisabled();
+      expect(off.searchCalls, 1);
+      expect(off2.searchCalls, 1);
+      expect(state().onDemand, {'off', 'off2'});
+      expect(state().byProvider['off']!.phase, ProviderSearchPhase.done);
+      expect(state().results, hasLength(3));
+    });
+
+    test('searchDisabled by id asks only those', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled(ids: {'off2'});
+      expect(off.searchCalls, 0);
+      expect(off2.searchCalls, 1);
+      expect(state().onDemand, {'off2'});
+      await controller().searchDisabled(ids: {'off2', 'off'});
+      expect(off.searchCalls, 1);
+      expect(off2.searchCalls, 1);
+    });
+
+    test('a new search drops the on-demand sources', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled();
+      await controller().search('artist song');
+      expect(state().onDemand, isEmpty);
+      expect(state().byProvider.keys, ['fake']);
+      expect(off.searchCalls, 1);
+    });
+
+    test('a newer search drops the answers still pending', () async {
+      await searchWith([fakeCandidate()]);
+      off.holdSearches = true;
+      final first = controller().searchDisabled(ids: {'off'});
+      await pumpEventQueue();
+      await controller().search('other words');
+      off.searchGates.single.complete();
+      await first;
+      expect(
+        state().results.every((r) => r.candidate.providerId == 'fake'),
+        isTrue,
+      );
+      expect(state().onDemand, isEmpty);
+    });
+
+    test('searchDisabled without a search knows the rejected rows', () async {
+      await h.db.rejectOnlineLyrics(
+        cacheKey: fakeTarget.cacheKey,
+        providerId: 'off',
+        remoteId: 'o',
+        trackKey: fakeTarget.trackKey,
+        now: 1,
+      );
+
+      await controller().searchDisabled(ids: {'off'});
+
+      final row = state().results.singleWhere(
+        (r) => r.candidate.providerId == 'off',
+      );
+      expect(row.rejected, isTrue);
+      expect(state().selected, isNull);
+    });
+
+    test('Retry of an on-source failure asks no off source', () async {
+      fake.searchResult = StateError('boom');
+      await controller().search('artist song');
+      await controller().searchDisabled(ids: {'off'});
+      expect(off.searchCalls, 1);
+      expect(state().onDemand, {'off'});
+
+      fake.searchResult = [fakeCandidate()];
+      await controller().retrySource('fake');
+
+      expect(off.searchCalls, 1);
+      expect(off2.searchCalls, 0);
+      expect(state().onDemand, isEmpty);
+    });
+
+    test('retrySource of a failed off source asks only it', () async {
+      off.searchResult = StateError('boom');
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled();
+      expect(state().byProvider['off']!.phase, ProviderSearchPhase.error);
+      final onSearches = fake.searchCalls;
+
+      off.searchResult = [fakeCandidate(providerId: 'off', remoteId: 'o')];
+      await controller().retrySource('off');
+
+      expect(off.searchCalls, 2);
+      expect(off2.searchCalls, 1);
+      expect(fake.searchCalls, onSearches);
+      expect(state().byProvider['off']!.phase, ProviderSearchPhase.done);
+    });
+
+    test('searchDisabledFor runs the normal search for a new text', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabled(ids: {'off'});
+      expect(state().onDemand, {'off'});
+
+      await controller().searchDisabledFor('another words', ids: {'off2'});
+
+      expect(state().query, 'another words');
+      expect(state().onDemand, {'off2'});
+      expect(off2.searchCalls, 1);
+      expect(off.searchCalls, 1);
+    });
+
+    test('searchDisabledFor with a blank text does nothing', () async {
+      await searchWith([fakeCandidate()]);
+      await controller().searchDisabledFor('  ');
+      expect(off.searchCalls + off2.searchCalls, 0);
+    });
+
+    test('a hand-picked result stays selected', () async {
+      await searchWith([
+        for (var i = 0; i < maxSearchResults; i++)
+          fakeCandidate(
+            remoteId: 'f$i',
+            duration: Duration(seconds: 201 + i % 3),
+          ),
+      ]);
+      expect(state().results, hasLength(maxSearchResults));
+      await controller().select(maxSearchResults - 1);
+      final chosen = state().selection!.candidate.ref;
+      off.searchResult = [
+        for (var i = 0; i < 5; i++)
+          fakeCandidate(providerId: 'off', remoteId: 'o$i'),
+      ];
+
+      await controller().searchDisabled(ids: {'off'});
+
+      expect(state().selection!.candidate.ref, chosen);
+      expect(
+        state().results.where((r) => r.candidate.providerId == 'off'),
+        hasLength(5),
+      );
+    });
+  });
 }

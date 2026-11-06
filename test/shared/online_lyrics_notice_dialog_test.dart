@@ -135,8 +135,8 @@ void main() {
     expect(
       find.text(
         'Kanaru sends the song title, artist, album and length to the '
-        'sources you have turned on. No file names, paths or device '
-        'details.',
+        'online lyrics sources you search or turn on. No file names, paths or '
+        'device details.',
       ),
       findsOneWidget,
     );
@@ -156,7 +156,10 @@ void main() {
     await pump(tester, auto: true);
 
     expect(find.text('Find lyrics online automatically?'), findsOneWidget);
-    expect(find.textContaining('sources you have turned on'), findsOneWidget);
+    expect(
+      find.textContaining('online lyrics sources you search or turn on'),
+      findsOneWidget,
+    );
     expect(
       find.text('You can turn it off in Settings › Playback › Lyrics.'),
       findsOneWidget,

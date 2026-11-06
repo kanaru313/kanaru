@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 // providers must stay importable from here, where features and tests find them.
 import '../plugins/lyrics_sources_provider.dart';
 import '../plugins/plugin_lyrics_provider.dart';
+import '../plugins/plugin_script_runner.dart' show PluginScriptRunner;
 import '../plugins/plugin_script_runner_provider.dart';
 import 'lyrics_provider.dart';
 
@@ -102,19 +103,15 @@ List<LyricsProviderRegistration> registerLyricsProviders(
   return List.unmodifiable(registrations);
 }
 
-/// The lyrics providers that run, in the order they are tried: the enabled
-/// entries of [lyricsSourcesProvider] (the installed plugins) in the user's
-/// order. A source whose registration fails (a plugin with a bad
-/// host in a hand-edited database, say) is left out and logged. A disabled
-/// source is not here; its stored lyrics are still named by
-/// `lyricsSourceNamesProvider`.
-final lyricsProvidersProvider = Provider<List<LyricsProviderRegistration>>((
-  ref,
+/// Registers [entries] in order. An entry whose registration fails (a plugin
+/// with a bad host in a hand-edited database, say) is left out and logged
+/// with its id only: the plugin's name and hosts are its own text.
+List<LyricsProviderRegistration> registerLyricsSourceEntries(
+  Iterable<LyricsSourceEntry> entries,
+  PluginScriptRunner? runner,
 ) {
-  final runner = ref.watch(pluginScriptRunnerProvider);
   final registrations = <LyricsProviderRegistration>[];
-  for (final entry in ref.watch(lyricsSourcesProvider)) {
-    if (!entry.enabled) continue;
+  for (final entry in entries) {
     try {
       if (runner == null) {
         throw StateError('the plugin runner is not available');
@@ -123,8 +120,6 @@ final lyricsProvidersProvider = Provider<List<LyricsProviderRegistration>>((
         LyricsProviderRegistration(PluginLyricsProvider(entry.record, runner)),
       );
     } on Object catch (e) {
-      // Only the id and the reason: the plugin's name and hosts are its own
-      // text, the reason names the field.
       final reason = e is ArgumentError ? ': ${e.message}' : '';
       _log.warning(
         'Lyrics source ${entry.id} skipped (${e.runtimeType}$reason)',
@@ -132,4 +127,26 @@ final lyricsProvidersProvider = Provider<List<LyricsProviderRegistration>>((
     }
   }
   return List.unmodifiable(registrations);
-});
+}
+
+/// The lyrics providers that run, in the order they are tried: the enabled
+/// entries of [lyricsSourcesProvider] (the installed plugins) in the user's
+/// order. A disabled source is not here; its stored lyrics are still named by
+/// `lyricsSourceNamesProvider`, and the manual search asks it only on demand
+/// (see [disabledLyricsProvidersProvider]).
+final lyricsProvidersProvider = Provider<List<LyricsProviderRegistration>>(
+  (ref) => registerLyricsSourceEntries(
+    ref.watch(lyricsSourcesProvider).where((e) => e.enabled),
+    ref.watch(pluginScriptRunnerProvider),
+  ),
+);
+
+/// The disabled sources, in the same order. Automatic lookups never use
+/// them; only an explicit request in the manual search does.
+final disabledLyricsProvidersProvider =
+    Provider<List<LyricsProviderRegistration>>(
+      (ref) => registerLyricsSourceEntries(
+        ref.watch(lyricsSourcesProvider).where((e) => !e.enabled),
+        ref.watch(pluginScriptRunnerProvider),
+      ),
+    );

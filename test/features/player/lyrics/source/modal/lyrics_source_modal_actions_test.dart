@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/shared/lyrics_picker/lyrics_picker_dialog.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/shared/lyrics_source_routes.dart';
@@ -27,20 +28,27 @@ void main() {
     expect(find.text('1 on · 1 off'), findsOneWidget);
   });
 
-  testWidgets('all off: Find row opens Lyrics sources', (tester) async {
-    final h = await pumpSourceModal(
+  testWidgets('all off: Find row still opens the picker', (tester) async {
+    await pumpSourceModal(
       tester,
       none,
+      manualConsent: true,
       records: [modalRecord('plugin-a', 'A')],
       disabled: {'plugin-a'},
     );
     expect(
-      find.text('All online sources are off · manage them in Lyrics sources'),
+      find.text('All sources are off (1) · searched only when you ask'),
       findsOneWidget,
     );
     await tester.tap(find.text('Find lyrics online…'));
-    await tester.pumpAndSettle();
-    expect(h.location, lyricsSourcesRoute);
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(find.byType(LyricsPickerDialog), findsOneWidget);
+    expect(find.text('Lyrics for this song'), findsOneWidget);
   });
 
   testWidgets('Save row opens the child modal and saving runs the flow', (

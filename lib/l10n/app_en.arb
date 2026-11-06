@@ -3010,7 +3010,7 @@
   "@onlineLyricsNoticeManualTitle": {
     "description": "Title of the dialog asking to search the enabled online lyrics sources"
   },
-  "onlineLyricsNoticeSourcesBody": "Kanaru sends the song title, artist, album and length to the sources you have turned on. No file names, paths or device details.",
+  "onlineLyricsNoticeSourcesBody": "Kanaru sends the song title, artist, album and length to the online lyrics sources you search or turn on. No file names, paths or device details.",
   "@onlineLyricsNoticeSourcesBody": {
     "description": "Body of the online lyrics notice dialog; one consent covers every enabled source"
   },
@@ -3126,6 +3126,46 @@
   "lyricsPickerNoSource": "No online lyrics source is on.",
   "@lyricsPickerNoSource": {
     "description": "Results pane text when no online lyrics source is turned on, so nothing can be searched"
+  },
+  "lyricsPickerNoneOn": "No source is on",
+  "@lyricsPickerNoneOn": {
+    "description": "List area text when every lyrics source is off but some can be searched on request"
+  },
+  "lyricsPickerSearchDisabled": "{count, plural, =1{Search in 1 disabled source} other{Search in {count} disabled sources}}",
+  "@lyricsPickerSearchDisabled": {
+    "description": "Button that searches every off lyrics source for this song, only this once",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "lyricsPickerMoreOff": "{count, plural, =1{Didn't find the right lyrics? 1 source is off} other{Didn't find the right lyrics? {count} sources are off}}",
+  "@lyricsPickerMoreOff": {
+    "description": "Title of the card at the end of the results that offers the off lyrics sources",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "lyricsPickerSearchSourceHosts": "{name} ({hosts})",
+  "@lyricsPickerSearchSourceHosts": {
+    "description": "One off source with the hosts a search would contact, in the card and the Search sources modal",
+    "placeholders": {"name": {"type": "String"}, "hosts": {"type": "String"}}
+  },
+  "lyricsPickerSourcesTitle": "Search sources",
+  "@lyricsPickerSourcesTitle": {
+    "description": "Title of the modal that picks the source filter and searches off sources"
+  },
+  "lyricsPickerSourcesOff": "Off",
+  "@lyricsPickerSourcesOff": {
+    "description": "Group label for the off sources in the Search sources modal"
+  },
+  "lyricsPickerSourceOff": "Source is off",
+  "@lyricsPickerSourceOff": {
+    "description": "Badge and subtitle on a result or row from a source that is turned off"
+  },
+  "lyricsSourceFindRowAllOffSearch": "All sources are off ({count}) · searched only when you ask",
+  "@lyricsSourceFindRowAllOffSearch": {
+    "description": "Subtitle of the Find lyrics online row when every lyrics source is off; it still opens the picker",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "lyricsPickerFooterNoHosts": "The lyrics you pick are pinned to this song",
+  "@lyricsPickerFooterNoHosts": {
+    "description": "Footer of the Choose lyrics dialog before any source has been asked, so no hosts can be named"
   },
   "lyricsPickerNoPreview": "Select a result to preview its lyrics",
   "@lyricsPickerNoPreview": {
@@ -5645,10 +5685,6 @@
         "type": "int"
       }
     }
-  },
-  "lyricsSourceFindRowAllOff": "All online sources are off · manage them in Lyrics sources",
-  "@lyricsSourceFindRowAllOff": {
-    "description": "Subtitle of the Find lyrics online row when every installed lyrics source is off"
   },
   "lyricsSourceAddRow": "Add an online lyrics source",
   "@lyricsSourceAddRow": {

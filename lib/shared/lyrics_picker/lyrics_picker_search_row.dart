@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n.dart';
-import 'lyrics_picker_source_menu.dart';
+import 'lyrics_picker_source_chip.dart';
 
 /// The query row of the Choose lyrics dialog: the source filter chip, the
 /// query field and Search. The chip has a fixed width, so the field stays put
@@ -13,7 +13,7 @@ class LyricsPickerSearchRow extends StatelessWidget {
     required this.sources,
     required this.providerNames,
     required this.sourceFilter,
-    required this.onSourceFilter,
+    required this.onOpenSources,
     required this.onSearch,
   });
 
@@ -21,7 +21,7 @@ class LyricsPickerSearchRow extends StatelessWidget {
   final List<({String id, int count})> sources;
   final Map<String, String> providerNames;
   final String? sourceFilter;
-  final ValueChanged<String?> onSourceFilter;
+  final VoidCallback onOpenSources;
   final VoidCallback onSearch;
 
   @override
@@ -29,11 +29,11 @@ class LyricsPickerSearchRow extends StatelessWidget {
     final l10n = context.l10n;
     return Row(
       children: [
-        LyricsPickerSourceMenu(
+        LyricsPickerSourceChip(
           sources: sources,
           providerNames: providerNames,
           selected: sourceFilter,
-          onSelected: onSourceFilter,
+          onPressed: onOpenSources,
         ),
         const SizedBox(width: 12),
         Expanded(

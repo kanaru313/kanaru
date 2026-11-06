@@ -19,3 +19,19 @@ String? effectiveSourceFilter(
   String? filter,
   List<({String id, int count})> sources,
 ) => sources.any((s) => s.id == filter) ? filter : null;
+
+/// The result to select when the list is filtered to [id]: the first one of
+/// that source, unless the selected result already belongs to it (or [id] is
+/// `null`, or the source has none), then `null` (keep the selection).
+int? resultToSelectForFilter(
+  List<RankedCandidate> results,
+  int? selected,
+  String? id,
+) {
+  if (id == null) return null;
+  if (selected != null && results[selected].candidate.providerId == id) {
+    return null;
+  }
+  final first = results.indexWhere((r) => r.candidate.providerId == id);
+  return first < 0 ? null : first;
+}
