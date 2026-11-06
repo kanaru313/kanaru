@@ -17,7 +17,7 @@ const nowPlayingHeaderHeight = 64.0;
 ///
 /// [floatingOpen] is set to whether one of the things that float outside the
 /// header is open: the volume popup, the sleep timer dialog, the translation
-/// modal, or the repeat or lyrics source menu. Whoever hides the header on
+/// modal, or the repeat menu or a lyrics modal. Whoever hides the header on
 /// inactivity listens to it to keep the header shown meanwhile.
 class NowPlayingHeader extends StatefulWidget {
   const NowPlayingHeader({
@@ -29,7 +29,7 @@ class NowPlayingHeader extends StatefulWidget {
     this.modeButton,
     this.showTranslate = false,
     this.translateEnabled = true,
-    this.sourceMenuOpener,
+    this.lyricsModalOpener,
     this.translationModalOpener,
   });
 
@@ -55,9 +55,9 @@ class NowPlayingHeader extends StatefulWidget {
   /// False greys the translation button out, for a song without lyrics.
   final bool translateEnabled;
 
-  /// Receives the callback that opens the lyrics source menu while its
+  /// Receives the callback that opens the lyrics modal while its
   /// button (which precedes the translation button) is in the header.
-  final ValueNotifier<bool Function()?>? sourceMenuOpener;
+  final ValueNotifier<bool Function()?>? lyricsModalOpener;
 
   /// Receives the callback that opens the translation modal while its button
   /// is in the header.
@@ -79,7 +79,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
 
   @override
   void dispose() {
-    // The popup and the menu leave with the header: give the pin back.
+    // The popup, menus and modals leave with the header: give the pin back.
     _volumeOpen = false;
     _sleepOpen = false;
     _repeatOpen = false;
@@ -115,13 +115,13 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                         hasModeButton: widget.modeButton != null,
                         hasWindowButtons: widget.hasWindowButtons,
                         translateEnabled: widget.translateEnabled,
-                        sourceMenuOpener: widget.sourceMenuOpener,
+                        lyricsModalOpener: widget.lyricsModalOpener,
                         translationModalOpener: widget.translationModalOpener,
                         onTranslateModalChanged: (open) {
                           _translateOpen = open;
                           _report();
                         },
-                        onSourceMenuChanged: (open) {
+                        onLyricsModalChanged: (open) {
                           _sourceOpen = open;
                           _report();
                         },

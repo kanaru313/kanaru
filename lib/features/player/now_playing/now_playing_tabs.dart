@@ -29,7 +29,7 @@ class NowPlayingTabs extends StatefulWidget {
     required this.lyricsPage,
     required this.hasLyrics,
     required this.floatingOpen,
-    this.sourceMenuOpener,
+    this.lyricsModalOpener,
     this.translationModalOpener,
   });
 
@@ -50,13 +50,13 @@ class NowPlayingTabs extends StatefulWidget {
   /// Whether the song has lyrics to translate; gates the translate button.
   final bool hasLyrics;
 
-  /// Set to whether the translation modal or lyrics source menu is open; the
-  /// screen reads it to leave its keys to the modal or menu.
+  /// Set to whether the translation or lyrics modal is open; the
+  /// screen reads it to leave its keys to the modals.
   final ValueNotifier<bool> floatingOpen;
 
-  /// Receives the callback that opens the lyrics source menu while its button
+  /// Receives the callback that opens the lyrics modal while its button
   /// is in the header.
-  final ValueNotifier<bool Function()?>? sourceMenuOpener;
+  final ValueNotifier<bool Function()?>? lyricsModalOpener;
 
   /// Receives the callback that opens the translation modal while its button
   /// is in the header.
@@ -76,7 +76,7 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
 
   @override
   void dispose() {
-    // The menus leave with the header: give the pin back.
+    // The modal and menus leave with the header: give the pin back.
     _translateOpen = false;
     _sourceOpen = false;
     _report();
@@ -140,8 +140,8 @@ class _NowPlayingTabsState extends State<NowPlayingTabs> {
                         else
                           QueueButton(onPressed: () => _select(_Tab.queue)),
                         LyricsSourceButton(
-                          menuOpener: widget.sourceMenuOpener,
-                          onMenuChanged: (open) {
+                          modalOpener: widget.lyricsModalOpener,
+                          onModalChanged: (open) {
                             _sourceOpen = open;
                             _report();
                           },

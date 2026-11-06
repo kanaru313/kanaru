@@ -5,16 +5,22 @@ import '../../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/lyrics_picker/lyrics_source_name_text.dart';
 
-/// The text of the lyrics source button for [source]: what the song shows
-/// now and, for lyrics picked without a choice, that Kanaru picked them
-/// ("Auto · …"). [names] names the online service.
-String lyricsSourceLabel(
+/// The first line of the lyrics button's tooltip: where the shown lyrics come
+/// from ("Lyrics from <source> · Synced", or ".lrc file" / "Tag lyrics"), else what
+/// the song shows instead (lyrics off, paused, looking, none).
+String lyricsSourceTooltipTitle(
   AppLocalizations l10n,
   LyricsSourceResolution source,
   Map<String, LyricsSourceName> names,
 ) {
   final status = source.status;
   switch (status) {
+    // The song's own lyrics are named plainly (".lrc file", "Tag lyrics");
+    // online ones say whose they are.
+    case LyricsFound(origin: null):
+      return lyricsSourceDetail(l10n, status, names);
+    case LyricsFound():
+      return l10n.lyricsSourceMenuFrom(lyricsSourceDetail(l10n, status, names));
     case LyricsNone(reason: LyricsNoneReason.off):
       return l10n.lyricsSourceOff;
     case LyricsNone(reason: LyricsNoneReason.paused):
@@ -23,32 +29,13 @@ String lyricsSourceLabel(
     // "No lyrics" for the moment before the answer.
     case LyricsSearching() || LyricsReading():
       return l10n.lyricsSourceSearching;
-    case LyricsFound(:final origin?) when !origin.pinned:
-      return l10n.lyricsSourceAuto(
-        lyricsSourceNameText(l10n, names, origin.providerId),
-      );
-    case LyricsFound():
-      return lyricsSourceDetail(l10n, status, names);
     case LyricsNone():
       return l10n.lyricsSourceNone;
   }
 }
 
-/// The menu's header and the pill's tooltip: where the shown lyrics come from
-/// ("Lyrics from <source> · Synced", or from the file or tag), the only place
-/// the round icon says it. Without lyrics it is the plain header.
-String lyricsSourceMenuTitle(
-  AppLocalizations l10n,
-  LyricsSourceResolution source,
-  Map<String, LyricsSourceName> names,
-) {
-  final status = source.status;
-  if (status is! LyricsFound) return l10n.lyricsSourceMenuHeader;
-  return l10n.lyricsSourceMenuFrom(lyricsSourceDetail(l10n, status, names));
-}
-
-/// What [found] is, without the "Auto" mark: the file or the tag, or the
-/// online service and the kind of its lyrics.
+/// What [found] is: the file or the tag, or the online service and the kind
+/// of its lyrics.
 String lyricsSourceDetail(
   AppLocalizations l10n,
   LyricsFound found,
@@ -70,8 +57,3 @@ String lyricsSourceDetail(
 /// "Synced" or "Plain".
 String lyricsSourceKind(AppLocalizations l10n, bool synced) =>
     synced ? l10n.lyricsSourceSynced : l10n.lyricsSourcePlain;
-
-/// Whether the button is quiet (no primary colour): nothing is shown, or the
-/// lyrics are off, paused or still being looked for.
-bool lyricsSourceMuted(LyricsSourceResolution source) =>
-    source.status is! LyricsFound;

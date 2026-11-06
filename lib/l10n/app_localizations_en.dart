@@ -3757,14 +3757,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAuto(String label) {
-    return 'Auto · $label';
-  }
-
-  @override
-  String get lyricsSourceMenuHeader => 'Lyrics for this song';
-
-  @override
   String lyricsSourceMenuFrom(String source) {
     return 'Lyrics from $source';
   }
@@ -3776,30 +3768,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsSourceLocalTag => 'In the tag';
 
   @override
-  String get lyricsSourceLocalMissing => 'No lyrics found in the file';
-
-  @override
-  String lyricsSourceOnlineSubtitle(String kind, String length) {
-    return '$kind · $length';
-  }
-
-  @override
-  String get lyricsSourceMenuSection => 'Source';
-
-  @override
   String get lyricsSourceOnlineVersion => 'Online version';
 
   @override
-  String get lyricsSourceRemovedPlugin => 'removed plugin';
-
-  @override
-  String get lyricsSourceSwitch => 'Lyrics for this song';
-
-  @override
   String get lyricsSourceKeep => 'Keep this one';
-
-  @override
-  String get lyricsSourceSave => 'Save current lyrics…';
 
   @override
   String get lyricsOffTitle => 'Lyrics are off for this song';
@@ -5617,4 +5589,101 @@ class AppLocalizationsEn extends AppLocalizations {
   String lyricsTranslationRetranslated(String service) {
     return 'Retranslated with $service';
   }
+
+  @override
+  String get lyricsSourceModalTitle => 'Lyrics for this song';
+
+  @override
+  String get lyricsSourceModalSettings => 'Lyrics settings';
+
+  @override
+  String get lyricsSourceModalLoading => 'Checking lyrics sources…';
+
+  @override
+  String get lyricsSourceRowFileNone => 'This file has no lyrics';
+
+  @override
+  String lyricsSourceRowOnlineAuto(String detail) {
+    return '$detail · found automatically';
+  }
+
+  @override
+  String get lyricsSourceRowOnlineNone => 'Nothing found online yet';
+
+  @override
+  String get lyricsSourceRowOff => 'Don\'t show lyrics';
+
+  @override
+  String lyricsSourceFindRowSubtitle(int on, int off) {
+    return '$on on · $off off';
+  }
+
+  @override
+  String get lyricsSourceFindRowAllOff =>
+      'All online sources are off · manage them in Lyrics sources';
+
+  @override
+  String get lyricsSourceAddRow => 'Add an online lyrics source';
+
+  @override
+  String get lyricsSourceAddRowSubtitle =>
+      'No lyrics plugin installed · open the plugin store';
+
+  @override
+  String get lyricsSaveRow => 'Save lyrics…';
+
+  @override
+  String lyricsSaveRowSubtitle(String detail) {
+    return 'Showing: $detail';
+  }
+
+  @override
+  String lyricsSourceStatusSearching(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sources',
+      one: '$count source',
+    );
+    return 'No lyrics on this device · searching $_temp0…';
+  }
+
+  @override
+  String get lyricsSourceStatusNoSource =>
+      'No lyrics on this device · no online source yet';
+
+  @override
+  String get lyricsSourceStatusAllOff =>
+      'No lyrics on this device · every online source is off';
+
+  @override
+  String get lyricsSourceStatusAutoOff =>
+      'No lyrics on this device · automatic search is off';
+
+  @override
+  String get lyricsSourceStatusTurnOnAuto => 'Turn on automatic search';
+
+  @override
+  String lyricsSourceStatusNotFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count enabled sources',
+      one: '$count enabled source',
+    );
+    return 'No lyrics found, even in $_temp0';
+  }
+
+  @override
+  String get lyricsSourceStatusFailed => 'The last search failed';
+
+  @override
+  String get lyricsSourceBarAuto => 'Found automatically';
+
+  @override
+  String get lyricsSourceBarKept => 'Using the kept version';
+
+  @override
+  String get lyricsSourceButtonHint =>
+      'Click: lyrics options · Right-click: turn on/off · L';
 }

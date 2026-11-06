@@ -343,6 +343,54 @@ void main() {
       expect(find.text('LyrNew'), findsNothing);
     });
 
+    testWidgets('a kind query preselects that kind in a lyrics mount', (
+      tester,
+    ) async {
+      await pumpMixed(
+        tester,
+        lyricsStoreRouteWithKind(lyricsSourcesStoreRoute, 'lyrics'),
+      );
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsNothing);
+    });
+
+    testWidgets('the kind survives an item page and back', (tester) async {
+      final router = await pumpMixed(
+        tester,
+        lyricsStoreRouteWithKind(lyricsSourcesStoreRoute, 'lyrics'),
+      );
+      final container = ProviderContainer(
+        overrides: [routerProvider.overrideWithValue(router)],
+      );
+      addTearDown(container.dispose);
+      final history = container.read(navigationHistoryProvider.notifier);
+
+      await tester.tap(find.text('LyrNew'));
+      await tester.pumpAndSettle();
+      history.back();
+      await tester.pumpAndSettle();
+
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsNothing);
+    });
+
+    testWidgets('Get more plugins still lists every kind', (tester) async {
+      await pumpMixed(tester, lyricsSourcesRoute);
+      await tester.tap(find.text(en.lyricsSourcesGetMore));
+      await tester.pumpAndSettle();
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsOneWidget);
+    });
+
+    testWidgets('an unknown kind query is ignored', (tester) async {
+      await pumpMixed(
+        tester,
+        lyricsStoreRouteWithKind(lyricsSourcesStoreRoute, 'nope'),
+      );
+      expect(find.text('LyrNew'), findsOneWidget);
+      expect(find.text('TrNew'), findsOneWidget);
+    });
+
     testWidgets('filter picks do not carry over between mounts', (
       tester,
     ) async {

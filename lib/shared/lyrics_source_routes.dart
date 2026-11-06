@@ -62,3 +62,11 @@ String lyricsStoreItemRoute({
     lyricsStoreItemSlugParam: slug,
   },
 ).toString();
+
+/// Query parameter that preselects a plugin kind in the store.
+const lyricsStoreKindParam = 'kind';
+
+/// [base] (a store mount) with the kind filter preselected to [kind] (the
+/// text of a `PluginKind`, such as `lyrics`).
+String lyricsStoreRouteWithKind(String base, String kind) =>
+    Uri(path: base, queryParameters: {lyricsStoreKindParam: kind}).toString();

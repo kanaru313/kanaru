@@ -28,12 +28,19 @@ GoRoute lyricsStoreRoutesAt({
 }) => GoRoute(
   path: path,
   builder: (context, state) => PluginStorePage(
-    initialKind: initialKind,
+    // A `kind` query parameter wins over the mount's own preselection.
+    initialKind: _kindOf(state) ?? initialKind,
     onOpenInstalled: (id, kind) => _openInstalled(context, id, kind),
+    // The `kind` query is carried into the pages below the store: the store
+    // page stays mounted under them and reads it again from the location.
     onOpenCatalogItem: (repoUrl, slug) => context.go(
-      lyricsStoreItemRoute(base: base, repoUrl: repoUrl, slug: slug),
+      _withKind(
+        lyricsStoreItemRoute(base: base, repoUrl: repoUrl, slug: slug),
+        state,
+      ),
     ),
-    onOpenRepositories: () => context.go(lyricsStoreRepositoriesRoute(base)),
+    onOpenRepositories: () =>
+        context.go(_withKind(lyricsStoreRepositoriesRoute(base), state)),
   ),
   routes: [
     GoRoute(
@@ -52,6 +59,23 @@ GoRoute lyricsStoreRoutesAt({
     ),
   ],
 );
+
+/// [location] with the `kind` query of [state], when it has one.
+String _withKind(String location, GoRouterState state) {
+  final kind = state.uri.queryParameters[lyricsStoreKindParam];
+  if (kind == null || PluginKind.fromValue(kind) == null) return location;
+  final uri = Uri.parse(location);
+  return uri
+      .replace(
+        queryParameters: {...uri.queryParameters, lyricsStoreKindParam: kind},
+      )
+      .toString();
+}
+
+PluginKind? _kindOf(GoRouterState state) {
+  final text = state.uri.queryParameters[lyricsStoreKindParam];
+  return text == null ? null : PluginKind.fromValue(text);
+}
 
 /// Opens the page of the plugin installed as [id] by its [kind]: a translate
 /// plugin has its own page below Playback settings. A kind this build does not

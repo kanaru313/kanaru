@@ -414,7 +414,7 @@ There is no dev mode in v1: a change goes through a zip and the normal install. 
    Drop `icon.png` from the command if the plugin has none.
 2. Uninstall the old version first, if one is installed. *Install from file…* always adds a new plugin, and the new one is turned on at once, so two copies would both run.
 3. Open the plugin store (*Lyrics sources* > *Plugin store*), menu ⋮ > *Install from file…*, and pick the zip. A failed check names the file, line and message (`scriptError`) or the manifest field (`invalidManifest`, for example `metadata.name`).
-4. Test it in *Choose lyrics* (*Find lyrics online…* in a song's menu, or the source button in Now Playing). Search with the song's tags, then with a typed text, and open one result's lyrics.
+4. Test it in *Choose lyrics* (*Find lyrics online…* in a song's menu, or the lyrics button in Now Playing). Search with the song's tags, then with a typed text, and open one result's lyrics.
 5. Read the log: *Lyrics sources* > ⋮ > *Open log folder*, then open `<installId>.jsonl` (each line carries `installId`, `pluginName`, `version` and `script`). Every failed run and every run that printed to `console` is there, with the `requests` list. The writing guide in the same menu links to this page.
 
 ## Example: the LRCLIB plugin

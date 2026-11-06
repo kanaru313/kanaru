@@ -76,19 +76,21 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  final sourceMenu = find.text('Automatic');
+  final sourceMenu = find.text('Lyrics for this song');
 
   for (final (name, size) in [
     ('wide', const Size(1280, 800)),
     ('narrow', const Size(600, 900)),
   ]) {
-    group('Escape with a mouse-opened menu, $name layout', () {
-      testWidgets('closes the source menu and keeps Now Playing open', (
+    group('Escape with a mouse-opened menu or modal, $name layout', () {
+      testWidgets('closes the lyrics modal and keeps Now Playing open', (
         tester,
       ) async {
         await pumpOverlay(tester, size);
         await tester.tap(find.byType(LyricsSourceButton));
-        await tester.pumpAndSettle();
+        // The open modal's marquee text never stops animating.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
         expect(sourceMenu, findsOneWidget);
 
         await escape(tester);

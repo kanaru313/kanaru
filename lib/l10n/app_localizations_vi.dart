@@ -3479,14 +3479,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsSourceAuto(String label) {
-    return 'Tự động · $label';
-  }
-
-  @override
-  String get lyricsSourceMenuHeader => 'Nguồn lời cho bài này';
-
-  @override
   String lyricsSourceMenuFrom(String source) {
     return 'Lời từ $source';
   }
@@ -3498,30 +3490,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsSourceLocalTag => 'Trong tag';
 
   @override
-  String get lyricsSourceLocalMissing => 'Không tìm thấy lời trong file';
-
-  @override
-  String lyricsSourceOnlineSubtitle(String kind, String length) {
-    return '$kind · $length';
-  }
-
-  @override
-  String get lyricsSourceMenuSection => 'Nguồn';
-
-  @override
   String get lyricsSourceOnlineVersion => 'Bản online';
 
   @override
-  String get lyricsSourceRemovedPlugin => 'plugin đã gỡ';
-
-  @override
-  String get lyricsSourceSwitch => 'Lời cho bài này';
-
-  @override
   String get lyricsSourceKeep => 'Giữ bản này';
-
-  @override
-  String get lyricsSourceSave => 'Lưu lời đang hiện…';
 
   @override
   String get lyricsOffTitle => 'Đã tắt lời cho bài này';
@@ -5290,4 +5262,89 @@ class AppLocalizationsVi extends AppLocalizations {
   String lyricsTranslationRetranslated(String service) {
     return 'Đã dịch lại bằng $service';
   }
+
+  @override
+  String get lyricsSourceModalTitle => 'Lời cho bài này';
+
+  @override
+  String get lyricsSourceModalSettings => 'Cài đặt lời';
+
+  @override
+  String get lyricsSourceModalLoading => 'Đang đọc nguồn lời…';
+
+  @override
+  String get lyricsSourceRowFileNone => 'Tệp không có lời';
+
+  @override
+  String lyricsSourceRowOnlineAuto(String detail) {
+    return '$detail · tự tìm';
+  }
+
+  @override
+  String get lyricsSourceRowOnlineNone => 'Chưa có bản trực tuyến';
+
+  @override
+  String get lyricsSourceRowOff => 'Không hiện lời';
+
+  @override
+  String lyricsSourceFindRowSubtitle(int on, int off) {
+    return '$on nguồn đang bật · $off đang tắt';
+  }
+
+  @override
+  String get lyricsSourceFindRowAllOff =>
+      'Mọi nguồn trực tuyến đang tắt · quản lý trong Nguồn lời';
+
+  @override
+  String get lyricsSourceAddRow => 'Thêm nguồn lời trực tuyến';
+
+  @override
+  String get lyricsSourceAddRowSubtitle =>
+      'Chưa cài plugin lời nào · mở kho plugin';
+
+  @override
+  String get lyricsSaveRow => 'Lưu lời…';
+
+  @override
+  String lyricsSaveRowSubtitle(String detail) {
+    return 'Lời đang hiện: $detail';
+  }
+
+  @override
+  String lyricsSourceStatusSearching(int count) {
+    return 'Không có lời trên máy · đang tìm ở $count nguồn…';
+  }
+
+  @override
+  String get lyricsSourceStatusNoSource =>
+      'Không có lời trên máy · chưa có nguồn trực tuyến';
+
+  @override
+  String get lyricsSourceStatusAllOff =>
+      'Không có lời trên máy · mọi nguồn trực tuyến đang tắt';
+
+  @override
+  String get lyricsSourceStatusAutoOff =>
+      'Không có lời trên máy · tự tìm đang tắt';
+
+  @override
+  String get lyricsSourceStatusTurnOnAuto => 'Bật tự tìm';
+
+  @override
+  String lyricsSourceStatusNotFound(int count) {
+    return 'Không tìm thấy lời, kể cả ở $count nguồn đang bật';
+  }
+
+  @override
+  String get lyricsSourceStatusFailed => 'Lần tìm gần nhất bị lỗi';
+
+  @override
+  String get lyricsSourceBarAuto => 'Tự tìm thấy';
+
+  @override
+  String get lyricsSourceBarKept => 'Đang dùng bản đã giữ';
+
+  @override
+  String get lyricsSourceButtonHint =>
+      'Bấm: tuỳ chọn lời · Chuột phải: bật/tắt · L';
 }
