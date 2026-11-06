@@ -55,7 +55,7 @@ class TranslationPrefs {
 
   /// Returns a copy with [service] set to `null` and [show] set to `false`.
   ///
-  /// Used by sweeps and resets when a configured service is no longer available.
+  /// Used by the sweep when the stored plugin is uninstalled.
   TranslationPrefs withoutService() => TranslationPrefs(
     show: false,
     service: null,

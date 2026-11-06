@@ -30,7 +30,6 @@ void toggleLyricsTranslationByKey(
     if (choices.ready) {
       showTranslationServiceMissingSnackBar(
         context,
-        ref,
         hasPlugins: choices.services.isNotEmpty,
       );
     }

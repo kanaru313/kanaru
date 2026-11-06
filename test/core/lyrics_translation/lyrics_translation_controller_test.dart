@@ -778,5 +778,22 @@ void main() {
       expect(rig.plugin.calls, isEmpty);
       rig.dispose();
     });
+
+    test('plugin list failed to load: Unavailable, nothing sent', () async {
+      final rig = Rig(
+        db,
+        settings: translationSettings(service: plugin, acknowledged: {plugin}),
+        overrides: [
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.error(StateError('x'), StackTrace.empty),
+          ),
+        ],
+      );
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(rig.state, isA<TranslationUnavailable>());
+      expect(rig.plugin.calls, isEmpty);
+      rig.dispose();
+    });
   });
 }

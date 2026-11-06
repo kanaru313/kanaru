@@ -83,11 +83,12 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     );
     _info = info;
 
-    if (!prefs.show || prefs.service == null) return TranslationOff(info);
+    final stored = prefs.service;
+    if (!prefs.show || stored == null) return TranslationOff(info);
     if (chosen == null) {
       final records = ref.watch(translatePluginRecordsProvider);
       if (records.hasError) return const TranslationUnavailable();
-      if (!records.hasValue) return TranslationLoading(info, prefs.service!);
+      if (!records.hasValue) return TranslationLoading(info, stored);
       return TranslationOff(info);
     }
     final service = chosen;

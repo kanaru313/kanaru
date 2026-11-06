@@ -30,11 +30,10 @@ void main() {
         GoRoute(
           path: '/player',
           builder: (_, _) => Scaffold(
-            body: Consumer(
-              builder: (context, ref, _) => FilledButton(
+            body: Builder(
+              builder: (context) => FilledButton(
                 onPressed: () => showTranslationServiceMissingSnackBar(
                   context,
-                  ref,
                   hasPlugins: hasPlugins,
                 ),
                 child: const Text('Trigger'),
