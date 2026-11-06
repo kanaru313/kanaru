@@ -163,6 +163,7 @@ class TranslationJobs
     }
 
     _set(key, const TranslationJobStatus.running());
+    JobPartial? held;
     try {
       if (!force && await _hasUsableRow(db, key, target)) {
         _remove(key);
@@ -178,6 +179,7 @@ class TranslationJobs
       checkJobLimits(uniqueLines, target, translator);
       if (force || _partial[key]?.version != version) _partial.remove(key);
       final partial = _partial.putIfAbsent(key, () => JobPartial(version));
+      held = partial;
       await translateMissingLines(
         translator,
         uniqueLines,
@@ -185,8 +187,8 @@ class TranslationJobs
         partial,
         song: song,
       );
-      // Cancelled while the last chunk was in flight: its lines stay in the
-      // partial, nothing is saved.
+      // Cancelled while the last chunk was in flight: nothing is saved (the
+      // finally block drops the partial).
       if (!owns()) return null;
       // clearFailures dropped the chunks while this job ran: what it holds
       // may be stale, so nothing is saved.
@@ -226,6 +228,9 @@ class TranslationJobs
         ),
       );
     } finally {
+      // A cancelled retranslate leaves no partial: the next forced run starts
+      // clean and a normal run finds the saved row. A newer run's is kept.
+      if (held != null && !owns()) _dropPartial(key, held);
       if (token != null && identical(_forced[key], token)) _forced.remove(key);
     }
   }

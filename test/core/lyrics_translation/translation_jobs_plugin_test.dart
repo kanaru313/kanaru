@@ -349,6 +349,47 @@ void main() {
       expect(await rows(), isEmpty);
     });
 
+    test('a cancelled retranslate drops its partial', () async {
+      build();
+      runner.onSend = (i) {
+        if (i == 0) jobs().cancel(_key);
+      };
+      expect(await jobs().run(_key, two, _en, force: true), isNull);
+      expect(runner.calls, hasLength(1));
+
+      // A normal run finds no chunk kept: it sends both chunks again.
+      runner.onSend = null;
+      final again = await jobs().run(_key, two, _en);
+      expect(again?.saved, isNotNull);
+      expect(runner.calls, hasLength(3));
+    });
+
+    test('a retranslate started after the cancel keeps its partial', () async {
+      build();
+      final hold = Completer<void>();
+      runner.hold = hold;
+      final old = jobs().run(_key, two, _en, force: true);
+      await sent(1);
+      jobs().cancel(_key);
+
+      // The new run waits for the old chunk, sends chunk 1, then fails on 2.
+      runner.hold = null;
+      runner.errors[2] = failure(TranslationFailureKind.server);
+      final fresh = jobs().run(_key, two, _en, force: true);
+      hold.complete();
+      expect(await old, isNull);
+      expect((await fresh)?.failure, TranslationFailureKind.server);
+
+      // The old run's cleanup left the new run's chunk: Retry sends only the
+      // chunk that failed.
+      runner.errors.clear();
+      jobs().clearFailure(_key);
+      final before = runner.calls.length;
+      final retry = await jobs().run(_key, two, _en);
+      expect(retry?.saved, isNotNull);
+      expect(runner.calls.length - before, 1);
+    });
+
     test('a job that is not forced ignores it', () async {
       build();
       runner.hold = Completer<void>();
