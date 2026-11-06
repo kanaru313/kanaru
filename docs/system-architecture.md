@@ -217,7 +217,9 @@ Reset targets: `make reset-library`, `make reset-covers`, `make reset-all` (see 
 
 ## 8. Planned: remote sources and licensing
 
-**Planned: none of the components below exist in the code.** They are the target design from the README and [features.md](./features.md) (SRC-01, CACHE-01, PRIV-04). Do not write code against them until they land.
+**Mostly planned.** Only the loopback stream proxy exists, and only for source plugins (below); storage backends, the proxy cache and licensing do not. The rest is the target design from the README and [features.md](./features.md) (SRC-01, CACHE-01, PRIV-04). Do not write code against it until it lands.
+
+**Built: the stream proxy for source plugins** (`lib/core/sources/proxy/`, `sourceStreamProxyProvider`). A `shelf` server bound to `127.0.0.1` on an OS-chosen port, started by the first `urlFor(RemoteSourceRef)`. Its URLs are `http://127.0.0.1:<port>/<token>/<kind>/<installId>/<item id>`: the token is 32 random bytes for the app session, compared in constant time; `<kind>` is a `RemoteStreamKind` (only `source-plugin` so far), and a resolver registry (`trackStreamResolversProvider`) maps each kind to its `TrackStreamResolver`, so a storage backend would add a kind and a resolver. Guard: the `Host` header must be exactly `127.0.0.1:<port>` and the method `GET` (else `405`); a bad token, kind or key is `404` with an empty body. The source plugin resolver runs `stream.js` lazily and accepts only an `https` URL without port or user info on a host the plugin declared; the upstream client connects to public addresses only, follows no redirect and asks for closed ranges of at most 8 MiB. Re-resolve budget, consent per chunk and the stop on uninstall or consent withdrawal: [source-plugin-api.md "Playback"](./source-plugin-api.md#playback). It does not cache, and it never logs the token or the upstream URL.
 
 ```mermaid
 flowchart TB
@@ -243,8 +245,8 @@ flowchart TB
 
 | Planned piece | Rule it must follow | Current state |
 |---|---|---|
-| `StorageProvider` per backend in `lib/core/storage/<name>/` | Every source implements the same interface: list, stat, ranged read, artwork | Not started. The `core/storage` folder does not exist. |
-| Local HTTP proxy | The player never calls a remote service directly; it plays `http://127.0.0.1:<port>/track/<id>` | Not started. `shelf` is not in `pubspec.yaml`. |
+| `StorageProvider` per backend in `lib/core/storage/<name>/` | Every source implements the same interface: list, stat, ranged read, artwork | Still planned, not started. The `core/storage` folder does not exist. |
+| Local HTTP proxy | The player never calls a remote service directly; it plays `http://127.0.0.1:<port>/<token>/<kind>/<key>` | Built for source plugins only (above), without cache or offline copy. A `StorageProvider` kind is still planned. |
 | Credentials | Passwords and tokens only in the system keyring, never in the DB, logs or `settings.json`. Without a Secret Service: a `0600` `secrets.json` in the data directory, with a visible warning | Store in `lib/core/secrets/` (`flutter_secure_storage`; a D-Bus probe runs before each plugin call). It exposes `usingFallback` and `modeWasFixed`; the visible warning arrives with the settings rows, not built yet. Remote-source credentials will reuse the store. |
 | Licensing | Premium checks only through `core/licensing`; features never parse licenses | Not started. Premium list is a proposal ([features.md section 20](./features.md)). |
 

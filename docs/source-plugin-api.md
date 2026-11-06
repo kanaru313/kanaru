@@ -97,7 +97,7 @@ Output:
 
 | Field | Rule |
 |---|---|
-| `url` | absolute `https`, at most 8 KiB, no explicit port (not even `:443`), no user info; else `invalidOutput`. Its host must be one the plugin declared |
+| `url` | absolute `https`, at most 8 KiB, no explicit port (not even `:443`), no user info; else `invalidOutput`. Its host must be one the plugin declared (wildcards included): `stream()` does not check that, the stream proxy's resolver (`lib/core/sources/proxy/source_plugin_stream_resolver.dart`) does when the player first asks for the bytes, and refuses the item (`502`) otherwise |
 | `headers` | absent means none; else an object of at most 20 string entries (anything else is `invalidOutput`), filtered like any plugin request header (the same filter `fetch` uses); `range` and `if-range` are dropped because the player decides ranges; `cookie` and `authorization` are kept |
 | `mimeType` | starts with `audio/`, or is `video/webm` or `video/mp4` (parameters allowed); anything else is `invalidOutput` |
 | `bitrate` | a positive integer, else none |
@@ -136,4 +136,14 @@ A source plugin may send nothing until the user accepts a notice for **that plug
 
 ## Playback
 
-The app does not hand the stream URL of a plugin to the player. A remote item plays through a small loopback HTTP proxy inside the app: the player is given `http://127.0.0.1:<port>/…`, and the proxy calls `stream.js` lazily when the player asks for the bytes, adds the plugin's `headers`, and fetches them from the `url` over https from the hosts the plugin declared. When the stream expires (`expiresAtMs`) or the host refuses it, the proxy asks `stream.js` once more with `fresh: true`. The details of the proxy are documented with the proxy itself.
+The app does not hand the stream URL of a plugin to the player. A remote item plays through a small loopback HTTP proxy inside the app (`lib/core/sources/proxy/`): the player is given `http://127.0.0.1:<port>/<token>/source-plugin/<installId>/<item id>`, and the proxy fetches the bytes upstream on its behalf.
+
+- **Lazy resolve.** `stream.js` runs when the player first requests the proxy URL, not when the item is queued. Each time the player opens an item (every play, every move to the next track) a new *playthrough* starts; every request of it (the player opens several at once for a WebM file, and one per seek or reconnect) shares one resolve. A resolve that takes longer than 20 seconds is given up.
+- **Checks on the URL.** Before anything is fetched, the URL must be `https`, without a port or user info, on a host the plugin declared; the connection then goes only to public addresses (as for `fetch`).
+- **Expiry.** A resolved URL is used until 60 seconds before `expiresAtMs`; after that, one plain resolve (no `fresh`) replaces it. Without `expiresAtMs` it is used until the host refuses it. An `expiresAtMs` already inside those 60 seconds counts as unknown.
+- **`fresh` on 403.** The first `403` from the host spends the playthrough's one `fresh: true` resolve and retries the same bytes with the new URL. A second `403` marks the item dead for that playthrough: every further request for it fails at once without running `stream.js`, until the player opens the item again. A failed resolve does the same.
+- **Range chunking.** Every upstream request names a closed range of at most 8 MiB (`range: bytes=p-q`; some hosts refuse open ranges), whatever the player asked for. The size of the whole stream comes from the first answer's `Content-Range` (or `Content-Length` when the host ignored the range). The proxy answers the player `200` or `206` with `accept-ranges: bytes`, `content-length` and `content-range`; `416` for several ranges or one past the end.
+- **Headers.** Every upstream request carries the plugin's `headers`, `accept-encoding: identity` and the proxy's own `range`. The proxy's `content-type` is the plugin's `mimeType` when it has the shape of a media type, else the host's, else none; neither is copied unchecked.
+- **No redirects.** A `3xx` from the host is not followed: the request fails (`502`). Return the final URL from `stream.js`.
+- **Consent and uninstall.** Consent is asked before each upstream chunk, so withdrawing it stops the stream at the next chunk. Uninstalling the plugin or withdrawing its consent ends its open streams at once, and its items are refused (`404`) without running `stream.js` until it is installed and accepted again.
+- **Failures.** Anything that fails before the proxy answered (the resolve, the URL checks, the host) is `502` and the player skips the track; a failure while bytes are flowing ends the body. The proxy logs the plugin id, the status and byte counts only, never the URL, its query or the proxy token.
