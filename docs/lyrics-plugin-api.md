@@ -276,7 +276,7 @@ There is no cookie jar. A script that needs a session reads the `set-cookie` hea
 
 ## Translate scripts
 
-A translate plugin (`metadata.type` `translate`) has one script, `translate.js`, run once per chunk of lines (`lib/core/lyrics/plugins/translate/`). It has no `search.js` or `lyrics.js`, and a lyrics plugin is never run as a translator.
+A translate plugin (`metadata.type` `translate` or `ai-translate`) has one script, `translate.js`, run once per chunk of lines (`lib/core/lyrics/plugins/translate/`). It has no `search.js` or `lyrics.js`, and a lyrics plugin is never run as a translator.
 
 ### `translate.js`
 

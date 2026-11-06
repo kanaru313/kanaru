@@ -142,11 +142,13 @@ erDiagram
         text target_lang PK
         text source_lang
         text lines_json "source line to translation"
+        text settings_json "AI snapshot, NULL for non-AI"
         int created_at
     }
     LYRIC_TRANSLATION_PREFS {
         text content_hash PK
-        text target_lang
+        text target_lang "NULL when only instruction set"
+        text instruction "per-song note for AI"
     }
     ONLINE_LYRICS {
         text cache_key PK
@@ -178,8 +180,10 @@ erDiagram
     }
     LYRICS_PLUGINS {
         text install_id PK "plugin-..., the provider_id"
+        text kind "lyrics, translate or ai-translate"
         text name
         int version
+        text translate_spec "NULL for lyrics plugins"
         text package_dir
         text repo_url "NULL for file installs"
         text repo_slug
