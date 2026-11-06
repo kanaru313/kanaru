@@ -33,7 +33,15 @@ class PluginInfoSection extends StatelessWidget {
           if (repoUrl != null && repoUrl.isNotEmpty) repoUrl,
         ],
       ),
-      _Item(label: l10n.pluginInfoHosts, lines: record.hosts),
+      _Item(
+        label: l10n.pluginInfoHosts,
+        lines: [
+          for (final host in record.hosts)
+            host.startsWith('*.')
+                ? l10n.pluginInfoHostAnySubdomain(host.substring(2))
+                : host,
+        ],
+      ),
       _Item(
         label: l10n.pluginInfoInstalled,
         lines: [

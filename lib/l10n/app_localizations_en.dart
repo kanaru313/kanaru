@@ -3924,6 +3924,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pluginInfoHosts => 'Can only connect to';
 
   @override
+  String pluginInfoHostAnySubdomain(String host) {
+    return 'Any subdomain of $host';
+  }
+
+  @override
   String get pluginInfoInstalled => 'Installed';
 
   @override
@@ -4224,6 +4229,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsStoreKindTranslate => 'Translate';
+
+  @override
+  String get lyricsStoreKindSource => 'Source';
 
   @override
   String get lyricsStoreFromFile => 'From file';

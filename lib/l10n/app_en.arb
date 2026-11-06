@@ -3628,6 +3628,15 @@
   "pluginInfoTitle": "Details",
   "pluginInfoSource": "Installed from",
   "pluginInfoHosts": "Can only connect to",
+  "pluginInfoHostAnySubdomain": "Any subdomain of {host}",
+  "@pluginInfoHostAnySubdomain": {
+    "description": "A wildcard host of a plugin in its details: the plugin may connect to one level of subdomain under the host",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "pluginInfoInstalled": "Installed",
   "pluginInfoInstalledUpdated": "{installed} · updated {updated}",
   "@pluginInfoInstalledUpdated": {
@@ -3865,6 +3874,10 @@
   "lyricsStoreKindTranslate": "Translate",
   "@lyricsStoreKindTranslate": {
     "description": "Translation plugin kind: Type filter value and tag on store rows"
+  },
+  "lyricsStoreKindSource": "Source",
+  "@lyricsStoreKindSource": {
+    "description": "Music source plugin kind: Type filter value and tag on store rows"
   },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {

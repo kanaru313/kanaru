@@ -42,6 +42,30 @@ void main() {
     expect(await File('$dir/icon.png').readAsBytes(), [1, 2, 3]);
   });
 
+  test('writePackage keeps the stream script of a source package', () async {
+    const package = PluginPackage(
+      manifest: PluginManifest(
+        kind: PluginKind.source,
+        apiVersion: 1,
+        name: 'YouTube',
+        version: 1,
+        hosts: ['www.youtube.com', '*.googlevideo.com'],
+        searchScript: 'search.js',
+        streamScript: 'stream.js',
+      ),
+      files: {'search.js': '// search', 'stream.js': '// stream'},
+    );
+    await dirs.writePackage('plugin-aaaaaaaaaaaa/v1-8', package);
+    final dir = dirs.resolve('plugin-aaaaaaaaaaaa/v1-8').path;
+    final bytes = await File('$dir/plugin.json').readAsBytes();
+    final manifest = parsePluginManifest(bytes);
+    expect(manifest.kind, PluginKind.source);
+    expect(manifest.searchScript, 'search.js');
+    expect(manifest.streamScript, 'stream.js');
+    expect(manifest.hosts, ['www.youtube.com', '*.googlevideo.com']);
+    expect(await File('$dir/src/stream.js').readAsString(), '// stream');
+  });
+
   test('writePackage omits languages when the package has none', () async {
     await dirs.writePackage('plugin-aaaaaaaaaaaa/v1-7', testPackage());
     final manifest = jsonDecode(

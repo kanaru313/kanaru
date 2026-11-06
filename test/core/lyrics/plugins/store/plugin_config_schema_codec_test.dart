@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/store/plugin_config_schema_codec.dart';
 
@@ -247,5 +248,43 @@ void main() {
       decodePluginConfigSchema('{"a":{"title":"A","mode":"color"}}'),
       isEmpty,
     );
+  });
+
+  test('a source manifest is written with search and stream scripts', () {
+    final json = jsonDecode(
+      pluginManifestJson(
+        kind: PluginKind.source,
+        apiVersion: 1,
+        name: 'YouTube',
+        version: 2,
+        hosts: const ['www.youtube.com', '*.googlevideo.com'],
+        author: '',
+        description: '',
+        searchScript: 'search.js',
+        streamScript: 'stream.js',
+        config: const [],
+      ),
+    ) as Map<String, dynamic>;
+    expect(json['metadata']['type'], 'source');
+    expect(json['metadata']['hosts'], ['www.youtube.com', '*.googlevideo.com']);
+    expect(json['script'], {'search': 'search.js', 'stream': 'stream.js'});
+  });
+
+  test('a lyrics manifest writes no stream script', () {
+    final json = jsonDecode(
+      pluginManifestJson(
+        kind: PluginKind.lyrics,
+        apiVersion: 1,
+        name: 'Demo',
+        version: 1,
+        hosts: const ['api.example.com'],
+        author: '',
+        description: '',
+        searchScript: 'search.js',
+        lyricsScript: 'lyrics.js',
+        config: const [],
+      ),
+    ) as Map<String, dynamic>;
+    expect(json['script'], {'search': 'search.js', 'lyrics': 'lyrics.js'});
   });
 }

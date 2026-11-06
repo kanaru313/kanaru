@@ -208,6 +208,23 @@ void main() {
     expect(find.byIcon(AppIcons.more), findsNothing);
   });
 
+  testWidgets('a wildcard host reads as any subdomain', (tester) async {
+    await open(
+      tester,
+      testRecord(
+        idA,
+        name: 'Alpha',
+        hosts: const ['www.youtube.com', '*.googlevideo.com'],
+      ),
+    );
+    expect(find.text('www.youtube.com'), findsOneWidget);
+    expect(
+      find.text(en.pluginInfoHostAnySubdomain('googlevideo.com')),
+      findsOneWidget,
+    );
+    expect(find.text('*.googlevideo.com'), findsNothing);
+  });
+
   testWidgets('the trash button has a tooltip and a semantics label', (
     tester,
   ) async {

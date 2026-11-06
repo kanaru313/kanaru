@@ -44,7 +44,8 @@ enum LyricsPluginSourceKind {
 /// What a plugin does (`lyrics_plugins.kind`).
 enum PluginKind {
   lyrics('lyrics'),
-  translate('translate');
+  translate('translate'),
+  source('source');
 
   const PluginKind(this.value);
 

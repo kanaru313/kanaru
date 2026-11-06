@@ -3644,6 +3644,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pluginInfoHosts => 'Chỉ được kết nối tới';
 
   @override
+  String pluginInfoHostAnySubdomain(String host) {
+    return 'Mọi tên miền con của $host';
+  }
+
+  @override
   String get pluginInfoInstalled => 'Cài lúc';
 
   @override
@@ -3926,6 +3931,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreKindTranslate => 'Dịch';
+
+  @override
+  String get lyricsStoreKindSource => 'Nguồn nhạc';
 
   @override
   String get lyricsStoreFromFile => 'Từ file';

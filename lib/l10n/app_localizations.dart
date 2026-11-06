@@ -5660,6 +5660,12 @@ abstract class AppLocalizations {
   /// **'Can only connect to'**
   String get pluginInfoHosts;
 
+  /// A wildcard host of a plugin in its details: the plugin may connect to one level of subdomain under the host
+  ///
+  /// In en, this message translates to:
+  /// **'Any subdomain of {host}'**
+  String pluginInfoHostAnySubdomain(String host);
+
   /// No description provided for @pluginInfoInstalled.
   ///
   /// In en, this message translates to:
@@ -6121,6 +6127,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translate'**
   String get lyricsStoreKindTranslate;
+
+  /// Music source plugin kind: Type filter value and tag on store rows
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get lyricsStoreKindSource;
 
   /// Source filter value and row subtitle of a plugin installed from a zip file
   ///
