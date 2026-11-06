@@ -10,6 +10,7 @@ String pluginKindLabel(AppLocalizations l10n, PluginKind kind) =>
     switch (kind) {
       PluginKind.lyrics => l10n.lyricsStoreKindLyrics,
       PluginKind.translate => l10n.lyricsStoreKindTranslate,
+      PluginKind.aiTranslate => l10n.lyricsStoreKindAiTranslate,
     };
 
 /// The title of a filter group.

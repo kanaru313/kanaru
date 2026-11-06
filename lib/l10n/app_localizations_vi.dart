@@ -3910,6 +3910,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsStoreKindTranslate => 'Dịch';
 
   @override
+  String get lyricsStoreKindAiTranslate => 'Dịch AI';
+
+  @override
   String get lyricsStoreFromFile => 'Từ file';
 
   @override

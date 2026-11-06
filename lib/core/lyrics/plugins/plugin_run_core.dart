@@ -202,7 +202,7 @@ class PluginRunCore {
     PluginCancel cancel,
   ) async {
     final row = await db.lyricsPluginById(installId);
-    if (row == null || row.removedAt != null || row.kind != kind.value) {
+    if (row == null || row.removedAt != null || !kind.accepts(row.kind)) {
       return const PluginRunOutcome.skipped();
     }
     PluginRunOutcome failedSetup(

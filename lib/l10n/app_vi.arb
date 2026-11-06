@@ -1694,6 +1694,7 @@
   "lyricsStoreChipAll": "Tất cả",
   "lyricsStoreKindLyrics": "Lời bài hát",
   "lyricsStoreKindTranslate": "Dịch",
+  "lyricsStoreKindAiTranslate": "Dịch AI",
   "lyricsStoreFromFile": "Từ file",
   "lyricsStoreFilterTooltip": "Bộ lọc",
   "lyricsStoreFilterActiveLabel": "Bộ lọc, {count} đang bật",

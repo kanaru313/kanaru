@@ -41,12 +41,26 @@ enum LyricsPluginSourceKind {
 /// What a plugin does (`lyrics_plugins.kind`).
 enum PluginKind {
   lyrics('lyrics'),
-  translate('translate');
+  translate('translate'),
+  aiTranslate('ai-translate');
 
   const PluginKind(this.value);
 
   /// The text stored in the column.
   final String value;
+
+  /// Whether this kind belongs to the translation family.
+  bool get isTranslation => this == translate || this == aiTranslate;
+
+  /// Whether a record stored with [stored] kind satisfies a request expecting
+  /// this kind.
+  ///
+  /// Matches exact kinds, or allows either translation kind to fulfill
+  /// translation requests.
+  bool accepts(String stored) {
+    final k = fromValue(stored);
+    return k == this || (isTranslation && (k?.isTranslation ?? false));
+  }
 
   /// The kind stored as [text]; null for text this build does not know.
   static PluginKind? fromValue(String text) {

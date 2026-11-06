@@ -47,14 +47,17 @@ class PluginStoreFilters {
 
   const PluginStoreFilters._(this._selected);
 
-  /// The filters a store opens with: only [kind] picked, or nothing.
-  factory PluginStoreFilters.initial(PluginKind? kind) => kind == null
-      ? const PluginStoreFilters()
-      : PluginStoreFilters._(
-          Map.unmodifiable({
-            StoreFacet.kind: Set<String>.unmodifiable({kind.value}),
-          }),
-        );
+  /// The filters a store opens with: only [kind] picked, or nothing. If [kind]
+  /// belongs to the translation family, both translation kinds are picked.
+  factory PluginStoreFilters.initial(PluginKind? kind) {
+    if (kind == null) return const PluginStoreFilters();
+    final values = kind.isTranslation
+        ? {PluginKind.translate.value, PluginKind.aiTranslate.value}
+        : {kind.value};
+    return PluginStoreFilters._(
+      Map.unmodifiable({StoreFacet.kind: Set<String>.unmodifiable(values)}),
+    );
+  }
 
   final Map<StoreFacet, Set<String>> _selected;
 

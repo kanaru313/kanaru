@@ -3838,6 +3838,10 @@
   "@lyricsStoreKindTranslate": {
     "description": "Translation plugin kind: Type filter value and tag on store rows"
   },
+  "lyricsStoreKindAiTranslate": "AI translate",
+  "@lyricsStoreKindAiTranslate": {
+    "description": "AI translation plugin kind: Type filter value and tag on store rows"
+  },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
     "description": "Source filter value and row subtitle of a plugin installed from a zip file"

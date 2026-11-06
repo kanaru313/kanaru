@@ -4207,6 +4207,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsStoreKindTranslate => 'Translate';
 
   @override
+  String get lyricsStoreKindAiTranslate => 'AI translate';
+
+  @override
   String get lyricsStoreFromFile => 'From file';
 
   @override

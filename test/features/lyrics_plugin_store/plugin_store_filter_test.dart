@@ -143,7 +143,7 @@ void main() {
     ) async {
       await pump(tester, initialKind: PluginKind.translate);
       expectRows(['Tr Glob', 'FileTr']);
-      expect(find.byType(PluginStoreKindTag), findsNothing);
+      expect(find.byType(PluginStoreKindTag), findsNWidgets(2));
       expect(_badge(tester), 1);
       await _openModal(tester);
       expect(_selected(tester, 'Translate'), isTrue);

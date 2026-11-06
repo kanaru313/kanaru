@@ -81,6 +81,7 @@ PluginCatalogEntry? _entry(
   final kind = switch (json['type']) {
     'lyrics' => PluginKind.lyrics,
     'translate' => PluginKind.translate,
+    'ai-translate' => PluginKind.aiTranslate,
     _ => null,
   };
   if (kind == null) return null;

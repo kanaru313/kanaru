@@ -83,6 +83,7 @@ PluginKind? _kindOf(GoRouterState state) {
 void _openInstalled(BuildContext context, String id, PluginKind? kind) {
   switch (kind) {
     case PluginKind.translate:
+    case PluginKind.aiTranslate:
       context.go(translationPluginRoute(id));
     case PluginKind.lyrics:
       context.go(lyricsPluginRoute(id));

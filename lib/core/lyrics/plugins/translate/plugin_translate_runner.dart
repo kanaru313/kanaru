@@ -114,7 +114,7 @@ class PluginTranslateRunner {
     final row = await _core.db.lyricsPluginById(installId);
     if (row == null ||
         row.removedAt != null ||
-        row.kind != PluginKind.translate.value) {
+        PluginKind.fromValue(row.kind)?.isTranslation != true) {
       throw const TranslationException(TranslationFailureKind.server);
     }
     final record = LyricsPluginRecord.fromRow(row);

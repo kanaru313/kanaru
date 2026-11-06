@@ -6080,6 +6080,12 @@ abstract class AppLocalizations {
   /// **'Translate'**
   String get lyricsStoreKindTranslate;
 
+  /// AI translation plugin kind: Type filter value and tag on store rows
+  ///
+  /// In en, this message translates to:
+  /// **'AI translate'**
+  String get lyricsStoreKindAiTranslate;
+
   /// Source filter value and row subtitle of a plugin installed from a zip file
   ///
   /// In en, this message translates to:

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/lyrics_plugin_spec.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
@@ -57,8 +56,9 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     final l10n = context.l10n;
     final controller = ref.read(lyricsPluginsControllerProvider);
     if (controller == null) return;
-    final confirm =
-        ref.read(settingsProvider.select((s) => s.confirmPluginUninstall));
+    final confirm = ref.read(
+      settingsProvider.select((s) => s.confirmPluginUninstall),
+    );
     if (confirm) {
       PluginDataStats stats;
       try {
@@ -90,7 +90,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     if (mounted) setState(() => _uninstalling = false);
     // The user may have gone elsewhere while the files were deleted.
     final here = router.routeInformationProvider.value.uri.path;
-    final isTranslate = record.kind == PluginKind.translate;
+    final isTranslate = record.kind?.isTranslation == true;
     final pagePath = Uri.parse(
       isTranslate ? translationPluginRoute(_id) : lyricsPluginRoute(_id),
     ).path;
@@ -132,7 +132,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
               (r) =>
                   r.installId == _id &&
                   !r.isRemoved &&
-                  r.kind == PluginKind.translate,
+                  r.kind?.isTranslation == true,
             )
             .firstOrNull;
     if (record == null) {
