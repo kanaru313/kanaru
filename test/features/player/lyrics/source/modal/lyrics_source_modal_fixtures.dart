@@ -22,10 +22,13 @@ const otherTrack = Track(
   duration: Duration(seconds: 200),
 );
 
-Lyrics modalLyrics({bool synced = true}) => Lyrics(
+Lyrics modalLyrics({
+  bool synced = true,
+  LyricsSource source = LyricsSource.sidecar,
+}) => Lyrics(
   lines: const [LyricLine(Duration.zero, 'words')],
   synced: synced,
-  source: LyricsSource.sidecar,
+  source: source,
 );
 
 OnlineLyricsOrigin modalOrigin({bool pinned = true, String id = 'plugin-a'}) =>
@@ -48,7 +51,15 @@ LyricsPluginRecord modalRecord(String id, String name) => LyricsPluginRecord(
 
 /// Records what the modal asks the actions to do.
 class RecordingActions extends OnlineLyricsActions {
-  RecordingActions(super.ref, this.log, {this.failChoose = false});
+  RecordingActions(
+    super.ref,
+    this.log, {
+    this.failChoose = false,
+    this.saveResult = LrcWriteResult.written,
+  });
+
+  /// What `save` answers.
+  final LrcWriteResult saveResult;
 
   final List<String> log;
 
@@ -85,6 +96,15 @@ class RecordingActions extends OnlineLyricsActions {
     bool replace = false,
   }) async {
     log.add('save ${origin.remoteId}');
+    return (result: saveResult, kept: null);
+  }
+
+  @override
+  Future<LyricsSaveOutcome> saveLocalAsLrc(
+    LyricsTarget target, {
+    bool replace = false,
+  }) async {
+    log.add('saveLocal');
     return (result: LrcWriteResult.written, kept: null);
   }
 }

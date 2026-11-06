@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/lyrics/lyrics.dart';
 import '../../../core/lyrics/online/lyrics_choice.dart';
 import '../../../core/lyrics/online/lyrics_target.dart';
 import '../../../core/lyrics/online/online_lyrics_actions.dart';
@@ -73,6 +74,14 @@ class LyricsActionRunner {
   OnlineLyricsOrigin? get origin {
     final status = source?.status;
     return status is LyricsFound ? status.origin : null;
+  }
+
+  /// The lyrics on screen come from the song's tags (no online record).
+  bool get isTagLyrics {
+    final status = source?.status;
+    return status is LyricsFound &&
+        status.origin == null &&
+        status.lyrics.source == LyricsSource.embedded;
   }
 
   /// The library's view of the playing song, else the queue track's. With a
@@ -149,8 +158,9 @@ class LyricsActionRunner {
     ),
   );
 
-  /// "Save lyrics…": see [runLyricsSave].
-  Future<void> save() => runLyricsSave(this);
+  /// "Save lyrics to": see [runLyricsSaveTargets].
+  Future<void> save(Set<LyricsSaveTarget> targets) =>
+      runLyricsSaveTargets(this, targets);
 
   /// Asks for consent to look lyrics up automatically and turns it on. A
   /// song that cannot be looked up automatically (no title, artist or

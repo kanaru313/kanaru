@@ -28,6 +28,15 @@ class _FakeActions extends OnlineLyricsActions {
   final List<_Call> calls;
 
   @override
+  Future<LyricsSaveOutcome> saveLocalAsLrc(
+    LyricsTarget target, {
+    bool replace = false,
+  }) async {
+    calls.add((trackKey: target.trackKey, remoteId: 'tags', replace: replace));
+    return script.removeAt(0);
+  }
+
+  @override
   Future<LyricsSaveOutcome> save(
     LyricsTarget target,
     OnlineLyricsOrigin origin, {
@@ -64,6 +73,21 @@ LyricsSourceResolution _source(String uri) => (
   ),
 );
 
+LyricsSourceResolution _tagSource(String uri) => (
+  chosen: null,
+  effective: null,
+  pin: null,
+  hasLocal: true,
+  status: LyricsFound(
+    uri,
+    const Lyrics(
+      lines: [LyricLine(Duration.zero, 'words')],
+      synced: false,
+      source: LyricsSource.embedded,
+    ),
+  ),
+);
+
 LyricsTarget _target(String path, {String? title = 'Night Song'}) =>
     LyricsTarget.fromFields(uri: path, title: title, artist: 'Someone');
 
@@ -76,6 +100,7 @@ void main() {
     String path = '/m/a.flac',
     bool withSource = true,
     bool busy = false,
+    bool tags = false,
   }) async {
     calls = [];
     await tester.pumpWidget(
@@ -94,12 +119,15 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () => runLyricsSave(
+                onPressed: () => runLyricsSaveTargets(
                   LyricsActionRunner.snapshot(
                     context,
                     target: _target(path),
-                    source: withSource ? _source(path) : null,
+                    source: withSource
+                        ? (tags ? _tagSource(path) : _source(path))
+                        : null,
                   ),
+                  {LyricsSaveTarget.lrc},
                 ),
                 child: const Text('go'),
               ),
@@ -128,21 +156,15 @@ void main() {
     }
   }
 
-  Future<void> confirmSave(WidgetTester tester, Finder until) async {
-    await tester.tap(find.text('Save').last);
-    await tester.pumpAndSettle();
-    await settleUntil(tester, until);
-  }
+  Future<void> confirmSave(WidgetTester tester, Finder until) =>
+      settleUntil(tester, until);
 
   const outcomes = <(LyricsSaveOutcome, String)>[
     (
       (result: LrcWriteResult.written, kept: null),
       'Lyrics saved as a .lrc file',
     ),
-    (
-      (result: LrcWriteResult.identical, kept: null),
-      'The .lrc file already has these lyrics',
-    ),
+    ((result: LrcWriteResult.identical, kept: null), 'Already saved as a.lrc'),
     (
       (result: LrcWriteResult.outsideLibrary, kept: null),
       'Could not save: the song is outside the library folders',
@@ -170,8 +192,6 @@ void main() {
   for (final (outcome, text) in outcomes) {
     testWidgets('${outcome.result} says: $text', (tester) async {
       await open(tester, [outcome]);
-      expect(find.text('Save lyrics'), findsOneWidget);
-
       await confirmSave(tester, find.text(text));
 
       expect(find.text(text), findsOneWidget);
@@ -210,28 +230,6 @@ void main() {
     );
   });
 
-  testWidgets('the tag option is shown but disabled', (tester) async {
-    await open(tester, []);
-
-    expect(find.text('.lrc file'), findsOneWidget);
-    expect(find.text('In the music tags'), findsOneWidget);
-    expect(find.text('Coming soon'), findsOneWidget);
-    final tile = tester.widget<RadioListTile<String>>(
-      find.widgetWithText(RadioListTile<String>, 'In the music tags'),
-    );
-    expect(tile.enabled, isFalse);
-  });
-
-  testWidgets('Cancel saves nothing', (tester) async {
-    await open(tester, []);
-
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-
-    expect(calls, isEmpty);
-    expect(find.byType(SnackBar), findsNothing);
-  });
-
   testWidgets('an existing file is confirmed by name, then replaced', (
     tester,
   ) async {
@@ -250,6 +248,43 @@ void main() {
 
     expect(calls.map((c) => c.replace), [false, true]);
     expect(find.text('Lyrics saved as a .lrc file'), findsOneWidget);
+  });
+
+  testWidgets(
+    'tag lyrics: an existing file is confirmed by name, then replaced',
+    (tester) async {
+      await open(tester, [
+        (result: LrcWriteResult.exists, kept: null),
+        (result: LrcWriteResult.written, kept: null),
+      ], tags: true);
+      await confirmSave(tester, find.text('Replace'));
+
+      expect(find.text('Replace a.lrc of Night Song?'), findsOneWidget);
+      await tester.tap(find.text('Replace'));
+      await tester.pumpAndSettle();
+
+      expect(calls.map((c) => (c.remoteId, c.replace)), [
+        ('tags', false),
+        ('tags', true),
+      ]);
+      expect(find.text('Lyrics saved as a .lrc file'), findsOneWidget);
+    },
+  );
+
+  testWidgets('tag lyrics kept by the tags say the file holds the same', (
+    tester,
+  ) async {
+    await open(tester, [
+      (result: LrcWriteResult.written, kept: LyricsChoiceKept.tagPreferred),
+    ], tags: true);
+    await confirmSave(tester, find.textContaining('still show'));
+
+    expect(
+      find.text(
+        'Lyrics from the tags still show; the .lrc file holds the same lyrics.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the replace confirm says the same on every disk', (
@@ -286,8 +321,6 @@ void main() {
     await open(tester, [
       (result: LrcWriteResult.exists, kept: null),
     ], path: '${dir.path}/a.flac');
-    await tester.tap(find.text('Save').last);
-    await tester.pumpAndSettle();
     await settleUntil(
       tester,
       find.text('Replace a.lrc and a.LRC of Night Song?'),
@@ -324,7 +357,6 @@ void main() {
   ) async {
     await open(tester, [], withSource: false);
 
-    expect(find.text('Save lyrics'), findsNothing);
     expect(find.text('No lyrics to save'), findsOneWidget);
     expect(calls, isEmpty);
   });
@@ -332,7 +364,6 @@ void main() {
   testWidgets('nothing opens while a save of the song runs', (tester) async {
     await open(tester, [], busy: true);
 
-    expect(find.text('Save lyrics'), findsNothing);
     expect(find.byType(SnackBar), findsNothing);
     expect(calls, isEmpty);
   });

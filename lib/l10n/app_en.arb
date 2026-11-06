@@ -3268,25 +3268,48 @@
   "settingsSavedLyricsClearBody": "Deleted: the lyrics saved on this computer, the lyrics source chosen for each song and the rejected versions. .lrc files next to songs stay.",
   "settingsSavedLyricsCleared": "Saved lyrics cleared",
   "settingsSavedLyricsClearFailed": "Could not clear saved lyrics",
-  "lyricsSaveTitle": "Save lyrics",
-  "@lyricsSaveTitle": {
-    "description": "Title of the Save lyrics dialog"
+  "lyricsSaveToTitle": "Save lyrics to",
+  "@lyricsSaveToTitle": {
+    "description": "Title of the child modal that picks where to save the lyrics"
   },
-  "lyricsSaveOptionLrc": ".lrc file",
-  "@lyricsSaveOptionLrc": {
-    "description": "Save lyrics option: a .lrc file next to the song"
+  "lyricsSaveToLrc": ".lrc file next to the song",
+  "@lyricsSaveToLrc": {
+    "description": "Save lyrics to: a .lrc file next to the song"
   },
-  "lyricsSaveOptionTags": "In the music tags",
-  "@lyricsSaveOptionTags": {
-    "description": "Save lyrics option, not available yet"
+  "lyricsSaveToTag": "Tag in the music file",
+  "@lyricsSaveToTag": {
+    "description": "Save lyrics to: the tags of the music file, not available yet"
   },
-  "lyricsSaveOptionTagsSoon": "Coming soon",
-  "@lyricsSaveOptionTagsSoon": {
-    "description": "Shown under the disabled tag option of Save lyrics"
+  "lyricsSaveToButton": "Save ({count})",
+  "@lyricsSaveToButton": {
+    "description": "Save button of Save lyrics to; count is the number of chosen places",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-  "lyricsSaveConfirm": "Save",
-  "@lyricsSaveConfirm": {
-    "description": "Confirm button of the Save lyrics dialog"
+  "lyricsSaveAlready": "Already saved as {name}",
+  "@lyricsSaveAlready": {
+    "description": "Snackbar when the .lrc file already holds these lyrics; name is the file name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsSaveKeptTagSame": "Lyrics from the tags still show; the .lrc file holds the same lyrics.",
+  "@lyricsSaveKeptTagSame": {
+    "description": "Detail under the saved message when tag lyrics were saved as .lrc and the tags still win"
+  },
+  "lyricsSaveToLrcTrash": "{name} · old file goes to the trash",
+  "@lyricsSaveToLrcTrash": {
+    "description": "Subtitle of the .lrc row of Save lyrics to when a .lrc file already exists; name is the file name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "lyricsReplaceTitle": "Replace {files} of {title}?",
   "@lyricsReplaceTitle": {
@@ -3311,10 +3334,6 @@
   "lyricsSaveWritten": "Lyrics saved as a .lrc file",
   "@lyricsSaveWritten": {
     "description": "Snackbar after the .lrc file was written"
-  },
-  "lyricsSaveIdentical": "The .lrc file already has these lyrics",
-  "@lyricsSaveIdentical": {
-    "description": "Snackbar when the .lrc file already holds the same text"
   },
   "lyricsSaveKeptTag": "The song still uses the lyrics you chose because lyrics in tags are preferred",
   "@lyricsSaveKeptTag": {

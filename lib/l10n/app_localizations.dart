@@ -5222,35 +5222,47 @@ abstract class AppLocalizations {
   /// **'Could not clear saved lyrics'**
   String get settingsSavedLyricsClearFailed;
 
-  /// Title of the Save lyrics dialog
+  /// Title of the child modal that picks where to save the lyrics
   ///
   /// In en, this message translates to:
-  /// **'Save lyrics'**
-  String get lyricsSaveTitle;
+  /// **'Save lyrics to'**
+  String get lyricsSaveToTitle;
 
-  /// Save lyrics option: a .lrc file next to the song
+  /// Save lyrics to: a .lrc file next to the song
   ///
   /// In en, this message translates to:
-  /// **'.lrc file'**
-  String get lyricsSaveOptionLrc;
+  /// **'.lrc file next to the song'**
+  String get lyricsSaveToLrc;
 
-  /// Save lyrics option, not available yet
+  /// Save lyrics to: the tags of the music file, not available yet
   ///
   /// In en, this message translates to:
-  /// **'In the music tags'**
-  String get lyricsSaveOptionTags;
+  /// **'Tag in the music file'**
+  String get lyricsSaveToTag;
 
-  /// Shown under the disabled tag option of Save lyrics
+  /// Save button of Save lyrics to; count is the number of chosen places
   ///
   /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get lyricsSaveOptionTagsSoon;
+  /// **'Save ({count})'**
+  String lyricsSaveToButton(int count);
 
-  /// Confirm button of the Save lyrics dialog
+  /// Snackbar when the .lrc file already holds these lyrics; name is the file name
   ///
   /// In en, this message translates to:
-  /// **'Save'**
-  String get lyricsSaveConfirm;
+  /// **'Already saved as {name}'**
+  String lyricsSaveAlready(String name);
+
+  /// Detail under the saved message when tag lyrics were saved as .lrc and the tags still win
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics from the tags still show; the .lrc file holds the same lyrics.'**
+  String get lyricsSaveKeptTagSame;
+
+  /// Subtitle of the .lrc row of Save lyrics to when a .lrc file already exists; name is the file name
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · old file goes to the trash'**
+  String lyricsSaveToLrcTrash(String name);
 
   /// Title of the confirm before an existing .lrc file is replaced; files are the names of the lyrics files, title the song
   ///
@@ -5275,12 +5287,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics saved as a .lrc file'**
   String get lyricsSaveWritten;
-
-  /// Snackbar when the .lrc file already holds the same text
-  ///
-  /// In en, this message translates to:
-  /// **'The .lrc file already has these lyrics'**
-  String get lyricsSaveIdentical;
 
   /// Details under the save snackbar when tags win over the saved file
   ///

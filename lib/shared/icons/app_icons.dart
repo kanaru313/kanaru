@@ -162,6 +162,7 @@ abstract final class AppIcons {
       FluentIcons.translate_24_regular;
   static const IconData lyricsTranslate = FluentIcons.translate_24_filled;
   static const IconData lyricsKeep = FluentIcons.bookmark_24_regular;
+  static const IconData lyricsFile = FluentIcons.document_24_regular;
   static const IconData lyricsSave = FluentIcons.save_24_regular;
   static const IconData lyricsReject = FluentIcons.thumb_dislike_24_regular;
   static const IconData windowCustom = FluentIcons.window_24_regular;

@@ -5,6 +5,7 @@ import '../../database/library_database.dart';
 import '../../database/library_startup.dart';
 import '../../database/online_lyrics_queries.dart';
 import '../../lyrics_translation/lyrics_content_hash.dart';
+import '../local_lyrics_save_action.dart';
 import '../lyrics.dart';
 import '../playing_local_lyrics_provider.dart';
 import 'candidate_content_hash.dart';
@@ -188,6 +189,20 @@ class OnlineLyricsActions {
     if (!_saving.add(target.trackKey)) return (result: null, kept: null);
     try {
       return await saveOnlineLyrics(_ref, target, origin, replace: replace);
+    } finally {
+      _saving.remove(target.trackKey);
+    }
+  }
+
+  /// "Save lyrics" for lyrics from the song's tags: writes them as the
+  /// song's `.lrc` (see [saveLocalLyricsAsLrc]). Shares the guard of [save].
+  Future<LyricsSaveOutcome> saveLocalAsLrc(
+    LyricsTarget target, {
+    bool replace = false,
+  }) async {
+    if (!_saving.add(target.trackKey)) return (result: null, kept: null);
+    try {
+      return await saveLocalLyricsAsLrc(_ref, target, replace: replace);
     } finally {
       _saving.remove(target.trackKey);
     }
