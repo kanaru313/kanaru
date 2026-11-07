@@ -5,6 +5,7 @@ import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/session/playback_session.dart';
 import 'package:kanaru/core/player/session/playback_session_codec.dart';
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/sources/remote_source_ref.dart';
 import 'package:logging/logging.dart';
 
 void main() {
@@ -408,6 +409,32 @@ void main() {
       final back = decodePlaybackSession(sessionOf(good));
 
       expect(uris(back), good);
+    });
+
+    test('a remote track saved in the queue is gone after decode', () {
+      const ref = RemoteSourceRef(
+        installId: 'plugin-abc123def456',
+        itemId: 'video 1',
+      );
+      final remote = Track(
+        uri: remoteTrackUri(ref),
+        title: 'Remote',
+        remote: ref,
+      );
+      final saved = PlaybackSession(
+        tracks: [a, remote, b],
+        order: const [0, 1, 2],
+        index: 2,
+        position: const Duration(seconds: 7),
+      );
+
+      final back = roundTrip(saved);
+
+      expect(back.tracks.map((t) => t.uri), [a.uri, b.uri]);
+      expect(back.tracks.every((t) => t.remote == null), isTrue);
+      expect(back.order, [0, 1]);
+      expect(back.tracks[back.order[back.index]].uri, b.uri);
+      expect(back.position, const Duration(seconds: 7));
     });
 
     test('the current track stays current, position kept', () {

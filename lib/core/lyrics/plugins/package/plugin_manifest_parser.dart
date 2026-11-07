@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:logging/logging.dart';
 
 import '../../../database/lyrics_plugin_spec.dart';
-import '../../online/lyrics_provider_registry.dart';
+import '../../online/plugin_host_patterns.dart';
 import 'plugin_config_parser.dart';
 import 'plugin_languages.dart';
 import 'plugin_manifest.dart';
@@ -56,6 +56,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
     'lyrics' => PluginKind.lyrics,
     'translate' => PluginKind.translate,
     'ai-translate' => PluginKind.aiTranslate,
+    'source' => PluginKind.source,
     _ => null,
   };
   if (kind == null) {
@@ -70,7 +71,10 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
   if (version is! int || version < 1 || version > 2147483647) {
     throw _invalid('metadata.version');
   }
-  final hosts = _hosts(metadata['hosts']);
+  final hosts = _hosts(
+    metadata['hosts'],
+    wildcardsAllowed: kind == PluginKind.source,
+  );
   final author = _text(
     metadata['author'],
     'metadata.author',
@@ -108,6 +112,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
   _checkCustomFields(kind, config);
   if (kind == PluginKind.aiTranslate) _requireTuneFields(config);
   final isLyrics = kind == PluginKind.lyrics;
+  final isSource = kind == PluginKind.source;
   return PluginManifest(
     kind: kind,
     translate: translate,
@@ -118,7 +123,7 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
     author: author,
     description: description,
     languages: languages,
-    searchScript: isLyrics
+    searchScript: isLyrics || isSource
         ? _scriptRef(script['search'], 'script.search')
         : null,
     lyricsScript: isLyrics
@@ -126,6 +131,9 @@ PluginManifest parsePluginManifest(Uint8List bytes) {
         : null,
     translateScript: kind.isTranslation
         ? _scriptRef(script['translate'], 'script.translate')
+        : null,
+    streamScript: isSource
+        ? _scriptRef(script['stream'], 'script.stream')
         : null,
     config: config,
   );
@@ -190,21 +198,24 @@ String _text(
   return cleaned;
 }
 
-List<String> _hosts(Object? value) {
+List<String> _hosts(Object? value, {required bool wildcardsAllowed}) {
   if (value is! List || value.isEmpty || value.length > 20) {
     throw _invalid('metadata.hosts');
   }
   final hosts = <String>{};
   for (final item in value) {
     if (item is! String) throw _invalid('metadata.hosts');
-    final host = item.trim().toLowerCase();
-    if (lyricsHostProblem(host) != null) {
-      throw PluginPackageProblem(
-        PluginPackageProblemKind.badHost,
-        detail: host,
-      );
-    }
-    hosts.add(host);
+    hosts.add(item.trim().toLowerCase());
+  }
+  final problem = pluginHostListProblem(
+    hosts.toList(),
+    wildcardsAllowed: wildcardsAllowed,
+  );
+  if (problem != null) {
+    throw PluginPackageProblem(
+      PluginPackageProblemKind.badHost,
+      detail: problem.entry,
+    );
   }
   return List.unmodifiable(hosts);
 }

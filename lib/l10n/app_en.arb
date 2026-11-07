@@ -3656,6 +3656,15 @@
   "pluginInfoTitle": "Details",
   "pluginInfoSource": "Installed from",
   "pluginInfoHosts": "Can only connect to",
+  "pluginInfoHostAnySubdomain": "Any subdomain of {host}",
+  "@pluginInfoHostAnySubdomain": {
+    "description": "A wildcard host of a plugin in its details: the plugin may connect to one level of subdomain under the host",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "pluginInfoInstalled": "Installed",
   "pluginInfoInstalledUpdated": "{installed} · updated {updated}",
   "@pluginInfoInstalledUpdated": {
@@ -3751,6 +3760,7 @@
     }
   },
   "pluginUninstallKeepTranslations": "Saved translations, until you choose Clear saved translations",
+  "pluginUninstallKeepNothingSource": "Your library is not affected",
   "pluginUninstallKeepPinned": "Lyrics pinned from this source, if any",
   "pluginUninstallKeepLrc": "The .lrc files already written next to songs",
   "pluginUninstallConfirm": "Uninstall",
@@ -3897,6 +3907,10 @@
   "lyricsStoreKindAiTranslate": "AI translate",
   "@lyricsStoreKindAiTranslate": {
     "description": "AI translation plugin kind: Type filter value and tag on store rows"
+  },
+  "lyricsStoreKindSource": "Source",
+  "@lyricsStoreKindSource": {
+    "description": "Music source plugin kind: Type filter value and tag on store rows"
   },
   "lyricsStoreFromFile": "From file",
   "@lyricsStoreFromFile": {
@@ -5867,5 +5881,121 @@
         "type": "String"
       }
     }
+  },
+  "navOnline": "Online",
+  "@navOnline": {
+    "description": "Sidebar label and title of the Online screen (search in a source plugin)"
+  },
+  "onlineSourceTooltip": "Source",
+  "@onlineSourceTooltip": {
+    "description": "Tooltip of the plugin icon button in the Online header that opens the source plugin page"
+  },
+  "onlineSourceSemantics": "Source: {name}",
+  "@onlineSourceSemantics": {
+    "description": "Screen reader label of the plugin icon button in the Online header",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineSearchHint": "Search songs, or paste a link",
+  "@onlineSearchHint": {
+    "description": "Hint of the search field of the Online screen"
+  },
+  "onlineSearchButton": "Search",
+  "@onlineSearchButton": {
+    "description": "Button next to the search field of the Online screen"
+  },
+  "onlineIdle": "Search for a song, or paste a video or playlist link.",
+  "@onlineIdle": {
+    "description": "Online screen before any search"
+  },
+  "onlineEmpty": "No results for “{query}”.",
+  "@onlineEmpty": {
+    "description": "Online screen: the search found nothing",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineRetry": "Retry",
+  "@onlineRetry": {
+    "description": "Button of the Online error view that runs the search again"
+  },
+  "onlineErrorAuth": "The service refused the sign-in.",
+  "@onlineErrorAuth": {
+    "description": "Online error: the source plugin was refused its credentials"
+  },
+  "onlineErrorRateLimited": "Too many requests. Try again later.",
+  "@onlineErrorRateLimited": {
+    "description": "Online error: the service asks to wait"
+  },
+  "onlineErrorUnavailable": "The service is not available right now.",
+  "@onlineErrorUnavailable": {
+    "description": "Online error: the service failed or answered something unreadable"
+  },
+  "onlineErrorNetwork": "Could not reach the service. Check your connection.",
+  "@onlineErrorNetwork": {
+    "description": "Online error: a request failed or timed out"
+  },
+  "onlineErrorInvalidOutput": "The plugin returned something Kanaru cannot read.",
+  "@onlineErrorInvalidOutput": {
+    "description": "Online error: the plugin output breaks the documented shape"
+  },
+  "onlineErrorBusy": "The plugin runtime is busy. Try again in a moment.",
+  "@onlineErrorBusy": {
+    "description": "Online error: every plugin worker was busy"
+  },
+  "onlineErrorInternal": "Something went wrong inside Kanaru.",
+  "@onlineErrorInternal": {
+    "description": "Online error: the app failed to run the plugin"
+  },
+  "onlineErrorPluginMessage": "Plugin message: {message}",
+  "@onlineErrorPluginMessage": {
+    "description": "Online error: the text the plugin gave with its error",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineNeedsConfigBody": "Fill in its required settings, then search again.",
+  "@onlineNeedsConfigBody": {
+    "description": "Online screen: the source plugin has an empty required setting"
+  },
+  "onlineConsentTitle": "Allow {name} to go online?",
+  "@onlineConsentTitle": {
+    "description": "Online consent notice title",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineConsentBody": "{name} will contact {hosts} to search and to stream audio. What you type and the songs you play are sent to those sites. Kanaru sends nothing until you accept.",
+  "@onlineConsentBody": {
+    "description": "Online consent notice body naming the plugin and the hosts it may reach",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "hosts": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineConsentAccept": "Accept and search",
+  "@onlineConsentAccept": {
+    "description": "Button of the Online consent notice"
+  },
+  "onlineNoPluginBody": "Install a source plugin to search and play music from the web.",
+  "@onlineNoPluginBody": {
+    "description": "Online screen with no source plugin installed"
+  },
+  "onlineNoPluginStore": "Open plugin store",
+  "@onlineNoPluginStore": {
+    "description": "Button of the Online screen with no source plugin: opens the plugin store"
   }
 }

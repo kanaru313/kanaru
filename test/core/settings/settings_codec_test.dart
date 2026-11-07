@@ -391,6 +391,49 @@ void main() {
     });
   });
 
+  group('onlineSources group', () {
+    const sourced = AppSettings(
+      onlineSources: OnlineSourcesPrefs(
+        noticeAcknowledged: {'plugin-abc123def456'},
+      ),
+    );
+
+    test('is a known key and round-trips as a nested object', () {
+      final json = encodeSettings(sourced);
+      final decoded = decodeSettings(json);
+
+      expect(json['onlineSources'], {
+        'noticeAcknowledged': ['plugin-abc123def456'],
+      });
+      expect(decoded.settings, sourced);
+      expect(decoded.unknownKeys, isEmpty);
+    });
+
+    test('a file without it gives no consent', () {
+      expect(
+        decodeSettings(<String, Object?>{}).settings.onlineSources,
+        const OnlineSourcesPrefs(),
+      );
+    });
+
+    test('keys and non-id items inside it are kept', () {
+      final decoded = decodeSettings(<String, Object?>{
+        'onlineSources': <String, Object?>{
+          'future': 2,
+          'noticeAcknowledged': ['plugin-abc123def456', 'not-an-id'],
+        },
+      });
+      final json = encodeSettings(
+        decoded.settings,
+        groupExtras: decoded.groupExtras,
+      );
+
+      final group = json['onlineSources']! as Map;
+      expect(group['future'], 2);
+      expect(group['noticeAcknowledged'], ['plugin-abc123def456', 'not-an-id']);
+    });
+  });
+
   group('preference groups', () {
     test('a file without them gives the defaults', () {
       final settings = decodeSettings(<String, Object?>{}).settings;

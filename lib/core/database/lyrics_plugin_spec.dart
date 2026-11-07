@@ -42,7 +42,8 @@ enum LyricsPluginSourceKind {
 enum PluginKind {
   lyrics('lyrics'),
   translate('translate'),
-  aiTranslate('ai-translate');
+  aiTranslate('ai-translate'),
+  source('source');
 
   const PluginKind(this.value);
 

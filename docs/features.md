@@ -314,6 +314,7 @@ Mỗi nguồn implement `StorageProvider` trong `lib/core/storage/<name>/`. Play
 | SRC-12 | Dropbox / OneDrive              | OAuth, tương tự Google Drive                                                                                                             | P3      | 3     |
 | SRC-13 | Jellyfin | Metadata, ảnh bìa, nhập playlist từ server, báo phát về server; xác thực bằng user và mật khẩu hoặc API key, credential trong keyring (Namida). Chưa làm | P2      | 3     |
 | SRC-14 | FTP | Duyệt và phát từ FTP. Ưu tiên FTPS; cảnh báo khi dùng FTP thường vì mật khẩu gửi dạng rõ (Namida hỗ trợ FTP). Chưa làm | P3      | 3     |
+| SRC-15 | Plugin nguồn nhạc (Trực tuyến) | Plugin kind `source` (`search.js`, `stream.js`, xem `docs/source-plugin-api.md`): màn "Trực tuyến" ở sidebar (chỉ hiện khi có plugin nguồn) có ô tìm, bấm Tìm kiếm hoặc Enter mới gửi, danh sách kết quả trang đầu, bấm một dòng phát cả danh sách từ dòng đó qua proxy local; mỗi plugin hỏi đồng ý một lần (nêu tên plugin và host). Chưa làm: tải về, tải thêm kết quả, ảnh bìa, lời, menu dòng | P1      | 3     |
 
 ## 14. Cache & offline
 

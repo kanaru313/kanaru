@@ -3669,6 +3669,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pluginInfoHosts => 'Chỉ được kết nối tới';
 
   @override
+  String pluginInfoHostAnySubdomain(String host) {
+    return 'Mọi tên miền con của $host';
+  }
+
+  @override
   String get pluginInfoInstalled => 'Cài lúc';
 
   @override
@@ -3802,6 +3807,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get pluginUninstallKeepTranslations =>
       'Bản dịch đã lưu, cho đến khi bạn chọn Xóa các bản dịch đã lưu';
+
+  @override
+  String get pluginUninstallKeepNothingSource =>
+      'Thư viện của bạn không bị ảnh hưởng';
 
   @override
   String get pluginUninstallKeepPinned => 'Lời đã ghim từ nguồn này (nếu có)';
@@ -3954,6 +3963,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsStoreKindAiTranslate => 'Dịch AI';
+
+  @override
+  String get lyricsStoreKindSource => 'Nguồn nhạc';
 
   @override
   String get lyricsStoreFromFile => 'Từ file';
@@ -5483,4 +5495,85 @@ class AppLocalizationsVi extends AppLocalizations {
   ) {
     return 'Dịch bởi $service · $style';
   }
+
+  @override
+  String get navOnline => 'Trực tuyến';
+
+  @override
+  String get onlineSourceTooltip => 'Nguồn';
+
+  @override
+  String onlineSourceSemantics(String name) {
+    return 'Nguồn: $name';
+  }
+
+  @override
+  String get onlineSearchHint => 'Tìm bài hát, hoặc dán liên kết';
+
+  @override
+  String get onlineSearchButton => 'Tìm kiếm';
+
+  @override
+  String get onlineIdle =>
+      'Tìm một bài hát, hoặc dán liên kết video hoặc danh sách phát.';
+
+  @override
+  String onlineEmpty(String query) {
+    return 'Không có kết quả cho “$query”.';
+  }
+
+  @override
+  String get onlineRetry => 'Thử lại';
+
+  @override
+  String get onlineErrorAuth => 'Dịch vụ từ chối đăng nhập.';
+
+  @override
+  String get onlineErrorRateLimited => 'Quá nhiều yêu cầu. Hãy thử lại sau.';
+
+  @override
+  String get onlineErrorUnavailable => 'Dịch vụ hiện không dùng được.';
+
+  @override
+  String get onlineErrorNetwork =>
+      'Không kết nối được dịch vụ. Hãy kiểm tra mạng.';
+
+  @override
+  String get onlineErrorInvalidOutput =>
+      'Plugin trả về dữ liệu mà Kanaru không đọc được.';
+
+  @override
+  String get onlineErrorBusy => 'Plugin đang bận. Hãy thử lại sau giây lát.';
+
+  @override
+  String get onlineErrorInternal => 'Kanaru gặp lỗi.';
+
+  @override
+  String onlineErrorPluginMessage(String message) {
+    return 'Thông báo của plugin: $message';
+  }
+
+  @override
+  String get onlineNeedsConfigBody =>
+      'Hãy điền các thiết lập bắt buộc rồi tìm lại.';
+
+  @override
+  String onlineConsentTitle(String name) {
+    return 'Cho phép $name truy cập mạng?';
+  }
+
+  @override
+  String onlineConsentBody(String name, String hosts) {
+    return '$name sẽ kết nối tới $hosts để tìm kiếm và phát nhạc. Nội dung bạn nhập và các bài bạn phát được gửi tới các trang đó. Kanaru không gửi gì cho đến khi bạn đồng ý.';
+  }
+
+  @override
+  String get onlineConsentAccept => 'Đồng ý và tìm kiếm';
+
+  @override
+  String get onlineNoPluginBody =>
+      'Cài một plugin nguồn để tìm và phát nhạc từ web.';
+
+  @override
+  String get onlineNoPluginStore => 'Mở cửa hàng plugin';
 }

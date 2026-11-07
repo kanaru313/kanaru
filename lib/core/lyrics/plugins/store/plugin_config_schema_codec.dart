@@ -76,6 +76,7 @@ String pluginManifestJson({
   String? searchScript,
   String? lyricsScript,
   String? translateScript,
+  String? streamScript,
   PluginTranslateSpec? translate,
   required List<PluginConfigField> config,
 }) => const JsonEncoder.withIndent('  ').convert({
@@ -93,6 +94,7 @@ String pluginManifestJson({
     'search': ?searchScript,
     'lyrics': ?lyricsScript,
     'translate': ?translateScript,
+    'stream': ?streamScript,
   },
   if (translate != null) 'translate': translate.toJson(),
   if (config.isNotEmpty) 'config': pluginConfigToJson(config),

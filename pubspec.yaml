@@ -55,6 +55,8 @@ dependencies:
   media_kit_libs_audio: ^1.0.7
   rust_lib_kanaru:
     path: rust_builder
+  # Loopback stream proxy for source plugins (lib/core/sources/proxy).
+  shelf: ^1.4.3
   sqlite3: ^3.7.1
   table_calendar: ^3.3.0
   window_manager: ^0.5.2

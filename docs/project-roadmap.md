@@ -89,7 +89,7 @@ All **Open**.
 
 ## Phase 3: Remote sources and streaming
 
-All **Open**.
+The source plugin MVP is done: the `source` plugin kind, the local stream proxy, remote tracks in the player and the Online screen (SRC-15); audio only, no download and no database rows for remote tracks. Everything below, including `StorageProvider`, is still **Open**.
 
 | Item | Features |
 |---|---|
@@ -103,6 +103,7 @@ All **Open**.
 | Google Drive | SRC-08 |
 | Remote tag reading and incremental rescans | SRC-09, SRC-10 |
 | Download for offline, offline indicators, prefetch, cache management | CACHE-02 to CACHE-06 |
+| Source plugin follow-ups: Load more, row menu, remote artwork, lyrics for remote tracks, several source plugins | SRC-15 |
 
 Prerequisites from the architecture: credentials in the system keyring (PRIV-04), and every network feature behind its own switch (PRIV-03). See [system-architecture.md](./system-architecture.md#8-planned-remote-sources-and-licensing).
 

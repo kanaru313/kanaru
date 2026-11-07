@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import '../../../database/lyrics_plugin_spec.dart';
-import '../../online/lyrics_provider_registry.dart';
+import '../../online/plugin_host_patterns.dart';
 import '../package/plugin_languages.dart';
 import '../package/plugin_text_clean.dart';
 import 'plugin_catalog.dart';
@@ -82,6 +82,7 @@ PluginCatalogEntry? _entry(
     'lyrics' => PluginKind.lyrics,
     'translate' => PluginKind.translate,
     'ai-translate' => PluginKind.aiTranslate,
+    'source' => PluginKind.source,
     _ => null,
   };
   if (kind == null) return null;
@@ -91,7 +92,10 @@ PluginCatalogEntry? _entry(
   if (name == null) return null;
   if (version is! int || version < 1 || version > 2147483647) return null;
   if (apiVersion is! int || apiVersion < 1) return null;
-  final hosts = _hosts(json['hosts']);
+  final hosts = _hosts(
+    json['hosts'],
+    wildcardsAllowed: kind == PluginKind.source,
+  );
   final author = _text(json['author'], max: 80, optional: true);
   final description = _text(
     json['description'],
@@ -136,14 +140,19 @@ Uri? _reference(Object? value, PluginCatalogOrigin origin) {
   return verdict.isAllowed ? resolved : null;
 }
 
-List<String>? _hosts(Object? value) {
+List<String>? _hosts(Object? value, {required bool wildcardsAllowed}) {
   if (value is! List || value.isEmpty || value.length > 20) return null;
   final hosts = <String>{};
   for (final item in value) {
     if (item is! String) return null;
-    final host = item.trim().toLowerCase();
-    if (lyricsHostProblem(host) != null) return null;
-    hosts.add(host);
+    hosts.add(item.trim().toLowerCase());
+  }
+  if (pluginHostListProblem(
+        hosts.toList(),
+        wildcardsAllowed: wildcardsAllowed,
+      ) !=
+      null) {
+    return null;
   }
   return List.unmodifiable(hosts);
 }

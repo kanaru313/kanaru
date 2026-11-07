@@ -326,6 +326,8 @@ void main() {
         entry('tr', name: 'TrNew', kind: PluginKind.translate),
         entry('lyr-up', name: 'LyrUp', version: 2),
         entry('tr-up', name: 'TrUp', version: 2, kind: PluginKind.translate),
+        entry('src', name: 'SrcNew', kind: PluginKind.source),
+        entry('src-up', name: 'SrcUp', version: 2, kind: PluginKind.source),
       ]),
     ];
     final records = [
@@ -337,16 +339,24 @@ void main() {
         slug: 'tr-up',
         kind: PluginKind.translate,
       ),
+      record(
+        'plugin-src-up',
+        'SrcUp',
+        repoUrl: urlA,
+        slug: 'src-up',
+        kind: PluginKind.source,
+      ),
       record('plugin-lyr-file', 'LyrFile'),
       record('plugin-tr-file', 'TrFile', kind: PluginKind.translate),
+      record('plugin-src-file', 'SrcFile', kind: PluginKind.source),
       record('plugin-odd', 'Odd', kind: null),
     ];
 
     test('no filter lists every known kind in every section', () {
       final v = view(records, mixed);
-      expect(names(v.updates), ['LyrUp', 'TrUp']);
-      expect(names(v.installed), ['LyrFile', 'TrFile']);
-      expect(names(v.notInstalled), ['LyrNew', 'TrNew']);
+      expect(names(v.updates), ['LyrUp', 'TrUp', 'SrcUp']);
+      expect(names(v.installed), ['LyrFile', 'TrFile', 'SrcFile']);
+      expect(names(v.notInstalled), ['LyrNew', 'TrNew', 'SrcNew']);
       expect(v.showKindTag, isTrue);
     });
 
@@ -372,6 +382,14 @@ void main() {
       expect(names(tr.updates), ['TrUp']);
       expect(names(tr.installed), ['TrFile']);
       expect(names(tr.notInstalled), ['TrNew']);
+      final src = view(
+        records,
+        mixed,
+        filters: PluginStoreFilters.initial(PluginKind.source),
+      );
+      expect(names(src.updates), ['SrcUp']);
+      expect(names(src.installed), ['SrcFile']);
+      expect(names(src.notInstalled), ['SrcNew']);
     });
 
     test('kind tags show only when the filtered rows mix kinds', () {
@@ -402,7 +420,7 @@ void main() {
         ...names(all.installed),
         ...names(all.updates),
       ], isNot(contains('Odd')));
-      expect(all.shownCount, 6);
+      expect(all.shownCount, 9);
     });
   });
 

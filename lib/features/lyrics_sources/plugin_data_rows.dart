@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/database/lyrics_plugin_spec.dart'
-    show lyricsPluginDataMaxBytes;
+    show PluginKind, lyricsPluginDataMaxBytes;
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
 import '../../l10n/l10n.dart';
@@ -68,7 +68,9 @@ class PluginDataRows extends ConsumerWidget {
     final songs = stats?.foundCount ?? 0;
     final theme = Theme.of(context);
     final canWrite = ref.watch(lyricsPluginsControllerProvider) != null;
-    final isTranslate = record.kind?.isTranslation == true;
+    // Saved lyrics and lyrics lookups belong to lyrics plugins only.
+    final isLyrics =
+        record.kind?.isTranslation != true && record.kind != PluginKind.source;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -103,7 +105,7 @@ class PluginDataRows extends ConsumerWidget {
                   child: Text(l10n.pluginDataClear),
                 ),
               ),
-              if (!isTranslate) ...[
+              if (isLyrics) ...[
                 Divider(
                   height: 1,
                   indent: 16,

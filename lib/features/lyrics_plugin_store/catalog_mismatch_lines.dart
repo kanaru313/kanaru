@@ -1,6 +1,7 @@
 import '../../core/lyrics/plugins/repo/plugin_catalog.dart';
 import '../../core/lyrics/plugins/repo/repo_operation_results.dart';
 import '../../l10n/l10n.dart';
+import '../../shared/lyrics_plugins/plugin_host_label.dart';
 
 /// The lines of the "Gói không khớp danh sách" dialog: what the catalog said
 /// and what the package declares, only where they differ. A generic line
@@ -19,12 +20,15 @@ List<String> mismatchLines(
       l10n.lyricsStoreMismatchVersion(entry.version, declared.version),
     if (!_sameHosts(declared.hosts, entry.hosts))
       l10n.lyricsStoreMismatchHosts(
-        entry.hosts.join(', '),
-        declared.hosts.join(', '),
+        _hostsText(l10n, entry.hosts),
+        _hostsText(l10n, declared.hosts),
       ),
   ];
   return lines.isEmpty ? [l10n.lyricsStoreMismatchGeneric] : lines;
 }
+
+String _hostsText(AppLocalizations l10n, List<String> hosts) =>
+    hosts.map((h) => pluginHostLabel(l10n, h)).join(', ');
 
 bool _sameHosts(List<String> a, List<String> b) =>
     a.length == b.length && a.toSet().containsAll(b);

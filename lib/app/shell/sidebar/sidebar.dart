@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/settings/settings_provider.dart';
+import '../../../core/sources/has_source_plugins.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/kanaru_logo.dart';
 import '../app_destination.dart';
@@ -37,6 +38,7 @@ class Sidebar extends ConsumerWidget {
     final l10n = context.l10n;
     final groups = visibleSidebarGroups(
       ref.watch(settingsProvider.select((s) => s.display.sidebarTabs)),
+      online: ref.watch(hasSourcePluginsProvider),
     );
 
     // A slightly raised surface sets the sidebar apart from the page.

@@ -153,8 +153,11 @@ AudioBackend audioBackendOrUnavailable(
 /// `main()` and by tests, so both go through the same wiring.
 Override audioBackendOverride({
   required bool engineReady,
-  required AudioBackend Function() create,
+  required AudioBackend Function(Ref ref) create,
 }) => audioBackendProvider.overrideWith(
-  (ref) =>
-      audioBackendOrUnavailable(ref, engineReady: engineReady, create: create),
+  (ref) => audioBackendOrUnavailable(
+    ref,
+    engineReady: engineReady,
+    create: () => create(ref),
+  ),
 );

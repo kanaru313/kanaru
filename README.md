@@ -40,6 +40,10 @@ all merge into **one library**, with offline caching so it keeps playing when th
 - 📝 Lyrics from `.lrc` files next to the song and from the file's tags (embedded lyrics read with lofty), with a synced view that follows the line being sung and seeks on click
 - 🌐 Online lyrics from the lyrics plugins you install (none ships with Kanaru: a fresh install has no online source until you add one), **opt-in**: off until you accept a notice. Search by hand from the song menu (*Find lyrics online…*), or let Kanaru look up songs without lyrics while Now Playing is open. Pick the right match in *Choose lyrics*; a pick is kept in your library. A lyrics button in Now Playing (click it or press `L`; right-click turns lyrics off and on) opens a window that shows where the lyrics come from and lets you choose per song: the file's own lyrics, the online version, or none. Every result in *Choose lyrics* names its source, and a chip beside the query field opens *Search sources*, which filters the results by source. Sources you turned off are left out of a search until you ask: *Search* on an off source in that window, or the card under the results, searches them for that one search only, and your settings do not change; a source that failed has its own line with *Retry* and, for a plugin that has logged, *View log*. Lyrics saved by a plugin you later uninstall keep working and are credited as "<name> (removed)". *Save current lyrics…* writes a `.lrc` next to the song only when you ask; a file it replaces goes to the trash
 
+### Online sources
+
+- 🎧 Source plugins: install a `source` plugin and an *Online* entry appears in the sidebar. Search, tap a result to play it (audio only, no download); each plugin asks for your consent once and may only reach the hosts it declares.
+
 ### Remote sources (planned)
 
 | Source                                                                  | Auth                        | Notes                                                            |

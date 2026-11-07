@@ -178,6 +178,33 @@ void main() {
       expect(find.byType(PluginStoreKindTag), findsNWidgets(2));
     });
 
+    testWidgets('a source entry adds a Source chip that filters to it', (
+      tester,
+    ) async {
+      await pumpStore(
+        tester,
+        _page(),
+        repos: [
+          repoOf(
+            repoA,
+            'Kho A',
+            entries: [
+              _entry('lyr-vi', 'Lyr VI'),
+              _entry('yt', 'YT Source', kind: PluginKind.source),
+            ],
+          ),
+        ],
+        records: const [],
+        size: const Size(1000, 1600),
+      );
+      expect(find.text('Lyr VI'), findsOneWidget);
+      expect(find.text('YT Source'), findsOneWidget);
+      await _openModal(tester);
+      await _tap(tester, _chip('Source'));
+      expect(find.text('Lyr VI'), findsNothing);
+      expect(find.text('YT Source'), findsOneWidget);
+    });
+
     testWidgets('picks add up and unpick back to all', (tester) async {
       await pump(tester);
       await _openModal(tester);

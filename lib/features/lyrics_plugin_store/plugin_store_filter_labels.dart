@@ -11,6 +11,7 @@ String pluginKindLabel(AppLocalizations l10n, PluginKind kind) =>
       PluginKind.lyrics => l10n.lyricsStoreKindLyrics,
       PluginKind.translate => l10n.lyricsStoreKindTranslate,
       PluginKind.aiTranslate => l10n.lyricsStoreKindAiTranslate,
+      PluginKind.source => l10n.lyricsStoreKindSource,
     };
 
 /// The title of a filter group.

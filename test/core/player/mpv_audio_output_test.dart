@@ -24,6 +24,14 @@ void main() {
       expect(mpvStartupOptions, contains(('gapless-audio', 'weak')));
       expect(mpvStartupOptions, contains(('cache-on-disk', 'no')));
     });
+
+    test('waits 30 s for a stream, long enough for a cold resolve', () {
+      expect(mpvStartupOptions, contains(('network-timeout', '30')));
+    });
+
+    test('turns off the youtube-dl hook, so a failed URL starts no yt-dlp', () {
+      expect(mpvStartupOptions, contains(('ytdl', 'no')));
+    });
   });
 
   group('applyMpvStartupOptions', () {

@@ -7,6 +7,7 @@ import '../../core/lyrics/plugins/repo/lyrics_plugin_repos_provider.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/icons/app_icons.dart';
 import '../../shared/lyrics_plugins/plugin_card.dart';
+import '../../shared/lyrics_plugins/plugin_host_label.dart';
 import '../../shared/widgets/page_scaffold.dart';
 import 'plugin_store_actions.dart';
 import 'plugin_store_providers.dart';
@@ -55,9 +56,7 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
       );
     }
     final installed = _installed(input);
-    final repo = input.repos
-        .where((r) => r.url == widget.repoUrl)
-        .firstOrNull;
+    final repo = input.repos.where((r) => r.url == widget.repoUrl).firstOrNull;
     final entry = repo?.entry(widget.slug);
     if (repo == null || entry == null) {
       return PageScaffold(
@@ -88,11 +87,11 @@ class _CatalogItemPageState extends ConsumerState<CatalogItemPage> {
           label: l10n.lyricsStoreItemDescription,
           lines: [entry.description],
         ),
+      _Field(label: l10n.lyricsStoreItemRepo, lines: [repoName, repoUrl]),
       _Field(
-        label: l10n.lyricsStoreItemRepo,
-        lines: [repoName, repoUrl],
+        label: l10n.lyricsStoreItemHosts,
+        lines: [for (final h in entry.hosts) pluginHostLabel(l10n, h)],
       ),
-      _Field(label: l10n.lyricsStoreItemHosts, lines: entry.hosts),
     ];
     return PageScaffold(
       title: l10n.pluginDetailsTitle,
