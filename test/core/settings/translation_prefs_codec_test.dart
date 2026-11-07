@@ -310,4 +310,39 @@ void main() {
       expect(decode(encodeTranslationPrefs(prefs)), prefs);
     });
   });
+
+  test('prefetchCount reads old files and non-integers as 0', () {
+    expect(decode(<String, Object?>{}).prefetchCount, 0);
+    for (final bad in <Object?>['3', null, 2.5, true, <Object?>[]]) {
+      expect(decode(<String, Object?>{'prefetchCount': bad}).prefetchCount, 0);
+    }
+  });
+
+  test('prefetchCount is clamped to 0..5', () {
+    for (final (stored, read) in [(-1, 0), (0, 0), (3, 3), (5, 5), (6, 5)]) {
+      expect(
+        decode(<String, Object?>{'prefetchCount': stored}).prefetchCount,
+        read,
+      );
+    }
+  });
+
+  test(
+    'prefetchCount round-trips, stays out of extra, and survives copies',
+    () {
+      const prefs = TranslationPrefs(prefetchCount: 3);
+      final json = encodeTranslationPrefs(prefs);
+      expect(json['prefetchCount'], 3);
+      final (back, extra) = decodeTranslationPrefs(json);
+      expect(back, prefs);
+      expect(extra.containsKey('prefetchCount'), isFalse);
+      expect(prefs, isNot(const TranslationPrefs()));
+      expect(prefs.hashCode, const TranslationPrefs(prefetchCount: 3).hashCode);
+      expect(prefs.toString(), contains('prefetchCount: 3'));
+      expect(prefs.copyWith(show: true).prefetchCount, 3);
+      expect(prefs.copyWith(prefetchCount: 1).prefetchCount, 1);
+      expect(prefs.withoutService().prefetchCount, 3);
+      expect(prefs.withTargetLanguage('vi').prefetchCount, 3);
+    },
+  );
 }

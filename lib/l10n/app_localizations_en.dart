@@ -3379,6 +3379,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsTranslationPrefetch => 'Translate ahead';
+
+  @override
+  String get settingsTranslationPrefetchHint =>
+      'Translates the lyrics of upcoming songs in advance. Each song is one call to the translate plugin (AI plugins may charge).';
+
+  @override
+  String get settingsTranslationPrefetchNone => 'Only the playing song';
+
+  @override
+  String settingsTranslationPrefetchCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Next $count songs',
+      one: 'Next song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsTranslationPrefetchNotice =>
+      'The lyrics, titles and artists of upcoming songs will be sent to the translation service in use.';
+
+  @override
   String get settingsTranslationCache => 'Saved translations';
 
   @override

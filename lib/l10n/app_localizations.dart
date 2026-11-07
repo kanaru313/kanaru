@@ -4808,6 +4808,36 @@ abstract class AppLocalizations {
   /// **'Follow app language ({language})'**
   String settingsTranslationTargetFollow(String language);
 
+  /// No description provided for @settingsTranslationPrefetch.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate ahead'**
+  String get settingsTranslationPrefetch;
+
+  /// No description provided for @settingsTranslationPrefetchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Translates the lyrics of upcoming songs in advance. Each song is one call to the translate plugin (AI plugins may charge).'**
+  String get settingsTranslationPrefetchHint;
+
+  /// No description provided for @settingsTranslationPrefetchNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the playing song'**
+  String get settingsTranslationPrefetchNone;
+
+  /// Choice of how many upcoming songs are translated ahead
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Next song} other{Next {count} songs}}'**
+  String settingsTranslationPrefetchCount(int count);
+
+  /// No description provided for @settingsTranslationPrefetchNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The lyrics, titles and artists of upcoming songs will be sent to the translation service in use.'**
+  String get settingsTranslationPrefetchNotice;
+
   /// No description provided for @settingsTranslationCache.
   ///
   /// In en, this message translates to:
