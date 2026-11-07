@@ -14,13 +14,17 @@ import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/features/player/lyrics/source/lyrics_source_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_button.dart';
 import 'package:kanaru/features/player/lyrics/translation/lyrics_translation_pill.dart';
+import 'package:kanaru/features/player/now_playing/now_playing_actions.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pill.dart';
 import 'package:kanaru/features/player/sleep_timer/sleep_timer_button.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_header_pills.dart'
-    show nowPlayingPillLabelRooms;
+    show
+        nowPlayingHeaderButtonGap,
+        nowPlayingHeaderLeftGap,
+        nowPlayingPillLabelRooms;
 import 'package:kanaru/features/player/playback_controls.dart'
-    show ShuffleButton;
+    show ShuffleButton, playerIconSize;
 import 'package:kanaru/features/player/now_playing/now_playing_title_bar.dart';
 import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/volume_button.dart';
@@ -183,6 +187,16 @@ void main() {
         centerX(tester, 'Close Now Playing');
     // Two buttons' width plus the gap.
     expect(gap, 48 + 16);
+  });
+
+  testWidgets('a gap separates the favorite and playlist buttons', (
+    tester,
+  ) async {
+    await pump(tester);
+    final gap =
+        tester.getRect(find.byType(NowPlayingPlaylistButton)).left -
+        tester.getRect(find.byType(NowPlayingFavoriteButton)).right;
+    expect(gap, nowPlayingHeaderButtonGap);
   });
 
   testWidgets('the right separator shows only with window buttons', (
@@ -371,9 +385,11 @@ void main() {
 
       final source = tester.getRect(find.byType(LyricsSourceButton));
       final translate = tester.getRect(find.byType(LyricsTranslationButton));
-      // The playlist button's 48 px slot ends where the source starts.
-      expect(source.left, centerX(tester, 'Add to playlist') + 24);
-      expect(translate.left - source.right, 0);
+      expect(
+        source.left - (centerX(tester, 'Add to playlist') + 24),
+        nowPlayingHeaderButtonGap,
+      );
+      expect(translate.left - source.right, nowPlayingHeaderButtonGap);
       expect(translate.right, lessThan(centerX(tester, 'Shuffle')));
     });
 
@@ -450,24 +466,75 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('the translate pill sits right against the lyrics button', (
+      testWidgets(
+        'leaves a gap before the translate pill and matches its height',
+        (tester) async {
+          await pump(tester, showTranslate: true, overrides: ready());
+
+          expect(find.text('English'), findsOneWidget);
+          final sourceRect = tester.getRect(find.byType(LyricsSourceButton));
+          final translateRect = tester.getRect(
+            find.byType(LyricsTranslationButton),
+          );
+          expect(
+            translateRect.left - sourceRect.right,
+            nowPlayingHeaderButtonGap,
+          );
+          // The painted (hover) area, not the 48 px tap target both get.
+          Rect ink(Finder button) => tester.getRect(
+            find.descendant(of: button, matching: find.byType(InkWell)).first,
+          );
+          final sourceInk = ink(find.byType(LyricsSourceButton));
+          final translateInk = ink(find.byType(LyricsTranslationButton));
+          expect(translateInk.height, sourceInk.height);
+          expect(translateInk.top, sourceInk.top);
+        },
+      );
+
+      testWidgets('every button reads as far from the next, pills included', (
         tester,
       ) async {
-        await pump(tester, showTranslate: true, overrides: ready());
-
+        await pump(
+          tester,
+          showTranslate: true,
+          overrides: ready(),
+          modeButton: IconButton(
+            icon: const Icon(Icons.view_agenda),
+            iconSize: playerIconSize,
+            onPressed: () {},
+          ),
+        );
+        container.read(sleepTimerProvider.notifier).startMinutes(30);
+        await tester.pump();
         expect(find.text('English'), findsOneWidget);
-        expect(
-          tester.getRect(find.byType(LyricsTranslationButton)).left,
-          tester.getRect(find.byType(LyricsSourceButton)).right,
-        );
-        // The painted (hover) area, not the 48 px tap target both get.
-        Rect ink(Finder button) => tester.getRect(
-          find.descendant(of: button, matching: find.byType(InkWell)).first,
-        );
-        final sourceInk = ink(find.byType(LyricsSourceButton));
-        final translateInk = ink(find.byType(LyricsTranslationButton));
-        expect(translateInk.height, sourceInk.height);
-        expect(translateInk.top, sourceInk.top);
+        expect(find.text('30:00'), findsOneWidget);
+
+        // The painted (hover) area of every button, left to right.
+        final inks =
+            find
+                .descendant(
+                  of: find.byType(NowPlayingHeader),
+                  matching: find.byType(InkWell),
+                )
+                .evaluate()
+                .map((e) => tester.getRect(find.byWidget(e.widget)))
+                .toList()
+              ..sort((a, b) => a.left.compareTo(b.left));
+        final gaps = [
+          for (var i = 1; i < inks.length; i++)
+            inks[i].left - inks[i - 1].right,
+        ];
+        // Close and mode, then the song actions after the 16 px group gap, then
+        // the right group.
+        final even = 4 + nowPlayingHeaderButtonGap;
+        expect(gaps[0], even);
+        expect(gaps[1], 4 + nowPlayingHeaderLeftGap);
+        expect(gaps.sublist(2, 5), everyElement(even));
+        expect(gaps, hasLength(9));
+        expect(gaps.sublist(6), everyElement(even));
+        for (final ink in inks) {
+          expect(ink.height, inks.first.height);
+        }
       });
 
       testWidgets('the pill moves no other header button', (tester) async {
@@ -536,11 +603,11 @@ void main() {
       testWidgets('at the tightest edge the pill and sleep label both fit', (
         tester,
       ) async {
-        // Header 690 px wide: the translate pill gets a label room just
+        // Header 700 px wide: the translate pill gets a label room just
         // above the 64 px minimum.
         await pump(
           tester,
-          width: 690 + windowButtons,
+          width: 700 + windowButtons,
           windowButtons: true,
           textScale: 1.5,
           showTranslate: true,
@@ -625,10 +692,11 @@ void main() {
     });
 
     test('the label room budget', () {
-      // Left: 30 inset, 5 buttons (close, favorite, playlist, lyrics,
-      // translate) and a 16 gap. Right: 4 buttons, the 56 sleep label and the
-      // 12 px the sleep pill adds to its button. The translate pill replaces
-      // its 48 px button and spends 52 px (20 px logo) on padding and icon.
+      // Left: 14 inset, 5 buttons (close, favorite, playlist, lyrics,
+      // translate), a 16 gap and 3 button gaps. Right: 4 buttons, 3 button
+      // gaps, the 56 sleep label and the 16 px the sleep pill adds to its
+      // button. The translate pill replaces its 48 px button and spends 56 px
+      // (20 px logo) on margin, padding and icon.
       double room(
         double width, {
         bool mode = false,
@@ -643,7 +711,11 @@ void main() {
 
       // The translation is an icon: no label room at all.
       expect(room(1000), 0);
-      expect(room(1000, pill: true), 1000 - 286 - 260 - 4);
+      const gap = nowPlayingHeaderButtonGap;
+      expect(
+        room(1000, pill: true),
+        1000 - (270 + 3 * gap) - (264 + 3 * gap) - 8,
+      );
       expect(room(552, mode: true, window: true, pill: true), lessThan(0));
       expect(
         room(720, mode: true, pill: true) -
@@ -789,8 +861,9 @@ void main() {
       final source = tester.getRect(find.byType(LyricsSourceButton));
       expect(source.width, lessThanOrEqualTo(48));
       expect(
-        tester.getRect(find.byType(LyricsTranslationButton)).left,
-        source.right,
+        tester.getRect(find.byType(LyricsTranslationButton)).left -
+            source.right,
+        nowPlayingHeaderButtonGap,
       );
     });
 

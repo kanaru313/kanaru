@@ -105,9 +105,13 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     NowPlayingCloseButton(onPressed: widget.onClose),
-                    ?widget.modeButton,
+                    if (widget.modeButton case final mode?) ...[
+                      const SizedBox(width: nowPlayingHeaderButtonGap),
+                      mode,
+                    ],
                     const SizedBox(width: nowPlayingHeaderLeftGap),
                     const NowPlayingFavoriteButton(),
+                    const SizedBox(width: nowPlayingHeaderButtonGap),
                     const NowPlayingPlaylistButton(),
                     if (widget.showTranslate)
                       NowPlayingLyricsPills(
@@ -143,12 +147,14 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const ShuffleButton(),
+                          const SizedBox(width: nowPlayingHeaderButtonGap),
                           RepeatButton(
                             onMenuChanged: (open) {
                               _repeatOpen = open;
                               _report();
                             },
                           ),
+                          const SizedBox(width: nowPlayingHeaderButtonGap),
                           Flexible(
                             child: SleepTimerButton(
                               pill: true,
@@ -162,6 +168,7 @@ class _NowPlayingHeaderState extends State<NowPlayingHeader> {
                               },
                             ),
                           ),
+                          const SizedBox(width: nowPlayingHeaderButtonGap),
                           VolumeButton(
                             popupBelow: true,
                             onPopupChanged: (open) {

@@ -8,18 +8,25 @@ import '../lyrics/translation/lyrics_translation_button.dart';
 import '../lyrics/translation/lyrics_translation_pill.dart';
 
 /// Air before the first header button.
-const nowPlayingHeaderLeftInset = 30.0;
+const nowPlayingHeaderLeftInset = 14.0;
 
 /// Gap between the left buttons that close or switch the view and those that
 /// act on the song.
 const nowPlayingHeaderLeftGap = 16.0;
 
-/// Room the right group needs for its four buttons.
-const nowPlayingHeaderRightButtonsWidth = 4 * 48.0;
+/// Air between two header buttons. With the 2 px a round button's 48 px slot
+/// leaves around its circle (and a pill's matching margin), every button
+/// reads 6 px from the next. Kept small so every button fits a 720 px window
+/// beside the window buttons.
+const nowPlayingHeaderButtonGap = 2.0;
+
+/// Room the right group needs for its four buttons and the gaps between them.
+const nowPlayingHeaderRightButtonsWidth =
+    4 * 48.0 + 3 * nowPlayingHeaderButtonGap;
 
 /// Room the sleep timer pill needs beyond its round button: the label (56)
-/// and what the pill's padding and icon add to the 48 px button (12).
-const nowPlayingHeaderSleepLabelWidth = 68.0;
+/// and what the pill's margin, padding and icon add to the 48 px button (16).
+const nowPlayingHeaderSleepLabelWidth = 72.0;
 
 /// Gap, divider line and gap between the right buttons and the window
 /// buttons.
@@ -31,8 +38,9 @@ const _buttonWidth = 48.0;
 /// Room the label of the translate button may take in a header [width] wide:
 /// what is left after every other button, the sleep timer label's reserve and
 /// the window buttons' divider, plus the round button the pill replaces, minus
-/// the pill's own padding and icon. Zero or less means no room for a label,
-/// and it is zero while the translation is not a pill ([translatePill]).
+/// the pill's own margin, padding and icon. Zero or less means
+/// no room for a label, and it is zero while the translation is not a pill
+/// ([translatePill]).
 @visibleForTesting
 ({double translate}) nowPlayingPillLabelRooms({
   required double width,
@@ -44,7 +52,8 @@ const _buttonWidth = 48.0;
   final left =
       nowPlayingHeaderLeftInset +
       (hasModeButton ? 6 : 5) * _buttonWidth +
-      nowPlayingHeaderLeftGap;
+      nowPlayingHeaderLeftGap +
+      (hasModeButton ? 4 : 3) * nowPlayingHeaderButtonGap;
   final right =
       nowPlayingHeaderRightButtonsWidth +
       nowPlayingHeaderSleepLabelWidth +
@@ -96,10 +105,12 @@ class NowPlayingLyricsPills extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const SizedBox(width: nowPlayingHeaderButtonGap),
         LyricsSourceButton(
           modalOpener: lyricsModalOpener,
           onModalChanged: onLyricsModalChanged,
         ),
+        const SizedBox(width: nowPlayingHeaderButtonGap),
         LyricsTranslationButton(
           enabled: translateEnabled,
           maxLabelWidth: rooms.translate,

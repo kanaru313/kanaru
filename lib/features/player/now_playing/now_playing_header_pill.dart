@@ -6,6 +6,10 @@ import '../playback_controls.dart';
 /// button beside it: the icon plus the icon button's 8 px padding each side.
 const _pillHeight = playerIconSize + 16;
 
+/// Air each side of a pill: what a round button's 48 px slot leaves around
+/// its circle, so a pill sits as far from its neighbours as a round button.
+const nowPlayingHeaderPillMargin = (48 - _pillHeight) / 2;
+
 /// A Now Playing header button with a label: [leading] (or [icon]) followed by
 /// [label] on a raised stadium, or a 20 px progress ring in place of the icon
 /// while [busy]. Both lyrics buttons (translation and source) use it, so they
@@ -53,53 +57,58 @@ class NowPlayingHeaderPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Tooltip(
-      message: tooltip,
-      child: TextButton(
-        style: TextButton.styleFrom(
-          backgroundColor: scheme.surfaceContainerHighest,
-          foregroundColor: scheme.onSurfaceVariant,
-          fixedSize: const Size.fromHeight(_pillHeight),
-          visualDensity: VisualDensity.standard,
-          padding: const EdgeInsetsDirectional.only(start: 10, end: 14),
-          shape: const StadiumBorder(),
-          textStyle: theme.textTheme.labelMedium,
-        ),
-        onPressed: onPressed,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (busy)
-              const SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else if (leading != null)
-              // Dimmed like the label of a disabled Material button.
-              Opacity(opacity: onPressed == null ? 0.38 : 1, child: leading)
-            else
-              Icon(
-                icon,
-                size: playerIconSize,
-                // Null lets the button's own (or disabled) colour through.
-                color: onPressed == null || muted ? null : scheme.primary,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: nowPlayingHeaderPillMargin,
+      ),
+      child: Tooltip(
+        message: tooltip,
+        child: TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: scheme.surfaceContainerHighest,
+            foregroundColor: scheme.onSurfaceVariant,
+            fixedSize: const Size.fromHeight(_pillHeight),
+            visualDensity: VisualDensity.standard,
+            padding: const EdgeInsetsDirectional.only(start: 10, end: 14),
+            shape: const StadiumBorder(),
+            textStyle: theme.textTheme.labelMedium,
+          ),
+          onPressed: onPressed,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy)
+                const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else if (leading != null)
+                // Dimmed like the label of a disabled Material button.
+                Opacity(opacity: onPressed == null ? 0.38 : 1, child: leading)
+              else
+                Icon(
+                  icon,
+                  size: playerIconSize,
+                  // Null lets the button's own (or disabled) colour through.
+                  color: onPressed == null || muted ? null : scheme.primary,
+                ),
+              const SizedBox(width: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxLabelWidth),
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: tabularFigures
+                      ? const TextStyle(
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        )
+                      : null,
+                ),
               ),
-            const SizedBox(width: 8),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxLabelWidth),
-              child: Text(
-                label,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                style: tabularFigures
-                    ? const TextStyle(
-                        fontFeatures: [FontFeature.tabularFigures()],
-                      )
-                    : null,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
