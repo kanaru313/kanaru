@@ -18,7 +18,6 @@ enum _TicketState { waiting, queued, running, done }
 /// it (see [OpenCoordinator]).
 class OpenTicket {
   OpenTicket._(
-    this.generation,
     this._owner, {
     required this.next,
     required this.play,
@@ -26,8 +25,6 @@ class OpenTicket {
     required bool waits,
   }) : _state = waits ? _TicketState.waiting : _TicketState.queued;
 
-  /// Order of the call among all `open` calls: a bigger number is newer.
-  final int generation;
   final OpenCoordinator _owner;
 
   /// The track queued behind the one this `open` starts.
@@ -57,9 +54,10 @@ class OpenTicket {
   }
 
   /// The chain reached this `open`: whether it may run. False when it gave up
-  /// (a newer `open` exists), whatever order the waits ended in.
+  /// (a newer `open` or a `stop` came first), whatever order the waits ended
+  /// in.
   bool tryStart() {
-    if (_gaveUp || generation != _owner._latest) return false;
+    if (_gaveUp) return false;
     _state = _TicketState.running;
     return true;
   }
@@ -88,17 +86,19 @@ class OpenTicket {
 /// Decides which `open` wins and what a waiting `open` takes from the calls
 /// made meanwhile. Pure bookkeeping: the backend runs the commands.
 class OpenCoordinator {
-  int _latest = 0;
   int _pending = 0;
-  final _tickets = <OpenTicket>[];
+
+  /// The last `open` called. Every older one has run, is running or gave up
+  /// (see [begin]), so it is the only one a call can still change.
+  OpenTicket? _newest;
 
   /// `open` calls counted from their call until they ran or gave up. The
   /// handlers of mpv's events skip them while it is above zero: the newest
   /// `open` replaces whatever those events describe.
   int get pending => _pending;
 
-  /// A new `open` call. Every older `open` that has not started running gives
-  /// up at once; one that is running finishes.
+  /// A new `open` call. The older `open` gives up at once unless it is
+  /// running; a running one finishes.
   ///
   /// [waits]: the `open` waits (outside the command chain) for the format of
   /// its stream before it runs.
@@ -108,44 +108,39 @@ class OpenCoordinator {
     required Duration start,
     required bool waits,
   }) {
-    for (final older in _tickets) {
-      if (older._state != _TicketState.running) older._giveUp();
-    }
-    _tickets.removeWhere((ticket) => ticket._state == _TicketState.done);
-    final ticket = OpenTicket._(
-      ++_latest,
+    _giveUpUnless(_TicketState.running);
+    _pending++;
+    return _newest = OpenTicket._(
       this,
       next: next,
       play: play,
       start: start,
       waits: waits,
     );
-    _pending++;
-    _tickets.add(ticket);
-    return ticket;
   }
 
-  OpenTicket? get _waiting => _find((state) => state == _TicketState.waiting);
+  /// The newest `open` when it is alive and in one of [states].
+  OpenTicket? _newestIn(Set<_TicketState> states) {
+    final ticket = _newest;
+    if (ticket == null || ticket._gaveUp) return null;
+    return states.contains(ticket._state) ? ticket : null;
+  }
 
-  /// The newest `open` that has not started running, waiting or queued.
-  OpenTicket? get _unstarted => _find(
-    (state) => state == _TicketState.waiting || state == _TicketState.queued,
-  );
-
-  OpenTicket? _find(bool Function(_TicketState state) test) {
-    for (final ticket in _tickets.reversed) {
-      if (!ticket._gaveUp && test(ticket._state)) return ticket;
-    }
-    return null;
+  void _giveUpUnless(_TicketState keep) {
+    final ticket = _newest;
+    if (ticket == null) return;
+    final state = ticket._state;
+    if (state != keep && state != _TicketState.done) ticket._giveUp();
   }
 
   /// Play or pause was pressed: a waiting `open` follows the last press.
-  void onPlayPause({required bool playing}) => _waiting?.play = playing;
+  void onPlayPause({required bool playing}) =>
+      _newestIn(const {_TicketState.waiting})?.play = playing;
 
   /// A seek was asked. A waiting `open` takes it as its start (the last one
   /// wins) and returns true: there is nothing to seek yet.
   bool onSeek(Duration position) {
-    final ticket = _waiting;
+    final ticket = _newestIn(const {_TicketState.waiting});
     if (ticket == null) return false;
     ticket.start = position;
     return true;
@@ -154,25 +149,17 @@ class OpenCoordinator {
   /// The next track was replaced. An `open` that has not started running
   /// queues [next] instead of its own (the last call wins) and returns true.
   bool onSetNext(Track? next) {
-    final ticket = _unstarted;
+    final ticket = _newestIn(const {_TicketState.waiting, _TicketState.queued});
     if (ticket == null) return false;
     ticket.next = next;
     return true;
   }
 
-  /// `stop` was called: every waiting `open` gives up.
-  void onStop() {
-    for (final ticket in _tickets) {
-      if (ticket._state == _TicketState.waiting) ticket._giveUp();
-    }
-  }
+  /// `stop` was called: a waiting `open` gives up.
+  void onStop() => _newestIn(const {_TicketState.waiting})?._giveUp();
 
   /// The backend is gone: no `open` that has not started running goes on.
-  void dispose() {
-    for (final ticket in _tickets) {
-      if (ticket._state != _TicketState.running) ticket._giveUp();
-    }
-  }
+  void dispose() => _giveUpUnless(_TicketState.running);
 }
 
 /// Runs [work] unless [ticket] gives up first; null when it did.
