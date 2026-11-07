@@ -3110,6 +3110,25 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get settingsTranslationPrefetch => 'Dịch trước';
+
+  @override
+  String get settingsTranslationPrefetchHint =>
+      'Dịch sẵn lời các bài sắp phát. Mỗi bài là một lần gọi plugin dịch (plugin AI có thể tính phí).';
+
+  @override
+  String get settingsTranslationPrefetchNone => 'Chỉ bài đang phát';
+
+  @override
+  String settingsTranslationPrefetchCount(int count) {
+    return '$count bài tiếp theo';
+  }
+
+  @override
+  String get settingsTranslationPrefetchNotice =>
+      'Lời, tên bài và nghệ sĩ của các bài sắp phát sẽ được gửi tới dịch vụ dịch đang dùng.';
+
+  @override
   String get settingsTranslationCache => 'Bản dịch đã lưu';
 
   @override

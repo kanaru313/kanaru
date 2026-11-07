@@ -193,6 +193,14 @@ Future<void> _checkLayout(
         ),
         l10n.settingsTranslationTargetHint,
       ),
+      (
+        l10n.settingsTranslationPrefetch,
+        _inRow(
+          l10n.settingsTranslationPrefetch,
+          find.byWidgetPredicate((w) => w is DropdownMenu),
+        ),
+        l10n.settingsTranslationPrefetchHint,
+      ),
     ],
     controls: _playbackControls,
     dropdowns: _playbackDropdowns,
@@ -317,8 +325,8 @@ Future<void> _checkLayout(
 // narrow rows where choices are dropdowns too, of dropdowns alone, so a control that goes missing or appears twice is caught.
 const _appearanceControls = 4;
 const _appearanceDropdowns = 4;
-const _playbackControls = 6;
-const _playbackDropdowns = 6;
+const _playbackControls = 7;
+const _playbackDropdowns = 7;
 const _libraryControls = 7;
 const _libraryDropdowns = 2;
 const _dataControls = 4;

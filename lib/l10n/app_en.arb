@@ -2989,6 +2989,15 @@
       }
     }
   },
+  "settingsTranslationPrefetch": "Translate ahead",
+  "settingsTranslationPrefetchHint": "Translates the lyrics of upcoming songs in advance. Each song is one call to the translate plugin (AI plugins may charge).",
+  "settingsTranslationPrefetchNone": "Only the playing song",
+  "settingsTranslationPrefetchCount": "{count, plural, =1{Next song} other{Next {count} songs}}",
+  "@settingsTranslationPrefetchCount": {
+    "description": "Choice of how many upcoming songs are translated ahead",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsTranslationPrefetchNotice": "The lyrics, titles and artists of upcoming songs will be sent to the translation service in use.",
   "settingsTranslationCache": "Saved translations",
   "translationCacheSummary": "{count, plural, =1{1 song} other{{count} songs}} · {size}",
   "@translationCacheSummary": {

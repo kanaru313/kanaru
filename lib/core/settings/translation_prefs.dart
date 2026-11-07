@@ -22,6 +22,7 @@ class TranslationPrefs {
     this.noticeAcknowledged = const {},
     this.allChosenAt,
     this.scopePrecedence = TranslationScopePrecedence.replaceAll,
+    this.prefetchCount = 0,
   });
 
   /// Translated lines are shown (and fetched) for the playing song.
@@ -49,6 +50,13 @@ class TranslationPrefs {
   /// they keep their service.
   final TranslationScopePrecedence scopePrecedence;
 
+  /// How many upcoming songs are translated ahead of playback, 0 to
+  /// [maxPrefetchCount]; 0 translates only the playing song.
+  final int prefetchCount;
+
+  /// Largest [prefetchCount] the settings accept.
+  static const maxPrefetchCount = 5;
+
   /// The stored [service] has not been accepted yet. Callers that decide
   /// about a request ask `needsNoticeFor` with the effective service.
   bool get needsNotice =>
@@ -61,6 +69,7 @@ class TranslationPrefs {
     Set<TranslationServiceId>? noticeAcknowledged,
     int? allChosenAt,
     TranslationScopePrecedence? scopePrecedence,
+    int? prefetchCount,
   }) => TranslationPrefs(
     show: show ?? this.show,
     service: service ?? this.service,
@@ -69,6 +78,7 @@ class TranslationPrefs {
     noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
     allChosenAt: allChosenAt ?? this.allChosenAt,
     scopePrecedence: scopePrecedence ?? this.scopePrecedence,
+    prefetchCount: prefetchCount ?? this.prefetchCount,
   );
 
   /// Returns a copy with [service] set to `null` and [show] set to `false`.
@@ -82,6 +92,7 @@ class TranslationPrefs {
     noticeAcknowledged: noticeAcknowledged,
     allChosenAt: allChosenAt,
     scopePrecedence: scopePrecedence,
+    prefetchCount: prefetchCount,
   );
 
   /// Separate from [copyWith] because `null` is a valid target here.
@@ -94,6 +105,7 @@ class TranslationPrefs {
         noticeAcknowledged: noticeAcknowledged,
         allChosenAt: allChosenAt,
         scopePrecedence: scopePrecedence,
+        prefetchCount: prefetchCount,
       );
 
   @override
@@ -105,6 +117,7 @@ class TranslationPrefs {
       other.display == display &&
       other.allChosenAt == allChosenAt &&
       other.scopePrecedence == scopePrecedence &&
+      other.prefetchCount == prefetchCount &&
       other.noticeAcknowledged.length == noticeAcknowledged.length &&
       other.noticeAcknowledged.containsAll(noticeAcknowledged);
 
@@ -116,6 +129,7 @@ class TranslationPrefs {
     display,
     allChosenAt,
     scopePrecedence,
+    prefetchCount,
     Object.hashAllUnordered(noticeAcknowledged),
   );
 
@@ -124,5 +138,6 @@ class TranslationPrefs {
       'TranslationPrefs(show: $show, service: ${service?.value}, '
       'targetLanguage: $targetLanguage, display: ${display.name}, '
       'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()}, '
-      'allChosenAt: $allChosenAt, scopePrecedence: ${scopePrecedence.name})';
+      'allChosenAt: $allChosenAt, scopePrecedence: ${scopePrecedence.name}, '
+      'prefetchCount: $prefetchCount)';
 }

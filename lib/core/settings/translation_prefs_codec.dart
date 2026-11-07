@@ -12,6 +12,7 @@ const _displayKey = 'display';
 const _noticeAcknowledgedKey = 'noticeAcknowledged';
 const _allChosenAtKey = 'allChosenAt';
 const _scopePrecedenceKey = 'scopePrecedence';
+const _prefetchCountKey = 'prefetchCount';
 const _knownKeys = {
   _showKey,
   _serviceKey,
@@ -20,6 +21,7 @@ const _knownKeys = {
   _noticeAcknowledgedKey,
   _allChosenAtKey,
   _scopePrecedenceKey,
+  _prefetchCountKey,
 };
 
 /// Reads the `lyricsTranslation` object; each key falls back on its own. The
@@ -61,6 +63,7 @@ const _knownKeys = {
         map[_scopePrecedenceKey],
         d.scopePrecedence,
       ),
+      prefetchCount: _decodePrefetchCount(map[_prefetchCountKey]),
     ),
     {
       ...unknownEntries(map, _knownKeys),
@@ -68,6 +71,11 @@ const _knownKeys = {
     },
   );
 }
+
+/// A whole number clamped to 0..[TranslationPrefs.maxPrefetchCount]; anything
+/// else reads as 0 (no prefetch).
+int _decodePrefetchCount(Object? value) =>
+    value is int ? value.clamp(0, TranslationPrefs.maxPrefetchCount) : 0;
 
 /// Most acknowledged services kept; a hand-edited file cannot grow the set.
 const _maxAcknowledged = 64;
@@ -107,6 +115,7 @@ Map<String, Object?> encodeTranslationPrefs(
     _displayKey: prefs.display.name,
     _allChosenAtKey: prefs.allChosenAt,
     _scopePrecedenceKey: prefs.scopePrecedence.name,
+    _prefetchCountKey: prefs.prefetchCount,
     _noticeAcknowledgedKey: [
       for (final service in prefs.noticeAcknowledged) service.value,
       if (unknownNames is List) ...unknownNames,

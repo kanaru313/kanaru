@@ -14,6 +14,7 @@ import '../../shared/translation_service_name.dart';
 import 'setting_choice.dart';
 import 'setting_row.dart';
 import 'translation_plugin_rows.dart';
+import 'translation_prefetch_setting_row.dart';
 
 /// A choice of the default language: a language code, or `null` to follow the
 /// app. A record, not a bare `String?`, because the dropdown ignores `null`
@@ -129,6 +130,7 @@ class _LyricsTranslationSettingRowsState
             ],
           ),
         ),
+        const TranslationPrefetchSettingRow(),
       ],
     );
   }
