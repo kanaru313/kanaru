@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../hls/hls_refusal.dart';
 import '../remote_source_ref.dart';
 import 'hls/hls_resolve_failure.dart';
 import 'stream_proxy_server.dart';
+
+final _log = Logger('source_proxy');
 
 /// Why a stream was refused in a way the user is told about, other than the
 /// general "couldn't play".
@@ -25,7 +28,7 @@ StreamRefusal? streamRefusalOf(Object? failure) => switch (failure) {
 
 /// Asks why the last resolve of a remote item failed. Reads the stream proxy
 /// only when called (so it never starts one just for being watched) and
-/// answers null when it cannot.
+/// answers null when it cannot (logged as the error type); never throws.
 final remoteStreamRefusalProvider =
     Provider<StreamRefusal? Function(RemoteSourceRef)>(
       (ref) => (item) {
@@ -33,7 +36,11 @@ final remoteStreamRefusalProvider =
           return streamRefusalOf(
             ref.read(sourceStreamProxyProvider).lastFailureOf(item),
           );
-        } on Object {
+        } on Object catch (error) {
+          // The type only: the message may name a URL.
+          _log.warning(
+            'Could not read why a stream was refused: ${error.runtimeType}',
+          );
           return null;
         }
       },

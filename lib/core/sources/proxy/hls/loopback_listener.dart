@@ -37,15 +37,24 @@ class LoopbackListener {
 
   Future<HttpServer> _start() async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    server.listen((request) {
-      // Errors of a cut response (the client left, the body was ended
-      // early) are not logged: they may name the requested path.
-      unawaited(
-        shelf_io
-            .handleRequest(request, handler, poweredByHeader: null)
-            .catchError((Object _) {}),
-      );
-    }, onError: (Object _) {});
+    server.listen(
+      (request) {
+        // shelf answers a handler error with a 500 itself; what is left is a
+        // cut response (the client left, the body ended early), common when
+        // mpv seeks. Logged as its type only: the message may name the
+        // requested path, token included.
+        unawaited(
+          shelf_io
+              .handleRequest(request, handler, poweredByHeader: null)
+              .catchError((Object error) {
+                _log.fine('response cut: ${error.runtimeType}');
+              }),
+        );
+      },
+      onError: (Object error) {
+        _log.warning('server error: ${error.runtimeType}');
+      },
+    );
     _log.info('listening on port ${server.port}');
     return server;
   }

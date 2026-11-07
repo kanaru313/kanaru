@@ -27,7 +27,9 @@ abstract interface class PluginDropTarget {
 /// would never reach it.
 void watchPluginDrops(Ref ref, PluginDropTarget target) {
   Set<String>? enabled;
-  late Set<String> consented;
+  // Both listeners below run only after this function returned (no
+  // fireImmediately), so the initial reads at its end come first.
+  var consented = <String>{};
 
   Set<String>? idsOf(AsyncValue<List<LyricsPluginRecord>> records) =>
       records.hasValue && !records.hasError
