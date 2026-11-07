@@ -224,6 +224,9 @@ void main() {
     await tapRow(tester, 'Other');
     expect(find.byType(AlertDialog), findsOneWidget);
     await tapText(tester, 'Cancel');
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.widgetWithText(SelectionRow, 'Other'), findsOneWidget);
+    expect(seg(tester).selected, {TranslationScope.song});
     expect(await rowOf(tester, 'h1'), isNull);
     final p = container.read(settingsProvider).translation;
     expect(p.noticeAcknowledged, {plugin});
@@ -237,6 +240,9 @@ void main() {
     await open(tester);
     await tapRow(tester, 'Other');
     await tapText(tester, 'Continue');
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.widgetWithText(SelectionRow, 'Other'), findsNothing);
     final row = await rowOf(tester, 'h1');
     expect(row?.service, _otherId);
     expect(row?.chosenAt, _now);
@@ -255,6 +261,8 @@ void main() {
     await tester.pump();
     await tapRow(tester, 'Other');
     await tapText(tester, 'Cancel');
+    expect(find.widgetWithText(SelectionRow, 'Other'), findsOneWidget);
+    expect(seg(tester).selected, {TranslationScope.all});
     final p = container.read(settingsProvider).translation;
     expect(p.service, plugin);
     expect(p.allChosenAt, 100);
@@ -332,5 +340,20 @@ void main() {
     await tester.tap(find.text('Only this song'));
     await tester.pump();
     expect(seg(tester).selected, {TranslationScope.all});
+  });
+
+  testWidgets('an acknowledged service closes the picker with no dialog', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      prefs: prefs0(),
+      info: songInfo(service: other),
+    );
+    await open(tester);
+    await tapRow(tester, 'Gemini');
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.widgetWithText(SelectionRow, 'Gemini'), findsNothing);
+    expect((await rowOf(tester, 'h1'))?.service, _id);
   });
 }

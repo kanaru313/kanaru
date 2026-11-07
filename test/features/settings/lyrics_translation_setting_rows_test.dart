@@ -274,6 +274,14 @@ void main() {
 
       expect(h.prefs.service, other);
       expect(h.container.read(pluginNeedsConfigNoticesProvider), isNull);
+      // The field shows the saved service again, not the cancelled one.
+      final field = tester.widget<TextField>(
+        find.descendant(
+          of: find.byType(DropdownMenu<TranslationServiceId>),
+          matching: find.byType(TextField),
+        ),
+      );
+      expect(field.controller?.text, 'Other');
     });
 
     testWidgets('picking a plugin while translation is on asks first', (

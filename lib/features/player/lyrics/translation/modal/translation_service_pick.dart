@@ -12,7 +12,6 @@ import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
-import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('translation');
@@ -39,11 +38,12 @@ int songsReplacedByDefault(WidgetRef ref) {
   return count;
 }
 
-/// Writes the service the user picked for [scope] after they accept the
-/// network notice. Nothing is written when they decline, when [context] left
-/// the tree meanwhile, or when the choice has no place to go (no song hash, no
-/// database). The stamp is read from the clock only after the notice is
-/// accepted, so the newest choice is the one the user confirmed last.
+/// Writes the service the user picked for [scope]. [picked] is already
+/// confirmed (the picker asked the network notice before closing). Nothing is
+/// written when [context] left the tree meanwhile or when the choice has no
+/// place to go (no song hash, no database). The stamp is read from the clock
+/// here, after the confirmation, so the newest choice is the one the user
+/// confirmed last.
 ///
 /// * [TranslationScope.song]: stores the song's own service; the default and
 ///   its stamp stay.
@@ -58,9 +58,7 @@ Future<void> applyServicePick(
 }) async {
   if (scope == TranslationScope.queue) return;
   final db = ref.read(libraryDatabaseProvider);
-  // A song choice that cannot be saved must not ask for the notice.
   if (scope == TranslationScope.song && (hash == null || db == null)) return;
-  if (!await confirmTranslationNotice(context, ref, picked)) return;
   if (!context.mounted) return;
   final clock = ref.read(translationClockProvider);
   final settings = ref.read(settingsProvider.notifier);

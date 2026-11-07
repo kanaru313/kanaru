@@ -16,6 +16,7 @@ import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_language_name.dart';
+import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
@@ -74,9 +75,10 @@ Future<void> openTargetPicker(
 /// store and a cache-first hint. The check mark is on the song's own service
 /// ([info]'s choice), or on the default when [info] is null. The segment is
 /// "this song" on every open, except when that is locked (translation off, or
-/// no song with lyrics): then it is "all songs". After a plugin is chosen and
-/// the child modal has closed, [applyServicePick] asks the network notice on
-/// the parent [context] and writes the choice without forcing a retranslate.
+/// no song with lyrics): then it is "all songs". Choosing a plugin first asks
+/// the network notice in a dialog above the picker: Cancel keeps the picker
+/// and the chosen segment open; Continue closes it and [applyServicePick]
+/// writes the choice without forcing a retranslate.
 Future<void> openServicePicker(
   BuildContext context,
   WidgetRef ref, {
@@ -135,6 +137,8 @@ Future<void> openServicePicker(
       onTap: (_) => openTranslationStore(context),
     ),
     hint: l10n.lyricsTranslationModalCacheFirst,
+    confirm: (pickerContext, service) =>
+        confirmTranslationNotice(pickerContext, ref, service),
   );
   if (picked == null || !context.mounted) return;
   await applyServicePick(

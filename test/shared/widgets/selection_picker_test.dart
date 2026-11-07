@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/l10n/l10n.dart';
@@ -44,6 +46,7 @@ Future<void> _pumpPickerHost<T>(
   Widget? header,
   String? hint,
   Locale? locale,
+  Future<bool> Function(BuildContext, T)? confirm,
 }) async {
   tester.view
     ..physicalSize = const Size(1000, 800)
@@ -70,6 +73,7 @@ Future<void> _pumpPickerHost<T>(
                 footer: footer,
                 header: header,
                 hint: hint,
+                confirm: confirm,
               );
               onResult(result);
             },
@@ -291,5 +295,94 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  group('confirm', () {
+    testWidgets('without confirm a tap closes with the value', (tester) async {
+      String? result;
+      await _pumpPickerHost<String>(
+        tester,
+        items: _makeItems(3),
+        onResult: (v) => result = v,
+      );
+      await tester.tap(find.text('Option 2'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(result, 'id_2');
+    });
+
+    testWidgets('false keeps the picker open and rows tappable again', (
+      tester,
+    ) async {
+      String? result;
+      var calls = 0;
+      await _pumpPickerHost<String>(
+        tester,
+        items: _makeItems(3),
+        onResult: (v) => result = v,
+        confirm: (_, _) async {
+          calls++;
+          return calls > 1;
+        },
+      );
+      await tester.tap(find.text('Option 2'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(result, isNull);
+      expect(find.text('Option 2'), findsOneWidget);
+      await tester.tap(find.text('Option 2'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(calls, 2);
+      expect(result, 'id_2');
+    });
+
+    testWidgets('a second tap while confirm is pending is ignored', (
+      tester,
+    ) async {
+      String? result;
+      var calls = 0;
+      final gate = Completer<bool>();
+      await _pumpPickerHost<String>(
+        tester,
+        items: _makeItems(3),
+        onResult: (v) => result = v,
+        confirm: (_, _) {
+          calls++;
+          return gate.future;
+        },
+      );
+      await tester.tap(find.text('Option 1'));
+      await tester.pump();
+      await tester.tap(find.text('Option 2'));
+      await tester.pump();
+      expect(calls, 1);
+      gate.complete(true);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(result, 'id_1');
+    });
+
+    testWidgets('a throwing confirm clears the flag and rethrows', (
+      tester,
+    ) async {
+      var calls = 0;
+      final errors = <Object>[];
+      await runZonedGuarded(() async {
+        await _pumpPickerHost<String>(
+          tester,
+          items: _makeItems(3),
+          onResult: (_) {},
+          confirm: (_, _) async {
+            calls++;
+            throw StateError('boom');
+          },
+        );
+        await tester.tap(find.text('Option 1'));
+        await tester.pump();
+        await tester.tap(find.text('Option 1'));
+        await tester.pump();
+      }, (error, _) => errors.add(error));
+      expect(calls, 2);
+      expect(errors, everyElement(isA<StateError>()));
+      expect(errors, hasLength(2));
+      expect(find.text('Option 1'), findsOneWidget);
+    });
   });
 }
