@@ -13,9 +13,9 @@ bool isLyricsPluginId(String providerId) =>
     providerId.startsWith(lyricsPluginIdPrefix);
 
 /// SQL condition on `lyrics_plugins` (unaliased) for a removed record that
-/// nothing names any more: no found lyrics, pin, reject or saved translation
-/// points to its id. Every delete of removed records uses this one text, so
-/// they cannot disagree (invariant 2).
+/// nothing names any more: no found lyrics, pin, reject, saved translation
+/// or per-song service choice points to its id. Every delete of removed
+/// records uses this one text, so they cannot disagree (invariant 2).
 const removedAndUnreferencedPluginSql =
     'removed_at IS NOT NULL '
     'AND NOT EXISTS (SELECT 1 FROM online_lyrics '
@@ -25,7 +25,9 @@ const removedAndUnreferencedPluginSql =
     'AND NOT EXISTS (SELECT 1 FROM online_lyrics_rejects '
     'WHERE provider_id = lyrics_plugins.install_id) '
     'AND NOT EXISTS (SELECT 1 FROM lyric_translations '
-    'WHERE provider = lyrics_plugins.install_id)';
+    'WHERE provider = lyrics_plugins.install_id) '
+    'AND NOT EXISTS (SELECT 1 FROM lyric_translation_prefs '
+    'WHERE service = lyrics_plugins.install_id)';
 
 /// Where a plugin was installed from (`lyrics_plugins.source_kind`).
 enum LyricsPluginSourceKind {
