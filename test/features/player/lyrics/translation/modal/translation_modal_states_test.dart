@@ -203,10 +203,9 @@ void main() {
         ),
       );
       expect(
-        find.text('Lyrics are already in English (per Other)'),
+        find.text('Lyrics are already in English\n(per Other)'),
         findsOneWidget,
       );
-      expect(find.text('Showing the version from Other'), findsOneWidget);
       await tester.tap(find.text('Translate with Test Translate'));
       await settleModal(tester);
       expect(h.fake.retranslateCalls, 1);

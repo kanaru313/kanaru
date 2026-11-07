@@ -310,15 +310,6 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
           field: data.tune.instruction,
           flushGroup: _group,
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-          child: Text(
-            l10n.translationAiTuneHint(record.name),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-        ),
       ],
     ];
   }

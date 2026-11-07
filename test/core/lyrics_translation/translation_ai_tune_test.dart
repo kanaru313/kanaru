@@ -197,12 +197,7 @@ void main() {
     test('a snapshot option the plugin dropped is flagged', () {
       final old = {'model': 'retired', 'style': 'literal'};
       expect(changes({}, null, old), [
-        const AiTuneChange(
-          AiTuneKey.model,
-          'retired',
-          'flash',
-          removedOption: true,
-        ),
+        const AiTuneChange(AiTuneKey.model, 'retired', 'flash'),
       ]);
     });
 
@@ -218,12 +213,7 @@ void main() {
         'instructionHash': null,
       };
       expect(changes({}, null, snap), [
-        const AiTuneChange(
-          AiTuneKey.model,
-          'mine',
-          'flash',
-          removedOption: true,
-        ),
+        const AiTuneChange(AiTuneKey.model, 'mine', 'flash'),
       ]);
       expect(
         changes(

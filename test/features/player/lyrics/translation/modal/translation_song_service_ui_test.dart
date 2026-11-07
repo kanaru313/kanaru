@@ -63,10 +63,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(
-      find.text('Showing the version from Test Translate'),
-      findsOneWidget,
-    );
     expect(find.text('Translate with Own'), findsOneWidget);
     expect(find.text('Translate with Test Translate'), findsNothing);
   });
@@ -123,6 +119,5 @@ void main() {
     );
 
     expect(find.text('Translate with Test Translate'), findsOneWidget);
-    expect(find.text('Showing the version from Own'), findsOneWidget);
   });
 }

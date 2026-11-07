@@ -3009,6 +3009,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguagePerService(String service) {
+    return '(theo $service)';
+  }
+
+  @override
   String lyricsTranslationSameLanguageFrom(String language, String service) {
     return 'Lời bài hát đã là $language (theo $service)';
   }
@@ -5268,9 +5273,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationModalPreview => 'Xem trước';
 
   @override
-  String get lyricsTranslationModalSection => 'Bản dịch';
-
-  @override
   String lyricsTranslationModalSourceDetected(String language) {
     return '$language · tự nhận';
   }
@@ -5392,11 +5394,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String lyricsTranslationModalShowingOther(String service) {
-    return 'Đang hiện bản của $service';
-  }
-
-  @override
   String lyricsTranslationModalTranslateWith(String service) {
     return 'Dịch bằng $service';
   }
@@ -5511,11 +5508,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translationSongInstruction => 'Lời dặn cho bài này';
 
   @override
-  String translationAiTuneHint(String name) {
-    return 'Do plugin $name khai báo. Lựa chọn được nhớ cho plugin này.';
-  }
-
-  @override
   String get translationAiTuneDone => 'Xong';
 
   @override
@@ -5531,14 +5523,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get translationAiOpenPluginSettings => 'Mở cài đặt plugin';
-
-  @override
-  String translationAiTuneChanged(String changes) {
-    return 'Khác bản đang hiện: $changes';
-  }
-
-  @override
-  String get translationAiEditedNote => 'Đổi lời dặn';
 
   @override
   String get translationAiTuneLater => 'Để sau';

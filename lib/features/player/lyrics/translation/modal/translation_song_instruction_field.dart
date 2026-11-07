@@ -12,7 +12,6 @@ import '../../../../../core/lyrics/plugins/package/plugin_manifest.dart';
 import '../../../../../core/lyrics_translation/translation_providers.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/lyrics_plugins/config/plugin_config_flush_group.dart';
-import '../../../../../shared/lyrics_plugins/config/plugin_config_subtitle.dart';
 
 final _log = Logger('lyrics_translation');
 
@@ -232,7 +231,6 @@ class _NoteBoxState extends ConsumerState<_NoteBox>
             ),
           ),
         ),
-        PluginConfigSubtitle(field.subtitle),
       ],
     );
   }

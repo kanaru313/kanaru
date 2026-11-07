@@ -110,36 +110,26 @@ enum AiTuneKey { model, style, instruction }
 
 /// One setting that differs from the snapshot of the version on screen.
 /// [before] and [after] are the option values for `model` and `style`, the
-/// instruction hashes for `instruction`. [removedOption]: [before] is no
-/// longer one of the field's options.
+/// instruction hashes for `instruction`.
 class AiTuneChange {
-  const AiTuneChange(
-    this.key,
-    this.before,
-    this.after, {
-    this.removedOption = false,
-  });
+  const AiTuneChange(this.key, this.before, this.after);
 
   final AiTuneKey key;
   final Object? before;
   final Object? after;
-  final bool removedOption;
 
   @override
   bool operator ==(Object other) =>
       other is AiTuneChange &&
       other.key == key &&
       other.before == before &&
-      other.after == after &&
-      other.removedOption == removedOption;
+      other.after == after;
 
   @override
-  int get hashCode => Object.hash(key, before, after, removedOption);
+  int get hashCode => Object.hash(key, before, after);
 
   @override
-  String toString() =>
-      'AiTuneChange($key, $before -> $after'
-      '${removedOption ? ', removed' : ''})';
+  String toString() => 'AiTuneChange($key, $before -> $after)';
 }
 
 /// The settings now ([stored], [songNote]) that differ from [snapshot] (see
@@ -162,15 +152,7 @@ List<AiTuneChange> aiTuneChanges(
   ) {
     if (!snapshot.containsKey(name) || snapshot[name] == now) return;
     final before = snapshot[name];
-    final options = pluginEffectiveField(field, stored).options;
-    changes.add(
-      AiTuneChange(
-        key,
-        before,
-        now,
-        removedOption: before != null && !options.any((o) => o.value == before),
-      ),
-    );
+    changes.add(AiTuneChange(key, before, now));
   }
 
   select(AiTuneKey.model, aiModelKey, tune.model, values.model);

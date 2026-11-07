@@ -101,10 +101,9 @@ class TranslationStatusLine extends ConsumerWidget {
     );
     if (!fromOtherService) return l10n.lyricsTranslationSameLanguage(language);
     final infos = ref.watch(translationPluginInfosProvider);
-    return l10n.lyricsTranslationSameLanguageFrom(
-      language,
-      translationServiceName(l10n, infos, service),
-    );
+    // The service part always sits on its own second line.
+    return '${l10n.lyricsTranslationSameLanguage(language)}\n'
+        '${l10n.lyricsTranslationSameLanguagePerService(translationServiceName(l10n, infos, service))}';
   }
 
   Widget _statusRow(
