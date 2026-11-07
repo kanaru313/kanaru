@@ -70,7 +70,16 @@ class TranslationScopeHeader extends StatelessWidget {
               for (final scope in scopes)
                 ButtonSegment(
                   value: scope,
-                  label: Text(_label(l10n, scope)),
+                  // One line, scaled down when a locale's label is wider than its
+                  // segment.
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _label(l10n, scope),
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ),
                   enabled: !locked.containsKey(scope),
                   tooltip: locked[scope],
                 ),

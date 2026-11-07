@@ -5285,7 +5285,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Dịch vụ dịch';
 
   @override
-  String get lyricsTranslationScopeSong => 'Chỉ bài này';
+  String get lyricsTranslationScopeSong => 'Bài này';
 
   @override
   String get lyricsTranslationScopeAll => 'Mọi bài';

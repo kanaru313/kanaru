@@ -351,7 +351,7 @@ void main() {
   ) async {
     await pump(tester, prefs: prefs0(), info: null);
     await open(tester);
-    await tester.tap(find.text('Only this song'));
+    await tester.tap(find.text('This song'));
     await tester.pump();
     expect(seg(tester).selected, {TranslationScope.all});
   });

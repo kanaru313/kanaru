@@ -5575,7 +5575,7 @@
   "@lyricsTranslationModalServiceTitle": {
     "description": "Title of the child modal that picks the translation service"
   },
-  "lyricsTranslationScopeSong": "Only this song",
+  "lyricsTranslationScopeSong": "This song",
   "@lyricsTranslationScopeSong": {
     "description": "Segment of the translation service picker: the choice applies to the playing song only"
   },
@@ -5585,7 +5585,7 @@
   },
   "lyricsTranslationScopeSongHint": "Only the song now playing uses this service (AI tune included).",
   "@lyricsTranslationScopeSongHint": {
-    "description": "Line under the scope segments of the translation service picker while Only this song is selected"
+    "description": "Line under the scope segments of the translation service picker while This song is selected"
   },
   "lyricsTranslationScopeAllHint": "Changes the default service for every song.",
   "@lyricsTranslationScopeAllHint": {
@@ -5610,11 +5610,11 @@
   },
   "lyricsTranslationScopeSongLockedOff": "Turn translation on to choose a service for this song only.",
   "@lyricsTranslationScopeSongLockedOff": {
-    "description": "Tooltip of the disabled Only this song segment while translated lyrics are off"
+    "description": "Tooltip of the disabled This song segment while translated lyrics are off"
   },
   "lyricsTranslationScopeSongLockedNoSong": "There is no song with lyrics to choose for.",
   "@lyricsTranslationScopeSongLockedNoSong": {
-    "description": "Tooltip of the disabled Only this song segment when no song with lyrics is playing"
+    "description": "Tooltip of the disabled This song segment when no song with lyrics is playing"
   },
   "lyricsTranslationModalScopeSongSubtitle": "Only this song · default: {service}",
   "@lyricsTranslationModalScopeSongSubtitle": {

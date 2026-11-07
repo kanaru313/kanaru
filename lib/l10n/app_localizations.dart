@@ -8129,7 +8129,7 @@ abstract class AppLocalizations {
   /// Segment of the translation service picker: the choice applies to the playing song only
   ///
   /// In en, this message translates to:
-  /// **'Only this song'**
+  /// **'This song'**
   String get lyricsTranslationScopeSong;
 
   /// Segment of the translation service picker: the choice changes the default service for every song
@@ -8138,7 +8138,7 @@ abstract class AppLocalizations {
   /// **'All songs'**
   String get lyricsTranslationScopeAll;
 
-  /// Line under the scope segments of the translation service picker while Only this song is selected
+  /// Line under the scope segments of the translation service picker while This song is selected
   ///
   /// In en, this message translates to:
   /// **'Only the song now playing uses this service (AI tune included).'**
@@ -8168,13 +8168,13 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the language for this song'**
   String get lyricsTranslationTargetSaveFailed;
 
-  /// Tooltip of the disabled Only this song segment while translated lyrics are off
+  /// Tooltip of the disabled This song segment while translated lyrics are off
   ///
   /// In en, this message translates to:
   /// **'Turn translation on to choose a service for this song only.'**
   String get lyricsTranslationScopeSongLockedOff;
 
-  /// Tooltip of the disabled Only this song segment when no song with lyrics is playing
+  /// Tooltip of the disabled This song segment when no song with lyrics is playing
   ///
   /// In en, this message translates to:
   /// **'There is no song with lyrics to choose for.'**

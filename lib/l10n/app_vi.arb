@@ -2110,7 +2110,7 @@
   "lyricsTranslationModalSourceAuto": "Tự nhận",
   "lyricsTranslationModalTargetTitle": "Dịch sang",
   "lyricsTranslationModalServiceTitle": "Dịch vụ dịch",
-  "lyricsTranslationScopeSong": "Chỉ bài này",
+  "lyricsTranslationScopeSong": "Bài này",
   "lyricsTranslationScopeAll": "Mọi bài",
   "lyricsTranslationScopeSongHint": "Chỉ bài đang phát dùng dịch vụ này (kể cả tinh chỉnh AI).",
   "lyricsTranslationScopeAllHint": "Đổi dịch vụ mặc định cho mọi bài.",

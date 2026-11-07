@@ -5624,7 +5624,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Translation service';
 
   @override
-  String get lyricsTranslationScopeSong => 'Only this song';
+  String get lyricsTranslationScopeSong => 'This song';
 
   @override
   String get lyricsTranslationScopeAll => 'All songs';
