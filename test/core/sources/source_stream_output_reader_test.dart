@@ -120,6 +120,79 @@ void main() {
       }
     });
 
+    test('the four HLS types make an HLS stream, however they are spelled', () {
+      for (final mime in [
+        'application/vnd.apple.mpegurl',
+        'application/x-mpegURL',
+        'audio/mpegurl',
+        'audio/x-mpegurl',
+        'application/vnd.apple.mpegurl; charset=utf-8',
+        '  APPLICATION/VND.APPLE.MPEGURL  ',
+        ' audio/x-mpegurl ;charset=utf-8',
+      ]) {
+        final stream = _stream({'mimeType': mime});
+        expect(stream.format, RemoteStreamFormat.hls, reason: mime);
+        expect(stream.mimeType, mime);
+      }
+    });
+
+    test('every other playable type stays progressive', () {
+      for (final mime in [
+        'audio/webm',
+        'audio/mp4; codecs="opus"',
+        'audio/mpeg',
+        'video/webm',
+        'video/mp4',
+      ]) {
+        expect(
+          _stream({'mimeType': mime}).format,
+          RemoteStreamFormat.progressive,
+          reason: mime,
+        );
+      }
+    });
+
+    test('other application and text types are still invalid', () {
+      for (final mime in [
+        'application/dash+xml',
+        'application/',
+        'application/octet-stream',
+        'text/plain',
+        'application/vnd.apple.mpegurl.x',
+      ]) {
+        expect(() => _stream({'mimeType': mime}), _invalid, reason: mime);
+      }
+    });
+
+    test('an HLS stream keeps the url, headers, bitrate and expiry rules', () {
+      final stream = _stream({
+        'mimeType': 'application/vnd.apple.mpegurl',
+        'headers': {'Range': 'bytes=0-', 'Cookie': 'c=1'},
+        'bitrate': 96000,
+        'expiresAtMs': 1790000000000,
+      });
+
+      expect(stream.headers.containsKey('range'), isFalse);
+      expect(stream.headers['cookie'], 'c=1');
+      expect(stream.bitrate, 96000);
+      expect(
+        stream.expiresAt,
+        DateTime.fromMillisecondsSinceEpoch(1790000000000, isUtc: true),
+      );
+      for (final url in [
+        'http://a.example.com/x.m3u8',
+        'https://a.example.com:443/x.m3u8',
+        'https://u:p@a.example.com/x.m3u8',
+        'https://a.example.com/${'a' * 8192}',
+      ]) {
+        expect(
+          () => _stream({'mimeType': 'audio/mpegurl', 'url': url}),
+          _invalid,
+          reason: url,
+        );
+      }
+    });
+
     test('bitrate 0 or anything not a positive integer is unknown', () {
       for (final bitrate in [0, -5, 1.5, '128000', null]) {
         expect(

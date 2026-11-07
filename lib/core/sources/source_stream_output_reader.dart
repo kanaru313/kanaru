@@ -6,9 +6,11 @@ import 'source_output_reader.dart';
 const maxSourceStreamHeaders = 20;
 
 /// Reads the output JSON of `stream.js`:
-/// `{url, headers, mimeType, bitrate?, expiresAtMs?}`. A `bitrate` or
-/// `expiresAtMs` that is not a positive integer reads as unknown. Throws
-/// [PluginOutputException] for a bad `url`, `headers` or `mimeType`.
+/// `{url, headers, mimeType, bitrate?, expiresAtMs?}`. A `mimeType` that is an
+/// HLS playlist type makes the stream [RemoteStreamFormat.hls]; no content is
+/// sniffed. A `bitrate` or `expiresAtMs` that is not a positive integer reads
+/// as unknown. Throws [PluginOutputException] for a bad `url`, `headers` or
+/// `mimeType`.
 SourceStream readSourceStreamOutput(String json) {
   final data = decodeSourceOutput(json);
   if (data is! Map) {
@@ -19,7 +21,8 @@ SourceStream readSourceStreamOutput(String json) {
   final mimeType = data['mimeType'];
   if (mimeType is! String || !_playableMime(mimeType)) {
     throw const PluginOutputException(
-      '"mimeType" must be audio/*, video/webm or video/mp4',
+      '"mimeType" must be audio/*, video/webm, video/mp4 or an HLS playlist '
+      'type',
     );
   }
   final expiresAtMs = sourcePositiveInt(data['expiresAtMs']);
@@ -27,6 +30,9 @@ SourceStream readSourceStreamOutput(String json) {
     url: url,
     headers: Map.unmodifiable(headers),
     mimeType: mimeType,
+    format: _isHlsMime(mimeType)
+        ? RemoteStreamFormat.hls
+        : RemoteStreamFormat.progressive,
     bitrate: sourcePositiveInt(data['bitrate']),
     expiresAt: expiresAtMs == null || expiresAtMs > _maxEpochMs
         ? null
@@ -100,9 +106,22 @@ Map<String, String> _streamHeaders(Object? value) {
     ..remove('if-range');
 }
 
+/// The media types of an HLS playlist.
+const _hlsMimeTypes = {
+  'application/vnd.apple.mpegurl',
+  'application/x-mpegurl',
+  'audio/mpegurl',
+  'audio/x-mpegurl',
+};
+
+String _mediaType(String value) => value.split(';').first.trim().toLowerCase();
+
+bool _isHlsMime(String value) => _hlsMimeTypes.contains(_mediaType(value));
+
 bool _playableMime(String value) {
-  final type = value.split(';').first.trim().toLowerCase();
+  final type = _mediaType(value);
   return (type.startsWith('audio/') && type.length > 'audio/'.length) ||
       type == 'video/webm' ||
-      type == 'video/mp4';
+      type == 'video/mp4' ||
+      _hlsMimeTypes.contains(type);
 }

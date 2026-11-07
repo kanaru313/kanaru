@@ -52,13 +52,11 @@ void main() {
       }
     });
 
-    test('up to three wildcards pass when allowed', () {
+    test('wildcards up to the cap pass when allowed', () {
       expect(
         pluginHostListProblem([
           'www.youtube.com',
-          '*.googlevideo.com',
-          '*.ytimg.com',
-          '*.ggpht.com',
+          for (var i = 0; i < maxPluginHostWildcards; i++) '*.h$i.example.com',
         ], wildcardsAllowed: true),
         isNull,
       );
@@ -71,28 +69,39 @@ void main() {
           wildcard,
         ], wildcardsAllowed: false);
         expect(found?.entry, wildcard);
-        expect(found?.problem, isNotEmpty);
+        expect(found?.reason, PluginHostRefusal.wildcardNotAllowed);
       }
     });
 
     test('the first refused entry is reported', () {
-      final cases = <List<String>, String>{
-        ['www.youtube.com', '*.googlevideo.com']: '*.googlevideo.com',
-        ['a.com', '*', '*.b.com']: '*',
-        ['a.com', 'b..com']: 'b..com',
+      final cases = <List<String>, (String, PluginHostRefusal)>{
+        ['www.youtube.com', '*.googlevideo.com']: (
+          '*.googlevideo.com',
+          PluginHostRefusal.wildcardNotAllowed,
+        ),
+        ['a.com', '*', '*.b.com']: ('*', PluginHostRefusal.badWildcard),
+        ['a.com', 'b..com']: ('b..com', PluginHostRefusal.notPublic),
       };
-      for (final MapEntry(key: hosts, value: entry) in cases.entries) {
+      for (final MapEntry(key: hosts, value: (entry, reason))
+          in cases.entries) {
         final found = pluginHostListProblem(hosts, wildcardsAllowed: false);
         expect(found?.entry, entry, reason: '$hosts');
-        expect(found?.problem, isNotEmpty);
+        expect(found?.reason, reason, reason: '$hosts');
       }
     });
 
     test('a malformed entry is refused even when wildcards are allowed', () {
       for (final bad in ['*.com', 'a.*.b.com', '*foo.com', '127.0.0.1']) {
-        expect(
-          pluginHostListProblem(['a.com', bad], wildcardsAllowed: true)?.entry,
+        final found = pluginHostListProblem([
+          'a.com',
           bad,
+        ], wildcardsAllowed: true);
+        expect(found?.entry, bad);
+        expect(
+          found?.reason,
+          bad.contains('*')
+              ? PluginHostRefusal.badWildcard
+              : PluginHostRefusal.notPublic,
         );
       }
     });
@@ -103,6 +112,7 @@ void main() {
           '*.$base',
         ], wildcardsAllowed: true);
         expect(found?.entry, '*.$base');
+        expect(found?.reason, PluginHostRefusal.sharedHostingWildcard);
       }
       expect(
         pluginHostListProblem(['*.workers.dev'], wildcardsAllowed: true)?.entry,
@@ -117,25 +127,22 @@ void main() {
       );
     });
 
-    test('a fourth wildcard is refused', () {
+    test('the first wildcard over the cap is refused', () {
       final found = pluginHostListProblem([
-        '*.a.com',
-        '*.b.com',
+        for (var i = 0; i < maxPluginHostWildcards; i++) '*.h$i.example.com',
         'plain.com',
-        '*.c.com',
-        '*.d.com',
+        '*.over.example.com',
       ], wildcardsAllowed: true);
-      expect(found?.entry, '*.d.com');
-      expect(found?.problem, isNotEmpty);
+      expect(found?.entry, '*.over.example.com');
+      expect(found?.reason, PluginHostRefusal.tooManyWildcards);
     });
 
     test('a repeated wildcard counts once toward the cap', () {
       expect(
         pluginHostListProblem([
           '*.a.com',
+          for (var i = 1; i < maxPluginHostWildcards; i++) '*.h$i.example.com',
           '*.a.com',
-          '*.b.com',
-          '*.c.com',
         ], wildcardsAllowed: true),
         isNull,
       );

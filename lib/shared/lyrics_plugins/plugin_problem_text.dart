@@ -1,3 +1,4 @@
+import '../../core/lyrics/online/plugin_host_patterns.dart';
 import '../../core/lyrics/plugins/package/plugin_package_problem.dart';
 import '../../l10n/l10n.dart';
 
@@ -23,6 +24,14 @@ String pluginProblemText(AppLocalizations l10n, PluginPackageProblem p) {
     PluginPackageProblemKind.needsNewerApp => l10n.pluginProblemNeedsNewerApp,
     PluginPackageProblemKind.wrongType => l10n.pluginProblemWrongType,
     PluginPackageProblemKind.badHost => l10n.pluginProblemBadHost(detail),
+    PluginPackageProblemKind.badWildcardHost =>
+      l10n.pluginProblemBadWildcardHost(detail),
+    PluginPackageProblemKind.wildcardHostNotAllowed =>
+      l10n.pluginProblemWildcardHostNotAllowed(detail),
+    PluginPackageProblemKind.sharedHostingWildcard =>
+      l10n.pluginProblemSharedHostingWildcard(detail),
+    PluginPackageProblemKind.tooManyWildcardHosts =>
+      l10n.pluginProblemTooManyWildcardHosts(detail, maxPluginHostWildcards),
     PluginPackageProblemKind.missingScript => l10n.pluginProblemMissingScript(
       detail,
     ),

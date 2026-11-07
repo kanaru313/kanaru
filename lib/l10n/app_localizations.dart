@@ -1520,6 +1520,18 @@ abstract class AppLocalizations {
   /// **'Couldn\'t play {title}'**
   String playerPlaybackError(String title);
 
+  /// No description provided for @playerStreamLiveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play {title}: live streams aren\'t supported'**
+  String playerStreamLiveError(String title);
+
+  /// No description provided for @playerStreamProtectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play {title}: protected streams aren\'t supported'**
+  String playerStreamProtectedError(String title);
+
   /// No description provided for @playerPlay.
   ///
   /// In en, this message translates to:
@@ -6013,6 +6025,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'hosts: \"{detail}\" is not a public domain name'**
   String pluginProblemBadHost(String detail);
+
+  /// Why a plugin package was refused; detail is a host from the package
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\" is not a valid wildcard: write *. followed by a public domain name'**
+  String pluginProblemBadWildcardHost(String detail);
+
+  /// Why a plugin package was refused; detail is a host from the package
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\": only music source plugins may list wildcard hosts'**
+  String pluginProblemWildcardHostNotAllowed(String detail);
+
+  /// Why a plugin package was refused; detail is a host from the package
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\" covers a shared hosting domain, where anyone can get a subdomain'**
+  String pluginProblemSharedHostingWildcard(String detail);
+
+  /// Why a plugin package was refused; detail is the first wildcard host over the limit
+  ///
+  /// In en, this message translates to:
+  /// **'hosts: \"{detail}\" is over the limit of {max} wildcard hosts'**
+  String pluginProblemTooManyWildcardHosts(String detail, int max);
 
   /// Why a plugin package was refused; detail comes from the package
   ///

@@ -89,7 +89,7 @@ All **Open**.
 
 ## Phase 3: Remote sources and streaming
 
-The source plugin MVP is done: the `source` plugin kind, the local stream proxy, remote tracks in the player and the Online screen (SRC-15); audio only, no download and no database rows for remote tracks. Everything below, including `StorageProvider`, is still **Open**.
+The source plugin MVP is done: the `source` plugin kind, the local stream proxy, remote tracks in the player and the Online screen (SRC-15); audio only, no download and no database rows for remote tracks. HLS VOD playback is done too: `stream.js` may return an HLS playlist (media or master, MPEG-TS, AAC/ADTS or fMP4 segments, AES-128 decrypted by mpv), played through the same loopback proxy ([source-plugin-api.md](./source-plugin-api.md#hls-streams)). Left out: DASH (`.mpd`), live and radio streams, multi-part concatenation, time slices of one long stream, custom ciphers and SABR; a segment that fails mid-play is skipped by mpv without a message; the proxy caches nothing, so a seek back re-fetches segments outside mpv's RAM cache; a queued next remote track whose early resolve failed is skipped when reached, with no second try. Everything below, including `StorageProvider`, is still **Open**.
 
 | Item | Features |
 |---|---|

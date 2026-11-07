@@ -33,6 +33,21 @@ enum PluginPackageProblemKind {
   /// A host that is not a public DNS name. `detail` is the host.
   badHost,
 
+  /// A `*` in a host that is not one leading `*.` label over a public name.
+  /// `detail` is the host.
+  badWildcardHost,
+
+  /// A wildcard host in a plugin that is not a source plugin. `detail` is the
+  /// host.
+  wildcardHostNotAllowed,
+
+  /// A wildcard over a shared-hosting suffix. `detail` is the host.
+  sharedHostingWildcard,
+
+  /// More wildcard hosts than `maxPluginHostWildcards`. `detail` is the first
+  /// one over the cap.
+  tooManyWildcardHosts,
+
   /// `script.search` or `script.lyrics` names a file not in `src/`.
   /// `detail` is the file name.
   missingScript,

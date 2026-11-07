@@ -80,6 +80,7 @@ class SourcePluginStreamResolver implements TrackStreamResolver {
       url: stream.url,
       headers: stream.headers,
       mimeType: stream.mimeType,
+      format: stream.format,
       expiresAt: stream.expiresAt,
       allowed: () => _consented(installId),
       redirectAllowed: (url) => sourceStreamUrlAllowed(url, allowedHosts),

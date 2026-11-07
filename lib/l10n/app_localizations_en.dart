@@ -1052,6 +1052,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String playerStreamLiveError(String title) {
+    return 'Couldn\'t play $title: live streams aren\'t supported';
+  }
+
+  @override
+  String playerStreamProtectedError(String title) {
+    return 'Couldn\'t play $title: protected streams aren\'t supported';
+  }
+
+  @override
   String get playerPlay => 'Play';
 
   @override
@@ -4176,6 +4186,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String pluginProblemBadHost(String detail) {
     return 'hosts: \"$detail\" is not a public domain name';
+  }
+
+  @override
+  String pluginProblemBadWildcardHost(String detail) {
+    return 'hosts: \"$detail\" is not a valid wildcard: write *. followed by a public domain name';
+  }
+
+  @override
+  String pluginProblemWildcardHostNotAllowed(String detail) {
+    return 'hosts: \"$detail\": only music source plugins may list wildcard hosts';
+  }
+
+  @override
+  String pluginProblemSharedHostingWildcard(String detail) {
+    return 'hosts: \"$detail\" covers a shared hosting domain, where anyone can get a subdomain';
+  }
+
+  @override
+  String pluginProblemTooManyWildcardHosts(String detail, int max) {
+    return 'hosts: \"$detail\" is over the limit of $max wildcard hosts';
   }
 
   @override

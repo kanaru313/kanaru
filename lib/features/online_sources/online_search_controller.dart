@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../core/player/track.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../core/sources/proxy/plugin_drop_watcher.dart';
 import '../../core/sources/source_plugin_runner.dart';
 import 'remote_track_builder.dart';
+
+final _log = Logger('online');
 
 /// What the Online screen shows for the last search.
 sealed class OnlineSearchState {
@@ -133,7 +136,11 @@ class OnlineSearchController extends Notifier<OnlineSearchState>
           message: failure.message,
         ),
       };
-    } on Object {
+    } on Object catch (error, stack) {
+      // The runner turns every plugin failure into a SourceFailure, so this
+      // is a bug of the app: keep its trace. The type only, not the message:
+      // it may hold the query.
+      _log.warning('Online search failed: ${error.runtimeType}', null, stack);
       next = OnlineSearchFailed(installId, text, SourceFailureKind.internal);
     }
     if (superseded()) return;

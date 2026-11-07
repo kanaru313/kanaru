@@ -53,6 +53,7 @@ class Playthrough {
   DateTime? _validUntil;
   bool _freshUsed = false;
   bool _dead = false;
+  Object? _failure;
   bool _ended = false;
   Playthrough? _successor;
   int _openBodies = 0;
@@ -62,6 +63,11 @@ class Playthrough {
 
   /// A second 403 or a failed resolve: no request of it can succeed.
   bool get dead => _dead;
+
+  /// The error of the last failed resolve of this playthrough, or null.
+  /// Kept after the item is dead so a caller can tell why (a refused
+  /// playlist, say).
+  Object? get failure => _failure;
 
   /// A body of this playthrough is being sent; [bodyClosed] when it ends.
   /// Counted on the newest playthrough of the key.
@@ -130,32 +136,53 @@ class Playthrough {
     late final Future<ResolvedStream> started;
     // Abandoned only when the playthrough holding it now was dropped: a
     // newer playthrough of the key takes the resolve over.
-    started =
-        _resolve(key, fresh: fresh, abandoned: () => _latest._ended || timedOut)
-            .timeout(
-              _limit,
-              onTimeout: () {
-                timedOut = true;
-                throw const ResolveFailure('timeout');
-              },
-            )
-            .then(
-              (stream) {
-                final holder = _latest;
-                if (identical(holder._current, started)) {
-                  holder._validUntil = holder._validity(stream);
-                }
-                return stream;
-              },
-              onError: (Object error, StackTrace trace) {
-                final holder = _latest;
-                if (identical(holder._current, started)) holder._dead = true;
-                Error.throwWithStackTrace(error, trace);
-              },
-            );
+    bool abandoned() => _latest._ended || timedOut;
+    started = _resolveSpendingFresh(fresh, abandoned)
+        .timeout(
+          _limit,
+          onTimeout: () {
+            timedOut = true;
+            throw const ResolveFailure('timeout');
+          },
+        )
+        .then(
+          (stream) {
+            final holder = _latest;
+            if (identical(holder._current, started)) {
+              holder._validUntil = holder._validity(stream);
+            }
+            return stream;
+          },
+          onError: (Object error, StackTrace trace) {
+            final holder = _latest;
+            if (identical(holder._current, started)) {
+              holder._dead = true;
+              holder._failure = error;
+            }
+            Error.throwWithStackTrace(error, trace);
+          },
+        );
     // Callers may all be gone; the failure is theirs, not the zone's.
     started.ignore();
     return started;
+  }
+
+  /// One resolve. When it throws [ResolveForbidden] (a playlist it fetched
+  /// was refused with 403) it goes on with `fresh: true` if the playthrough's
+  /// fresh resolve is not spent yet, in the same future and so inside the
+  /// same deadline; otherwise the error ends it (and so marks the item dead).
+  Future<ResolvedStream> _resolveSpendingFresh(
+    bool fresh,
+    bool Function() abandoned,
+  ) async {
+    try {
+      return await _resolve(key, fresh: fresh, abandoned: abandoned);
+    } on ResolveForbidden {
+      final holder = _latest;
+      if (fresh || holder._freshUsed || abandoned()) rethrow;
+      holder._freshUsed = true;
+      return _resolve(key, fresh: true, abandoned: abandoned);
+    }
   }
 
   /// Until when [stream] is used. An expiry that is already inside the

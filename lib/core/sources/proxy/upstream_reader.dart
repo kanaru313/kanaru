@@ -9,22 +9,17 @@ import 'proxy_body.dart';
 import 'range_request.dart';
 import 'resolved_streams.dart';
 import 'stream_resolver.dart';
+import 'upstream_fetch.dart';
 import 'upstream_headers.dart';
 
 export 'proxy_body.dart' show ProxyAnswer;
+export 'upstream_fetch.dart' show maxUpstreamRedirects, upstreamHeaderTimeout;
 
 final _log = Logger('source_proxy');
 
 /// The largest upstream range asked for at once: some services refuse an
 /// open-ended range, so every upstream request names its last byte.
 const upstreamChunkBytes = 8 * 1024 * 1024;
-
-/// The most redirects one upstream request follows (googlevideo sends a
-/// 302 to another of its hosts now and then).
-const maxUpstreamRedirects = 3;
-
-/// How long an upstream answer's headers may take.
-const upstreamHeaderTimeout = Duration(seconds: 15);
 
 /// The client the proxy fetches upstream audio with: the bytes as sent
 /// (no decompression), bounded connect and idle times, and connections only
@@ -35,18 +30,11 @@ HttpClient newUpstreamClient() => HttpClient()
   ..idleTimeout = const Duration(seconds: 15)
   ..connectionFactory = lyricsPublicOnlyConnectionFactory();
 
-/// The upstream answer gave nothing usable. [reason] names why, never the
-/// URL (it carries signed query parameters).
-class _Refused implements Exception {
-  const _Refused(this.reason);
-
-  final String reason;
-}
-
 /// Why an upstream request failed, for the log: a kind, an HTTP status or
 /// an errno, never the URL or a message that may hold it.
 String upstreamFailureReason(Object error) => switch (error) {
-  _Refused(:final reason) => reason,
+  UpstreamRefused(:final reason) => reason,
+  UpstreamBodyFailure(:final reason) => reason,
   PlaythroughEnded() => 'item dead or playthrough ended',
   ResolveFailure(:final reason) => 'resolve failed: $reason',
   SocketException(:final osError) =>
@@ -206,8 +194,13 @@ class UpstreamReader {
     var used = playthrough.current();
     while (true) {
       final stream = await used;
-      if (!stream.allowed()) throw const _Refused('consent withdrawn');
-      final response = await _get(stream, start, end);
+      if (!stream.allowed()) throw const UpstreamRefused('consent withdrawn');
+      final response = (await fetchUpstream(
+        _client,
+        stream,
+        stream.url,
+        range: (start: start, end: end),
+      )).response;
       final status = response.statusCode;
       if (status == HttpStatus.forbidden) {
         _log.info('upstream 403, resolving again');
@@ -219,58 +212,9 @@ class UpstreamReader {
           status != HttpStatus.partialContent &&
           status != HttpStatus.requestedRangeNotSatisfiable) {
         discardUpstream(response);
-        throw _Refused('upstream status $status');
+        throw UpstreamRefused('upstream status $status');
       }
       return (response: response, stream: stream);
     }
-  }
-
-  /// Fetches `bytes=start-end` of [stream], following at most
-  /// [maxUpstreamRedirects] redirects whose target passes the stream's
-  /// [ResolvedStream.redirectAllowed]; any other redirect is refused.
-  Future<HttpClientResponse> _get(
-    ResolvedStream stream,
-    int start,
-    int end,
-  ) async {
-    var url = stream.url;
-    for (var hop = 0; ; hop++) {
-      final response = await _getOnce(stream, url, start, end);
-      if (!response.isRedirect) return response;
-      discardUpstream(response);
-      final location = response.headers.value(HttpHeaders.locationHeader);
-      final target = location == null ? null : url.resolve(location);
-      final allows = stream.redirectAllowed;
-      if (hop >= maxUpstreamRedirects) {
-        throw const _Refused('too many upstream redirects');
-      }
-      if (target == null || allows == null || !allows(target)) {
-        throw _Refused('upstream redirect refused (${response.statusCode})');
-      }
-      url = target;
-    }
-  }
-
-  Future<HttpClientResponse> _getOnce(
-    ResolvedStream stream,
-    Uri url,
-    int start,
-    int end,
-  ) async {
-    final request = await _client.getUrl(url);
-    request
-      ..followRedirects = false
-      ..maxRedirects = 0;
-    stream.headers.forEach(request.headers.set);
-    request.headers
-      ..set(HttpHeaders.acceptEncodingHeader, 'identity')
-      ..set(HttpHeaders.rangeHeader, 'bytes=$start-$end');
-    return request.close().timeout(
-      upstreamHeaderTimeout,
-      onTimeout: () {
-        request.abort();
-        throw const _Refused('upstream headers timed out');
-      },
-    );
   }
 }

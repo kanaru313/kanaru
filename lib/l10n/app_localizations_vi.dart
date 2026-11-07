@@ -986,6 +986,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String playerStreamLiveError(String title) {
+    return 'Không phát được $title: chưa hỗ trợ luồng trực tiếp';
+  }
+
+  @override
+  String playerStreamProtectedError(String title) {
+    return 'Không phát được $title: không hỗ trợ luồng có bảo vệ (DRM)';
+  }
+
+  @override
   String get playerPlay => 'Phát';
 
   @override
@@ -3867,6 +3877,26 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String pluginProblemBadHost(String detail) {
     return 'hosts: \"$detail\" không phải tên miền công khai';
+  }
+
+  @override
+  String pluginProblemBadWildcardHost(String detail) {
+    return 'hosts: \"$detail\" không phải wildcard hợp lệ: hãy viết *. rồi một tên miền công khai';
+  }
+
+  @override
+  String pluginProblemWildcardHostNotAllowed(String detail) {
+    return 'hosts: \"$detail\": chỉ plugin nguồn nhạc mới được dùng host wildcard';
+  }
+
+  @override
+  String pluginProblemSharedHostingWildcard(String detail) {
+    return 'hosts: \"$detail\" bao cả một tên miền hosting dùng chung, nơi ai cũng lấy được tên miền con';
+  }
+
+  @override
+  String pluginProblemTooManyWildcardHosts(String detail, int max) {
+    return 'hosts: \"$detail\" vượt giới hạn $max host wildcard';
   }
 
   @override

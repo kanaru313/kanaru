@@ -5,13 +5,16 @@ import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 
 import '../sources/remote_source_ref.dart';
+import '../sources/source_models.dart' show RemoteStreamFormat;
 import 'audio_backend.dart';
 import 'audio_output_device.dart';
 import 'mpv_audio_output.dart';
 import 'mpv_playlist_tracker.dart';
+import 'mpv_remote_file_options.dart';
 import 'mpv_startup_options.dart';
 import 'play_uri.dart';
 import 'playback_error.dart';
+import 'remote_open_wait.dart';
 import 'repeat_mode.dart';
 import 'replay_gain_options.dart';
 import 'track.dart';
@@ -56,7 +59,9 @@ class MediaKitBackend implements AudioBackend {
 
   /// [remoteUrl] gives the URL mpv plays for a remote track (the stream
   /// proxy's); without it, or when it fails, the track's own uri is used.
-  MediaKitBackend({this._remoteUrl})
+  /// [remoteFormat] tells the format of such a URL once the proxy resolved
+  /// it; without it every remote track opens with the global options only.
+  MediaKitBackend({this._remoteUrl, this._remoteFormat})
     : _player = Player(
         // Fixed, not tied to KANARU_LOG_LEVEL: below `warn` mpv is too noisy.
         configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
@@ -72,6 +77,7 @@ class MediaKitBackend implements AudioBackend {
       onFailed: _failed.add,
     );
     _audio = MpvAudioOutput(_player, _native);
+    if (_remoteFormat != null) _native.onLoadHooks.add(_onLoad);
     // Through the chain, so they apply before the first `open`.
     unawaited(
       _serial(
@@ -87,10 +93,10 @@ class MediaKitBackend implements AudioBackend {
     // the user picked another one.
     _forwardCompleted = _player.stream.completed.listen((done) {
       // Judged on arrival: an `open` queued by then replaces what ended.
-      if (!done || _opensPending > 0) return;
+      if (!done || _opens.pending > 0) return;
       unawaited(
         _serial(() async {
-          if (_opensPending == 0) _completed.add(true);
+          if (_opens.pending == 0) _completed.add(true);
         }),
       );
     });
@@ -127,7 +133,7 @@ class MediaKitBackend implements AudioBackend {
         .observeProperty('remaining-file-loops', (_) async {
           // Judged on arrival: an `open` queued by now replaces the file
           // that looped.
-          if (_opensPending > 0) return;
+          if (_opens.pending > 0) return;
           unawaited(_serial(_onLoopCounter));
         })
         .catchError((Object error) {
@@ -137,6 +143,11 @@ class MediaKitBackend implements AudioBackend {
   }
 
   final Future<String> Function(RemoteSourceRef)? _remoteUrl;
+  final Future<RemoteStreamFormat?> Function(String url)? _remoteFormat;
+
+  /// The proxy URLs given to mpv, the only paths [_onLoad] may widen options
+  /// for.
+  final _handedOut = HandedOutUrls();
   final Player _player;
   late final MpvAudioOutput _audio;
   late final MpvPlaylistTracker _tracker;
@@ -157,9 +168,9 @@ class MediaKitBackend implements AudioBackend {
   final _failed = StreamController<PlaybackError>.broadcast();
   final _duration = StreamController<Duration>.broadcast();
 
-  /// `open` calls waiting in the chain. Each one replaces the playlist, so
-  /// a track change seen before it runs belongs to the old queue.
-  int _opensPending = 0;
+  /// The `open` calls not run yet. Each one replaces the playlist, so a track
+  /// change seen before it runs belongs to the old queue.
+  final _opens = OpenCoordinator();
 
   bool _disposed = false;
 
@@ -181,18 +192,54 @@ class MediaKitBackend implements AudioBackend {
   /// begins that item's playthrough), the track's uri otherwise. When the
   /// proxy cannot give a URL the uri is used: mpv cannot open it, so the
   /// track fails and is skipped like a broken file.
-  Future<String> _playUri(Track track) =>
-      playUriFor(track, _remoteUrl, (error) {
+  Future<String> _playUri(Track track) async {
+    final uri = await playUriFor(track, _remoteUrl, (error) {
+      // The type only: the message may name a URL.
+      _log.warning(
+        'No stream URL for ${track.remote?.installId}: ${error.runtimeType}',
+      );
+    });
+    // Only a URL the proxy gave counts, not the fallback uri.
+    if (track.remote != null && uri != track.uri) _handedOut.add(uri);
+    return uri;
+  }
+
+  /// mpv's `on_load` hook: a remote track whose format needs wider options
+  /// than the global ones gets them for this file only. media_kit awaits the
+  /// hook before it reads the next mpv event, so the wait on the proxy's
+  /// resolve holds back every position and track event meanwhile.
+  Future<void> _onLoad() async {
+    final remoteFormat = _remoteFormat;
+    if (remoteFormat == null || _disposed) return;
+    try {
+      final path = await _native.getProperty('path');
+      final options = await mpvFileOptionsFor(
+        path: path,
+        handedOut: _handedOut,
+        formatOf: remoteFormat,
         // The type only: the message may name a URL.
-        _log.warning(
-          'No stream URL for ${track.remote?.installId}: ${error.runtimeType}',
-        );
-      });
+        onError: (error) => _log.warning(
+          'Could not get the format of a remote track: ${error.runtimeType}',
+        ),
+      );
+      for (final (name, value) in options) {
+        if (_disposed) return;
+        await _native.setProperty('file-local-options/$name', value);
+      }
+    } on Object catch (error) {
+      _log.warning(
+        'Could not set the options of a remote track: ${error.runtimeType}',
+      );
+    }
+  }
 
   Future<void> _queueNext(Track? next) async {
     _tracker.queueNext(next);
     if (next == null) return;
-    await _native.command(['loadfile', await _playUri(next), 'append']);
+    final uri = await _playUri(next);
+    // Resolved now, so the load hook finds the format ready when mpv reaches it.
+    _prefetchFormat(uri);
+    await _native.command(['loadfile', uri, 'append']);
     final last = await _intProperty('playlist-count') - 1;
     // mpv went idle before the entry arrived, so it was never tried and
     // never will be: drop it, and the idle handler reports the stop.
@@ -204,8 +251,16 @@ class MediaKitBackend implements AudioBackend {
     _tracker.setNextId(await _tracker.entryId(last));
   }
 
+  /// Starts the resolve of a proxy URL just handed out. Nothing is kept: the
+  /// proxy's `formatOf` answers from the item's current resolve.
+  void _prefetchFormat(String url) {
+    final remoteFormat = _remoteFormat;
+    if (remoteFormat == null || !_handedOut.contains(url)) return;
+    unawaited(remoteFormat(url).then<void>((_) {}, onError: (Object _) {}));
+  }
+
   Future<void> _onPlayingPosition() async {
-    if (_opensPending > 0) return;
+    if (_opens.pending > 0) return;
     final position = await _intProperty('playlist-playing-pos');
     if (position < 0) {
       if (_tracker.leaveIdle()) _completed.add(true);
@@ -218,12 +273,12 @@ class MediaKitBackend implements AudioBackend {
   /// of the current file: report it and arm the full budget again. The
   /// budget itself (file load, re-arm), zero (repeat off) and -1 are not.
   Future<void> _onLoopCounter() async {
-    if (_opensPending > 0) return;
+    if (_opens.pending > 0) return;
     final remaining = int.tryParse(
       await _native.getProperty('remaining-file-loops'),
     );
     // An `open` was queued during the read: the counter is the old track's.
-    if (_opensPending > 0) return;
+    if (_opens.pending > 0) return;
     final track = _tracker.current;
     if (remaining == null ||
         remaining <= 0 ||
@@ -253,53 +308,102 @@ class MediaKitBackend implements AudioBackend {
     bool play = true,
     Duration start = Duration.zero,
   }) {
-    _opensPending++;
-    return _serial(() async {
-      // A newer `open` is queued behind this one and would replace it, so
-      // running it only delays that one. Skipped before anything changes, so
-      // the bookkeeping stays what the last `open` that ran left.
-      if (_opensPending > 1) {
-        _opensPending--;
-        return;
-      }
-      try {
-        _tracker.resetForOpen();
-        // media_kit applies `start` while this entry loads and clears it
-        // when it unloads, so the next entry, appended with a raw
-        // `loadfile`, still starts at zero. Its list of opened media is
-        // indexed by playlist position, which drifts once finished entries
-        // are removed; harmless, as nothing reloads an entry but `open`,
-        // which resets that list.
-        await _player.open(
-          Media(
-            await _playUri(track),
-            start: start > Duration.zero ? start : null,
-          ),
-          play: play,
-        );
-        _tracker.setCurrent(track, await _tracker.entryId(0));
-        await _queueNext(next);
-      } finally {
-        _opensPending--;
-      }
-    });
+    // A remote track waits for its stream to resolve before it enters the
+    // command chain, so the wait holds neither mpv's events nor the commands
+    // of the user.
+    final waits =
+        track.remote != null && _remoteUrl != null && _remoteFormat != null;
+    final ticket = _opens.begin(
+      next: next,
+      play: play,
+      start: start,
+      waits: waits,
+    );
+    if (!waits) return _serial(() => _runOpen(track, ticket, null));
+    return _openRemote(track, ticket);
+  }
+
+  Future<void> _openRemote(Track track, OpenTicket ticket) async {
+    // The track that sounds goes silent now, without telling the service: the
+    // UI keeps what the last play or pause gave. Forgetting the tracks first
+    // keeps the idle event this causes from announcing a completion.
+    unawaited(
+      _serial(() async {
+        if (ticket.gaveUp) return;
+        _tracker.forgetTracks();
+        _tracker.clearLoaded();
+        await _native.stop(notify: false);
+      }).catchError((Object error) {
+        _log.warning('Could not silence the playing track', error);
+      }),
+    );
+    final remoteFormat = _remoteFormat!;
+    final uri = await waitForRemoteFormat(
+      ticket: ticket,
+      handOut: () => _playUri(track),
+      formatOf: (url) =>
+          _handedOut.contains(url) ? remoteFormat(url) : Future.value(),
+      // The type only: the message may name a URL.
+      onError: (error) => _log.warning(
+        'Could not get the format of a remote track: ${error.runtimeType}',
+      ),
+    );
+    if (ticket.gaveUp || _disposed) {
+      ticket.finish();
+      return;
+    }
+    ticket.leaveWait();
+    return _serial(() => _runOpen(track, ticket, uri));
+  }
+
+  /// The body of an `open`, in the command chain. [uri] is what mpv is given
+  /// when it was handed out already, else it is asked for here.
+  Future<void> _runOpen(Track track, OpenTicket ticket, String? uri) async {
+    // A newer `open` exists and replaces this one, so running it only delays
+    // that one. Skipped before anything changes, so the bookkeeping stays
+    // what the last `open` that ran left.
+    if (!ticket.tryStart()) return;
+    try {
+      _tracker.resetForOpen();
+      // media_kit applies `start` while this entry loads and clears it
+      // when it unloads, so the next entry, appended with a raw
+      // `loadfile`, still starts at zero. Its list of opened media is
+      // indexed by playlist position, which drifts once finished entries
+      // are removed; harmless, as nothing reloads an entry but `open`,
+      // which resets that list.
+      await _player.open(
+        Media(
+          uri ?? await _playUri(track),
+          start: ticket.start > Duration.zero ? ticket.start : null,
+        ),
+        play: ticket.play,
+      );
+      _tracker.setCurrent(track, await _tracker.entryId(0));
+      await _queueNext(ticket.next);
+    } finally {
+      ticket.finish();
+    }
   }
 
   @override
-  Future<void> setNext(Track? next) => _serial(() async {
-    // A pending `open` queues its own next track.
-    if (_opensPending > 0) return;
-    final position = await _intProperty('playlist-playing-pos');
-    // mpv is idle: the handler still has to report what failed, and `open`
-    // starts it again.
-    if (position < 0) return;
-    // mpv already moved on to the old next track and its handler has not run
-    // yet. Announce that change instead: [next] was picked to follow the
-    // track before, and the listener picks a new one for the track now
-    // playing.
-    if (await _promoteIfNext(position)) return;
-    await _replaceNextEntry(next, position);
-  });
+  Future<void> setNext(Track? next) {
+    // An `open` that has not run yet queues the last next track it was given.
+    if (_opens.onSetNext(next)) return Future.value();
+    return _serial(() async {
+      // A newer `open` queues its own next track.
+      if (_opens.pending > 0) return;
+      final position = await _intProperty('playlist-playing-pos');
+      // mpv is idle: the handler still has to report what failed, and `open`
+      // starts it again.
+      if (position < 0) return;
+      // mpv already moved on to the old next track and its handler has not
+      // run yet. Announce that change instead: [next] was picked to follow
+      // the track before, and the listener picks a new one for the track now
+      // playing.
+      if (await _promoteIfNext(position)) return;
+      await _replaceNextEntry(next, position);
+    });
+  }
 
   /// Queues [next] behind the entry at [position], which is playing, and
   /// removes the old next entry.
@@ -351,23 +455,40 @@ class MediaKitBackend implements AudioBackend {
 
   // Transport commands go through the chain too, so one sent after an `open`
   // acts on the track that `open` starts, not the one it replaces.
+  // A remote `open` that is still waiting for its stream opens as the last of
+  // them says; the commands themselves run at once, as always.
   @override
-  Future<void> play() => _serial(_player.play);
+  Future<void> play() {
+    _opens.onPlayPause(playing: true);
+    return _serial(_player.play);
+  }
 
   @override
-  Future<void> pause() => _serial(_player.pause);
+  Future<void> pause() {
+    _opens.onPlayPause(playing: false);
+    return _serial(_player.pause);
+  }
 
   @override
-  Future<void> stop() => _serial(() async {
-    // Forget the tracks first: stopping empties mpv's playlist, and the
-    // handler would otherwise report the unfinished current track as failed.
-    _tracker.forgetTracks();
-    _tracker.clearLoaded();
-    await _player.stop();
-  });
+  Future<void> stop() {
+    // At the call, not when the chain gets to it: a waiting `open` must not
+    // start the track afterwards.
+    _opens.onStop();
+    return _serial(() async {
+      // Forget the tracks first: stopping empties mpv's playlist, and the
+      // handler would otherwise report the unfinished current track as failed.
+      _tracker.forgetTracks();
+      _tracker.clearLoaded();
+      await _player.stop();
+    });
+  }
 
   @override
-  Future<void> seek(Duration position) => _serial(() => _player.seek(position));
+  Future<void> seek(Duration position) {
+    // Nothing is loaded while an `open` waits: it starts at the position.
+    if (_opens.onSeek(position)) return Future.value();
+    return _serial(() => _player.seek(position));
+  }
 
   @override
   Future<void> setVolume(double volume) =>
@@ -426,6 +547,7 @@ class MediaKitBackend implements AudioBackend {
     // Stop reacting to mpv first: disposing the player empties its playlist,
     // which would otherwise reach the handler after the streams are closed.
     _disposed = true;
+    _opens.dispose();
     final audioDone = _audio.dispose();
     try {
       await _observing;

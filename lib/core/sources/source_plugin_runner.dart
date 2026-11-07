@@ -68,8 +68,10 @@ class SourcePluginRunner {
         readSourceSearchOutput(json, inputNext: next, notes: notes),
   );
 
-  /// Where the audio of [itemId] is. [fresh] asks the plugin to skip its own
-  /// cache (the previous URL was refused). Throws [SourceFailure].
+  /// Where the audio of [itemId] is. The input names the [formats] this build
+  /// plays, so a plugin can offer an HLS playlist only to builds that play
+  /// it. [fresh] asks the plugin to skip its own cache (the previous URL was
+  /// refused). Throws [SourceFailure].
   Future<SourceStream> stream(
     String installId,
     String itemId, {
@@ -79,7 +81,7 @@ class SourcePluginRunner {
     installId,
     script: 'stream.js',
     entry: (package) => package.streamScript,
-    input: {'id': itemId, if (fresh) 'fresh': true},
+    input: {'id': itemId, 'formats': _streamFormats, if (fresh) 'fresh': true},
     abandoned: abandoned,
     read: (json, _) => readSourceStreamOutput(json),
   );
@@ -174,6 +176,9 @@ class SourcePluginRunner {
     return value as T;
   }
 }
+
+/// The stream formats this build plays, in the order `stream.js` is told.
+final _streamFormats = [for (final f in RemoteStreamFormat.values) f.name];
 
 /// Runs source plugins. Shares the run core of the lyrics runner (one
 /// package cache and one run registry for every plugin kind). `null` while

@@ -49,6 +49,16 @@ class SourceSearchPage {
   final String? next;
 }
 
+/// How the bytes behind a stream URL are laid out. The name goes into the
+/// `formats` input of `stream.js`.
+enum RemoteStreamFormat {
+  /// One whole file, served with ranges.
+  progressive,
+
+  /// An HLS playlist (media or master) of segments.
+  hls,
+}
+
 /// Where the audio of one item is, as `stream.js` resolved it. Never logged:
 /// the [url] and [headers] may hold a signature or a cookie.
 class SourceStream {
@@ -56,6 +66,7 @@ class SourceStream {
     required this.url,
     required this.headers,
     required this.mimeType,
+    this.format = RemoteStreamFormat.progressive,
     this.bitrate,
     this.expiresAt,
   });
@@ -67,8 +78,13 @@ class SourceStream {
   /// any plugin request header, never `range` or `if-range`.
   final Map<String, String> headers;
 
-  /// `audio/…`, `video/webm` or `video/mp4`, parameters allowed.
+  /// `audio/…`, `video/webm` or `video/mp4`, or an HLS playlist type,
+  /// parameters allowed.
   final String mimeType;
+
+  /// [RemoteStreamFormat.hls] when [mimeType] is an HLS playlist type: [url]
+  /// is then a playlist, not a file.
+  final RemoteStreamFormat format;
 
   /// Bits per second; null when unknown.
   final int? bitrate;

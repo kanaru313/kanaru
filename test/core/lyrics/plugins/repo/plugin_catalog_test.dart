@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/plugin_host_patterns.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_catalog.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
@@ -265,7 +266,7 @@ void main() {
         ['*.workers.dev'],
         ['*.com'],
         ['a.*.example.com'],
-        [for (var i = 0; i < 4; i++) '*.h$i.example.com'],
+        [for (var i = 0; i <= maxPluginHostWildcards; i++) '*.h$i.example.com'],
       ];
       for (final hosts in bad) {
         final catalog = parse(

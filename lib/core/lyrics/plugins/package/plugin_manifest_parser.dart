@@ -212,10 +212,16 @@ List<String> _hosts(Object? value, {required bool wildcardsAllowed}) {
     wildcardsAllowed: wildcardsAllowed,
   );
   if (problem != null) {
-    throw PluginPackageProblem(
-      PluginPackageProblemKind.badHost,
-      detail: problem.entry,
-    );
+    throw PluginPackageProblem(switch (problem.reason) {
+      PluginHostRefusal.notPublic => PluginPackageProblemKind.badHost,
+      PluginHostRefusal.badWildcard => PluginPackageProblemKind.badWildcardHost,
+      PluginHostRefusal.wildcardNotAllowed =>
+        PluginPackageProblemKind.wildcardHostNotAllowed,
+      PluginHostRefusal.sharedHostingWildcard =>
+        PluginPackageProblemKind.sharedHostingWildcard,
+      PluginHostRefusal.tooManyWildcards =>
+        PluginPackageProblemKind.tooManyWildcardHosts,
+    }, detail: problem.entry);
   }
   return List.unmodifiable(hosts);
 }
