@@ -26,6 +26,7 @@ void main() {
                   child: TranslationScopeHeader(
                     scopes: TranslationScope.values,
                     selected: TranslationScope.song,
+                    precedence: TranslationScopePrecedence.replaceAll,
                     onChanged: (_) {},
                   ),
                 ),

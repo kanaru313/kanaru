@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/translation_prefs.dart';
 import 'package:kanaru/core/settings/translation_prefs_codec.dart';
@@ -61,6 +62,52 @@ void main() {
     expect(a.copyWith(allChosenAt: 7).allChosenAt, 7);
     expect(a.withoutService().allChosenAt, 1);
     expect(a.withTargetLanguage('vi').allChosenAt, 1);
+  });
+
+  test('scopePrecedence reads missing or unknown values as replaceAll', () {
+    expect(
+      decode(<String, Object?>{}).scopePrecedence,
+      TranslationScopePrecedence.replaceAll,
+    );
+    for (final bad in <Object?>['x', 3, null, true]) {
+      expect(
+        decode(<String, Object?>{'scopePrecedence': bad}).scopePrecedence,
+        TranslationScopePrecedence.replaceAll,
+      );
+    }
+  });
+
+  test('scopePrecedence round-trips both values and stays out of extra', () {
+    for (final mode in TranslationScopePrecedence.values) {
+      final json = encodeTranslationPrefs(
+        TranslationPrefs(scopePrecedence: mode),
+      );
+      expect(json['scopePrecedence'], mode.name);
+      final (prefs, extra) = decodeTranslationPrefs(json);
+      expect(prefs.scopePrecedence, mode);
+      expect(extra.containsKey('scopePrecedence'), isFalse);
+    }
+  });
+
+  test('scopePrecedence is part of equality, hash and copies', () {
+    const keep = TranslationPrefs(
+      scopePrecedence: TranslationScopePrecedence.keepCustom,
+    );
+    expect(keep, isNot(const TranslationPrefs()));
+    expect(
+      keep.hashCode,
+      const TranslationPrefs(
+        scopePrecedence: TranslationScopePrecedence.keepCustom,
+      ).hashCode,
+    );
+    expect(keep.toString(), contains('scopePrecedence: keepCustom'));
+    expect(keep.copyWith(show: true).scopePrecedence, keep.scopePrecedence);
+    expect(
+      keep.copyWith(scopePrecedence: TranslationScopePrecedence.replaceAll),
+      const TranslationPrefs(),
+    );
+    expect(keep.withoutService().scopePrecedence, keep.scopePrecedence);
+    expect(keep.withTargetLanguage('vi').scopePrecedence, keep.scopePrecedence);
   });
 
   test('a null target language is written and read back as null', () {

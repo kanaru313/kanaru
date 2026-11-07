@@ -14,6 +14,16 @@ enum TranslationScope {
   all,
 }
 
+/// How a newer "all songs" pick treats songs and queues set individually.
+enum TranslationScopePrecedence {
+  /// The newest explicit choice wins, whatever its tier.
+  replaceAll,
+
+  /// A song's own choice beats the queue's, which beats the default, however
+  /// old: picking the default never overrides a narrower choice.
+  keepCustom,
+}
+
 /// An explicit choice for one song or one queue: the service, its AI tune
 /// (`model`/`style`, empty when none) and when it was made. [chosenAt] null
 /// counts as older than any time.
@@ -102,12 +112,16 @@ bool _newer(int? a, int? b) {
 /// * else the queue's choice wins when newer than [allChosenAt];
 /// * else the default.
 ///
+/// With [TranslationScopePrecedence.keepCustom] the stamps are ignored: the
+/// song's choice wins, else the queue's, else the default.
+///
 /// A tier whose plugin is not in [live] counts as absent. Losing choices are
 /// not deleted: a later, newer choice at a narrower tier wins again.
 TranslationChoice resolveTranslationChoice({
   required TranslationServiceId? defaultService,
   required int? allChosenAt,
   required Set<TranslationServiceId> live,
+  required TranslationScopePrecedence precedence,
   ScopedTranslationChoice? song,
   ScopedTranslationChoice? queue,
 }) {
@@ -116,9 +130,11 @@ TranslationChoice resolveTranslationChoice({
       : null;
   final s = song != null && live.contains(song.service) ? song : null;
   final q = queue != null && live.contains(queue.service) ? queue : null;
+  final keep = precedence == TranslationScopePrecedence.keepCustom;
   if (s != null &&
-      _newer(s.chosenAt, allChosenAt) &&
-      (q == null || _newer(s.chosenAt, q.chosenAt))) {
+      (keep ||
+          (_newer(s.chosenAt, allChosenAt) &&
+              (q == null || _newer(s.chosenAt, q.chosenAt))))) {
     return TranslationChoice(
       service: s.service,
       scope: TranslationScope.song,
@@ -126,7 +142,7 @@ TranslationChoice resolveTranslationChoice({
       defaultService: base,
     );
   }
-  if (q != null && _newer(q.chosenAt, allChosenAt)) {
+  if (q != null && (keep || _newer(q.chosenAt, allChosenAt))) {
     return TranslationChoice(
       service: q.service,
       scope: TranslationScope.queue,

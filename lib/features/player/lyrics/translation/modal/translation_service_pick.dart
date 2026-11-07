@@ -17,41 +17,53 @@ import '../../../../../shared/widgets/app_snack_bar.dart';
 
 final _log = Logger('translation');
 
-/// Songs with their own service choice that a pick for all songs would
-/// replace: the choice's plugin is still installed and it is newer than the
-/// default's stamp, so it can win over the default now. Read from providers
-/// that are already loaded; 0 while they load.
-int songsReplacedByDefault(WidgetRef ref) {
+/// What the "All songs" scope tells about songs and the queue set
+/// individually: how many [songs] and whether the [queue] are affected, read
+/// by [allScopeCaption].
+typedef AllScopeCaption = ({
+  TranslationScopePrecedence precedence,
+  int songs,
+  bool queue,
+});
+
+/// The counts behind the caption of the "All songs" scope, read once from
+/// providers that are already loaded: both are empty while the plugin
+/// records load; while only the song rows load, the song count is 0 but the
+/// queue flag is already computed.
+///
+/// * [TranslationScopePrecedence.replaceAll]: [AllScopeCaption.songs] are
+///   the songs whose own choice is installed and newer than the default's
+///   stamp, so a pick for all songs would replace them; the queue counts when
+///   its choice is installed and newer than the stamp too.
+/// * [TranslationScopePrecedence.keepCustom]: [AllScopeCaption.songs] are
+///   all songs with an installed own choice, and the queue counts when it has
+///   an installed choice; they keep their service whatever the stamps.
+AllScopeCaption allScopeCaption(WidgetRef ref) {
+  final prefs = ref.read(settingsProvider).translation;
+  final precedence = prefs.scopePrecedence;
   final records = ref.read(translatePluginRecordsProvider).value;
   final overrides = ref.read(songTranslationOverridesProvider).value;
-  if (records == null || overrides == null) return 0;
+  if (records == null) return (precedence: precedence, songs: 0, queue: false);
   final live = {
     for (final r in records) ?TranslationServiceId.tryParse(r.installId),
   };
-  final allChosenAt = ref.read(settingsProvider).translation.allChosenAt;
-  var count = 0;
-  for (final row in overrides.values) {
+  final keep = precedence == TranslationScopePrecedence.keepCustom;
+  final allChosenAt = prefs.allChosenAt;
+  bool counts(int? at) =>
+      keep || (at != null && (allChosenAt == null || at > allChosenAt));
+  var songs = 0;
+  for (final row in overrides?.values ?? const <SongTranslationOverride>[]) {
     final service = TranslationServiceId.tryParse(row.service);
-    final at = row.chosenAt;
-    if (service == null || !live.contains(service) || at == null) continue;
-    if (allChosenAt == null || at > allChosenAt) count++;
+    if (service != null && live.contains(service) && counts(row.chosenAt)) {
+      songs++;
+    }
   }
-  return count;
-}
-
-/// Whether a pick for all songs would replace the current queue's own choice:
-/// its plugin is still installed and it is newer than the default's stamp.
-bool queueReplacedByDefault(WidgetRef ref) {
-  final choice = ref.read(queueTranslationChoiceProvider);
-  final records = ref.read(translatePluginRecordsProvider).value;
-  final at = choice?.chosenAt;
-  if (choice == null || at == null || records == null) return false;
-  final live = {
-    for (final r in records) ?TranslationServiceId.tryParse(r.installId),
-  };
-  if (!live.contains(choice.service)) return false;
-  final allChosenAt = ref.read(settingsProvider).translation.allChosenAt;
-  return allChosenAt == null || at > allChosenAt;
+  final queueChoice = ref.read(queueTranslationChoiceProvider);
+  final queue =
+      queueChoice != null &&
+      live.contains(queueChoice.service) &&
+      counts(queueChoice.chosenAt);
+  return (precedence: precedence, songs: songs, queue: queue);
 }
 
 /// Writes the service the user picked for [scope]. [picked] is already
@@ -67,7 +79,10 @@ bool queueReplacedByDefault(WidgetRef ref) {
 ///   (kept with the session until another queue replaces it); the default
 ///   and its stamp stay.
 /// * [TranslationScope.all]: changes the default service and stamps it. No
-///   song's own choice is deleted; the ones older than the stamp stop winning.
+///   song's or queue's own choice is deleted; with
+///   [TranslationScopePrecedence.replaceAll] the ones older than the stamp
+///   stop winning, with [TranslationScopePrecedence.keepCustom] they keep
+///   winning.
 Future<void> applyServicePick(
   BuildContext context,
   WidgetRef ref, {

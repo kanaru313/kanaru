@@ -40,10 +40,13 @@ void main() {
     bool show = true,
     int? allChosenAt,
     TranslationServiceId? service,
+    TranslationScopePrecedence precedence =
+        TranslationScopePrecedence.replaceAll,
   }) => TranslationPrefs(
     show: show,
     service: service ?? plugin,
     allChosenAt: allChosenAt,
+    scopePrecedence: precedence,
     noticeAcknowledged: {plugin},
   );
 
@@ -307,6 +310,24 @@ void main() {
     expect(choice?.service, other);
   });
 
+  testWidgets('the replace caption is a warning in the primary colour', (
+    tester,
+  ) async {
+    await pump(tester, prefs: prefs0(allChosenAt: 1000), info: songInfo());
+    await seed(tester, 'a', _id, 2000);
+    await tester.pump();
+    await open(tester);
+    await tester.tap(find.text('All songs'));
+    await tester.pump();
+    final colors = Theme.of(
+      tester.element(find.byType(SegmentedButton<TranslationScope>)),
+    ).colorScheme;
+    final text = tester.widget<Text>(
+      find.text('Will also replace 1 song you set individually'),
+    );
+    expect(text.style?.color, colors.primary);
+  });
+
   testWidgets('caption counts only songs that can still win', (tester) async {
     await pump(tester, prefs: prefs0(allChosenAt: 1000), info: songInfo());
     await open(tester);
@@ -544,6 +565,97 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+  });
+
+  group('keep songs set individually', () {
+    TranslationPrefs keep({int? allChosenAt}) => prefs0(
+      allChosenAt: allChosenAt,
+      precedence: TranslationScopePrecedence.keepCustom,
+    );
+
+    Future<void> openAll(WidgetTester tester) async {
+      await open(tester);
+      await tester.tap(find.text('All songs'));
+      await tester.pump();
+    }
+
+    testWidgets('no songs and no queue choice: no caption', (tester) async {
+      await pump(tester, prefs: keep(allChosenAt: 1000), info: songInfo());
+      await openAll(tester);
+      expect(find.textContaining('keep'), findsNothing);
+      expect(find.textContaining('Will also replace'), findsNothing);
+    });
+
+    testWidgets('the caption is plain, not a warning', (tester) async {
+      await pump(tester, prefs: keep(allChosenAt: 1000), info: songInfo());
+      await seed(tester, 'a', _id, 2000);
+      await tester.pump();
+      await openAll(tester);
+      final colors = Theme.of(
+        tester.element(find.byType(SegmentedButton<TranslationScope>)),
+      ).colorScheme;
+      final text = tester.widget<Text>(
+        find.text('1 song you set individually keeps its service.'),
+      );
+      expect(text.style?.color, colors.onSurfaceVariant);
+    });
+
+    testWidgets('counts every installed song, stamps ignored', (tester) async {
+      await pump(tester, prefs: keep(allChosenAt: 1000), info: songInfo());
+      await seed(tester, 'a', _id, 2000);
+      await seed(tester, 'b', _otherId, 3000);
+      await seed(tester, 'old', _id, 900);
+      await seed(tester, 'gone', _goneId, 4500);
+      await tester.pump();
+      await openAll(tester);
+      expect(
+        find.text('3 songs you set individually keep their service.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Will also replace'), findsNothing);
+    });
+
+    testWidgets('the queue is mentioned even when older than the default', (
+      tester,
+    ) async {
+      await pump(tester, prefs: keep(allChosenAt: 100), info: songInfo());
+      container
+          .read(queueTranslationChoiceProvider.notifier)
+          .set(other, chosenAt: 50);
+      await openAll(tester);
+      expect(find.text('The current queue keeps its service.'), findsOneWidget);
+      await tester.tap(find.byTooltip('Close'));
+      await settle(tester);
+
+      await seed(tester, 'a', _id, 10);
+      await tester.pump();
+      await openAll(tester);
+      expect(
+        find.text(
+          '1 song you set individually keeps its service. '
+          'The current queue keeps its own too.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('all songs + Continue keeps the song row and its winning '
+        'choice', (tester) async {
+      await pump(tester, prefs: keep(allChosenAt: 100), info: songInfo());
+      await seed(tester, 'h1', _id, 10);
+      await tester.pump();
+      await openAll(tester);
+      await tapRow(tester, 'Other');
+      await tapText(tester, 'Continue');
+      final p = container.read(settingsProvider).translation;
+      expect(p.service, other);
+      expect(p.allChosenAt, _now);
+      expect(p.scopePrecedence, TranslationScopePrecedence.keepCustom);
+      expect((await rowOf(tester, 'h1'))?.service, _id);
+      final choice = translationChoiceFor(container.read, 'h1');
+      expect(choice?.scope, TranslationScope.song);
+      expect(choice?.service, plugin);
     });
   });
 }

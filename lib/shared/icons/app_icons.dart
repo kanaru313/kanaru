@@ -93,6 +93,7 @@ abstract final class AppIcons {
   static const IconData expandMore = FluentIcons.chevron_down_24_regular;
   static const IconData expandMoreRounded = FluentIcons.chevron_down_24_regular;
   static const IconData back = FluentIcons.arrow_left_24_regular;
+  static const IconData undo = FluentIcons.arrow_undo_24_regular;
   static const IconData openExternal = FluentIcons.open_24_regular;
   static const IconData openFull = FluentIcons.arrow_maximize_24_regular;
   static const IconData viewGrid = FluentIcons.grid_24_regular;

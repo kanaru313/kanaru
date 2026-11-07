@@ -6,8 +6,9 @@ import '../../../../../l10n/l10n.dart';
 /// Scope segments above a translation service list: which choice the pick
 /// writes (this song only, the current queue, or the default for every song),
 /// with a line that explains the selected one and, for the default, how many
-/// songs set individually, and whether the queue's choice, would follow the
-/// new default.
+/// songs set individually, and whether the queue's choice, are affected: they
+/// follow the new default with [TranslationScopePrecedence.replaceAll] or keep
+/// their service with [TranslationScopePrecedence.keepCustom].
 ///
 /// [scopes] lists the segments shown, in order. A scope in [locked] stays
 /// visible but dimmed, and its tooltip is the reason. The widget holds no
@@ -19,8 +20,9 @@ class TranslationScopeHeader extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.locked = const {},
-    this.replacedCount = 0,
-    this.replacesQueue = false,
+    required this.precedence,
+    this.customCount = 0,
+    this.queueHasChoice = false,
   });
 
   final List<TranslationScope> scopes;
@@ -30,11 +32,17 @@ class TranslationScopeHeader extends StatelessWidget {
   /// Scopes that cannot be chosen now, with the reason shown as a tooltip.
   final Map<TranslationScope, String> locked;
 
-  /// Songs with their own newer choice that a pick for all songs replaces.
-  final int replacedCount;
+  /// How a pick for all songs treats songs and the queue set individually.
+  final TranslationScopePrecedence precedence;
 
-  /// The current queue's own newer choice is replaced by a pick for all songs.
-  final bool replacesQueue;
+  /// Songs set individually that the caption speaks of: the ones a pick for
+  /// all songs replaces ([TranslationScopePrecedence.replaceAll]) or leaves
+  /// as they are ([TranslationScopePrecedence.keepCustom]).
+  final int customCount;
+
+  /// The current queue has an own choice the caption speaks of, replaced or
+  /// kept the same way.
+  final bool queueHasChoice;
 
   String _label(AppLocalizations l10n, TranslationScope scope) =>
       switch (scope) {
@@ -49,6 +57,17 @@ class TranslationScopeHeader extends StatelessWidget {
     TranslationScope.queue => l10n.lyricsTranslationScopeQueueHint,
   };
 
+  String _caption(AppLocalizations l10n) => switch (precedence) {
+    TranslationScopePrecedence.replaceAll =>
+      queueHasChoice
+          ? l10n.lyricsTranslationScopeReplacesWithQueue(customCount)
+          : l10n.lyricsTranslationScopeReplaces(customCount),
+    TranslationScopePrecedence.keepCustom =>
+      queueHasChoice && customCount > 0
+          ? l10n.lyricsTranslationScopeKeepsWithQueue(customCount)
+          : l10n.lyricsTranslationScopeKeeps(customCount),
+  };
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -56,8 +75,7 @@ class TranslationScopeHeader extends StatelessWidget {
     final colors = theme.colorScheme;
     final hint = _hint(l10n);
     final showCaption =
-        selected == TranslationScope.all &&
-        (replacedCount > 0 || replacesQueue);
+        selected == TranslationScope.all && (customCount > 0 || queueHasChoice);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
@@ -99,10 +117,13 @@ class TranslationScopeHeader extends StatelessWidget {
           if (showCaption) ...[
             const SizedBox(height: 4),
             Text(
-              replacesQueue
-                  ? l10n.lyricsTranslationScopeReplacesWithQueue(replacedCount)
-                  : l10n.lyricsTranslationScopeReplaces(replacedCount),
-              style: theme.textTheme.bodySmall?.copyWith(color: colors.primary),
+              _caption(l10n),
+              style: theme.textTheme.bodySmall?.copyWith(
+                // A warning only when songs will change; a note otherwise.
+                color: precedence == TranslationScopePrecedence.replaceAll
+                    ? colors.primary
+                    : colors.onSurfaceVariant,
+              ),
             ),
           ],
         ],

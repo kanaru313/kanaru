@@ -9,8 +9,10 @@ import 'privacy_network_setting_rows.dart';
 import 'settings_focus.dart';
 import 'settings_page_scaffold.dart';
 import 'settings_section.dart';
+import 'translation_scope_precedence_setting_row.dart';
 
-/// Settings › Advanced: Audio engine, Privacy & network, Diagnostics, and Danger zone.
+/// Settings › Advanced: Audio engine, Privacy & network, Diagnostics,
+/// Lyrics translation, and Danger zone.
 class AdvancedSettingsPage extends StatelessWidget {
   const AdvancedSettingsPage({super.key, this.focus});
 
@@ -39,6 +41,10 @@ class AdvancedSettingsPage extends StatelessWidget {
         SettingsSection(
           title: l10n.settingsGroupDiagnostics,
           children: const [LogFolderSettingRow()],
+        ),
+        SettingsSection(
+          title: l10n.settingsGroupLyricsTranslation,
+          children: const [TranslationScopePrecedenceSettingRow()],
         ),
         SettingsFocusTarget(
           anchor: SettingsAnchor.advancedDanger,

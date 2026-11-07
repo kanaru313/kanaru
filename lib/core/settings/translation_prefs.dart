@@ -1,3 +1,5 @@
+import '../lyrics_translation/translation_scope.dart'
+    show TranslationScopePrecedence;
 import '../lyrics_translation/translation_service.dart';
 
 /// How a translated line is drawn next to the original.
@@ -19,6 +21,7 @@ class TranslationPrefs {
     this.display = LyricsTranslationDisplay.underLine,
     this.noticeAcknowledged = const {},
     this.allChosenAt,
+    this.scopePrecedence = TranslationScopePrecedence.replaceAll,
   });
 
   /// Translated lines are shown (and fetched) for the playing song.
@@ -42,6 +45,10 @@ class TranslationPrefs {
   /// never beats a song's choice.
   final int? allChosenAt;
 
+  /// Whether a newer default replaces songs and queues set individually, or
+  /// they keep their service.
+  final TranslationScopePrecedence scopePrecedence;
+
   /// The stored [service] has not been accepted yet. Callers that decide
   /// about a request ask `needsNoticeFor` with the effective service.
   bool get needsNotice =>
@@ -53,6 +60,7 @@ class TranslationPrefs {
     LyricsTranslationDisplay? display,
     Set<TranslationServiceId>? noticeAcknowledged,
     int? allChosenAt,
+    TranslationScopePrecedence? scopePrecedence,
   }) => TranslationPrefs(
     show: show ?? this.show,
     service: service ?? this.service,
@@ -60,6 +68,7 @@ class TranslationPrefs {
     display: display ?? this.display,
     noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
     allChosenAt: allChosenAt ?? this.allChosenAt,
+    scopePrecedence: scopePrecedence ?? this.scopePrecedence,
   );
 
   /// Returns a copy with [service] set to `null` and [show] set to `false`.
@@ -72,6 +81,7 @@ class TranslationPrefs {
     display: display,
     noticeAcknowledged: noticeAcknowledged,
     allChosenAt: allChosenAt,
+    scopePrecedence: scopePrecedence,
   );
 
   /// Separate from [copyWith] because `null` is a valid target here.
@@ -83,6 +93,7 @@ class TranslationPrefs {
         display: display,
         noticeAcknowledged: noticeAcknowledged,
         allChosenAt: allChosenAt,
+        scopePrecedence: scopePrecedence,
       );
 
   @override
@@ -93,6 +104,7 @@ class TranslationPrefs {
       other.targetLanguage == targetLanguage &&
       other.display == display &&
       other.allChosenAt == allChosenAt &&
+      other.scopePrecedence == scopePrecedence &&
       other.noticeAcknowledged.length == noticeAcknowledged.length &&
       other.noticeAcknowledged.containsAll(noticeAcknowledged);
 
@@ -103,6 +115,7 @@ class TranslationPrefs {
     targetLanguage,
     display,
     allChosenAt,
+    scopePrecedence,
     Object.hashAllUnordered(noticeAcknowledged),
   );
 
@@ -111,5 +124,5 @@ class TranslationPrefs {
       'TranslationPrefs(show: $show, service: ${service?.value}, '
       'targetLanguage: $targetLanguage, display: ${display.name}, '
       'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()}, '
-      'allChosenAt: $allChosenAt)';
+      'allChosenAt: $allChosenAt, scopePrecedence: ${scopePrecedence.name})';
 }
