@@ -81,10 +81,7 @@ void main() {
     expect(find.text('Log files'), findsOneWidget);
 
     // Lyrics translation
-    expect(
-      find.text('When changing the service for all songs'),
-      findsOneWidget,
-    );
+    expect(find.text('When choosing for Queue or All songs'), findsOneWidget);
 
     // Danger Zone
     expect(find.text('Clear listen history'), findsOneWidget);

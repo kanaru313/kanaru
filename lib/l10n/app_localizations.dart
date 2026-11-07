@@ -8138,18 +8138,6 @@ abstract class AppLocalizations {
   /// **'All songs'**
   String get lyricsTranslationScopeAll;
 
-  /// Line under the scope segments of the translation service picker while This song is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Only the song now playing uses this service (AI tune included).'**
-  String get lyricsTranslationScopeSongHint;
-
-  /// Line under the scope segments of the translation service picker while All songs is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Changes the default service for every song.'**
-  String get lyricsTranslationScopeAllHint;
-
   /// Caption of the translation service picker when All songs is selected: how many songs with their own newer service choice would follow the new default instead
   ///
   /// In en, this message translates to:
@@ -8168,10 +8156,10 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the language for this song'**
   String get lyricsTranslationTargetSaveFailed;
 
-  /// Tooltip of the disabled This song segment while translated lyrics are off
+  /// Tooltip of the disabled This song and Queue segments while translated lyrics are off
   ///
   /// In en, this message translates to:
-  /// **'Turn translation on to choose a service for this song only.'**
+  /// **'Turn on translation to choose.'**
   String get lyricsTranslationScopeSongLockedOff;
 
   /// Tooltip of the disabled This song segment when no song with lyrics is playing
@@ -8204,18 +8192,6 @@ abstract class AppLocalizations {
   /// **'Queue'**
   String get lyricsTranslationScopeQueue;
 
-  /// Line under the scope segments of the translation service picker while Queue is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Songs in the current queue use this service; a new queue goes back to the default.'**
-  String get lyricsTranslationScopeQueueHint;
-
-  /// Tooltip of the disabled Queue segment while translated lyrics are off
-  ///
-  /// In en, this message translates to:
-  /// **'Turn translation on to choose a service for the queue.'**
-  String get lyricsTranslationScopeQueueLockedOff;
-
   /// Tooltip of the disabled Queue segment when the play queue has no songs
   ///
   /// In en, this message translates to:
@@ -8239,12 +8215,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get more translation plugins'**
   String get lyricsTranslationModalGetPlugins;
-
-  /// Hint at the bottom of the translation service picker
-  ///
-  /// In en, this message translates to:
-  /// **'Translations saved on this device are used first.'**
-  String get lyricsTranslationModalCacheFirst;
 
   /// Title of the empty-state card in the translation modal when no translate plugin is installed
   ///
@@ -8564,7 +8534,7 @@ abstract class AppLocalizations {
   /// Title of the Settings row that chooses whether a new default service replaces songs and queues set individually
   ///
   /// In en, this message translates to:
-  /// **'When changing the service for all songs'**
+  /// **'When choosing for Queue or All songs'**
   String get settingsTranslationScopePrecedence;
 
   /// Choice: a new default service for all songs also applies to songs set individually
@@ -8576,7 +8546,7 @@ abstract class AppLocalizations {
   /// Explains the Change every song choice
   ///
   /// In en, this message translates to:
-  /// **'Every song changes, even songs you set to “This song”.'**
+  /// **'The songs all change, even songs you set to “This song”.'**
   String get settingsTranslationScopeReplaceAllHint;
 
   /// Choice: songs and queues set individually keep their service when the default changes
@@ -8591,16 +8561,10 @@ abstract class AppLocalizations {
   /// **'Songs you set to “This song” stay as they are. Only the others change.'**
   String get settingsTranslationScopeKeepCustomHint;
 
-  /// Caption under the scope precedence Settings row
-  ///
-  /// In en, this message translates to:
-  /// **'The queue follows the same rule. Saved translations still show as before; nothing is translated again automatically.'**
-  String get settingsTranslationScopePrecedenceCaption;
-
   /// Caption of the translation service picker when All songs is selected and songs set individually keep their service
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{The current queue keeps its service.} =1{1 song you set individually keeps its service.} other{{count} songs you set individually keep their service.}}'**
+  /// **'{count, plural, =1{1 song you set individually keeps its service.} other{{count} songs you set individually keep their service.}}'**
   String lyricsTranslationScopeKeeps(int count);
 
   /// Same caption when the current queue also keeps its own service
@@ -8615,29 +8579,17 @@ abstract class AppLocalizations {
   /// **'Use the default for this song'**
   String get lyricsTranslationModalUseDefaultSong;
 
+  /// Subtitle of the use-default row for a song: its own service and tune are dropped
+  ///
+  /// In en, this message translates to:
+  /// **'Drops the song\'s service and tune'**
+  String get lyricsTranslationModalUseDefaultSongDrops;
+
   /// Row in the translation modal that removes the current queue's own service choice
   ///
   /// In en, this message translates to:
   /// **'Use the default for the queue'**
   String get lyricsTranslationModalUseDefaultQueue;
-
-  /// Subtitle of the use-default row for a song when the queue's choice applies next
-  ///
-  /// In en, this message translates to:
-  /// **'Drops this song\'s service and tune · back to the queue'**
-  String get lyricsTranslationModalUseDefaultSongToQueue;
-
-  /// Subtitle of the use-default row for a song; {service} is the service that applies next
-  ///
-  /// In en, this message translates to:
-  /// **'Drops this song\'s service and tune · back to {service}'**
-  String lyricsTranslationModalUseDefaultSongTo(String service);
-
-  /// Subtitle of the use-default row for the queue; {service} is the service that applies next
-  ///
-  /// In en, this message translates to:
-  /// **'Back to {service}'**
-  String lyricsTranslationModalUseDefaultQueueTo(String service);
 }
 
 class _AppLocalizationsDelegate

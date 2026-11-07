@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/database/lyrics_plugin_spec.dart';
-import '../../../../../core/database/library_startup.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
@@ -24,7 +23,6 @@ import 'translation_ai_badge.dart';
 import 'translation_ai_tune_row.dart';
 import 'translation_modal_navigation.dart';
 import 'translation_pickers.dart';
-import 'translation_use_default_row.dart';
 
 /// Pause before an overflowing service row text starts scrolling.
 const Duration _serviceMarqueeDelay = Duration(milliseconds: 300);
@@ -68,20 +66,11 @@ class TranslationServiceSection extends ConsumerWidget {
         ? ref.watch(translationAiTunesProvider)[selected]
         : null;
     final hash = info?.hash;
-    // The tier that decides now, when it is an own choice that can be dropped.
-    final winning = info?.choice?.scope;
-    final canUseDefault =
-        hash != null &&
-        (winning == TranslationScope.queue ||
-            (winning == TranslationScope.song &&
-                ref.watch(libraryDatabaseProvider) != null));
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _ServiceRow(choices: choices, selected: selected, info: info),
-        if (canUseDefault && winning != null)
-          TranslationUseDefaultRow(scope: winning, hash: hash),
         if (tune != null && selected != null && hash != null)
           TranslationAiTuneRow(
             service: selected,

@@ -10,6 +10,8 @@ import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
+import 'package:kanaru/shared/widgets/selection_row.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_use_default_row.dart';
 
 import 'translation_modal_harness.dart';
@@ -104,15 +106,19 @@ void main() {
     return harness;
   }
 
+  /// Opens the "Translation service" picker from the modal's service row.
+  Future<void> openPicker(WidgetTester tester) async {
+    await tester.tap(find.byType(TranslationServiceSection));
+    await settleModal(tester);
+  }
+
   Future<List<SongTranslationOverride>> rows(WidgetTester tester) => tester
       .runAsync(() => db.watchSongTranslationOverrides().first)
       .then((r) => r!);
 
   for (final mode in TranslationScopePrecedence.values) {
     group(mode.name, () {
-      final keep = mode == TranslationScopePrecedence.keepCustom;
-
-      testWidgets('song tier: the row names the service it falls back to', (
+      testWidgets('song tier: the row sits in the picker, not in the modal', (
         tester,
       ) async {
         await pump(
@@ -121,13 +127,21 @@ void main() {
           settings: prefs(precedence: mode, allChosenAt: 5),
           songAt: 10,
         );
+        expect(find.byType(TranslationUseDefaultRow), findsNothing);
+        await openPicker(tester);
         expect(find.text(_songText), findsOneWidget);
         expect(find.text(_queueText), findsNothing);
+        expect(find.text("Drops the song's service and tune"), findsOneWidget);
+        // After the plugin list, before the plugin store row.
         expect(
-          find.text(
-            "Drops this song's service and tune · back to Test Translate",
+          tester.getTopLeft(find.text(_songText)).dy,
+          lessThan(
+            tester.getTopLeft(find.text('Get more translation plugins')).dy,
           ),
-          findsOneWidget,
+        );
+        expect(
+          tester.getTopLeft(find.text(_songText)).dy,
+          greaterThan(tester.getTopLeft(find.byType(SelectionRow).last).dy),
         );
       });
 
@@ -140,48 +154,16 @@ void main() {
           settings: prefs(precedence: mode, allChosenAt: 5),
           queueAt: 10,
         );
+        await openPicker(tester);
         expect(find.text(_queueText), findsOneWidget);
         expect(find.text(_songText), findsNothing);
-        expect(find.text('Back to Test Translate'), findsOneWidget);
+        // The queue row has no second line.
+        expect(find.text("Drops the song's service and tune"), findsNothing);
 
         await tester.tap(find.text(_queueText));
-        await tester.pump();
+        await settleModal(tester);
         expect(harness.container.read(queueTranslationChoiceProvider), isNull);
-      });
-
-      testWidgets('the song row subtitle names the queue when it applies '
-          'next', (tester) async {
-        // The queue (stamp 20) is newer than the default (stamp 5).
-        await pump(
-          tester,
-          scope: TranslationScope.song,
-          settings: prefs(precedence: mode, allChosenAt: 5),
-          songAt: 30,
-          queueAt: 20,
-        );
-        expect(
-          find.text("Drops this song's service and tune · back to the queue"),
-          findsOneWidget,
-        );
-      });
-
-      testWidgets('a queue older than the default is the next tier only '
-          'when custom choices are kept', (tester) async {
-        await pump(
-          tester,
-          scope: TranslationScope.song,
-          settings: prefs(precedence: mode, allChosenAt: 50),
-          songAt: 60,
-          queueAt: 20,
-        );
-        expect(
-          find.text(
-            keep
-                ? "Drops this song's service and tune · back to the queue"
-                : "Drops this song's service and tune · back to Test Translate",
-          ),
-          findsOneWidget,
-        );
+        expect(find.text('Translation service'), findsNothing);
       });
 
       testWidgets('no row when the default tier decides or nothing is known', (
@@ -193,6 +175,7 @@ void main() {
           settings: prefs(precedence: mode),
           songAt: 10,
         );
+        await openPicker(tester);
         expect(find.byType(TranslationUseDefaultRow), findsNothing);
       });
     });
@@ -200,11 +183,13 @@ void main() {
 
   testWidgets('no row while the choice is still loading', (tester) async {
     await pump(tester, scope: null, songAt: 10);
+    await openPicker(tester);
     expect(find.byType(TranslationUseDefaultRow), findsNothing);
   });
 
   testWidgets('no song row without a library database', (tester) async {
     await pump(tester, scope: TranslationScope.song, withDb: false);
+    await openPicker(tester);
     expect(find.byType(TranslationUseDefaultRow), findsNothing);
   });
 
@@ -216,6 +201,7 @@ void main() {
     await tester.runAsync(
       () => db.setSongTranslationInstruction('h1', 'keep it short'),
     );
+    await openPicker(tester);
     await tester.tap(find.text(_songText));
     await tester.pump();
     await tester.runAsync(
@@ -232,6 +218,19 @@ void main() {
     expect(note, 'keep it short');
   });
 
+  testWidgets('song tier: a double tap closes only the picker', (tester) async {
+    await pump(tester, scope: TranslationScope.song, songAt: 10);
+    await openPicker(tester);
+    await tester.tap(find.text(_songText));
+    await tester.tap(find.text(_songText), warnIfMissed: false);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await settleModal(tester);
+    expect(find.text('Translation service'), findsNothing);
+    expect(find.byType(TranslationServiceSection), findsOneWidget);
+  });
+
   testWidgets('queue tier: a tap goes through the notifier that also clears '
       'the saved session extra', (tester) async {
     // Clearing the saved value is the notifier's job (tested with it); the
@@ -244,6 +243,7 @@ void main() {
       extra: [queueTranslationChoiceProvider.overrideWith(() => spy)],
     );
     expect(spy.clears, 0);
+    await openPicker(tester);
     await tester.tap(find.text(_queueText));
     await tester.pump();
     expect(spy.clears, 1);
@@ -256,6 +256,7 @@ void main() {
       await tester.runAsync(
         () => db.customStatement('DROP TABLE lyric_translation_prefs'),
       );
+      await openPicker(tester);
       await tester.tap(find.text(_songText));
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 100)),

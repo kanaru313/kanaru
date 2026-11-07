@@ -5,7 +5,7 @@ import '../../../../../l10n/l10n.dart';
 
 /// Scope segments above a translation service list: which choice the pick
 /// writes (this song only, the current queue, or the default for every song),
-/// with a line that explains the selected one and, for the default, how many
+/// with, for the default, a line on how many
 /// songs set individually, and whether the queue's choice, are affected: they
 /// follow the new default with [TranslationScopePrecedence.replaceAll] or keep
 /// their service with [TranslationScopePrecedence.keepCustom].
@@ -51,19 +51,13 @@ class TranslationScopeHeader extends StatelessWidget {
         TranslationScope.queue => l10n.lyricsTranslationScopeQueue,
       };
 
-  String? _hint(AppLocalizations l10n) => switch (selected) {
-    TranslationScope.song => l10n.lyricsTranslationScopeSongHint,
-    TranslationScope.all => l10n.lyricsTranslationScopeAllHint,
-    TranslationScope.queue => l10n.lyricsTranslationScopeQueueHint,
-  };
-
   String _caption(AppLocalizations l10n) => switch (precedence) {
     TranslationScopePrecedence.replaceAll =>
       queueHasChoice
           ? l10n.lyricsTranslationScopeReplacesWithQueue(customCount)
           : l10n.lyricsTranslationScopeReplaces(customCount),
     TranslationScopePrecedence.keepCustom =>
-      queueHasChoice && customCount > 0
+      queueHasChoice
           ? l10n.lyricsTranslationScopeKeepsWithQueue(customCount)
           : l10n.lyricsTranslationScopeKeeps(customCount),
   };
@@ -73,9 +67,13 @@ class TranslationScopeHeader extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final hint = _hint(l10n);
+    // Keeping songs says nothing when none is kept: a queue alone is not
+    // worth a line then.
     final showCaption =
-        selected == TranslationScope.all && (customCount > 0 || queueHasChoice);
+        selected == TranslationScope.all &&
+        (customCount > 0 ||
+            (queueHasChoice &&
+                precedence == TranslationScopePrecedence.replaceAll));
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Column(
@@ -105,15 +103,6 @@ class TranslationScopeHeader extends StatelessWidget {
             selected: {selected},
             onSelectionChanged: (s) => onChanged(s.single),
           ),
-          if (hint != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              hint,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-          ],
           if (showCaption) ...[
             const SizedBox(height: 4),
             Text(
