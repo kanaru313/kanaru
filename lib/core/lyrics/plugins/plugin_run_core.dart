@@ -8,6 +8,7 @@ import '../../database/lyrics_plugin_queries.dart';
 import '../../plugin_runtime/plugin_runtime.dart';
 import '../../secrets/secret_store.dart';
 import '../online/lyrics_http.dart';
+import 'package/plugin_config_field.dart';
 import 'plugin_fetch_bridge.dart';
 import 'plugin_package_loader.dart';
 import 'plugin_run_deadline.dart';
@@ -17,7 +18,12 @@ import 'plugin_storage_writeback.dart';
 import 'store/lyrics_plugin_dirs.dart';
 import 'store/plugin_config_required.dart';
 import 'store/plugin_config_schema_codec.dart';
-import 'store/plugin_config_values.dart' show combinedInstruction;
+import 'store/plugin_config_values.dart'
+    show
+        combinedInstruction,
+        decodeStoredPluginConfig,
+        pluginEffectiveField,
+        pluginValueFits;
 
 final _log = Logger('lyrics_plugins');
 
@@ -172,7 +178,10 @@ class PluginRunCore {
   /// `fetch` calls and is made once the record is read. [configAppend] adds
   /// text to string config values in the request only, after the required
   /// check (see `combinedInstruction`); the run's own config, which the
-  /// outcome reports and the log hides values by, is not changed. [timeout] is the
+  /// outcome reports and the log hides values by, is not changed.
+  /// [configOverride] replaces config values before the required check; only
+  /// keys that are non-secret `select` fields of the plugin's schema with a
+  /// fitting value are kept, the rest are dropped. [timeout] is the
   /// script's wall time (null: the runtime default); [deadline] replaces
   /// [outerDeadline] for this run.
   Future<PluginRunOutcome> run({
@@ -182,6 +191,7 @@ class PluginRunCore {
     required Object? input,
     required LyricsHttp Function(LyricsPluginRow row) http,
     Map<String, String> configAppend = const {},
+    Map<String, Object?> configOverride = const {},
     Duration? timeout,
     Duration? deadline,
   }) async {
@@ -199,6 +209,7 @@ class PluginRunCore {
         deadline ?? outerDeadline,
         cancel,
         configAppend,
+        configOverride,
       );
     } finally {
       unregister();
@@ -215,6 +226,7 @@ class PluginRunCore {
     Duration outer,
     PluginCancel cancel,
     Map<String, String> configAppend,
+    Map<String, Object?> configOverride,
   ) async {
     final row = await db.lyricsPluginById(installId);
     if (row == null || row.removedAt != null || !kind.accepts(row.kind)) {
@@ -253,17 +265,18 @@ class PluginRunCore {
       if (cancel.isCancelled) return const PluginRunOutcome.skipped();
       return failedSetup('loading the plugin took too long', timedOut: true);
     }
-    final config = setup.config;
+    final schema = decodePluginConfigSchema(row.configSchema);
+    final PluginConfigMap config = {
+      ...setup.config,
+      ...await _acceptedOverride(db, installId, schema, configOverride),
+    };
     if (cancel.isCancelled) return const PluginRunOutcome.skipped();
 
     final entryName = entry(setup.package);
     // A package without this script is not a plugin of this front.
     if (entryName == null) return const PluginRunOutcome.skipped();
     // Before the script starts: no fetch, no log line.
-    if (missingRequiredConfig(
-      decodePluginConfigSchema(row.configSchema),
-      config,
-    ).isNotEmpty) {
+    if (missingRequiredConfig(schema, config).isNotEmpty) {
       try {
         onNeedsConfig?.call(row);
       } on Object catch (error) {
@@ -314,4 +327,45 @@ class PluginRunCore {
       },
     );
   }
+}
+
+/// The part of [override] a run may use: keys that are non-secret `select`
+/// fields of [schema] whose value fits. The rest is dropped and logged by key
+/// name only.
+Future<PluginConfigMap> _acceptedOverride(
+  LibraryDatabase db,
+  String installId,
+  List<PluginConfigField> schema,
+  Map<String, Object?> override,
+) async {
+  if (override.isEmpty) return const {};
+  // The user's own choices of a `custom` select live in the stored values.
+  // Read here only when there is an override; the list could move into
+  // PluginRunSetup later. A failed read drops the whole override.
+  final Map<String, Object?> stored;
+  try {
+    final data = await db.lyricsPluginDataFor(installId);
+    stored = decodeStoredPluginConfig(data?.configValues ?? '');
+  } on Object catch (e) {
+    _log.warning('Config override dropped, read failed: ${e.runtimeType}');
+    return const {};
+  }
+  final accepted = <String, Object>{};
+  final dropped = <String>[];
+  for (final e in override.entries) {
+    final field = schema.where((f) => f.key == e.key).firstOrNull;
+    if (field != null &&
+        field.mode == PluginConfigMode.select &&
+        !isSecretField(field) &&
+        e.value != null &&
+        pluginValueFits(pluginEffectiveField(field, stored), e.value)) {
+      accepted[e.key] = e.value!;
+    } else {
+      dropped.add(e.key);
+    }
+  }
+  if (dropped.isNotEmpty) {
+    _log.fine('Dropped config override keys: ${dropped.join(', ')}');
+  }
+  return accepted;
 }

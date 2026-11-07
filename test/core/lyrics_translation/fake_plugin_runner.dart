@@ -98,6 +98,9 @@ class FakePluginRunner implements PluginTranslateRunner {
   /// The `configAppend` of each chunk that went out.
   final appends = <Map<String, String>>[];
 
+  /// The `configOverride` of each chunk that went out.
+  final overrides = <Map<String, Object?>>[];
+
   /// Chunk index (from 0) to the error that chunk throws.
   final errors = <int, Object>{};
 
@@ -123,6 +126,7 @@ class FakePluginRunner implements PluginTranslateRunner {
     required bool Function() allowed,
     bool Function()? stillWanted,
     Map<String, String> configAppend = const {},
+    Map<String, Object?> configOverride = const {},
   }) => gate.run(stillWanted ?? () => true, () async {
     if (!allowed()) {
       throw const TranslationException(TranslationFailureKind.blocked);
@@ -131,6 +135,7 @@ class FakePluginRunner implements PluginTranslateRunner {
     calls.add(List.of(lines));
     targets.add(to);
     appends.add(configAppend);
+    overrides.add(configOverride);
     songs.add(song);
     onSend?.call(index);
     await hold?.future;

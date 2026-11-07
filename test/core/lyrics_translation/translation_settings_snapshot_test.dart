@@ -17,9 +17,14 @@ import 'package:kanaru/core/lyrics_translation/translation_ai_tune.dart';
 import 'package:kanaru/core/lyrics_translation/translation_cache.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_job_work.dart';
+import 'package:kanaru/core/lyrics_translation/queue_translation_choice.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics/lyrics.dart';
+import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart' as player;
+import 'package:kanaru/core/settings/settings_provider.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
 import 'fake_plugin_runner.dart';
@@ -358,6 +363,171 @@ void main() {
       final fresh = derive(row('{"model":"flash"}'), saved) as TranslationReady;
       expect(fresh.refreshing, isFalse);
       expect(fresh.settingsJson, '{"model":"flash"}');
+    });
+  });
+
+  group('the tune of the winning tier', () {
+    Future<void> setMode(
+      TranslationScopePrecedence mode, {
+      int? allChosenAt,
+    }) async {
+      final settings = container.read(settingsProvider.notifier);
+      settings.setTranslation(
+        container
+            .read(settingsProvider)
+            .translation
+            .copyWith(scopePrecedence: mode, allChosenAt: allChosenAt),
+      );
+    }
+
+    Future<void> songTune(Map<String, String> tune, {int at = 5}) =>
+        db.setSongTranslationTune(
+          'h1',
+          service: plugin.value,
+          tune: tune,
+          chosenAt: at,
+        );
+
+    test(
+      'reaches the script and the snapshot over the shared settings',
+      () async {
+        controller.stored = {'model': 'flash'};
+        await songTune({'model': 'pro', 'style': 'poetic'});
+        await build();
+        await run('h1');
+
+        expect(runner.overrides, [
+          {'model': 'pro', 'style': 'poetic'},
+        ]);
+        final snap = decodeAiSnapshot(await settingsOf('h1'))!;
+        expect(snap['model'], 'pro');
+        expect(snap['style'], 'poetic');
+      },
+    );
+
+    test('a song without a tune sends no override', () async {
+      controller.stored = {'model': 'pro'};
+      await build();
+      await run('h1');
+
+      expect(runner.overrides, [<String, Object?>{}]);
+      expect(decodeAiSnapshot(await settingsOf('h1'))!['model'], 'pro');
+    });
+
+    test(
+      'an option the plugin dropped falls back to the shared value',
+      () async {
+        controller.stored = {'model': 'flash'};
+        await songTune({'model': 'gone', 'style': 'poetic'});
+        await build();
+        await run('h1');
+
+        expect(runner.overrides, [
+          {'style': 'poetic'},
+        ]);
+        expect(decodeAiSnapshot(await settingsOf('h1'))!['model'], 'flash');
+      },
+    );
+
+    test('a model the user added themselves is kept', () async {
+      runner = FakePluginRunner(
+        spec_: const PluginTranslateSpec(languages: ['en'], maxLines: 10),
+        config: [
+          for (final f in _config)
+            f.key == 'model'
+                ? PluginConfigField(
+                    key: f.key,
+                    title: f.title,
+                    mode: f.mode,
+                    selectFormat: f.selectFormat,
+                    defaultValue: f.defaultValue,
+                    options: f.options,
+                    custom: true,
+                  )
+                : f,
+        ],
+      );
+      controller.stored = {
+        'model': 'flash',
+        'model.custom': [
+          {'value': 'mine'},
+        ],
+      };
+      await songTune({'model': 'mine'});
+      await build();
+      await run('h1');
+
+      expect(runner.overrides.single, {'model': 'mine'});
+    });
+
+    Future<void> queueTune(Map<String, String> tune, int at) async {
+      container.listen(playerServiceProvider, (_, _) {});
+      container.listen(queueTranslationChoiceProvider, (_, _) {});
+      await container.read(playerServiceProvider.notifier).openTracks([
+        player.Track.fromPath('/music/a.mp3'),
+      ]);
+      container
+          .read(queueTranslationChoiceProvider.notifier)
+          .set(plugin, tune: tune, chosenAt: at);
+    }
+
+    test(
+      'the queue tune reaches the script, the song tune is not mixed in',
+      () async {
+        controller.stored = {'model': 'flash'};
+        await songTune({'model': 'pro', 'style': 'poetic'}, at: 5);
+        await build();
+        await queueTune({'model': 'pro'}, 20);
+        await run('h1');
+
+        expect(runner.overrides, [
+          {'model': 'pro'},
+        ]);
+        final snap = decodeAiSnapshot(await settingsOf('h1'))!;
+        expect(snap['style'], 'literal');
+      },
+    );
+
+    test('a queue tune alone reaches the script', () async {
+      controller.stored = {'model': 'flash'};
+      await build();
+      await queueTune({'model': 'pro', 'style': 'poetic'}, 20);
+      await run('h1');
+
+      expect(runner.overrides.single, {'model': 'pro', 'style': 'poetic'});
+    });
+
+    test('an unreadable config sends no override', () async {
+      controller.error = StateError('boom');
+      await songTune({'model': 'pro'});
+      await build();
+      await run('h1');
+
+      expect(runner.overrides, [<String, Object?>{}]);
+    });
+
+    test(
+      'an older song tune still wins when custom choices are kept',
+      () async {
+        controller.stored = {'model': 'flash'};
+        await songTune({'model': 'pro'}, at: 5);
+        await build();
+        await setMode(TranslationScopePrecedence.keepCustom, allChosenAt: 10);
+        await run('h1');
+
+        expect(runner.overrides.single, {'model': 'pro'});
+      },
+    );
+
+    test('an older song tune loses to a newer All songs choice', () async {
+      controller.stored = {'model': 'flash'};
+      await songTune({'model': 'pro'}, at: 5);
+      await build();
+      await setMode(TranslationScopePrecedence.replaceAll, allChosenAt: 10);
+      await run('h1');
+
+      expect(runner.overrides.single, isEmpty);
+      expect(decodeAiSnapshot(await settingsOf('h1'))!['model'], 'flash');
     });
   });
 }

@@ -220,6 +220,188 @@ void main() {
       () => runtime.handlers['translate.js'] = (_, _, _) => _ok(['x', 'y']),
     );
 
+    Future<void> sendOverride(
+      LyricsPluginRecord ai,
+      Map<String, Object?> override,
+    ) => runner.translateChunk(
+      ai.installId,
+      const ['a', 'b'],
+      'vi',
+      _song,
+      allowed: () => true,
+      configOverride: override,
+    );
+
+    group('config override', () {
+      const two = [
+        PluginConfigOption(value: 'a', title: 'A'),
+        PluginConfigOption(value: 'b', title: 'B'),
+      ];
+      Future<LyricsPluginRecord> installTwo({bool modelRequired = false}) =>
+          install(
+            kind: PluginKind.aiTranslate,
+            config: [
+              PluginConfigField(
+                key: 'model',
+                title: 'Model',
+                mode: PluginConfigMode.select,
+                options: two,
+                required: modelRequired,
+                defaultValue: modelRequired ? null : 'a',
+              ),
+              const PluginConfigField(
+                key: 'style',
+                title: 'Style',
+                mode: PluginConfigMode.select,
+                options: two,
+                defaultValue: 'a',
+              ),
+              const PluginConfigField(
+                key: 'token',
+                title: 'Token',
+                mode: PluginConfigMode.input,
+                inputFormat: PluginInputFormat.secret,
+              ),
+              const PluginConfigField(
+                key: 'customInstruction',
+                title: 'Instruction',
+                mode: PluginConfigMode.input,
+              ),
+            ],
+          );
+
+      test('replaces the shared value the script reads', () async {
+        final ai = await installTwo();
+        await sendOverride(ai, {'model': 'b', 'style': 'b'});
+        expect(runtime.requests.last.config['model'], 'b');
+        expect(runtime.requests.last.config['style'], 'b');
+      });
+
+      test(
+        'satisfies a required field that is empty in the shared config',
+        () async {
+          final ai = await installTwo(modelRequired: true);
+          await sendOverride(ai, {'model': 'b'});
+          expect(runtime.requests.last.config['model'], 'b');
+          expect(blocked, isEmpty);
+        },
+      );
+
+      test('without it a required empty field still blocks', () async {
+        final ai = await installTwo(modelRequired: true);
+        expect(
+          await _error(sendOverride(ai, const {})),
+          _failure(TranslationFailureKind.needsConfig),
+        );
+        expect(blocked, [ai.installId]);
+      });
+
+      test(
+        'drops secrets, unknown keys, non-select fields and bad values',
+        () async {
+          final ai = await installTwo();
+          await sendOverride(ai, {
+            'token': 'leak',
+            'ghost': 'x',
+            'customInstruction': 'x',
+            'model': 'zzz',
+            'style': 7,
+          });
+          final config = runtime.requests.last.config;
+          expect(config['model'], 'a');
+          expect(config['style'], 'a');
+          expect(config.containsKey('token'), isFalse);
+          expect(config.containsKey('ghost'), isFalse);
+          expect(config.containsKey('customInstruction'), isFalse);
+        },
+      );
+
+      group('custom model', () {
+        setUp(
+          () => runtime.handlers['translate.js'] = (_, _, _) => _ok(['x', 'y']),
+        );
+
+        // A custom model is required, so only an accepted override lets the
+        // run start while the shared model is empty.
+        Future<LyricsPluginRecord> installCustom() => install(
+          kind: PluginKind.aiTranslate,
+          config: const [
+            PluginConfigField(
+              key: 'model',
+              title: 'Model',
+              mode: PluginConfigMode.select,
+              options: two,
+              custom: true,
+              required: true,
+            ),
+            PluginConfigField(
+              key: 'style',
+              title: 'Style',
+              mode: PluginConfigMode.select,
+              options: two,
+              defaultValue: 'a',
+            ),
+            PluginConfigField(
+              key: 'customInstruction',
+              title: 'Instruction',
+              mode: PluginConfigMode.input,
+            ),
+          ],
+        );
+
+        test('one in the stored list is accepted', () async {
+          final ai = await installCustom();
+          await store.controller.addCustomModel(ai.installId, 'mine');
+          await sendOverride(ai, {'model': 'mine'});
+          expect(runtime.requests.last.config['model'], 'mine');
+        });
+
+        test('one outside the stored list is dropped', () async {
+          final ai = await installCustom();
+          await store.controller.addCustomModel(ai.installId, 'mine');
+          await sendOverride(ai, {'model': 'other'});
+          // The shared value (set by adding the model) is what runs.
+          expect(runtime.requests.last.config['model'], 'mine');
+        });
+
+        test('unreadable stored values drop the override', () async {
+          final ai = await installCustom();
+          await store.controller.addCustomModel(ai.installId, 'mine');
+          await store.db.customStatement(
+            'UPDATE lyrics_plugin_data SET config_values = ? '
+            'WHERE install_id = ?',
+            ['not json', ai.installId],
+          );
+          expect(
+            await _error(sendOverride(ai, {'model': 'mine'})),
+            _failure(TranslationFailureKind.needsConfig),
+          );
+        });
+      });
+
+      test('an empty override leaves the config as it is', () async {
+        final ai = await installTwo();
+        await sendOverride(ai, const {});
+        expect(runtime.requests.last.config['model'], 'a');
+      });
+
+      test('stays apart from the appended note', () async {
+        final ai = await installTwo();
+        await runner.translateChunk(
+          ai.installId,
+          const ['a', 'b'],
+          'vi',
+          _song,
+          allowed: () => true,
+          configAppend: {'customInstruction': 'N'},
+          configOverride: {'model': 'b'},
+        );
+        final config = runtime.requests.last.config;
+        expect(config['model'], 'b');
+        expect(config['customInstruction'], 'N');
+      });
+    });
+
     test('the script gets the shared text, a newline and the note', () async {
       final ai = await installAi();
       await store.controller.setConfigValue(
