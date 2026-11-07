@@ -59,6 +59,13 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
 
   PlaybackSessionSaver? _saver;
 
+  /// Opaque JSON kept with the session (see `setSessionExtra`). Replaced by
+  /// a new unmodifiable map at every change; survives a rebuild.
+  Map<String, Object?> _sessionExtras = const {};
+
+  /// The extras loaded at the first build, for `restoredSessionExtra`.
+  Map<String, Object?>? _restoredExtras;
+
   /// Identifies the current build, so a restore scheduled by an older one
   /// does nothing.
   Object? _sessionBuild;
@@ -106,6 +113,9 @@ abstract class _PlayerCore extends Notifier<PlayerState> {
   /// - `_userQueueChanges`: callers read `userQueueChanges` before an await
   ///   and compare after it, so it only grows; a reset could make a caller
   ///   drop or keep a stale result.
+  /// - `_sessionExtras`, `_restoredExtras`: this object is kept with the
+  ///   notifiers that wrote them; reloading from the file could go back to an
+  ///   older copy, since the frozen saver does not write on dispose.
   /// - `_turn`: only compared for identity by `ReplayGainSync`, which is made
   ///   anew per build, so it just keeps counting.
   /// - the fader: tied to its build through `_seeked` (see `_fadesNow`), and

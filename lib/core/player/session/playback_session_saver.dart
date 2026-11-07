@@ -38,6 +38,7 @@ class PlaybackSessionSaver {
     this._frozen = false,
     SessionTimerFactory? timer,
     this._upNext,
+    this._extras,
   }) : _written = initial,
        _position = initial?.position ?? Duration.zero,
        _timer = timer ?? Timer.new;
@@ -52,6 +53,10 @@ class PlaybackSessionSaver {
   /// every save. They only change together with the queue or the track,
   /// which already make the saver write.
   final Iterable<int> Function()? _upNext;
+
+  /// The opaque session extras, read at every save. A change is announced
+  /// with [onExtrasChanged], since nothing else in the state shows it.
+  final Map<String, Object?> Function()? _extras;
 
   /// Last snapshot loaded or written successfully: an equal one is never
   /// written again.
@@ -106,6 +111,12 @@ class PlaybackSessionSaver {
     _saveNow();
   }
 
+  /// The extras changed: written after [coalesceDelay], never while frozen.
+  void onExtrasChanged() {
+    if (_disposed) return;
+    _saveSoon();
+  }
+
   /// Lets changes reach the disk again, and saves what changed meanwhile.
   void unfreeze() {
     if (!_frozen || _disposed) return;
@@ -153,6 +164,7 @@ class PlaybackSessionSaver {
       state,
       position: _position,
       upNext: _upNext?.call() ?? const [],
+      extras: _extras?.call() ?? const {},
     );
     if (snapshot == _written) return;
     _written = snapshot;
