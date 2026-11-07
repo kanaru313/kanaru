@@ -12,9 +12,9 @@ import '../../now_playing/now_playing_header_pill.dart';
 /// label; below it the button stays the round icon.
 const lyricsTranslationMinLabelWidth = 64.0;
 
-/// Width of the pill beside its label: padding (10 + 14), the 18 px logo and
+/// Width of the pill beside its label: padding (10 + 14), the 20 px logo and
 /// the gap after it (8).
-const lyricsTranslationPillChrome = 50.0;
+const lyricsTranslationPillChrome = 52.0;
 
 /// The translate button of translated lyrics: the plugin's [PluginIcon]
 /// followed by the target language name, as a [NowPlayingHeaderPill], or a
@@ -57,7 +57,7 @@ class LyricsTranslationPill extends ConsumerWidget {
       }),
     );
     return NowPlayingHeaderPill(
-      leading: PluginIcon(record: record, size: 18),
+      leading: PluginIcon(record: record, size: 20),
       busy: busy,
       label: translationLanguageName(l10n, state.info.effective),
       tooltip: tooltip,

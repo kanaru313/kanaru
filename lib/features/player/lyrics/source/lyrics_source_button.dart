@@ -148,6 +148,9 @@ class _LyricsSourceButtonState extends ConsumerState<LyricsSourceButton> {
           icon: online ?? Icon(icon),
           iconSize: playerIconSize,
           style: IconButton.styleFrom(
+            // A 20 px plugin logo would leave a smaller circle than the 28 px
+            // icons around it: keep the round buttons' size either way.
+            minimumSize: const Size.square(playerIconSize + 16),
             foregroundColor: color,
             backgroundColor: online == null
                 ? null

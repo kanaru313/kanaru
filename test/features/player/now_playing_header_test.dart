@@ -460,6 +460,14 @@ void main() {
           tester.getRect(find.byType(LyricsTranslationButton)).left,
           tester.getRect(find.byType(LyricsSourceButton)).right,
         );
+        // The painted (hover) area, not the 48 px tap target both get.
+        Rect ink(Finder button) => tester.getRect(
+          find.descendant(of: button, matching: find.byType(InkWell)).first,
+        );
+        final sourceInk = ink(find.byType(LyricsSourceButton));
+        final translateInk = ink(find.byType(LyricsTranslationButton));
+        expect(translateInk.height, sourceInk.height);
+        expect(translateInk.top, sourceInk.top);
       });
 
       testWidgets('the pill moves no other header button', (tester) async {
@@ -620,7 +628,7 @@ void main() {
       // Left: 30 inset, 5 buttons (close, favorite, playlist, lyrics,
       // translate) and a 16 gap. Right: 4 buttons, the 56 sleep label and the
       // 12 px the sleep pill adds to its button. The translate pill replaces
-      // its 48 px button and spends 50 px (18 px logo) on padding and icon.
+      // its 48 px button and spends 52 px (20 px logo) on padding and icon.
       double room(
         double width, {
         bool mode = false,
@@ -635,7 +643,7 @@ void main() {
 
       // The translation is an icon: no label room at all.
       expect(room(1000), 0);
-      expect(room(1000, pill: true), 1000 - 286 - 260 - 2);
+      expect(room(1000, pill: true), 1000 - 286 - 260 - 4);
       expect(room(552, mode: true, window: true, pill: true), lessThan(0));
       expect(
         room(720, mode: true, pill: true) -
@@ -747,6 +755,17 @@ void main() {
       final source = tester.getRect(find.byType(LyricsSourceButton));
       expect(translate.left, greaterThanOrEqualTo(source.right));
       expect(source.width, lessThanOrEqualTo(48));
+      // A plugin logo in the source button keeps it as tall as the pill.
+      Rect ink(Type button) => tester.getRect(
+        find
+            .descendant(of: find.byType(button), matching: find.byType(InkWell))
+            .first,
+      );
+      expect(
+        ink(LyricsSourceButton).height,
+        ink(LyricsTranslationButton).height,
+      );
+      expect(ink(LyricsSourceButton).top, ink(LyricsTranslationButton).top);
       expect(find.text('a-long-service-name · Synced'), findsNothing);
     });
 

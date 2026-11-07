@@ -460,7 +460,7 @@ void main() {
         expect(find.byType(IconButton), findsNothing);
         final pluginIcon = tester.widget<PluginIcon>(find.byType(PluginIcon));
         expect(pluginIcon.record?.installId, _testPlugin.value);
-        expect(pluginIcon.size, 18);
+        expect(pluginIcon.size, 20);
         expect(
           find.descendant(
             of: find.byType(PluginIcon),

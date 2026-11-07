@@ -2,11 +2,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../playback_controls.dart';
 
-/// Height of a header pill, as tall as the round icon button beside it.
-const _pillHeight = 40.0;
+/// Height of a header pill, as tall as the hover circle of the round icon
+/// button beside it: the icon plus the icon button's 8 px padding each side.
+const _pillHeight = playerIconSize + 16;
 
 /// A Now Playing header button with a label: [leading] (or [icon]) followed by
-/// [label] on a raised stadium, or an 18 px progress ring in place of the icon
+/// [label] on a raised stadium, or a 20 px progress ring in place of the icon
 /// while [busy]. Both lyrics buttons (translation and source) use it, so they
 /// look alike. The label is one line and shrinks with an ellipsis to
 /// [maxLabelWidth]; [tooltip] says what the button does. Pressing it runs
@@ -40,8 +41,8 @@ class NowPlayingHeaderPill extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool muted;
 
-  /// Whether a background task is running; replaces [leading]/[icon] with an
-  /// 18 px progress indicator.
+  /// Whether a background task is running; replaces [leading]/[icon] with a
+  /// 20 px progress indicator.
   final bool busy;
 
   /// Digits of one width, for a label that counts (a timer), so the pill
@@ -58,8 +59,8 @@ class NowPlayingHeaderPill extends StatelessWidget {
         style: TextButton.styleFrom(
           backgroundColor: scheme.surfaceContainerHighest,
           foregroundColor: scheme.onSurfaceVariant,
-          minimumSize: const Size(0, _pillHeight),
-          maximumSize: const Size.fromHeight(_pillHeight),
+          fixedSize: const Size.fromHeight(_pillHeight),
+          visualDensity: VisualDensity.standard,
           padding: const EdgeInsetsDirectional.only(start: 10, end: 14),
           shape: const StadiumBorder(),
           textStyle: theme.textTheme.labelMedium,
@@ -70,7 +71,7 @@ class NowPlayingHeaderPill extends StatelessWidget {
           children: [
             if (busy)
               const SizedBox.square(
-                dimension: 18,
+                dimension: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             else if (leading != null)
