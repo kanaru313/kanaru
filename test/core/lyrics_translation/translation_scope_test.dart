@@ -143,6 +143,51 @@ void main() {
       );
     });
 
+    test('a queue with no stamp loses to any stamped default', () {
+      expect(
+        _resolve(
+          defaultService: _def,
+          allChosenAt: 0,
+          queue: queue(null),
+        ).scope,
+        TranslationScope.all,
+      );
+    });
+
+    test('a stamped queue beats a default that was never stamped', () {
+      expect(
+        _resolve(
+          defaultService: _def,
+          allChosenAt: null,
+          queue: queue(0),
+        ).scope,
+        TranslationScope.queue,
+      );
+    });
+
+    test('a newer default beats the queue and an older song', () {
+      expect(
+        _resolve(
+          defaultService: _def,
+          allChosenAt: 9,
+          song: _song(5),
+          queue: queue(6),
+        ).scope,
+        TranslationScope.all,
+      );
+    });
+
+    test('a song newer than the queue wins even when the queue is newer than '
+        'the default', () {
+      final c = _resolve(
+        defaultService: _def,
+        allChosenAt: 1,
+        song: _song(8),
+        queue: queue(7),
+      );
+      expect((c.scope, c.service), (TranslationScope.song, _own));
+    });
+
     test('an absent queue plugin does not block the song', () {
       expect(
         _resolve(

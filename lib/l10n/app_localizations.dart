@@ -8198,6 +8198,42 @@ abstract class AppLocalizations {
   /// **'Default service for every song'**
   String get lyricsTranslationModalScopeAllSubtitle;
 
+  /// Segment of the translation service picker: the choice applies to the songs of the current queue
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get lyricsTranslationScopeQueue;
+
+  /// Line under the scope segments of the translation service picker while Queue is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Songs in the current queue use this service; a new queue goes back to the default.'**
+  String get lyricsTranslationScopeQueueHint;
+
+  /// Tooltip of the disabled Queue segment while translated lyrics are off
+  ///
+  /// In en, this message translates to:
+  /// **'Turn translation on to choose a service for the queue.'**
+  String get lyricsTranslationScopeQueueLockedOff;
+
+  /// Tooltip of the disabled Queue segment when the play queue has no songs
+  ///
+  /// In en, this message translates to:
+  /// **'The queue is empty.'**
+  String get lyricsTranslationScopeQueueLockedEmpty;
+
+  /// Caption of the translation service picker when All songs is selected and the current queue has its own newer service choice: how many songs with their own newer choice are replaced as well
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Will also replace the current queue\'s choice} =1{Will also replace 1 song you set individually and the current queue\'s choice} other{Will also replace {count} songs you set individually and the current queue\'s choice}}'**
+  String lyricsTranslationScopeReplacesWithQueue(int count);
+
+  /// Subtitle of the service row when the playing song follows the service chosen for the queue; count is the number of songs in the queue
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{For the current queue (1 song)} other{For the current queue ({count} songs)}}'**
+  String lyricsTranslationModalScopeQueueSubtitle(int count);
+
   /// Footer row in the translation service picker that opens the plugin store
   ///
   /// In en, this message translates to:

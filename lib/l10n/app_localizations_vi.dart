@@ -5337,6 +5337,41 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dịch vụ mặc định cho mọi bài';
 
   @override
+  String get lyricsTranslationScopeQueue => 'Hàng đợi';
+
+  @override
+  String get lyricsTranslationScopeQueueHint =>
+      'Các bài trong hàng đợi hiện tại dùng dịch vụ này; hàng đợi mới quay về mặc định.';
+
+  @override
+  String get lyricsTranslationScopeQueueLockedOff =>
+      'Bật dịch lời để chọn dịch vụ cho hàng đợi.';
+
+  @override
+  String get lyricsTranslationScopeQueueLockedEmpty => 'Hàng đợi đang trống.';
+
+  @override
+  String lyricsTranslationScopeReplacesWithQueue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sẽ thay cả $count bài đã chỉnh riêng và hàng đợi hiện tại',
+      zero: 'Sẽ thay cả lựa chọn của hàng đợi hiện tại',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsTranslationModalScopeQueueSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cho hàng đợi hiện tại ($count bài)',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get lyricsTranslationModalGetPlugins => 'Tải thêm plugin dịch';
 
   @override

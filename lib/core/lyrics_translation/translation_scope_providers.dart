@@ -9,6 +9,7 @@ import '../database/library_startup.dart';
 import '../database/lyric_translation_queries.dart';
 import '../lyrics/plugins/lyrics_sources_provider.dart';
 import '../settings/settings_provider.dart';
+import 'queue_translation_choice.dart';
 import 'translation_scope.dart';
 import 'translation_service.dart';
 
@@ -82,7 +83,7 @@ TranslationChoice? translationChoiceFor(ProviderGetter get, String hash) {
             tune: _decodeTune(override.tuneJson),
             chosenAt: override.chosenAt,
           ),
-    queue: null,
+    queue: get(queueTranslationChoiceProvider),
   );
 }
 

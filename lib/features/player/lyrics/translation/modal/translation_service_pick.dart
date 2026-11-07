@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/database/library_startup.dart';
 import '../../../../../core/database/lyric_translation_queries.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
+import '../../../../../core/lyrics_translation/queue_translation_choice.dart';
 import '../../../../../core/lyrics_translation/translation_clock.dart';
 import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_scope_providers.dart';
@@ -38,6 +39,21 @@ int songsReplacedByDefault(WidgetRef ref) {
   return count;
 }
 
+/// Whether a pick for all songs would replace the current queue's own choice:
+/// its plugin is still installed and it is newer than the default's stamp.
+bool queueReplacedByDefault(WidgetRef ref) {
+  final choice = ref.read(queueTranslationChoiceProvider);
+  final records = ref.read(translatePluginRecordsProvider).value;
+  final at = choice?.chosenAt;
+  if (choice == null || at == null || records == null) return false;
+  final live = {
+    for (final r in records) ?TranslationServiceId.tryParse(r.installId),
+  };
+  if (!live.contains(choice.service)) return false;
+  final allChosenAt = ref.read(settingsProvider).translation.allChosenAt;
+  return allChosenAt == null || at > allChosenAt;
+}
+
 /// Writes the service the user picked for [scope]. [picked] is already
 /// confirmed (the picker asked the network notice before closing). Nothing is
 /// written when [context] left the tree meanwhile or when the choice has no
@@ -47,6 +63,9 @@ int songsReplacedByDefault(WidgetRef ref) {
 ///
 /// * [TranslationScope.song]: stores the song's own service; the default and
 ///   its stamp stay.
+/// * [TranslationScope.queue]: stores the service for the queue playing now
+///   (kept with the session until another queue replaces it); the default
+///   and its stamp stay.
 /// * [TranslationScope.all]: changes the default service and stamps it. No
 ///   song's own choice is deleted; the ones older than the stamp stop winning.
 Future<void> applyServicePick(
@@ -56,12 +75,18 @@ Future<void> applyServicePick(
   required TranslationScope scope,
   required String? hash,
 }) async {
-  if (scope == TranslationScope.queue) return;
   final db = ref.read(libraryDatabaseProvider);
   if (scope == TranslationScope.song && (hash == null || db == null)) return;
   if (!context.mounted) return;
   final clock = ref.read(translationClockProvider);
   final settings = ref.read(settingsProvider.notifier);
+  if (scope == TranslationScope.queue) {
+    settings.acknowledgeTranslationNotice(picked);
+    ref
+        .read(queueTranslationChoiceProvider.notifier)
+        .set(picked, chosenAt: clock());
+    return;
+  }
   if (scope == TranslationScope.song) {
     if (hash == null || db == null) return;
     final messenger = ScaffoldMessenger.maybeOf(context);

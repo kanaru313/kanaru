@@ -11,6 +11,7 @@ import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
+import '../../../../../core/player/player_service.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
@@ -149,6 +150,7 @@ class _ServiceRow extends ConsumerWidget {
   String? _scopeSubtitle(
     AppLocalizations l10n,
     Map<String, TranslationPluginInfo> plugins,
+    int queueLength,
   ) {
     final choice = info?.choice;
     if (choice == null) return null;
@@ -161,7 +163,9 @@ class _ServiceRow extends ConsumerWidget {
                 translationServiceName(l10n, plugins, base),
               ),
       TranslationScope.all => l10n.lyricsTranslationModalScopeAllSubtitle,
-      TranslationScope.queue => null,
+      TranslationScope.queue => l10n.lyricsTranslationModalScopeQueueSubtitle(
+        queueLength,
+      ),
     };
   }
 
@@ -171,6 +175,9 @@ class _ServiceRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final plugins = ref.watch(translationPluginInfosProvider);
+    final queueLength = ref.watch(
+      playerServiceProvider.select((s) => s.queue.order.length),
+    );
     final selected = this.selected;
     final ready = choices.ready;
     final unset = ready && selected == null;
@@ -192,7 +199,7 @@ class _ServiceRow extends ConsumerWidget {
         ? l10n.lyricsTranslationModalPluginsLoading
         : unset
         ? l10n.lyricsTranslationModalServiceUnset
-        : _scopeSubtitle(l10n, plugins);
+        : _scopeSubtitle(l10n, plugins, queueLength);
     final titleColor = unset ? colors.error : colors.onSurface;
     final subtitleColor = unset ? colors.error : colors.onSurfaceVariant;
 

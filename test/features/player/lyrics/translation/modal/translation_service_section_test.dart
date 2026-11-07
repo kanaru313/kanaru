@@ -5,6 +5,8 @@ import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_ai_badge.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
@@ -153,6 +155,21 @@ void main() {
       state: stateWith(TranslationScope.all, service: testTranslatePlugin),
     );
     expect(find.text('Default service for every song'), findsOneWidget);
+  });
+
+  testWidgets('subtitle for the queue counts its songs', (tester) async {
+    final harness = await pumpTranslationModal(
+      tester,
+      settings: onPrefs,
+      state: stateWith(TranslationScope.queue, service: testTranslatePlugin),
+    );
+    expect(find.text('For the current queue (1 song)'), findsOneWidget);
+    await harness.container.read(playerServiceProvider.notifier).addToQueue([
+      Track.fromPath('/music/more.mp3'),
+      Track.fromPath('/music/other.mp3'),
+    ]);
+    await tester.pump();
+    expect(find.text('For the current queue (3 songs)'), findsOneWidget);
   });
 
   testWidgets('unset and loading subtitles win over the scope subtitle', (

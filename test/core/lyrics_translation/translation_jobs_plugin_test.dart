@@ -14,9 +14,11 @@ import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
 import '../lyrics/fake_lyrics_readers.dart';
+import '../player/fake_audio_backend.dart';
 import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
@@ -299,6 +301,7 @@ void main() {
       container.dispose();
       container = ProviderContainer(
         overrides: [
+          audioBackendProvider.overrideWithValue(FakeAudioBackend()),
           libraryDatabaseProvider.overrideWithValue(db),
           initialSettingsProvider.overrideWithValue(
             translationSettings(service: _plugin, acknowledged: {_plugin}),

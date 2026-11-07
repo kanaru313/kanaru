@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/indexer/indexer_providers.dart';
+import '../../core/lyrics_translation/queue_translation_choice.dart';
 import '../../core/queue_history/queue_history_recorder.dart';
 import '../../features/library/scan_result_snack_bar.dart';
 import '../../features/player/now_playing/now_playing_open_provider.dart';
@@ -73,6 +74,10 @@ class AppShell extends ConsumerWidget {
     // Keeps the queues the user replaces for the queue history page, for as
     // long as the shell is up (the first-run screen has no queue).
     ref.listen(queueHistoryRecorderProvider, (_, _) {});
+
+    // Keeps the translation service chosen for the queue following every
+    // queue edit, so it is right when Now Playing opens later.
+    ref.listen(queueTranslationChoiceProvider, (_, _) {});
 
     final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
     final selected = AppDestination.values[navigationShell.currentIndex];
