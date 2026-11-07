@@ -35,10 +35,10 @@ Older builds refuse `type: "source"` (`wrongType`) and wildcard hosts (`badHost`
 
 A host entry is either a plain host name (the same rule as every plugin: `https`, a public DNS name with at least two labels) or `*.` followed by such a name.
 
-- Wildcards are allowed **only in source plugin** manifests and catalog entries. In a lyrics or translate plugin, a wildcard entry is `badHost`.
-- Any other `*` (`*`, `a.*.b.com`, `*foo.com`, `**.a.com`, `*.com`, `*.`) is `badHost`.
-- At most 3 wildcard entries per plugin; a fourth is `badHost`.
-- The base may not be a shared-hosting suffix under which anyone can register a name: `workers.dev`, `pages.dev`, `github.io`, `gitlab.io`, `netlify.app`, `vercel.app`, `herokuapp.com`, `appspot.com`, `web.app`, `firebaseapp.com`, `cloudfront.net`, `azurewebsites.net`, `blogspot.com`, `onrender.com`, `fly.dev`, `glitch.me`.
+- Wildcards are allowed **only in source plugin** manifests and catalog entries. In a lyrics or translate plugin, a wildcard entry is `wildcardHostNotAllowed`.
+- Any other `*` (`*`, `a.*.b.com`, `*foo.com`, `**.a.com`, `*.com`, `*.`) is `badWildcardHost`.
+- At most 10 distinct wildcard entries per plugin; the first one over is `tooManyWildcardHosts`.
+- The base may not be a shared-hosting suffix under which anyone can register a name (`sharedHostingWildcard`): `workers.dev`, `pages.dev`, `github.io`, `gitlab.io`, `netlify.app`, `vercel.app`, `herokuapp.com`, `appspot.com`, `web.app`, `firebaseapp.com`, `cloudfront.net`, `azurewebsites.net`, `blogspot.com`, `onrender.com`, `fly.dev`, `glitch.me`.
 - A request host matches `*.<base>` when, lower-cased and not ending with `.`, it is exactly one label in front of `<base>`. The label is 1 to 63 of `[a-z0-9-]`, not starting or ending with `-`. So `*.googlevideo.com` allows `rr1---sn-x.googlevideo.com` but not `googlevideo.com`, `a.b.googlevideo.com` or `evilgooglevideo.com`. A request to any other host is `blockedHost` before a socket opens.
 - There is no public suffix list, so a base such as `co.uk` passes. The plugin info page shows a wildcard as "any subdomain of X", and the user sees the hosts before installing.
 

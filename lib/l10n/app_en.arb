@@ -3832,6 +3832,45 @@
       }
     }
   },
+  "pluginProblemBadWildcardHost": "hosts: \"{detail}\" is not a valid wildcard: write *. followed by a public domain name",
+  "@pluginProblemBadWildcardHost": {
+    "description": "Why a plugin package was refused; detail is a host from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemWildcardHostNotAllowed": "hosts: \"{detail}\": only music source plugins may list wildcard hosts",
+  "@pluginProblemWildcardHostNotAllowed": {
+    "description": "Why a plugin package was refused; detail is a host from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemSharedHostingWildcard": "hosts: \"{detail}\" covers a shared hosting domain, where anyone can get a subdomain",
+  "@pluginProblemSharedHostingWildcard": {
+    "description": "Why a plugin package was refused; detail is a host from the package",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "pluginProblemTooManyWildcardHosts": "hosts: \"{detail}\" is over the limit of {max} wildcard hosts",
+  "@pluginProblemTooManyWildcardHosts": {
+    "description": "Why a plugin package was refused; detail is the first wildcard host over the limit",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "pluginProblemMissingScript": "src/{detail} is missing from the package",
   "@pluginProblemMissingScript": {
     "description": "Why a plugin package was refused; detail comes from the package",

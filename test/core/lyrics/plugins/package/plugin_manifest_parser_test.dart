@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
+import 'package:kanaru/core/lyrics/online/plugin_host_patterns.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest_parser.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_problem.dart';
@@ -693,7 +694,7 @@ void main() {
     });
 
     for (final type in ['lyrics', 'translate']) {
-      test('a $type manifest with a wildcard host is badHost', () {
+      test('a $type manifest with a wildcard host is refused', () {
         final json = type == 'lyrics'
             ? withMeta((m) => m['hosts'] = ['*.googlevideo.com'])
             : (sourceManifest()
@@ -705,32 +706,37 @@ void main() {
         (json['metadata'] as Map)['hosts'] = ['*.googlevideo.com'];
         expectProblem(
           json,
-          PluginPackageProblemKind.badHost,
+          PluginPackageProblemKind.wildcardHostNotAllowed,
           '*.googlevideo.com',
         );
       });
     }
 
-    test('a wildcard over a shared-hosting suffix is badHost', () {
+    test('a wildcard over a shared-hosting suffix is refused', () {
       expectProblem(
         sourceManifest(hosts: ['*.workers.dev']),
-        PluginPackageProblemKind.badHost,
+        PluginPackageProblemKind.sharedHostingWildcard,
         '*.workers.dev',
       );
     });
 
-    test('a fourth wildcard is badHost', () {
+    test('a wildcard over the cap is refused', () {
       expectProblem(
         sourceManifest(
-          hosts: [for (var i = 0; i < 4; i++) '*.h$i.example.com'],
+          hosts: [
+            for (var i = 0; i <= maxPluginHostWildcards; i++)
+              '*.h$i.example.com',
+          ],
         ),
-        PluginPackageProblemKind.badHost,
-        '*.h3.example.com',
+        PluginPackageProblemKind.tooManyWildcardHosts,
+        '*.h$maxPluginHostWildcards.example.com',
       );
     });
 
-    test('three wildcards are accepted', () {
-      final hosts = [for (var i = 0; i < 3; i++) '*.h$i.example.com'];
+    test('wildcards up to the cap are accepted', () {
+      final hosts = [
+        for (var i = 0; i < maxPluginHostWildcards; i++) '*.h$i.example.com',
+      ];
       expect(parse(sourceManifest(hosts: hosts)).hosts, hosts);
     });
 
@@ -738,7 +744,7 @@ void main() {
       test('a source manifest refuses host $host', () {
         expectProblem(
           sourceManifest(hosts: [host]),
-          PluginPackageProblemKind.badHost,
+          PluginPackageProblemKind.badWildcardHost,
           host,
         );
       });

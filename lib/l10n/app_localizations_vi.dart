@@ -3880,6 +3880,26 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String pluginProblemBadWildcardHost(String detail) {
+    return 'hosts: \"$detail\" không phải wildcard hợp lệ: hãy viết *. rồi một tên miền công khai';
+  }
+
+  @override
+  String pluginProblemWildcardHostNotAllowed(String detail) {
+    return 'hosts: \"$detail\": chỉ plugin nguồn nhạc mới được dùng host wildcard';
+  }
+
+  @override
+  String pluginProblemSharedHostingWildcard(String detail) {
+    return 'hosts: \"$detail\" bao cả một tên miền hosting dùng chung, nơi ai cũng lấy được tên miền con';
+  }
+
+  @override
+  String pluginProblemTooManyWildcardHosts(String detail, int max) {
+    return 'hosts: \"$detail\" vượt giới hạn $max host wildcard';
+  }
+
+  @override
   String pluginProblemMissingScript(String detail) {
     return 'Không thấy src/$detail trong gói';
   }

@@ -4189,6 +4189,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String pluginProblemBadWildcardHost(String detail) {
+    return 'hosts: \"$detail\" is not a valid wildcard: write *. followed by a public domain name';
+  }
+
+  @override
+  String pluginProblemWildcardHostNotAllowed(String detail) {
+    return 'hosts: \"$detail\": only music source plugins may list wildcard hosts';
+  }
+
+  @override
+  String pluginProblemSharedHostingWildcard(String detail) {
+    return 'hosts: \"$detail\" covers a shared hosting domain, where anyone can get a subdomain';
+  }
+
+  @override
+  String pluginProblemTooManyWildcardHosts(String detail, int max) {
+    return 'hosts: \"$detail\" is over the limit of $max wildcard hosts';
+  }
+
+  @override
   String pluginProblemMissingScript(String detail) {
     return 'src/$detail is missing from the package';
   }

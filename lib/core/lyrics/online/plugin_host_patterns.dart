@@ -4,7 +4,7 @@ import 'lyrics_provider_registry.dart' show lyricsHostProblem;
 const pluginHostWildcardPrefix = '*.';
 
 /// Most wildcard entries one plugin may list.
-const maxPluginHostWildcards = 3;
+const maxPluginHostWildcards = 10;
 
 /// Bases a wildcard may not use: shared-hosting suffixes under which anyone
 /// can register a name, so `*.<base>` would reach every tenant's site.
@@ -47,6 +47,25 @@ String? pluginHostPatternProblem(String pattern) {
   return lyricsHostProblem(pattern);
 }
 
+/// Why a host entry of a plugin may not be listed.
+enum PluginHostRefusal {
+  /// Not a public DNS name (an IP, `localhost`, a single label…).
+  notPublic,
+
+  /// A `*` that is not one leading `*.` label over a public name.
+  badWildcard,
+
+  /// A wildcard in a plugin that is not a source plugin.
+  wildcardNotAllowed,
+
+  /// A wildcard over a shared-hosting suffix
+  /// ([pluginHostDeniedWildcardBases]).
+  sharedHostingWildcard,
+
+  /// More than [maxPluginHostWildcards] distinct wildcard entries.
+  tooManyWildcards,
+}
+
 /// The first entry of a plugin's [hosts] that may not be listed, with the
 /// reason, or `null` when every entry may. [hosts] are expected trimmed and
 /// lower-cased, as the manifest and catalog parsers store them.
@@ -56,25 +75,29 @@ String? pluginHostPatternProblem(String pattern) {
 /// may not be in [pluginHostDeniedWildcardBases], and at most
 /// [maxPluginHostWildcards] distinct wildcard entries are allowed; the entry
 /// reported for that is the first one over the cap.
-({String entry, String problem})? pluginHostListProblem(
+({String entry, PluginHostRefusal reason})? pluginHostListProblem(
   List<String> hosts, {
   required bool wildcardsAllowed,
 }) {
   final wildcards = <String>{};
   for (final entry in hosts) {
-    final problem = pluginHostPatternProblem(entry);
-    if (problem != null) return (entry: entry, problem: problem);
+    if (pluginHostPatternProblem(entry) != null) {
+      final reason = entry.contains('*')
+          ? PluginHostRefusal.badWildcard
+          : PluginHostRefusal.notPublic;
+      return (entry: entry, reason: reason);
+    }
     if (!entry.startsWith(pluginHostWildcardPrefix)) continue;
     if (!wildcardsAllowed) {
-      return (entry: entry, problem: 'wildcard not allowed for this plugin');
+      return (entry: entry, reason: PluginHostRefusal.wildcardNotAllowed);
     }
     final base = entry.substring(pluginHostWildcardPrefix.length);
     if (pluginHostDeniedWildcardBases.contains(base)) {
-      return (entry: entry, problem: 'wildcard over a shared-hosting suffix');
+      return (entry: entry, reason: PluginHostRefusal.sharedHostingWildcard);
     }
     wildcards.add(entry);
     if (wildcards.length > maxPluginHostWildcards) {
-      return (entry: entry, problem: 'too many wildcard hosts');
+      return (entry: entry, reason: PluginHostRefusal.tooManyWildcards);
     }
   }
   return null;

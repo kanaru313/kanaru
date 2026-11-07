@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/lyrics/online/plugin_host_patterns.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_controller.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_package_problem.dart';
 import 'package:kanaru/core/lyrics/plugins/repo/plugin_repo.dart';
@@ -171,6 +172,10 @@ void main() {
       PluginPackageProblemKind.unsafeEntry,
       PluginPackageProblemKind.invalidManifest,
       PluginPackageProblemKind.badHost,
+      PluginPackageProblemKind.badWildcardHost,
+      PluginPackageProblemKind.wildcardHostNotAllowed,
+      PluginPackageProblemKind.sharedHostingWildcard,
+      PluginPackageProblemKind.tooManyWildcardHosts,
       PluginPackageProblemKind.missingScript,
       PluginPackageProblemKind.scriptError,
     ]) {
@@ -179,6 +184,19 @@ void main() {
     expect(
       of(PluginPackageProblemKind.scriptError, line: 12),
       allOf(contains('THE_DETAIL'), contains('12')),
+    );
+  });
+
+  test('too many wildcard hosts names the cap', () {
+    expect(
+      pluginProblemText(
+        en,
+        const PluginPackageProblem(
+          PluginPackageProblemKind.tooManyWildcardHosts,
+          detail: '*.a.com',
+        ),
+      ),
+      allOf(contains('*.a.com'), contains('$maxPluginHostWildcards')),
     );
   });
 
