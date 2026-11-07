@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart' show listEquals, immutable;
 
@@ -94,6 +96,26 @@ extension LyricTranslationQueries on LibraryDatabase {
       instruction: row?.instruction,
       service: installId,
       tuneJson: installId == row?.service ? row?.tuneJson : null,
+      chosenAt: chosenAt,
+    ),
+  );
+
+  /// Sets the per-song service together with its AI tune (`model`, `style`
+  /// ...) and [chosenAt] (epoch ms); creates the row when missing. The caller
+  /// writes both `model` and `style`, with the effective values at write
+  /// time; an empty [tune] stores no tune.
+  Future<void> setSongTranslationTune(
+    String hash, {
+    required String service,
+    required Map<String, String> tune,
+    required int chosenAt,
+  }) => _updatePref(
+    hash,
+    (row) => (
+      target: row?.targetLang,
+      instruction: row?.instruction,
+      service: service,
+      tuneJson: tune.isEmpty ? null : jsonEncode(tune),
       chosenAt: chosenAt,
     ),
   );

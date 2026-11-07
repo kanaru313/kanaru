@@ -69,4 +69,59 @@ void main() {
       });
     }
   }
+
+  testWidgets('no caption for all songs when nothing is set individually', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: TranslationScopeHeader(
+            scopes: TranslationScope.values,
+            selected: TranslationScope.all,
+            precedence: TranslationScopePrecedence.keepCustom,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    final texts = find.descendant(
+      of: find.byType(TranslationScopeHeader),
+      matching: find.byType(Text),
+    );
+    // Only the three segment labels.
+    expect(texts, findsNWidgets(TranslationScope.values.length));
+  });
+
+  testWidgets('replace-all with a queue choice and no songs still says so', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: TranslationScopeHeader(
+            scopes: TranslationScope.values,
+            selected: TranslationScope.all,
+            precedence: TranslationScopePrecedence.replaceAll,
+            queueHasChoice: true,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    expect(
+      find.text("Will also replace the current queue's choice"),
+      findsOneWidget,
+    );
+  });
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
@@ -27,6 +29,7 @@ import 'translation_ai_badge.dart';
 import 'translation_modal_navigation.dart';
 import 'translation_scope_header.dart';
 import 'translation_service_pick.dart';
+import 'translation_use_default_row.dart';
 
 final _log = Logger('translation');
 
@@ -88,8 +91,10 @@ Future<void> openTargetPicker(
 /// Opens the child modal that picks the translation service plugin.
 ///
 /// Lists the live translate plugins with scope segments on top (this song
-/// only, the current queue, or the default for every song), a footer row that
-/// opens the plugin store and a cache-first hint. The check mark is on the
+/// only, the current queue, or the default for every song), and footer rows:
+/// "Use the default for this song / the queue" (only while that own choice
+/// decides the song's service now; it drops the choice and closes the picker)
+/// and the one that opens the plugin store. The check mark is on the
 /// song's own service ([info]'s choice), or on the default when [info] is
 /// null. The segment is "this song" on every open, except when that is locked
 /// (translation off, or no song with lyrics): then it is "all songs".
@@ -114,7 +119,7 @@ Future<void> openServicePicker(
     else if (hash == null)
       TranslationScope.song: l10n.lyricsTranslationScopeSongLockedNoSong,
     if (!ref.read(settingsProvider).translation.show)
-      TranslationScope.queue: l10n.lyricsTranslationScopeQueueLockedOff
+      TranslationScope.queue: l10n.lyricsTranslationScopeSongLockedOff
     else if (ref.read(playerServiceProvider).queue.isEmpty)
       TranslationScope.queue: l10n.lyricsTranslationScopeQueueLockedEmpty,
   };
@@ -124,6 +129,11 @@ Future<void> openServicePicker(
         : TranslationScope.song,
   );
   final caption = allScopeCaption(ref);
+  final undoTier = useDefaultTier(
+    ref,
+    winning: info?.choice?.scope,
+    hash: hash,
+  );
   final items = <SelectionPickerItem<TranslationServiceId>>[
     for (final service in choices.services)
       SelectionPickerItem(
@@ -160,11 +170,29 @@ Future<void> openServicePicker(
         onChanged: (s) => scope.value = s,
       ),
     ),
-    footer: _GetMorePluginsRow(
-      label: l10n.lyricsTranslationModalGetPlugins,
-      onTap: (_) => openTranslationStore(context),
+    footer: Builder(
+      builder: (pickerContext) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (undoTier != null && hash != null)
+            TranslationUseDefaultRow(
+              scope: undoTier,
+              onTap: () => unawaited(
+                applyUseDefault(
+                  pickerContext,
+                  ref,
+                  scope: undoTier,
+                  hash: hash,
+                ),
+              ),
+            ),
+          _GetMorePluginsRow(
+            label: l10n.lyricsTranslationModalGetPlugins,
+            onTap: (_) => openTranslationStore(context),
+          ),
+        ],
+      ),
     ),
-    hint: l10n.lyricsTranslationModalCacheFirst,
     confirm: (pickerContext, service) =>
         confirmTranslationNotice(pickerContext, ref, service),
   );

@@ -1,18 +1,24 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart' hide Track;
 import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
+import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_config_values_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
+import 'package:kanaru/core/lyrics_translation/queue_translation_choice.dart';
+import 'package:kanaru/core/lyrics_translation/translation_clock.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
@@ -114,6 +120,7 @@ void main() {
     LyricsTranslationState? state,
     TranslationPrefs? settings,
     bool openTune = true,
+    List<Override> extra = const [],
     Locale locale = const Locale('en'),
   }) async {
     final fake = (plugins ?? FakePlugins())..stored = stored;
@@ -144,6 +151,7 @@ void main() {
         ),
         translationJobsProvider.overrideWith(() => jobs),
         libraryDatabaseProvider.overrideWithValue(db),
+        ...extra,
       ],
     );
     final rig = _Rig(h, fake, jobs, runner, db);
@@ -154,6 +162,24 @@ void main() {
 
   Future<void> tapText(WidgetTester tester, String text) async {
     await tester.tap(find.text(text));
+    await settleModal(tester);
+  }
+
+  /// Text inside the tune modal only (the row under the service has the same
+  /// style title).
+  Finder inTune(String text) => find.descendant(
+    of: find.byType(TranslationAiTuneModal),
+    matching: find.text(text),
+  );
+
+  /// Chooses a scope segment of the open tune modal.
+  Future<void> pickScope(WidgetTester tester, String label) async {
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SegmentedButton<TranslationScope>),
+        matching: find.text(label),
+      ),
+    );
     await settleModal(tester);
   }
 
@@ -282,6 +308,7 @@ void main() {
 
     tuneTest('picking a model writes it to the plugin config', (tester) async {
       final r = await pump(tester);
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       await tapRow(tester, 'Pro');
       await tester.pump(const Duration(milliseconds: 100));
@@ -294,6 +321,7 @@ void main() {
     tuneTest('a refused pick goes back and shows the reason', (tester) async {
       final plugins = FakePlugins()..configResult = PluginConfigWrite.tooLarge;
       await pump(tester, plugins: plugins);
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       await tapRow(tester, 'Pro');
       await tester.pump(const Duration(milliseconds: 100));
@@ -349,6 +377,7 @@ void main() {
           ],
         },
       );
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       expect(find.text('Custom'), findsOneWidget);
       expect(find.text('Add model…'), findsNothing);
@@ -388,6 +417,7 @@ void main() {
           TranslationFailureKind.network,
         ),
       );
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       await tapRow(tester, 'Pro');
       await tester.enterText(find.byType(TextField), 'dark mood');
@@ -457,6 +487,7 @@ void main() {
     tuneTest('when the song changes the unsaved note and pick go to the old '
         'song and nothing is translated again', (tester) async {
       final r = await pump(tester);
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       await tapRow(tester, 'Pro');
       await tester.enterText(find.byType(TextField), 'for the old song');
@@ -478,6 +509,7 @@ void main() {
     ) async {
       final plugins = FakePlugins()..configGate = Completer<void>();
       final r = await pump(tester, plugins: plugins);
+      await pickScope(tester, 'All songs');
       await tapText(tester, 'Flash');
       await tapRow(tester, 'Pro');
       r.h.fake.emit(const TranslationUnavailable());
@@ -517,6 +549,355 @@ void main() {
       await settleClose(tester);
 
       expect(await savedNote(tester, r, 'hash'), 'one two');
+    });
+  });
+
+  group('where a pick goes', () {
+    const now = 7000;
+    final clock = translationClockProvider.overrideWithValue(() => now);
+
+    Future<List<SongTranslationOverride>> songRows(
+      WidgetTester tester,
+      _Rig r,
+    ) async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      return (await tester.runAsync(
+        () => r.db.watchSongTranslationOverrides().first,
+      ))!;
+    }
+
+    tuneTest('opens on This song, with the three segments', (tester) async {
+      await pump(tester, extra: [clock]);
+      final seg = tester.widget<SegmentedButton<TranslationScope>>(
+        find.byType(SegmentedButton<TranslationScope>),
+      );
+      expect(seg.selected, {TranslationScope.song});
+      expect(seg.segments.map((s) => s.value), [
+        TranslationScope.song,
+        TranslationScope.queue,
+        TranslationScope.all,
+      ]);
+    });
+
+    tuneTest('This song stores the service, model, style and time for the '
+        'song only', (tester) async {
+      final r = await pump(tester, extra: [clock]);
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final rows = await songRows(tester, r);
+      expect(rows, hasLength(1));
+      expect(rows.single.hash, 'hash');
+      expect(rows.single.service, testTranslatePluginId);
+      expect(jsonDecode(rows.single.tuneJson!), {
+        'model': 'pro',
+        'style': 'literal',
+      });
+      expect(rows.single.chosenAt, now);
+      expect(r.plugins.configWrites, isEmpty);
+      expect(r.h.prefs.allChosenAt, isNull);
+      expect(find.text('Pro'), findsOneWidget);
+    });
+
+    tuneTest('a second pick keeps the first one in the song tune', (
+      tester,
+    ) async {
+      final r = await pump(tester, extra: [clock]);
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.pump(const Duration(milliseconds: 100));
+      await songRows(tester, r);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(inTune('Literal'));
+      await settleModal(tester);
+      await tapRow(tester, 'Poetic');
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final rows = await songRows(tester, r);
+      expect(jsonDecode(rows.single.tuneJson!), {
+        'model': 'pro',
+        'style': 'poetic',
+      });
+    });
+
+    tuneTest('two picks in a row, the first still being written, store both '
+        'keys', (tester) async {
+      final r = await pump(tester, extra: [clock]);
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      // No wait for the database between the two picks.
+      await tester.tap(inTune('Literal'));
+      await settleModal(tester);
+      await tapRow(tester, 'Poetic');
+
+      final rows = await songRows(tester, r);
+      expect(jsonDecode(rows.single.tuneJson!), {
+        'model': 'pro',
+        'style': 'poetic',
+      });
+    });
+
+    tuneTest('a model picked for all songs after one for this song is not '
+        'undone by the next song pick', (tester) async {
+      final r = await pump(
+        tester,
+        stored: {
+          'model.custom': [
+            {'value': 'mine'},
+          ],
+        },
+        extra: [clock],
+      );
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await songRows(tester, r);
+      await tester.pump(const Duration(milliseconds: 100));
+      await pickScope(tester, 'All songs');
+      await tester.tap(inTune('Flash'));
+      await settleModal(tester);
+      await tapRow(tester, 'mine');
+      await tester.pump(const Duration(milliseconds: 100));
+      await pickScope(tester, 'This song');
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(inTune('Literal'));
+      await settleModal(tester);
+      await tapRow(tester, 'Poetic');
+
+      final rows = await songRows(tester, r);
+      expect(jsonDecode(rows.single.tuneJson!), {
+        'model': 'mine',
+        'style': 'poetic',
+      });
+    });
+
+    tuneTest('two queue picks in a row store both keys', (tester) async {
+      final r = await pump(tester, extra: [clock]);
+      await pickScope(tester, 'Queue');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.tap(inTune('Literal'));
+      await settleModal(tester);
+      await tapRow(tester, 'Poetic');
+      expect(r.h.container.read(queueTranslationChoiceProvider)?.tune, {
+        'model': 'pro',
+        'style': 'poetic',
+      });
+    });
+
+    tuneTest('when the song changes a pick for this song stays with the song '
+        'the modal opened on', (tester) async {
+      final r = await pump(tester, extra: [clock]);
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      r.h.fake.emit(TranslationOff(fakeTranslationInfo(hash: 'next')));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final rows = await songRows(tester, r);
+      expect(rows.map((row) => row.hash), ['hash']);
+      expect(jsonDecode(rows.single.tuneJson!)['model'], 'pro');
+    });
+
+    tuneTest('when the song changes a queue pick still goes to the queue', (
+      tester,
+    ) async {
+      final r = await pump(tester, extra: [clock]);
+      await pickScope(tester, 'Queue');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      r.h.fake.emit(TranslationOff(fakeTranslationInfo(hash: 'next')));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        r.h.container.read(queueTranslationChoiceProvider)?.tune['model'],
+        'pro',
+      );
+      expect(await songRows(tester, r), isEmpty);
+    });
+
+    tuneTest('a pick for all songs left unsaved when the modal closes still '
+        'makes the plugin the default', (tester) async {
+      final plugins = FakePlugins()..configGate = Completer<void>();
+      final r = await pump(
+        tester,
+        plugins: plugins,
+        settings: _onPrefs.copyWith(allChosenAt: 1),
+        extra: [clock],
+      );
+      await pickScope(tester, 'All songs');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settleModal(tester);
+      plugins.configGate!.complete();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(r.h.prefs.allChosenAt, now);
+    });
+
+    tuneTest('Queue stores the tune in the session choice only', (
+      tester,
+    ) async {
+      final r = await pump(tester, extra: [clock]);
+      await pickScope(tester, 'Queue');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final choice = r.h.container.read(queueTranslationChoiceProvider);
+      expect(choice?.service, testTranslatePlugin);
+      expect(choice?.tune, {'model': 'pro', 'style': 'literal'});
+      expect(choice?.chosenAt, now);
+      expect(await songRows(tester, r), isEmpty);
+      expect(r.plugins.configWrites, isEmpty);
+    });
+
+    tuneTest('All songs writes the shared config and makes the plugin the '
+        'default', (tester) async {
+      final r = await pump(
+        tester,
+        settings: _onPrefs.copyWith(allChosenAt: 1),
+        extra: [clock],
+      );
+      await pickScope(tester, 'All songs');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(r.plugins.configWrites, [(testTranslatePluginId, 'model', 'pro')]);
+      expect(r.h.prefs.service, testTranslatePlugin);
+      expect(r.h.prefs.allChosenAt, now);
+      expect(await songRows(tester, r), isEmpty);
+      expect(r.h.container.read(queueTranslationChoiceProvider), isNull);
+    });
+
+    tuneTest('a refused shared config leaves the default stamp alone', (
+      tester,
+    ) async {
+      final plugins = FakePlugins()..configResult = PluginConfigWrite.tooLarge;
+      final r = await pump(
+        tester,
+        plugins: plugins,
+        settings: _onPrefs.copyWith(allChosenAt: 1),
+        extra: [clock],
+      );
+      await pickScope(tester, 'All songs');
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(r.h.prefs.allChosenAt, 1);
+    });
+
+    tuneTest('the box shows the song tune, and the shared config under All '
+        'songs', (tester) async {
+      final r = await pump(
+        tester,
+        openTune: false,
+        stored: {'model': 'flash'},
+        extra: [clock],
+      );
+      await tester.runAsync(
+        () => r.db.setSongTranslationTune(
+          'hash',
+          service: testTranslatePluginId,
+          tune: {'model': 'pro', 'style': 'poetic'},
+          chosenAt: 10,
+        ),
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await openTuneModal(tester);
+      expect(inTune('Pro'), findsOneWidget);
+      expect(inTune('Poetic'), findsOneWidget);
+
+      await pickScope(tester, 'All songs');
+      expect(inTune('Flash'), findsOneWidget);
+      expect(inTune('Literal'), findsOneWidget);
+    });
+
+    tuneTest('using the default again leaves the shared config in the box', (
+      tester,
+    ) async {
+      final r = await pump(
+        tester,
+        openTune: false,
+        stored: {'model': 'flash'},
+        extra: [clock],
+      );
+      await tester.runAsync(
+        () => r.db.setSongTranslationTune(
+          'hash',
+          service: testTranslatePluginId,
+          tune: {'model': 'pro', 'style': 'poetic'},
+          chosenAt: 10,
+        ),
+      );
+      // The "Use the default for this song" row stores this.
+      await tester.runAsync(
+        () => r.db.setSongTranslationService('hash', null, chosenAt: null),
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await openTuneModal(tester);
+      expect(inTune('Flash'), findsOneWidget);
+      expect(inTune('Literal'), findsOneWidget);
+      expect(inTune('Pro'), findsNothing);
+    });
+
+    tuneTest('the queue segment is locked when the queue is empty', (
+      tester,
+    ) async {
+      final r = await pump(tester, openTune: false, extra: [clock]);
+      await r.h.container.read(playerServiceProvider.notifier).removeTrack(0);
+      await tester.pump(const Duration(milliseconds: 100));
+      await openTuneModal(tester);
+      final seg = tester.widget<SegmentedButton<TranslationScope>>(
+        find.byType(SegmentedButton<TranslationScope>),
+      );
+      expect(
+        seg.segments
+            .firstWhere((s) => s.value == TranslationScope.queue)
+            .enabled,
+        isFalse,
+      );
+    });
+
+    tuneTest('the note stays on the song whatever the segment', (tester) async {
+      final r = await pump(tester, extra: [clock]);
+      await pickScope(tester, 'All songs');
+      await tester.enterText(find.byType(TextField), 'for the song');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(await savedNote(tester, r, 'hash'), 'for the song');
+      expect(r.plugins.configWrites, isEmpty);
+      expect(await songRows(tester, r), isEmpty);
+    });
+
+    tuneTest('a failed song write goes back and shows the reason', (
+      tester,
+    ) async {
+      final r = await pump(tester, extra: [clock]);
+      await tester.runAsync(r.db.close);
+      await tapText(tester, 'Flash');
+      await tapRow(tester, 'Pro');
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Flash'), findsOneWidget);
+      expect(find.text('Could not save the setting'), findsWidgets);
     });
   });
 }

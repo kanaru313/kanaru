@@ -104,7 +104,7 @@ void main() {
     expect(isChecked(tester, 'Gemini'), isFalse);
     expect(
       find.text('Translations saved on this device are used first.'),
-      findsOneWidget,
+      findsNothing,
     );
 
     await tapRow(tester, 'Other');

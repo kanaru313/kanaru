@@ -12,6 +12,8 @@ import '../lyrics/plugins/translate/plugin_translate_gate.dart'
 import '../lyrics/plugins/translate/plugin_translate_runner.dart'
     show PluginTranslateInfo;
 import '../lyrics/plugins/translate/plugin_translate_runner_provider.dart';
+import '../lyrics/plugins/store/plugin_config_values.dart'
+    show pluginEffectiveField, pluginValueFits;
 import '../secrets/secret_store.dart';
 import '../settings/settings_provider.dart';
 import 'lyrics_translation_derive.dart';
@@ -316,7 +318,11 @@ class TranslationJobs
           readTranslationChoiceFor(ref, key.hash)?.service == service;
     }
 
-    final (:append, :settings) = await _aiSettings(key, record, info);
+    final (:append, :override, :settings) = await _aiSettings(
+      key,
+      record,
+      info,
+    );
     final translator = PluginTranslator(
       service: service,
       runner: runner,
@@ -327,22 +333,38 @@ class TranslationJobs
           ? identical(_forced[key], forcedToken)
           : _current == key,
       configAppend: append,
+      configOverride: override,
     );
     return (translator, record.updatedAt, settings);
   }
 
-  /// For an `ai-translate` plugin: the song's note to add to the instruction
+  /// For an `ai-translate` plugin: the winning tier's model and style that fit
+  /// the plugin's options (`override`, empty when none or when the stored
+  /// config cannot be read), the song's note to add to the instruction
   /// of every chunk, and the snapshot of the settings the job starts with
   /// (read once, so a change made while it runs shows as different). Both
   /// stay empty for other plugins; a failed read of the stored config costs the
   /// snapshot, a failed read of the note costs the note, never the job.
-  Future<({Map<String, String> append, String? settings})> _aiSettings(
+  Future<
+    ({
+      Map<String, String> append,
+      Map<String, Object?> override,
+      String? settings,
+    })
+  >
+  _aiSettings(
     TranslationJobKey key,
     LyricsPluginRecord record,
     PluginTranslateInfo info,
   ) async {
     final tune = aiTuneOf(record.kind, info.config);
-    if (tune == null) return (append: const <String, String>{}, settings: null);
+    if (tune == null) {
+      return (
+        append: const <String, String>{},
+        override: const <String, Object?>{},
+        settings: null,
+      );
+    }
     String? note;
     try {
       final db = ref.read(libraryDatabaseProvider);
@@ -358,14 +380,42 @@ class TranslationJobs
       final stored = controller == null
           ? null
           : await controller.storedConfig(record.installId);
+      if (stored == null) {
+        return (
+          append: append,
+          override: const <String, Object?>{},
+          settings: null,
+        );
+      }
+      // Only the winning tier's tune, and only while it is this job's service.
+      final choice = readTranslationChoiceFor(ref, key.hash);
+      final tierTune = choice?.service == key.service
+          ? choice!.tune
+          : const <String, String>{};
+      final override = <String, Object?>{};
+      for (final (name, field) in [
+        (aiModelKey, tune.model),
+        (aiStyleKey, tune.style),
+      ]) {
+        final value = tierTune[name];
+        if (value != null &&
+            pluginValueFits(pluginEffectiveField(field, stored), value)) {
+          override[name] = value;
+        }
+      }
       return (
         append: append,
-        settings: stored == null ? null : encodeAiSnapshot(tune, stored, note),
+        override: override,
+        settings: encodeAiSnapshot(tune, {...stored, ...override}, note),
       );
     } on Object catch (e) {
       // Only the type, never the stored values.
       _log.warning('reading the AI settings failed: ${e.runtimeType}');
-      return (append: append, settings: null);
+      return (
+        append: append,
+        override: const <String, Object?>{},
+        settings: null,
+      );
     }
   }
 

@@ -66,7 +66,6 @@ class TranslationScopePrecedenceSettingRow extends ConsumerWidget {
     );
     return SettingRow.single(
       title: l10n.settingsTranslationScopePrecedence,
-      subtitle: l10n.settingsTranslationScopePrecedenceCaption,
       control: OutlinedButton(
         onPressed: () => unawaited(_open(context, ref)),
         child: Row(

@@ -64,23 +64,14 @@ void main() {
 
   TranslationPrefs prefs() => container.read(settingsProvider).translation;
 
-  testWidgets('default is "Change every song" with the caption under it', (
+  testWidgets('default is "Change every song", with no caption', (
     tester,
   ) async {
     await pump(tester);
-    expect(
-      find.text('When changing the service for all songs'),
-      findsOneWidget,
-    );
+    expect(find.text('When choosing for Queue or All songs'), findsOneWidget);
     expect(find.text('Change every song'), findsOneWidget);
     expect(find.byIcon(AppIcons.expandMore), findsOneWidget);
-    expect(
-      find.text(
-        'The queue follows the same rule. Saved translations still show as '
-        'before; nothing is translated again automatically.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('The queue follows'), findsNothing);
   });
 
   testWidgets('the picker marks the current choice, with no radio', (
@@ -114,7 +105,7 @@ void main() {
     );
     expect(find.byIcon(AppIcons.check), findsOneWidget);
     expect(
-      find.text('Every song changes, even songs you set to “This song”.'),
+      find.text('The songs all change, even songs you set to “This song”.'),
       findsOneWidget,
     );
     expect(
@@ -168,7 +159,7 @@ void main() {
       locale: const Locale('vi'),
       precedence: TranslationScopePrecedence.keepCustom,
     );
-    expect(find.text('Khi đổi dịch vụ cho mọi bài'), findsOneWidget);
+    expect(find.text('Khi chọn cho Hàng đợi hoặc Mọi bài'), findsOneWidget);
     expect(find.text('Giữ bài đã chỉnh riêng'), findsOneWidget);
   });
 }

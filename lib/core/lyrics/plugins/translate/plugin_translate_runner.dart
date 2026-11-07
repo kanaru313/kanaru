@@ -137,7 +137,8 @@ class PluginTranslateRunner {
   /// [stillWanted] is asked once the chunk reaches the front of the line;
   /// when false, [TranslationSuperseded] is thrown and nothing is sent.
   /// [configAppend] is the song's note for `customInstruction` (see
-  /// `PluginRunCore.run`).
+  /// `PluginRunCore.run`). [configOverride] replaces select config values
+  /// (the tier's model and style), filtered by the run core.
   Future<List<PluginTranslatedLine>> translateChunk(
     String installId,
     List<String> lines,
@@ -146,6 +147,7 @@ class PluginTranslateRunner {
     required bool Function() allowed,
     bool Function()? stillWanted,
     Map<String, String> configAppend = const {},
+    Map<String, Object?> configOverride = const {},
   }) async {
     final info = await spec(installId);
     final timeout = Duration(seconds: info.spec.timeoutSec);
@@ -171,6 +173,7 @@ class PluginTranslateRunner {
         entry: (package) => package.translateScript,
         input: input,
         configAppend: configAppend,
+        configOverride: configOverride,
         timeout: timeout,
         // Counted from here: the gate was passed.
         deadline: _queueAllowance + timeout,

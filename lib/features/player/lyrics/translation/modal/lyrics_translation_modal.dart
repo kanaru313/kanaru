@@ -144,7 +144,10 @@ class _LyricsTranslationModalState
         state.retranslateFailure != null) {
       return null;
     }
-    final values = ref.watch(aiTuneValuesProvider(state.service)).value;
+    // Not null: a change is only reported for a known hash.
+    final values = ref
+        .watch(scopedAiTuneValuesProvider((state.service, _openedHash!)))
+        .value;
     if (values == null) return null;
     final l10n = context.l10n;
     return TranslationActionBar(

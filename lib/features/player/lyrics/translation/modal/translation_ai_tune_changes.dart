@@ -8,7 +8,8 @@ import '../../../../../core/lyrics_translation/translation_providers.dart';
 import '../../../../../l10n/l10n.dart';
 
 /// The settings that differ from the version on screen, watched live: the
-/// plugin's saved model, style and shared note, and the note of the song with
+/// model and style the song's winning choice gives (the plugin's saved ones
+/// when the default wins), the shared note, and the note of the song with
 /// lyrics hash [hash] (the song the modal opened on). Empty unless [state] is
 /// the selected plugin's own finished version with a snapshot.
 List<AiTuneChange> watchAiTuneChanges(
@@ -19,7 +20,9 @@ List<AiTuneChange> watchAiTuneChanges(
   if (state is! TranslationReady || hash == null) return const [];
   final tune = ref.watch(translationAiTunesProvider)[state.service];
   if (tune == null) return const [];
-  final values = ref.watch(aiTuneValuesProvider(state.service)).value;
+  final values = ref
+      .watch(scopedAiTuneValuesProvider((state.service, hash)))
+      .value;
   if (values == null) return const [];
   // Until the song's note is read it is unknown, not empty: comparing early
   // would report a change for a song translated with a note.

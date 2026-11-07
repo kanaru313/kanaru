@@ -175,20 +175,9 @@ void main() {
     await pump(tester, prefs: prefs0(), info: songInfo());
     await open(tester);
     expect(seg(tester).selected, {TranslationScope.song});
-    expect(
-      find.text(
-        'Only the song now playing uses this service (AI tune included).',
-      ),
-      findsOneWidget,
-    );
-
     await tester.tap(find.text('All songs'));
     await tester.pump();
     expect(seg(tester).selected, {TranslationScope.all});
-    expect(
-      find.text('Changes the default service for every song.'),
-      findsOneWidget,
-    );
 
     await tester.tap(find.byTooltip('Close'));
     await settle(tester);
@@ -205,10 +194,7 @@ void main() {
     final song = seg(tester).segments
         .firstWhere((s) => s.value == TranslationScope.song);
     expect(song.enabled, isFalse);
-    expect(
-      song.tooltip,
-      'Turn translation on to choose a service for this song only.',
-    );
+    expect(song.tooltip, 'Turn on translation to choose.');
   });
 
   testWidgets('no song locks this song and selects all songs', (tester) async {
@@ -434,13 +420,6 @@ void main() {
       await tester.tap(find.text('Queue'));
       await tester.pump();
       expect(seg(tester).selected, {TranslationScope.queue});
-      expect(
-        find.text(
-          'Songs in the current queue use this service; a new queue goes '
-          'back to the default.',
-        ),
-        findsOneWidget,
-      );
       expect(find.textContaining('Will also replace'), findsNothing);
     });
 
@@ -450,10 +429,7 @@ void main() {
       final queue = seg(tester).segments
           .firstWhere((s) => s.value == TranslationScope.queue);
       expect(queue.enabled, isFalse);
-      expect(
-        queue.tooltip,
-        'Turn translation on to choose a service for the queue.',
-      );
+      expect(queue.tooltip, 'Turn on translation to choose.');
     });
 
     testWidgets('is locked when the queue is empty', (tester) async {
@@ -616,29 +592,31 @@ void main() {
       expect(find.textContaining('Will also replace'), findsNothing);
     });
 
-    testWidgets('the queue is mentioned even when older than the default', (
-      tester,
-    ) async {
-      await pump(tester, prefs: keep(allChosenAt: 100), info: songInfo());
-      container
-          .read(queueTranslationChoiceProvider.notifier)
-          .set(other, chosenAt: 50);
-      await openAll(tester);
-      expect(find.text('The current queue keeps its service.'), findsOneWidget);
-      await tester.tap(find.byTooltip('Close'));
-      await settle(tester);
+    testWidgets(
+      'the queue alone adds no line, and is mentioned next to kept songs',
+      (tester) async {
+        await pump(tester, prefs: keep(allChosenAt: 100), info: songInfo());
+        container
+            .read(queueTranslationChoiceProvider.notifier)
+            .set(other, chosenAt: 50);
+        await openAll(tester);
+        // No song kept, so no line, even though the queue has its own choice.
+        expect(find.textContaining('keep'), findsNothing);
+        await tester.tap(find.byTooltip('Close'));
+        await settle(tester);
 
-      await seed(tester, 'a', _id, 10);
-      await tester.pump();
-      await openAll(tester);
-      expect(
-        find.text(
-          '1 song you set individually keeps its service. '
-          'The current queue keeps its own too.',
-        ),
-        findsOneWidget,
-      );
-    });
+        await seed(tester, 'a', _id, 10);
+        await tester.pump();
+        await openAll(tester);
+        expect(
+          find.text(
+            '1 song you set individually keeps its service. '
+            'The current queue keeps its own too.',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('all songs + Continue keeps the song row and its winning '
         'choice', (tester) async {

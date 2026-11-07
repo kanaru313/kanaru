@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -181,6 +183,47 @@ void main() {
       final row = await pref('h');
       expect(row?.service, 'plugin-a');
       expect(row?.chosenAt, 10);
+      expect(row?.tuneJson, isNull);
+    });
+
+    test(
+      'setting a tune stores service, tune and time, replacing the old',
+      () async {
+        await db.setSongTranslationTarget('h', 'vi');
+        await db.setSongTranslationTune(
+          'h',
+          service: 'plugin-a',
+          tune: {'model': 'pro', 'style': 'poetic'},
+          chosenAt: 10,
+        );
+        var row = await pref('h');
+        expect(row?.targetLang, 'vi');
+        expect(row?.service, 'plugin-a');
+        expect(row?.chosenAt, 10);
+        expect(jsonDecode(row!.tuneJson!), {'model': 'pro', 'style': 'poetic'});
+
+        await db.setSongTranslationTune(
+          'h',
+          service: 'plugin-b',
+          tune: {'model': 'flash'},
+          chosenAt: 20,
+        );
+        row = await pref('h');
+        expect(row?.service, 'plugin-b');
+        expect(jsonDecode(row!.tuneJson!), {'model': 'flash'});
+        expect(row.chosenAt, 20);
+      },
+    );
+
+    test('an empty tune stores no tune_json', () async {
+      await db.setSongTranslationTune(
+        'h',
+        service: 'plugin-a',
+        tune: {},
+        chosenAt: 10,
+      );
+      final row = await pref('h');
+      expect(row?.service, 'plugin-a');
       expect(row?.tuneJson, isNull);
     });
 

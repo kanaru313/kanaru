@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
+import 'package:kanaru/l10n/app_localizations.dart';
 import 'package:kanaru/app/router.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/settings/applied_appearance_provider.dart';
@@ -68,6 +69,9 @@ void _expectAscending(List<double> tops, {String? reason}) {
   expect(tops.toSet(), hasLength(tops.length), reason: reason);
 }
 
+final _enTitle = lookupAppLocalizations(const Locale('en'))
+    .settingsTranslationScopePrecedence;
+
 void main() {
   testWidgets('the root has no save warning', (tester) async {
     await pumpSettings(tester);
@@ -99,6 +103,8 @@ void main() {
       final rows = find.byType(SettingRow).evaluate();
       for (final row in rows) {
         final widget = row.widget as SettingRow;
+        // The picker behind this row explains each choice itself.
+        if (widget.title == _enTitle) continue;
         expect(widget.subtitle, isNotNull, reason: '$page: ${widget.title}');
       }
       container.read(routerProvider).go('/settings');

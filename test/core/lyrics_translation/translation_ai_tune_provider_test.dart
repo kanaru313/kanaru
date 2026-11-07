@@ -1,13 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/database/lyrics_plugin_spec.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_config_values_provider.dart';
 import 'package:kanaru/core/lyrics_translation/translation_ai_tune_provider.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/settings/settings_provider.dart';
 
+import '../player/fake_audio_backend.dart';
 import 'fake_plugin_runner.dart';
 
 const _model = PluginConfigField(
@@ -176,6 +181,140 @@ void main() {
         aiTuneValuesProvider(TranslationServiceId.tryParse(_plain)!),
       );
       expect(value.hasError, isTrue);
+    });
+  });
+
+  group('scopedAiTuneValuesProvider', () {
+    final records = [
+      translateRecord(
+        _ai,
+        kind: PluginKind.aiTranslate,
+        config: [
+          _model.withOptions(const [
+            PluginConfigOption(value: 'flash', title: 'Flash'),
+            PluginConfigOption(value: 'pro', title: 'Pro'),
+          ]),
+          _style.withOptions(const [
+            PluginConfigOption(value: 'literal', title: 'Literal'),
+            PluginConfigOption(value: 'poetic', title: 'Poetic'),
+          ]),
+          _note,
+        ],
+      ),
+    ];
+
+    SongTranslationOverride song(
+      Map<String, String> tune, {
+      String? service,
+    }) => SongTranslationOverride(
+      hash: 'h',
+      service: service ?? _ai,
+      tuneJson:
+          '{${tune.entries.map((e) => '"${e.key}":"${e.value}"').join(',')}}',
+      chosenAt: 10,
+    );
+
+    ProviderContainer make({
+      SongTranslationOverride? override,
+      Map<String, Object?> stored = const {},
+      int? allChosenAt,
+    }) {
+      final container = ProviderContainer(
+        overrides: [
+          audioBackendProvider.overrideWithValue(FakeAudioBackend()),
+          initialSettingsProvider.overrideWithValue(
+            AppSettings(
+              translation: TranslationPrefs(
+                show: true,
+                service: _aiId,
+                noticeAcknowledged: {_aiId},
+                allChosenAt: allChosenAt,
+              ),
+            ),
+          ),
+          ...translatePluginOverrides(records: records),
+          pluginStoredConfigProvider.overrideWith(
+            (ref, id) => Stream.value(stored),
+          ),
+          songTranslationOverridesProvider.overrideWith(
+            (ref) => Stream.value({?override?.hash: ?override}),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    Future<AiTuneStored> read(ProviderContainer container) async {
+      final provider = scopedAiTuneValuesProvider((_aiId, 'h'));
+      container.listen(provider, (_, _) {});
+      await container.read(songTranslationOverridesProvider.future);
+      await container.read(pluginStoredConfigProvider(_ai).future);
+      return container.read(provider).requireValue;
+    }
+
+    test('without an own choice it is the stored config', () async {
+      final data = await read(make(stored: {'style': 'poetic'}));
+      expect(data.values.style, 'poetic');
+      expect(data.values.model, 'flash');
+    });
+
+    test('a song choice of this plugin overlays model and style', () async {
+      final data = await read(
+        make(
+          override: song({'model': 'pro', 'style': 'poetic'}),
+          stored: {'style': 'literal'},
+        ),
+      );
+      expect(data.values.model, 'pro');
+      expect(data.values.style, 'poetic');
+    });
+
+    test('a value the plugin no longer offers is left out', () async {
+      final data = await read(
+        make(
+          override: song({'model': 'gone', 'style': 'poetic'}),
+          stored: {'model': 'pro'},
+        ),
+      );
+      expect(data.values.model, 'pro');
+      expect(data.values.style, 'poetic');
+    });
+
+    test('a user-added model fits', () async {
+      final data = await read(
+        make(
+          override: song({'model': 'mine'}),
+          stored: {
+            'model.custom': [
+              {'value': 'mine'},
+            ],
+          },
+        ),
+      );
+      expect(data.values.model, 'mine');
+    });
+
+    test('a choice of another plugin leaves the stored config', () async {
+      final data = await read(
+        make(
+          override: song({'model': 'pro'}, service: _plain),
+          stored: {'model': 'flash'},
+        ),
+      );
+      expect(data.values.model, 'flash');
+    });
+
+    test('the default winning leaves the stored config', () async {
+      // The default is newer than the song's choice.
+      final data = await read(
+        make(
+          override: song({'model': 'pro'}),
+          stored: {'model': 'flash'},
+          allChosenAt: 99,
+        ),
+      );
+      expect(data.values.model, 'flash');
     });
   });
 }

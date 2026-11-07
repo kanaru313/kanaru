@@ -5291,14 +5291,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationScopeAll => 'Mọi bài';
 
   @override
-  String get lyricsTranslationScopeSongHint =>
-      'Chỉ bài đang phát dùng dịch vụ này (kể cả tinh chỉnh AI).';
-
-  @override
-  String get lyricsTranslationScopeAllHint =>
-      'Đổi dịch vụ mặc định cho mọi bài.';
-
-  @override
   String lyricsTranslationScopeReplaces(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -5318,7 +5310,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationScopeSongLockedOff =>
-      'Bật dịch lời để chọn dịch vụ riêng cho bài này.';
+      'Bật dịch lời để chọn riêng.';
 
   @override
   String get lyricsTranslationScopeSongLockedNoSong =>
@@ -5338,14 +5330,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationScopeQueue => 'Hàng đợi';
-
-  @override
-  String get lyricsTranslationScopeQueueHint =>
-      'Các bài trong hàng đợi hiện tại dùng dịch vụ này; hàng đợi mới quay về mặc định.';
-
-  @override
-  String get lyricsTranslationScopeQueueLockedOff =>
-      'Bật dịch lời để chọn dịch vụ cho hàng đợi.';
 
   @override
   String get lyricsTranslationScopeQueueLockedEmpty => 'Hàng đợi đang trống.';
@@ -5373,10 +5357,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get lyricsTranslationModalGetPlugins => 'Tải thêm plugin dịch';
-
-  @override
-  String get lyricsTranslationModalCacheFirst =>
-      'Bản dịch đã có trong máy vẫn được dùng trước.';
 
   @override
   String get lyricsTranslationModalNoPluginsTitle => 'Chưa có plugin dịch';
@@ -5576,14 +5556,14 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsTranslationScopePrecedence =>
-      'Khi đổi dịch vụ cho mọi bài';
+      'Khi chọn cho Hàng đợi hoặc Mọi bài';
 
   @override
   String get settingsTranslationScopeReplaceAll => 'Đổi tất cả';
 
   @override
   String get settingsTranslationScopeReplaceAllHint =>
-      'Mọi bài đều đổi theo, kể cả bài bạn từng chọn “Bài này”.';
+      'Các bài đều đổi theo, kể cả bài bạn từng chọn “Bài này”.';
 
   @override
   String get settingsTranslationScopeKeepCustom => 'Giữ bài đã chỉnh riêng';
@@ -5593,16 +5573,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Bài bạn từng chọn “Bài này” vẫn giữ nguyên. Chỉ các bài còn lại đổi.';
 
   @override
-  String get settingsTranslationScopePrecedenceCaption =>
-      'Hàng đợi cũng theo cách này. Bản dịch đã lưu vẫn hiện như cũ, app không tự dịch lại.';
-
-  @override
   String lyricsTranslationScopeKeeps(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other: '$count bài đã chỉnh riêng vẫn giữ dịch vụ của chúng.',
-      zero: 'Hàng đợi hiện tại vẫn giữ dịch vụ của nó.',
     );
     return '$_temp0';
   }
@@ -5623,20 +5598,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Dùng lại mặc định cho bài này';
 
   @override
+  String get lyricsTranslationModalUseDefaultSongDrops =>
+      'Bỏ dịch vụ và tinh chỉnh riêng';
+
+  @override
   String get lyricsTranslationModalUseDefaultQueue =>
       'Dùng lại mặc định cho hàng đợi';
-
-  @override
-  String get lyricsTranslationModalUseDefaultSongToQueue =>
-      'Bỏ dịch vụ và tinh chỉnh riêng · về hàng đợi';
-
-  @override
-  String lyricsTranslationModalUseDefaultSongTo(String service) {
-    return 'Bỏ dịch vụ và tinh chỉnh riêng · về $service';
-  }
-
-  @override
-  String lyricsTranslationModalUseDefaultQueueTo(String service) {
-    return 'Về $service';
-  }
 }
