@@ -44,6 +44,12 @@ class FakeUpstream {
   /// Paths that serve another body than [bytes] (another file).
   final bodies = <String, List<int>>{};
 
+  /// Paths that answer another `content-type` than [contentType].
+  final contentTypes = <String, String>{};
+
+  /// Paths answered with this status and an empty body (404, 500, ...).
+  final statuses = <String, int>{};
+
   /// Answers 206 without `Content-Range` and without `Content-Length`.
   bool omitLengths = false;
 
@@ -88,6 +94,12 @@ class FakeUpstream {
       await response.close();
       return;
     }
+    final status = statuses[path];
+    if (status != null) {
+      response.statusCode = status;
+      await response.close();
+      return;
+    }
     if (redirected.contains(path)) {
       response
         ..statusCode = HttpStatus.found
@@ -120,7 +132,7 @@ class FakeUpstream {
       // The body is written on the detached socket, so the connection is
       // not kept for another request.
       ..persistentConnection = false
-      ..headers.set('content-type', contentType);
+      ..headers.set('content-type', contentTypes[path] ?? contentType);
     if (omitLengths) {
       response.headers.chunkedTransferEncoding = false;
     } else {

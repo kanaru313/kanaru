@@ -65,6 +65,7 @@ void main() {
     late bool consented;
     List<String>? hosts;
     late SourceFailure? failure;
+    var format = RemoteStreamFormat.progressive;
 
     SourcePluginStreamResolver make() => SourcePluginStreamResolver(
       stream: (installId, itemId, {required fresh, required abandoned}) async {
@@ -75,6 +76,7 @@ void main() {
           url: streamUrl,
           headers: const {'referer': 'https://www.example.com/'},
           mimeType: 'audio/webm',
+          format: format,
           expiresAt: DateTime.utc(2030),
         );
       },
@@ -88,6 +90,7 @@ void main() {
       consented = true;
       hosts = const ['*.googlevideo.com'];
       failure = null;
+      format = RemoteStreamFormat.progressive;
     });
 
     Future<ResolvedStream> resolve(String key, {bool fresh = false}) =>
@@ -112,6 +115,38 @@ void main() {
         expect(stream.expiresAt, DateTime.utc(2030));
       },
     );
+
+    test('a progressive stream keeps the progressive format', () async {
+      final stream = await resolve('$_id/x');
+      expect(stream.format, RemoteStreamFormat.progressive);
+    });
+
+    test('an HLS playlist passes its format through', () async {
+      format = RemoteStreamFormat.hls;
+      streamUrl = Uri.parse('https://rr1.googlevideo.com/list.m3u8');
+      final stream = await resolve('$_id/x');
+      expect(stream.format, RemoteStreamFormat.hls);
+      expect(stream.url, streamUrl);
+      expect(
+        stream.redirectAllowed!(Uri.parse('https://rr2.googlevideo.com/a')),
+        isTrue,
+      );
+    });
+
+    test('an HLS playlist on an undeclared host is refused', () async {
+      format = RemoteStreamFormat.hls;
+      streamUrl = Uri.parse('https://evil.example.org/list.m3u8');
+      await expectLater(
+        resolve('$_id/x'),
+        throwsA(
+          isA<ResolveFailure>().having(
+            (f) => f.reason,
+            'reason',
+            'blockedHost',
+          ),
+        ),
+      );
+    });
 
     test('the stream asks the consent live', () async {
       final stream = await resolve('$_id/x');

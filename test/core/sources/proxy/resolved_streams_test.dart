@@ -10,6 +10,9 @@ class _Resolves {
   final abandoned = <bool Function()>[];
   DateTime? expiresAt;
   Object? error;
+
+  /// Calls (from 1) that throw [ResolveForbidden].
+  final forbiddenCalls = <int>{};
   Completer<void>? gate;
 
   Future<ResolvedStream> call(
@@ -23,6 +26,7 @@ class _Resolves {
     await gate?.future;
     final failure = error;
     if (failure != null) throw failure;
+    if (forbiddenCalls.contains(n)) throw const ResolveForbidden();
     return ResolvedStream(
       url: Uri.parse('https://cdn.example.com/$n'),
       headers: const {},
@@ -341,5 +345,72 @@ void main() {
     expect(other.ended, isFalse);
     resolves.gate!.complete();
     await pending;
+  });
+
+  group('a resolve that throws ResolveForbidden', () {
+    test('goes on with the fresh resolve inside the same future', () async {
+      resolves.forbiddenCalls.add(1);
+      final playthrough = streams.begin('k', 'owner');
+      expect(await path(playthrough.current()), '/2');
+      expect(resolves.fresh, [false, true]);
+      expect(playthrough.dead, isFalse);
+      expect(playthrough.failure, isNull);
+    });
+
+    test('marks the item dead when the fresh resolve is spent', () async {
+      resolves.expiresAt = now.add(const Duration(minutes: 10));
+      final playthrough = streams.begin('k', 'owner');
+      final first = playthrough.current();
+      await first;
+      await playthrough.onForbidden(first);
+
+      // The expiry came: the next resolve is plain and is refused with 403.
+      now = now.add(const Duration(minutes: 10));
+      resolves.forbiddenCalls.add(3);
+      await expectLater(
+        playthrough.current(),
+        throwsA(isA<ResolveForbidden>()),
+      );
+      expect(resolves.fresh, [false, true, false]);
+      expect(playthrough.dead, isTrue);
+    });
+
+    test(
+      'a second 403 in the fresh retry is the end, without a third run',
+      () async {
+        resolves.forbiddenCalls.addAll([1, 2]);
+        final playthrough = streams.begin('k', 'owner');
+        await expectLater(
+          playthrough.current(),
+          throwsA(isA<ResolveForbidden>()),
+        );
+        expect(resolves.fresh, [false, true]);
+        expect(playthrough.dead, isTrue);
+        expect(playthrough.failure, isA<ResolveForbidden>());
+        await expectLater(
+          playthrough.current(),
+          throwsA(isA<PlaythroughEnded>()),
+        );
+        expect(resolves.fresh, hasLength(2));
+      },
+    );
+
+    test('keeps the last resolve error', () async {
+      resolves.error = const ResolveFailure('unavailable');
+      final playthrough = streams.begin('k', 'owner');
+      await expectLater(playthrough.current(), throwsA(isA<ResolveFailure>()));
+      expect((playthrough.failure as ResolveFailure).reason, 'unavailable');
+    });
+
+    test('is not retried once the resolve was abandoned', () async {
+      resolves.forbiddenCalls.add(1);
+      final gate = resolves.gate = Completer<void>();
+      final playthrough = streams.begin('k', 'owner');
+      final result = playthrough.current();
+      streams.dropOwner('owner');
+      gate.complete();
+      await expectLater(result, throwsA(isA<ResolveForbidden>()));
+      expect(resolves.fresh, [false]);
+    });
   });
 }

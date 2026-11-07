@@ -210,7 +210,7 @@ void main() {
   });
 
   group('a stream that succeeds', () {
-    test('sends the id, and fresh only when true', () async {
+    test('sends the id and the formats, and fresh only when true', () async {
       onStream(
         () => okResult(
           jsonEncode({
@@ -227,15 +227,20 @@ void main() {
       final stream = await runner.stream(record.installId, 'v1');
       await runner.stream(record.installId, 'v1', fresh: true);
 
-      expect(jsonDecode(runtime.requests.first.inputJson), {'id': 'v1'});
+      expect(jsonDecode(runtime.requests.first.inputJson), {
+        'id': 'v1',
+        'formats': ['progressive', 'hls'],
+      });
       expect(jsonDecode(runtime.requests.last.inputJson), {
         'id': 'v1',
+        'formats': ['progressive', 'hls'],
         'fresh': true,
       });
       expect(runtime.requests.first.entry, 'stream.js');
       expect(stream.url, Uri.parse(_streamUrl));
       expect(stream.headers['cookie'], 'c=1');
       expect(stream.headers.containsKey('range'), isFalse);
+      expect(stream.format, RemoteStreamFormat.progressive);
       expect(stream.bitrate, isNull);
       expect(stream.expiresAt?.millisecondsSinceEpoch, 1790000000000);
       // The console is kept; the URL and its headers never reach the log.
