@@ -374,6 +374,14 @@ void main() {
         await tester.pumpAndSettle();
         expect(h.prefs.service, isNull);
         expect(h.prefs.show, isFalse);
+        final field = tester.widget<TextField>(
+          find.descendant(
+            of: find.byType(DropdownMenu<TranslationServiceId>),
+            matching: find.byType(TextField),
+          ),
+        );
+        expect(field.controller?.text, isEmpty);
+        expect(find.text('Not selected'), findsOneWidget);
 
         await pickService(tester, 'Gemini');
         await tester.tap(find.text('Continue'));

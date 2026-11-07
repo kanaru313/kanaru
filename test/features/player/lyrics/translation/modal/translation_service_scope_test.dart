@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
@@ -355,5 +356,26 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.widgetWithText(SelectionRow, 'Gemini'), findsNothing);
     expect((await rowOf(tester, 'h1'))?.service, _id);
+  });
+
+  testWidgets('Esc closes the notice first, then the picker', (tester) async {
+    await pump(tester, prefs: prefs0(), info: songInfo());
+    await open(tester);
+    await tester.tap(find.widgetWithText(SelectionRow, 'Other'));
+    await settle(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.widgetWithText(SelectionRow, 'Other'), findsOneWidget);
+    expect(await rowOf(tester, 'h1'), isNull);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.widgetWithText(SelectionRow, 'Other'), findsNothing);
+    expect(await rowOf(tester, 'h1'), isNull);
   });
 }
