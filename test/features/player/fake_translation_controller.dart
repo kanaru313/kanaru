@@ -45,6 +45,9 @@ class FakeTranslationController extends LyricsTranslationController {
   int dismissFailureCalls = 0;
   final songTargets = <String?>[];
 
+  /// Thrown by [setSongTarget] when set, to test a failed save.
+  Object? songTargetError;
+
   /// Optional completer returned by [retranslate]; when `null`, [retranslate]
   /// completes immediately with `null`.
   Completer<TranslationJobStatus?>? retranslateCompleter;
@@ -91,7 +94,11 @@ class FakeTranslationController extends LyricsTranslationController {
   Future<void> retry() async => retryCalls++;
 
   @override
-  Future<void> setSongTarget(String? code) async => songTargets.add(code);
+  Future<void> setSongTarget(String? code) async {
+    final error = songTargetError;
+    if (error != null) throw error;
+    songTargets.add(code);
+  }
 }
 
 /// Replaces the controller of the app language `en` with [fake].

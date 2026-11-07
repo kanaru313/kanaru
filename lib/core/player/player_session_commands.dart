@@ -10,8 +10,15 @@ mixin _PlayerSessionCommands on _PlayerCore {
   /// already show the restored session.
   PlayerState _startSession() {
     final file = ref.watch(playbackSessionFileProvider);
-    if (file == null) return PlayerState();
+    if (file == null) {
+      _restoredExtras ??= const {};
+      return PlayerState();
+    }
     var session = file.load();
+    if (_restoredExtras == null) {
+      _restoredExtras = session?.extras ?? const {};
+      _sessionExtras = _restoredExtras!;
+    }
     final queue = session?.toQueue();
     // A position at or past the saved length would make the engine reach the
     // end at once and move on to the next track.
@@ -27,6 +34,7 @@ mixin _PlayerSessionCommands on _PlayerCore {
       initial: session,
       frozen: session?.hasTrack ?? false,
       upNext: () => _upNext,
+      extras: () => _sessionExtras,
     );
     _saver = saver;
     listenSelf(saver.onState);
@@ -85,6 +93,35 @@ mixin _PlayerSessionCommands on _PlayerCore {
       ),
     );
   }
+
+  /// Keeps [json] under [key] with the session, saved and restored as it is
+  /// (null removes the key). A value that is not JSON is refused and logged
+  /// by key only, because one would make every session write fail.
+  void setSessionExtra(String key, Object? json) {
+    final next = Map<String, Object?>.of(_sessionExtras);
+    if (json == null) {
+      next.remove(key);
+    } else {
+      // A plain copy: the caller's object may be mutated later, or hold
+      // something that cannot cross to the writer isolate.
+      final Object? copy;
+      try {
+        copy = _jsonCopy(json);
+      } on Object {
+        _log.warning('Session extra "$key" is not JSON; not stored');
+        return;
+      }
+      next[key] = copy;
+    }
+    _sessionExtras = Map.unmodifiable(next);
+    _saver?.onExtrasChanged();
+  }
+
+  /// The value [key] had in the session loaded at the first build, or null.
+  /// A copy, so callers cannot change what is kept.
+  Object? restoredSessionExtra(String key) => _jsonCopy(_restoredExtras?[key]);
+
+  static Object? _jsonCopy(Object? value) => jsonDecode(jsonEncode(value));
 
   /// Writes the latest session now and waits for the disk, for the app's exit.
   Future<void> flushSession() => _saver?.flush() ?? Future.value();

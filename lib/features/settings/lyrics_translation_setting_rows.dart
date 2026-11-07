@@ -25,8 +25,21 @@ const _followApp = (code: null);
 /// Lyrics translation options: the service and the default target
 /// language. The saved translations are in
 /// Data & storage › Caches.
-class LyricsTranslationSettingRows extends ConsumerWidget {
+class LyricsTranslationSettingRows extends ConsumerStatefulWidget {
   const LyricsTranslationSettingRows({super.key});
+
+  @override
+  ConsumerState<LyricsTranslationSettingRows> createState() =>
+      _LyricsTranslationSettingRowsState();
+}
+
+class _LyricsTranslationSettingRowsState
+    extends ConsumerState<LyricsTranslationSettingRows> {
+  /// Keys the service dropdown. It only changes when the user cancels the
+  /// notice: the dropdown has already written the cancelled choice into its
+  /// text field, so it is rebuilt from the saved value. Not changed on a normal
+  /// pick, which would drop keyboard focus.
+  int _serviceDropdownEpoch = 0;
 
   Future<void> _pickService(
     BuildContext context,
@@ -40,6 +53,10 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
     if (prefs.service == null ||
         (prefs.show && needsNoticeFor(prefs, service))) {
       await enableTranslationWithNotice(context, ref, service);
+      if (mounted &&
+          ref.read(settingsProvider).translation.service != service) {
+        setState(() => _serviceDropdownEpoch++);
+      }
     } else {
       ref
           .read(settingsProvider.notifier)
@@ -48,7 +65,7 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
     final appLanguage =
@@ -69,6 +86,7 @@ class LyricsTranslationSettingRows extends ConsumerWidget {
           title: l10n.settingsTranslationService,
           subtitle: l10n.settingsTranslationServicePluginHint,
           control: SettingDropdown<TranslationServiceId>(
+            key: ValueKey(_serviceDropdownEpoch),
             selected: choices.selected,
             hintText: l10n.translationServiceNotSelected,
             enabled: choices.ready && services.isNotEmpty,

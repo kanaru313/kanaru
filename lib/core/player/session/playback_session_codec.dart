@@ -26,7 +26,8 @@ const playbackSessionVersion = 1;
 /// below that folder), so the file survives a moved cache and stays small;
 /// any other art keeps its `artUri`. `coverKey` is an optional per-track key
 /// that older readers ignore, so the version stays the same; so is
-/// `upNext`, left out when empty. Repeat all shuffled is written as
+/// `upNext`, left out when empty; `extras` (opaque JSON) likewise. An older
+/// build drops `extras` on its next save. Repeat all shuffled is written as
 /// `"repeat": "all"` plus `"reshuffle": true`, so an older build reads it as
 /// repeat all instead of rejecting the file. A track's `album` and `year` are
 /// written only when set.
@@ -51,6 +52,7 @@ Map<String, Object?> encodePlaybackSessionLight(PlaybackSession session) => {
   'volume': session.volume,
   'volumeBeforeMute': session.volumeBeforeMute,
   if (session.upNext.isNotEmpty) 'upNext': session.upNext,
+  if (session.extras.isNotEmpty) 'extras': session.extras,
 };
 
 /// `repeat` as older readers know it, plus the `reshuffle` flag they ignore.
@@ -160,6 +162,7 @@ PlaybackSession decodePlaybackSession(
 
   final session = PlaybackSession(
     upNext: _upNext(json['upNext'], tracks.length),
+    extras: _extras(json['extras']),
     tracks: tracks,
     order: order,
     unshuffledOrder: unshuffledOrder,
@@ -232,8 +235,14 @@ PlaybackSession _withoutUnrestorable(PlaybackSession session) {
     volume: session.volume,
     volumeBeforeMute: session.volumeBeforeMute,
     upNext: renumber(session.upNext),
+    extras: session.extras,
   );
 }
+
+/// The `extras` of a decoded file: an object is kept, anything else is
+/// dropped rather than failing the session.
+Map<String, Object?> _extras(Object? raw) =>
+    raw is Map<String, dynamic> ? Map.unmodifiable(raw) : const {};
 
 /// The "play next" entries of a decoded file: indexes into the [count]
 /// tracks, each once. Anything else (a missing or broken value, an entry out

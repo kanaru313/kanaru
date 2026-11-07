@@ -6,6 +6,7 @@ import 'package:kanaru/core/lyrics/plugins/plugin_needs_config_notices.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
+import 'package:kanaru/features/player/lyrics/translation/modal/translation_modal_navigation.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/shared/lyrics_plugins/plugin_icon.dart';
@@ -118,7 +119,7 @@ void main() {
   });
 
   testWidgets(
-    'unaccepted plugin closes child first for notice; accepted picks',
+    'unaccepted plugin asks the notice above the picker; accepted picks',
     (tester) async {
       final h = await pump(
         tester,
@@ -131,16 +132,17 @@ void main() {
 
       await tapAllSongs(tester);
       await tapRow(tester, 'Gemini');
-      expect(find.text('Translation service'), findsNothing);
+      expect(find.text('Translation service'), findsOneWidget);
       expect(find.byType(AlertDialog), findsOneWidget);
 
       await tapText(tester, 'Cancel');
       expect(h.prefs.service, other);
+      expect(find.text('Translation service'), findsOneWidget);
 
-      await openServiceRow(tester);
-      await tapAllSongs(tester);
       await tapRow(tester, 'Gemini');
       await tapText(tester, 'Continue');
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Translation service'), findsNothing);
       expect(h.prefs.service, plugin);
       expect(h.prefs.noticeAcknowledged, {other, plugin});
 
@@ -168,12 +170,35 @@ void main() {
     expect(h.prefs.show, isFalse);
     expect(h.container.read(pluginNeedsConfigNoticesProvider), isNull);
 
-    await openServiceRow(tester);
     await tapRow(tester, 'Gemini');
     await tapText(tester, 'Continue');
     expect(h.prefs.service, plugin);
     expect(h.prefs.show, isTrue);
     expect(h.container.read(pluginNeedsConfigNoticesProvider)?.installId, _id);
+  });
+
+  testWidgets('closing the modal stack also closes the notice and picker', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      settings: TranslationPrefs(
+        show: true,
+        service: other,
+        noticeAcknowledged: {other},
+      ),
+    );
+    await tapRow(tester, 'Gemini');
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+    closeTranslationModalStack(
+      tester.element(find.byType(LyricsTranslationModal)),
+    );
+    await settleModal(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Translation service'), findsNothing);
+    expect(find.byType(LyricsTranslationModal), findsNothing);
   });
 
   testWidgets('each plugin row shows that plugin\'s icon', (tester) async {

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/database/lyrics_plugin_spec.dart';
@@ -11,18 +12,23 @@ import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
+import '../../../../../core/player/player_service.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_language_name.dart';
+import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
+import '../../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
 import 'translation_ai_badge.dart';
 import 'translation_modal_navigation.dart';
 import 'translation_scope_header.dart';
 import 'translation_service_pick.dart';
+
+final _log = Logger('translation');
 
 /// Sentinel value for the `"Default (<language>)"` entry in the target picker.
 const String _defaultLanguage = '';
@@ -44,6 +50,9 @@ Future<void> openTargetPicker(
 }) async {
   final l10n = context.l10n;
   final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
+  // Taken before any await: the modal may be gone when the write fails.
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final failedText = l10n.lyricsTranslationTargetSaveFailed;
   final items = <SelectionPickerItem<String>>[
     SelectionPickerItem(
       value: _defaultLanguage,
@@ -64,19 +73,30 @@ Future<void> openTargetPicker(
     selected: info.songOverride ?? _defaultLanguage,
   );
   if (picked == null) return;
-  await controller.setSongTarget(picked == _defaultLanguage ? null : picked);
+  try {
+    await controller.setSongTarget(picked == _defaultLanguage ? null : picked);
+  } on Object catch (error) {
+    _log.warning(
+      'saving the song translation target failed: ${error.runtimeType}',
+    );
+    messenger?.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: failedText),
+    );
+  }
 }
 
 /// Opens the child modal that picks the translation service plugin.
 ///
 /// Lists the live translate plugins with scope segments on top (this song
-/// only, or the default for every song), a footer row that opens the plugin
-/// store and a cache-first hint. The check mark is on the song's own service
-/// ([info]'s choice), or on the default when [info] is null. The segment is
-/// "this song" on every open, except when that is locked (translation off, or
-/// no song with lyrics): then it is "all songs". After a plugin is chosen and
-/// the child modal has closed, [applyServicePick] asks the network notice on
-/// the parent [context] and writes the choice without forcing a retranslate.
+/// only, the current queue, or the default for every song), a footer row that
+/// opens the plugin store and a cache-first hint. The check mark is on the
+/// song's own service ([info]'s choice), or on the default when [info] is
+/// null. The segment is "this song" on every open, except when that is locked
+/// (translation off, or no song with lyrics): then it is "all songs".
+/// Choosing a plugin first asks the network notice in a dialog above the
+/// picker: Cancel keeps the picker and the chosen segment open; Continue
+/// closes it and [applyServicePick] writes the choice without forcing a
+/// retranslate.
 Future<void> openServicePicker(
   BuildContext context,
   WidgetRef ref, {
@@ -93,6 +113,10 @@ Future<void> openServicePicker(
       TranslationScope.song: l10n.lyricsTranslationScopeSongLockedOff
     else if (hash == null)
       TranslationScope.song: l10n.lyricsTranslationScopeSongLockedNoSong,
+    if (!ref.read(settingsProvider).translation.show)
+      TranslationScope.queue: l10n.lyricsTranslationScopeQueueLockedOff
+    else if (ref.read(playerServiceProvider).queue.isEmpty)
+      TranslationScope.queue: l10n.lyricsTranslationScopeQueueLockedEmpty,
   };
   final scope = ValueNotifier(
     locked.containsKey(TranslationScope.song)
@@ -100,6 +124,7 @@ Future<void> openServicePicker(
         : TranslationScope.song,
   );
   final replaced = songsReplacedByDefault(ref);
+  final replacesQueue = queueReplacedByDefault(ref);
   final items = <SelectionPickerItem<TranslationServiceId>>[
     for (final service in choices.services)
       SelectionPickerItem(
@@ -123,10 +148,15 @@ Future<void> openServicePicker(
     header: ValueListenableBuilder<TranslationScope>(
       valueListenable: scope,
       builder: (_, selected, _) => TranslationScopeHeader(
-        scopes: const [TranslationScope.song, TranslationScope.all],
+        scopes: const [
+          TranslationScope.song,
+          TranslationScope.queue,
+          TranslationScope.all,
+        ],
         selected: selected,
         locked: locked,
         replacedCount: replaced,
+        replacesQueue: replacesQueue,
         onChanged: (s) => scope.value = s,
       ),
     ),
@@ -135,6 +165,8 @@ Future<void> openServicePicker(
       onTap: (_) => openTranslationStore(context),
     ),
     hint: l10n.lyricsTranslationModalCacheFirst,
+    confirm: (pickerContext, service) =>
+        confirmTranslationNotice(pickerContext, ref, service),
   );
   if (picked == null || !context.mounted) return;
   await applyServicePick(

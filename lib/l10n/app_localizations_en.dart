@@ -5653,6 +5653,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t save the choice for this song';
 
   @override
+  String get lyricsTranslationTargetSaveFailed =>
+      'Couldn\'t save the language for this song';
+
+  @override
   String get lyricsTranslationScopeSongLockedOff =>
       'Turn translation on to choose a service for this song only.';
 
@@ -5671,6 +5675,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsTranslationModalScopeAllSubtitle =>
       'Default service for every song';
+
+  @override
+  String get lyricsTranslationScopeQueue => 'Queue';
+
+  @override
+  String get lyricsTranslationScopeQueueHint =>
+      'Songs in the current queue use this service; a new queue goes back to the default.';
+
+  @override
+  String get lyricsTranslationScopeQueueLockedOff =>
+      'Turn translation on to choose a service for the queue.';
+
+  @override
+  String get lyricsTranslationScopeQueueLockedEmpty => 'The queue is empty.';
+
+  @override
+  String lyricsTranslationScopeReplacesWithQueue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Will also replace $count songs you set individually and the current queue\'s choice',
+      one: 'Will also replace 1 song you set individually and the current queue\'s choice',
+      zero: 'Will also replace the current queue\'s choice',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsTranslationModalScopeQueueSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'For the current queue ($count songs)',
+      one: 'For the current queue (1 song)',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get lyricsTranslationModalGetPlugins => 'Get more translation plugins';

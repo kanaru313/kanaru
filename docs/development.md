@@ -128,6 +128,8 @@ flutter run -d linux
 
 The `Makefile` wraps the everyday commands (`make` lists them): `make run`, `make check` (analyze + Dart and Rust tests), `make gen`, `make logs`, and `make reset-library` / `make reset-all` to start again from the first-run folder picker (quit Kanaru first). Without `flutter` on PATH, targets run inside `nix develop`.
 
+After a pull or merge that changes `schemaVersion`, restart the app (quit, then `flutter run`). Hot reload does not run migrations, so writes to new tables or columns fail.
+
 ### Dock icon for dev builds
 
 A bare `flutter run` or bundle has no desktop entry, so the dock, taskbar and alt-tab show a generic icon. `make install-desktop` copies the hicolor icons and a "Kanaru (dev)" entry (`Exec` is this checkout's release bundle, no `MimeType`) into `$XDG_DATA_HOME` (default `~/.local/share`); the compositor matches the window to it by app id. Run `make build` to launch it from the menu; the icon works without a build. The entry shadows a real Kanaru package with the same id, so run `make uninstall-desktop` before installing one. It refuses to overwrite an entry it did not write unless `FORCE=1`. If the icon does not update, restart the dock or shell. The menu launch ran from a plain session outside the dev shell on the maintainer's NixOS host; if it fails on yours (rpath or libmpv lookup), start the app with `make run` and keep the entry for the icon.

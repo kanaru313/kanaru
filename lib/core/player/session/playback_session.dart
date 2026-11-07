@@ -20,6 +20,7 @@ class PlaybackSession {
     this.volume = 100,
     this.volumeBeforeMute,
     this.upNext = const [],
+    this.extras = const {},
   });
 
   /// Snapshot of [state] at [position]. The position is passed in because
@@ -28,10 +29,12 @@ class PlaybackSession {
   ///
   /// [upNext] is the player's set of entries (indexes into
   /// `PlayQueue.original`) put in by "play next" that have not played yet.
+  /// [extras] is the opaque JSON the player was handed (see [extras]).
   factory PlaybackSession.fromState(
     PlayerState state, {
     required Duration position,
     Iterable<int> upNext = const [],
+    Map<String, Object?> extras = const {},
   }) {
     final queue = state.queue;
     return PlaybackSession(
@@ -45,6 +48,7 @@ class PlaybackSession {
       volume: state.volume,
       volumeBeforeMute: state.volumeBeforeMute,
       upNext: queue.isEmpty ? const [] : List.unmodifiable(upNext),
+      extras: extras,
     );
   }
 
@@ -75,6 +79,11 @@ class PlaybackSession {
   /// See [restoredUpNext] for the entries that count.
   final List<int> upNext;
 
+  /// Opaque JSON values that callers keep with the session (key to value),
+  /// saved and restored as they are. The player never looks inside. A new
+  /// map stands for every change, so `==` compares it by identity.
+  final Map<String, Object?> extras;
+
   /// Whether there is a track to restore.
   bool get hasTrack => order.isNotEmpty;
 
@@ -90,6 +99,7 @@ class PlaybackSession {
     volume: volume,
     volumeBeforeMute: volumeBeforeMute,
     upNext: upNext,
+    extras: extras,
   );
 
   /// The queue as it was. Tracks no longer in [order] (removed ones) are
@@ -157,7 +167,8 @@ class PlaybackSession {
       _sameTracks(other.tracks, tracks) &&
       _sameInts(other.order, order) &&
       _sameInts(other.unshuffledOrder, unshuffledOrder) &&
-      _sameInts(other.upNext, upNext);
+      _sameInts(other.upNext, upNext) &&
+      identical(other.extras, extras);
 
   @override
   int get hashCode => Object.hash(
@@ -170,6 +181,7 @@ class PlaybackSession {
     tracks.length,
     order.length,
     upNext.length,
+    extras.length,
   );
 }
 

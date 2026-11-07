@@ -5,13 +5,17 @@ import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics_translation/queue_translation_choice.dart';
 import 'package:kanaru/core/lyrics_translation/translation_clock.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
+import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/track.dart' as player;
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:logging/logging.dart';
 
+import '../player/fake_audio_backend.dart';
 import 'fake_plugin_runner.dart';
 import 'fake_translator.dart';
 
@@ -28,6 +32,7 @@ void main() {
   ProviderContainer make({LibraryDatabase? database, int? allChosenAt}) {
     final container = ProviderContainer(
       overrides: [
+        audioBackendProvider.overrideWithValue(FakeAudioBackend()),
         libraryDatabaseProvider.overrideWithValue(database),
         initialSettingsProvider.overrideWithValue(
           AppSettings(
@@ -204,6 +209,60 @@ void main() {
       await db.setSongTranslationService('h1', null, chosenAt: null);
       await until(() => builds > after);
       expect(container.read(counted)!.scope, TranslationScope.all);
+    });
+
+    test('the queue tier joins by stamp, in both readers', () async {
+      await db.setSongTranslationService('h1', _ownId, chosenAt: 10);
+      final container = make(database: db, allChosenAt: 5);
+      container.listen(choiceProvider('h1'), (_, _) {});
+      container.listen(queueTranslationChoiceProvider, (_, _) {});
+      container.listen(playerServiceProvider, (_, _) {});
+      await container.read(songTranslationOverridesProvider.future);
+      await container.read(playerServiceProvider.notifier).openTracks([
+        player.Track.fromPath('/music/a.mp3'),
+      ]);
+      final read = Provider<TranslationChoice?>(
+        (ref) => readTranslationChoiceFor(ref, 'h1'),
+      );
+      final queue = container.read(queueTranslationChoiceProvider.notifier);
+
+      // Queue newer than the song's own choice: the queue wins.
+      queue.set(_own, chosenAt: 11);
+      expect(
+        container.read(choiceProvider('h1'))!.scope,
+        TranslationScope.queue,
+      );
+      expect(container.read(read)!.scope, TranslationScope.queue);
+      // A song without its own choice follows the queue too.
+      expect(
+        container.read(choiceProvider('other'))!.scope,
+        TranslationScope.queue,
+      );
+
+      // Equal stamps: the broader queue wins over the song.
+      queue.set(_own, chosenAt: 10);
+      expect(
+        container.read(choiceProvider('h1'))!.scope,
+        TranslationScope.queue,
+      );
+
+      // Queue older than the song: the song wins; older than the default: all.
+      queue.set(_own, chosenAt: 9);
+      expect(
+        container.read(choiceProvider('h1'))!.scope,
+        TranslationScope.song,
+      );
+      queue.set(_own, chosenAt: 4);
+      expect(
+        container.read(choiceProvider('other'))!.scope,
+        TranslationScope.all,
+      );
+
+      queue.clear();
+      expect(
+        container.read(choiceProvider('other'))!.scope,
+        TranslationScope.all,
+      );
     });
 
     test('readTranslationChoiceFor applies the same rule', () async {

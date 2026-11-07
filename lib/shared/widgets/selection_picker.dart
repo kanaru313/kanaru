@@ -51,6 +51,13 @@ class SelectionPickerItem<T> {
 /// end of the list; it is hidden while a search matches nothing, the [footer]
 /// stays. [header] is an optional widget between the title bar and the
 /// search box (for example scope segments); null leaves the layout unchanged.
+///
+/// [confirm] runs after a row is tapped and before the picker closes (for
+/// example to ask a consent dialog on top of it). `true` closes the picker
+/// with the value; `false` keeps it open and the rows tappable again. Taps are
+/// ignored while it is pending. If it throws, the picker stays open and the
+/// error is rethrown. [pickerContext] is the picker's own context, so a dialog
+/// opened on it sits above the picker.
 Future<T?> showSelectionPicker<T>(
   BuildContext context, {
   required String title,
@@ -60,6 +67,7 @@ Future<T?> showSelectionPicker<T>(
   Widget? header,
   String? hint,
   String? semanticLabel,
+  Future<bool> Function(BuildContext pickerContext, T value)? confirm,
 }) {
   return showLayeredModal<T>(
     context,
@@ -71,6 +79,7 @@ Future<T?> showSelectionPicker<T>(
       footer: footer,
       header: header,
       hint: hint,
+      confirm: confirm,
     ),
   );
 }
@@ -83,6 +92,7 @@ class _SelectionPickerContent<T> extends StatefulWidget {
     required this.footer,
     required this.header,
     required this.hint,
+    required this.confirm,
   });
 
   final String title;
@@ -91,6 +101,7 @@ class _SelectionPickerContent<T> extends StatefulWidget {
   final Widget? footer;
   final Widget? header;
   final String? hint;
+  final Future<bool> Function(BuildContext pickerContext, T value)? confirm;
 
   @override
   State<_SelectionPickerContent<T>> createState() =>
@@ -101,6 +112,27 @@ class _SelectionPickerContentState<T>
     extends State<_SelectionPickerContent<T>> {
   final _controller = TextEditingController();
   String _query = '';
+
+  /// True while [_SelectionPickerContent.confirm] is pending; further taps are
+  /// ignored so a second dialog cannot open.
+  bool _confirming = false;
+
+  Future<void> _choose(T value) async {
+    final confirm = widget.confirm;
+    if (confirm == null) {
+      Navigator.of(context).pop(value);
+      return;
+    }
+    if (_confirming) return;
+    _confirming = true;
+    var accepted = false;
+    try {
+      accepted = await confirm(context, value);
+    } finally {
+      _confirming = false;
+    }
+    if (accepted && mounted) Navigator.of(context).pop(value);
+  }
 
   @override
   void dispose() {
@@ -192,7 +224,7 @@ class _SelectionPickerContentState<T>
               leading: item.leading,
               badge: item.badge,
               selected: item.value == widget.selected,
-              onTap: () => Navigator.of(context).pop(item.value),
+              onTap: () => _choose(item.value),
             ),
         ?footer,
         if (hint != null && hint.isNotEmpty && filtered.isNotEmpty)

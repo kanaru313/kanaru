@@ -5604,6 +5604,10 @@
   "@lyricsTranslationScopeSongSaveFailed": {
     "description": "Snackbar when the service picked for one song could not be saved"
   },
+  "lyricsTranslationTargetSaveFailed": "Couldn't save the language for this song",
+  "@lyricsTranslationTargetSaveFailed": {
+    "description": "Snackbar when the language picked for one song could not be saved"
+  },
   "lyricsTranslationScopeSongLockedOff": "Turn translation on to choose a service for this song only.",
   "@lyricsTranslationScopeSongLockedOff": {
     "description": "Tooltip of the disabled Only this song segment while translated lyrics are off"
@@ -5628,6 +5632,40 @@
   "lyricsTranslationModalScopeAllSubtitle": "Default service for every song",
   "@lyricsTranslationModalScopeAllSubtitle": {
     "description": "Subtitle of the service row when the song follows the default service"
+  },
+  "lyricsTranslationScopeQueue": "Queue",
+  "@lyricsTranslationScopeQueue": {
+    "description": "Segment of the translation service picker: the choice applies to the songs of the current queue"
+  },
+  "lyricsTranslationScopeQueueHint": "Songs in the current queue use this service; a new queue goes back to the default.",
+  "@lyricsTranslationScopeQueueHint": {
+    "description": "Line under the scope segments of the translation service picker while Queue is selected"
+  },
+  "lyricsTranslationScopeQueueLockedOff": "Turn translation on to choose a service for the queue.",
+  "@lyricsTranslationScopeQueueLockedOff": {
+    "description": "Tooltip of the disabled Queue segment while translated lyrics are off"
+  },
+  "lyricsTranslationScopeQueueLockedEmpty": "The queue is empty.",
+  "@lyricsTranslationScopeQueueLockedEmpty": {
+    "description": "Tooltip of the disabled Queue segment when the play queue has no songs"
+  },
+  "lyricsTranslationScopeReplacesWithQueue": "{count, plural, =0{Will also replace the current queue's choice} =1{Will also replace 1 song you set individually and the current queue's choice} other{Will also replace {count} songs you set individually and the current queue's choice}}",
+  "@lyricsTranslationScopeReplacesWithQueue": {
+    "description": "Caption of the translation service picker when All songs is selected and the current queue has its own newer service choice: how many songs with their own newer choice are replaced as well",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsTranslationModalScopeQueueSubtitle": "{count, plural, =1{For the current queue (1 song)} other{For the current queue ({count} songs)}}",
+  "@lyricsTranslationModalScopeQueueSubtitle": {
+    "description": "Subtitle of the service row when the playing song follows the service chosen for the queue; count is the number of songs in the queue",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "lyricsTranslationModalGetPlugins": "Get more translation plugins",
   "@lyricsTranslationModalGetPlugins": {
