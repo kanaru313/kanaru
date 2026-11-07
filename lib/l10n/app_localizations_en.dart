@@ -3276,6 +3276,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lyricsTranslationSameLanguagePerService(String service) {
+    return '(per $service)';
+  }
+
+  @override
   String lyricsTranslationSameLanguageFrom(String language, String service) {
     return 'Lyrics are already in $language (per $service)';
   }
@@ -5607,9 +5612,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationModalPreview => 'Preview';
 
   @override
-  String get lyricsTranslationModalSection => 'Translation';
-
-  @override
   String lyricsTranslationModalSourceDetected(String language) {
     return '$language · detected';
   }
@@ -5733,11 +5735,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lyricsTranslationModalOtherVersion(String service) {
     return 'Saved version from $service';
-  }
-
-  @override
-  String lyricsTranslationModalShowingOther(String service) {
-    return 'Showing the version from $service';
   }
 
   @override
@@ -5867,11 +5864,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translationSongInstruction => 'Note for this song';
 
   @override
-  String translationAiTuneHint(String name) {
-    return 'Set by the plugin $name. Saved for this plugin.';
-  }
-
-  @override
   String get translationAiTuneDone => 'Done';
 
   @override
@@ -5887,14 +5879,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get translationAiOpenPluginSettings => 'Open plugin settings';
-
-  @override
-  String translationAiTuneChanged(String changes) {
-    return 'Differs from the version shown: $changes';
-  }
-
-  @override
-  String get translationAiEditedNote => 'Changed the note';
 
   @override
   String get translationAiTuneLater => 'Later';

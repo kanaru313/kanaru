@@ -10,6 +10,7 @@ import 'package:kanaru/features/player/lyrics/translation/modal/translation_serv
 import 'package:kanaru/features/player/now_playing/now_playing_open_provider.dart';
 import 'package:kanaru/shared/settings_routes.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_dialog_frame.dart';
+import 'package:kanaru/shared/widgets/layered_modal/layered_modal_body.dart';
 import 'package:kanaru/shared/widgets/context_modal/context_modal_sheet_frame.dart';
 import 'package:kanaru/shared/widgets/cover_art.dart';
 import 'package:kanaru/shared/widgets/picker_field_button.dart';
@@ -148,34 +149,39 @@ void main() {
     expect(find.text('XEM TRƯỚC'), findsOneWidget);
     expect(find.text('Dưới dòng'), findsOneWidget);
     expect(find.text('Thay dòng'), findsOneWidget);
-    expect(find.text('Bản dịch'), findsOneWidget);
+    // No section title between the preview card and the language row.
+    expect(
+      find.descendant(
+        of: find.byType(LayeredModalBody),
+        matching: find.text('Bản dịch'),
+      ),
+      findsNothing,
+    );
     expect(find.text('Tiếng Nhật · tự nhận'), findsOneWidget);
     expect(find.text('Tiếng Việt'), findsOneWidget);
     expect(find.text('Dịch bởi Test Translate'), findsOneWidget);
   });
 
-  testWidgets(
-    'sections come in order: preview, Translation header, language row, service',
-    (tester) async {
-      await pumpTranslationModal(
-        tester,
-        settings: TranslationPrefs(
-          show: true,
-          service: testTranslatePlugin,
-          noticeAcknowledged: {testTranslatePlugin},
-        ),
-      );
+  testWidgets('sections come in order: preview, language row, service', (
+    tester,
+  ) async {
+    await pumpTranslationModal(
+      tester,
+      settings: TranslationPrefs(
+        show: true,
+        service: testTranslatePlugin,
+        noticeAcknowledged: {testTranslatePlugin},
+      ),
+    );
 
-      final order = [
-        find.byType(TranslationPreviewCard),
-        find.text('Translation'),
-        find.byType(TranslationLanguageRow),
-        find.byType(TranslationServiceSection),
-      ].map((finder) => tester.getTopLeft(finder).dy).toList();
-      expect(order, orderedEquals([...order]..sort()));
-      expect(tester.takeException(), isNull);
-    },
-  );
+    final order = [
+      find.byType(TranslationPreviewCard),
+      find.byType(TranslationLanguageRow),
+      find.byType(TranslationServiceSection),
+    ].map((finder) => tester.getTopLeft(finder).dy).toList();
+    expect(order, orderedEquals([...order]..sort()));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'Enter and Space on the focused switch flip translation on and off',

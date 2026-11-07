@@ -66,7 +66,6 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.text('Showing the version from Other'), findsOneWidget);
       expect(find.text('Translate with Test Translate'), findsOneWidget);
 
       final route = ModalRoute.of(

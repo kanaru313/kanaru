@@ -125,10 +125,8 @@ class _LyricsTranslationModalState
     if (selected == null) return null;
     final l10n = context.l10n;
     final plugins = ref.watch(translationPluginInfosProvider);
-    final shownName = translationServiceName(l10n, plugins, service);
     final selectedName = translationServiceName(l10n, plugins, selected);
     return TranslationActionBar(
-      text: l10n.lyricsTranslationModalShowingOther(shownName),
       actionLabel: l10n.lyricsTranslationModalTranslateWith(selectedName),
       onPressed: _retranslate,
     );
@@ -151,9 +149,6 @@ class _LyricsTranslationModalState
     if (values == null) return null;
     final l10n = context.l10n;
     return TranslationActionBar(
-      text: l10n.translationAiTuneChanged(
-        aiTuneChangesText(l10n, values.tune, values.stored, changes),
-      ),
       actionLabel: l10n.lyricsTranslationRetranslate,
       onPressed: _retranslate,
     );
@@ -169,27 +164,11 @@ class _LyricsTranslationModalState
       return const SizedBox.shrink();
     }
 
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
     return LayeredModalBody(
       header: const TranslationModalHeader(),
       footer: _buildActionBar(context, state),
       children: [
         TranslationPreviewCard(state: state, onRetranslate: _retranslate),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 14, 24, 4),
-          child: Semantics(
-            header: true,
-            child: Text(
-              l10n.lyricsTranslationModalSection,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
         TranslationLanguageRow(
           state: state,
           info: info,
