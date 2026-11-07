@@ -188,6 +188,6 @@ String _route(List<_Entry> entries) {
   if (entries.every((e) => e.kind?.isTranslation == true)) {
     return settingsFocusLocation(SettingsAnchor.playbackTranslation);
   }
-  if (entries.every((e) => e.kind == PluginKind.source)) return onlineRoute;
+  if (entries.every((e) => e.kind?.isSource == true)) return onlineRoute;
   return lyricsSourcesRoute;
 }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/database/lyrics_plugin_spec.dart';
 import '../../core/lyrics/plugins/lyrics_plugins_provider.dart';
 import '../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../core/lyrics/plugins/plugin_data_stats_provider.dart';
@@ -92,14 +91,15 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
     if (mounted) setState(() => _uninstalling = false);
     // The user may have gone elsewhere while the files were deleted.
     final here = router.routeInformationProvider.value.uri.path;
-    final (pageRoute, leaveRoute) = switch (record.kind) {
-      PluginKind.translate || PluginKind.aiTranslate => (
-        translationPluginRoute(_id),
-        settingsFocusLocation(SettingsAnchor.playbackTranslation),
-      ),
-      PluginKind.source => (onlineSourcePluginRoute(_id), onlineRoute),
-      _ => (lyricsPluginRoute(_id), lyricsSourcesRoute),
-    };
+    final kind = record.kind;
+    final (pageRoute, leaveRoute) = kind?.isTranslation == true
+        ? (
+            translationPluginRoute(_id),
+            settingsFocusLocation(SettingsAnchor.playbackTranslation),
+          )
+        : kind?.isSource == true
+        ? (onlineSourcePluginRoute(_id), onlineRoute)
+        : (lyricsPluginRoute(_id), lyricsSourcesRoute);
     if (here == Uri.parse(pageRoute).path) router.go(leaveRoute);
     // Already gone before we got there: nothing was removed by this click.
     if (outcome == LyricsPluginUninstall.missing ||
@@ -133,8 +133,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
               (r) =>
                   r.installId == _id &&
                   !r.isRemoved &&
-                  (r.kind?.isTranslation == true ||
-                      r.kind == PluginKind.source),
+                  (r.kind?.isTranslation == true || r.kind?.isSource == true),
             )
             .firstOrNull;
     if (record == null) {
