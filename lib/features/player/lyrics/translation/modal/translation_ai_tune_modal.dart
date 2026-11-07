@@ -8,14 +8,22 @@ import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics/plugins/store/plugin_config_values.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
+import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_service.dart';
+import '../../../../../core/player/player_service.dart';
+import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/lyrics_plugins/config/plugin_config_flush_group.dart';
 import '../../../../../shared/lyrics_plugins/config/plugin_config_initial_value.dart';
 import '../../../../../shared/widgets/layered_modal/layered_modal_route.dart';
+import 'ai_tune_save_target.dart';
+import 'ai_tune_scoped_writes.dart';
 import 'ai_tune_select_field.dart';
 import 'translation_ai_tune_changes.dart';
+import 'translation_ai_tune_scope.dart';
 import 'translation_modal_navigation.dart';
+import 'translation_scope_header.dart';
+import 'translation_service_pick.dart';
 import 'translation_song_instruction_field.dart';
 
 /// Opens the AI tuning child modal for [service] over the translation modal
@@ -42,9 +50,11 @@ Future<bool?> openAiTuneModal(
 );
 
 /// Content of the AI tuning modal: only the three standard fields of an
-/// `ai-translate` plugin, saved as they are left. They go to the plugin's own
-/// config (shared with Settings) without making failed translations start
-/// over; the note goes to the song.
+/// `ai-translate` plugin, saved as they are left. The scope segments above say
+/// where a model or style goes: this song's own choice, the queue's, or the
+/// plugin's shared config (also made the default service), without making
+/// failed translations start over. "This song" is chosen on every open. The
+/// note always goes to the song.
 class TranslationAiTuneModal extends ConsumerStatefulWidget {
   const TranslationAiTuneModal({
     super.key,
@@ -65,6 +75,11 @@ class TranslationAiTuneModal extends ConsumerStatefulWidget {
 
 class _State extends ConsumerState<TranslationAiTuneModal> {
   final _group = PluginConfigFlushGroup();
+  final _writes = AiTuneScopedWrites();
+
+  // The scope segment; "this song" on every open (a locked one falls back to
+  // all songs when built).
+  TranslationScope _scope = TranslationScope.song;
 
   // A retranslation was asked for: the buttons stay locked until the modal
   // closes or the save fails. [_popped] makes sure it closes once.
@@ -179,7 +194,18 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final id = widget.service.value;
-    final values = ref.watch(aiTuneValuesProvider(widget.service));
+    final show = ref.watch(settingsProvider.select((s) => s.translation.show));
+    final queueEmpty = ref.watch(
+      playerServiceProvider.select((s) => s.queue.isEmpty),
+    );
+    final locked = aiTuneScopeLocks(l10n, show: show, queueEmpty: queueEmpty);
+    final scope = locked.containsKey(_scope) ? TranslationScope.all : _scope;
+    // The shared config is what the "all songs" segment edits; the others
+    // show what this song runs with now.
+    final values = scope == TranslationScope.all
+        ? ref.watch(aiTuneValuesProvider(widget.service))
+        : ref.watch(scopedAiTuneValuesProvider((widget.service, widget.hash)));
+    final caption = allScopeCaption(ref);
     final record = ref.watch(
       lyricsPluginRecordsProvider.select((records) {
         for (final r in records) {
@@ -190,12 +216,30 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
     );
     final data = values.value;
     final state = ref.watch(lyricsTranslationProvider(widget.appLang));
-    final changed = watchAiTuneChanges(ref, state, widget.hash).isNotEmpty;
 
     return LayeredModalBody(
       header: LayeredModalTopBar(title: l10n.translationAiTuneRow),
-      footer: _footer(l10n, changed),
+      footer: _footer(
+        l10n,
+        watchAiTuneChanges(ref, state, widget.hash).isNotEmpty,
+      ),
       children: [
+        TranslationScopeHeader(
+          scopes: const [
+            TranslationScope.song,
+            TranslationScope.queue,
+            TranslationScope.all,
+          ],
+          selected: scope,
+          locked: locked,
+          precedence: caption.precedence,
+          customCount: caption.songs,
+          queueHasChoice: caption.queue,
+          onChanged: (s) => setState(() {
+            _scope = s;
+            _writes.written.clear();
+          }),
+        ),
         // The editors are frozen while a retranslation is being asked for, so
         // no picker opens over the modal that is about to close.
         IgnorePointer(
@@ -205,7 +249,7 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: _editors(l10n, theme, values, data, record),
+              children: _editors(l10n, theme, values, data, record, scope),
             ),
           ),
         ),
@@ -219,8 +263,17 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
     AsyncValue<AiTuneStored> values,
     AiTuneStored? data,
     LyricsPluginRecord? record,
+    TranslationScope scope,
   ) {
     final id = widget.service.value;
+    final target = aiTuneTargetFor(
+      selected: scope,
+      locked: const {},
+      container: ProviderScope.containerOf(context),
+      service: widget.service,
+      hash: widget.hash,
+      writes: _writes,
+    );
     return [
       if (values.isLoading)
         const SizedBox(
@@ -233,18 +286,22 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
           child: Text(l10n.pluginConfigLoadFailed),
         )
       else ...[
-        _model(data, record.updatedAt),
+        _model(data, record.updatedAt, target),
         AiTuneSelectField(
-          key: pluginConfigEditorKey(
-            id,
-            record.updatedAt,
-            data.tune.style.key,
-            data.stored,
-          ),
+          key: ValueKey((
+            pluginConfigEditorKey(
+              id,
+              record.updatedAt,
+              data.tune.style.key,
+              data.stored,
+            ),
+            scope,
+          )),
           installId: id,
           label: l10n.translationAiStyle,
           field: pluginEffectiveField(data.tune.style, data.stored),
           stored: data.stored,
+          target: target,
           flushGroup: _group,
         ),
         TranslationSongInstructionField(
@@ -266,7 +323,7 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
     ];
   }
 
-  Widget _model(AiTuneStored data, int updatedAt) {
+  Widget _model(AiTuneStored data, int updatedAt, AiTuneSaveTarget target) {
     final l10n = context.l10n;
     final field = pluginEffectiveField(data.tune.model, data.stored);
     // A list of only the user's models, still empty: nothing can run yet, and
@@ -299,16 +356,20 @@ class _State extends ConsumerState<TranslationAiTuneModal> {
       );
     }
     return AiTuneSelectField(
-      key: pluginConfigEditorKey(
-        widget.service.value,
-        updatedAt,
-        field.key,
-        data.stored,
-      ),
+      key: ValueKey((
+        pluginConfigEditorKey(
+          widget.service.value,
+          updatedAt,
+          field.key,
+          data.stored,
+        ),
+        target.scope,
+      )),
       installId: widget.service.value,
       label: l10n.translationAiModel,
       field: field,
       stored: data.stored,
+      target: target,
       flushGroup: _group,
     );
   }

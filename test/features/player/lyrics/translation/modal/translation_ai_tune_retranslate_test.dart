@@ -12,6 +12,7 @@ import 'package:kanaru/core/lyrics/plugins/package/plugin_manifest.dart';
 import 'package:kanaru/core/lyrics/plugins/plugin_config_values_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_ai_tune.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_action_bar.dart';
@@ -161,7 +162,16 @@ void main() {
     await settleModal(tester);
   }
 
+  // Picks write the shared config under "All songs" (the default segment is
+  // "This song").
   Future<void> pickModel(WidgetTester tester, String from, String to) async {
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SegmentedButton<TranslationScope>),
+        matching: find.text('All songs'),
+      ),
+    );
+    await settleModal(tester);
     await tapText(tester, from);
     await tester.tap(find.widgetWithText(InkWell, to).last);
     await settleModal(tester);
@@ -366,6 +376,85 @@ void main() {
       );
       expect(find.text('Khác bản đang hiện: Flash → Pro'), findsOneWidget);
       expect(find.text('Dịch lại'), findsWidgets);
+    });
+  });
+
+  group('the bar follows the winning choice', () {
+    Future<void> storeSongTune(WidgetTester tester, _Rig r) async {
+      await tester.runAsync(
+        () => r.db.setSongTranslationTune(
+          'hash',
+          service: testTranslatePluginId,
+          tune: {'model': 'pro', 'style': 'literal'},
+          chosenAt: 10,
+        ),
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    retranslateTest('a version made with the song tune shows no bar', (
+      tester,
+    ) async {
+      final r = await pump(
+        tester,
+        state: _ready(settingsJson: _snapshot(stored: {'model': 'pro'})),
+      );
+      await storeSongTune(tester, r);
+      expect(changedBar(), findsNothing);
+      await openTuneModal(tester);
+      expect(find.text('Done'), findsOneWidget);
+    });
+
+    retranslateTest('a style picked for this song shows the bar and leaves '
+        'the shared config alone', (tester) async {
+      final r = await pump(
+        tester,
+        state: _ready(settingsJson: _snapshot()),
+        openTune: true,
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.byType(TranslationAiTuneModal),
+          matching: find.text('Literal'),
+        ),
+      );
+      await settleModal(tester);
+      await tester.tap(find.widgetWithText(InkWell, 'Natural').last);
+      await settleModal(tester);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Later'), findsOneWidget);
+      await tapText(tester, 'Later');
+      expect(
+        find.text('Differs from the version shown: Literal → Natural'),
+        findsOneWidget,
+      );
+      expect(r.plugins.configWrites, isEmpty);
+      expect(r.h.fake.retranslateCalls, 0);
+    });
+
+    retranslateTest('a newer pick for all songs makes the song tune lose: '
+        'the bar shows and nothing is translated', (tester) async {
+      final r = await pump(
+        tester,
+        state: _ready(settingsJson: _snapshot(stored: {'model': 'pro'})),
+      );
+      await storeSongTune(tester, r);
+      expect(changedBar(), findsNothing);
+      r.h.container
+          .read(settingsProvider.notifier)
+          .setTranslation(r.h.prefs.copyWith(allChosenAt: 99));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        find.text('Differs from the version shown: Pro → Flash'),
+        findsOneWidget,
+      );
+      expect(r.h.fake.retranslateCalls, 0);
     });
   });
 

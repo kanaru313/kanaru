@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/lyrics/plugins/package/plugin_manifest.dart';
@@ -9,15 +12,19 @@ import '../../../../../shared/lyrics_plugins/config/plugin_config_commit_mixin.d
 import '../../../../../shared/lyrics_plugins/config/plugin_config_error_text.dart';
 import '../../../../../shared/lyrics_plugins/config/plugin_config_flush_group.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
+import 'ai_tune_save_target.dart';
 import 'translation_ai_badge.dart';
 import 'translation_ai_option_label.dart';
+
+final _log = Logger('translation');
 
 /// A model or style of an AI translation plugin in the tune modal: a tonal
 /// box with the chosen option's title, its subtitle (two lines at most) and a
 /// check mark with a drop arrow; a tap opens a [showSelectionPicker]. A pick
-/// is saved at once to the plugin's config, without making the translations
-/// that failed start over; when the save is refused the old choice comes back
-/// and the reason shows under the box.
+/// is saved at once to where [target] says at that moment (the song, the
+/// queue, or the plugin's config without making the translations that failed
+/// start over); when the save is refused the old choice comes back and the
+/// reason shows under the box.
 ///
 /// [field] is the effective field (with the models the user added) and
 /// [stored] the saved values it is read against.
@@ -28,6 +35,7 @@ class AiTuneSelectField extends ConsumerStatefulWidget {
     required this.label,
     required this.field,
     required this.stored,
+    required this.target,
     this.flushGroup,
   });
 
@@ -38,6 +46,7 @@ class AiTuneSelectField extends ConsumerStatefulWidget {
   final String label;
   final PluginConfigField field;
   final Map<String, Object?> stored;
+  final AiTuneSaveTarget target;
   final PluginConfigFlushGroup? flushGroup;
 
   @override
@@ -47,6 +56,9 @@ class AiTuneSelectField extends ConsumerStatefulWidget {
 class _State extends ConsumerState<AiTuneSelectField>
     with PluginConfigCommit<AiTuneSelectField> {
   late String? _value = _effective;
+
+  // The failure of the last write to the song or the queue.
+  String? _scopedError;
 
   String? get _effective {
     final value = pluginEffectiveValue(widget.field, widget.stored);
@@ -61,7 +73,10 @@ class _State extends ConsumerState<AiTuneSelectField>
   String get commitInstallId => widget.installId;
   // Nothing chosen is an empty string (no saved value).
   @override
-  Object? get commitPayload => _value ?? '';
+  // Only the shared config is committed by the mixin; for the song or the
+  // queue it sees what is saved, so it has nothing of its own to write.
+  Object? get commitPayload =>
+      widget.target.writesConfig ? (_value ?? '') : (_effective ?? '');
   @override
   bool get commitRevertsOnRefusal => true;
   // A pick beside a translation under way must not disturb it.
@@ -69,6 +84,19 @@ class _State extends ConsumerState<AiTuneSelectField>
   bool get commitForgetsFailures => false;
   @override
   PluginConfigFlushGroup? get commitFlushGroup => widget.flushGroup;
+
+  @override
+  void onCommitted(Object? payload) => widget.target.afterConfigSaved();
+
+  @override
+  bool get dirty => commitDirty || widget.target.writes.busy;
+
+  @override
+  Future<bool> flush() async {
+    if (widget.target.writesConfig) return commitFlush();
+    await widget.target.writes.idle;
+    return mounted && _scopedError == null;
+  }
 
   @override
   void onCommitRefused(Object? lastSaved) =>
@@ -81,8 +109,11 @@ class _State extends ConsumerState<AiTuneSelectField>
   }
 
   @override
-  void onExternalValue(Object? payload) =>
-      _value = payload is String && payload.isNotEmpty ? payload : null;
+  void onExternalValue(Object? payload) {
+    // What the pick being written comes back as is not news.
+    if (widget.target.writes.busy) return;
+    _value = payload is String && payload.isNotEmpty ? payload : null;
+  }
 
   @override
   void initState() {
@@ -92,6 +123,14 @@ class _State extends ConsumerState<AiTuneSelectField>
 
   @override
   void dispose() {
+    // The mixin saves a pick still unsaved, or lets one in flight end, without
+    // telling the field; the pick was made for all songs, so the default
+    // follows it even if that save then fails.
+    if (widget.target.writesConfig && commitDirty) {
+      // Providers cannot change while the tree is torn down.
+      final target = widget.target;
+      scheduleMicrotask(target.afterConfigSaved);
+    }
     commitTeardown();
     super.dispose();
   }
@@ -113,8 +152,34 @@ class _State extends ConsumerState<AiTuneSelectField>
       selected: _value,
     );
     if (picked == null || picked == _value || !mounted) return;
-    setState(() => _value = picked);
-    await commit();
+    setState(() {
+      _value = picked;
+      _scopedError = null;
+    });
+    if (widget.target.writesConfig) {
+      await commit();
+    } else {
+      await _writeScoped(picked);
+    }
+  }
+
+  /// Saves [picked] to the song or the queue, after the writes before it.
+  Future<void> _writeScoped(String picked) async {
+    final failedText = context.l10n.pluginConfigSaveFailed;
+    final group = widget.flushGroup;
+    final error = await widget.target.write(
+      widget.field.key,
+      picked,
+      onChange: () => group?.refresh(),
+    );
+    if (error == null) return;
+    _log.warning('saving the AI tune failed: ${error.runtimeType}');
+    if (mounted) {
+      setState(() {
+        _value = _effective;
+        _scopedError = failedText;
+      });
+    }
   }
 
   @override
@@ -203,7 +268,8 @@ class _State extends ConsumerState<AiTuneSelectField>
               ),
             ),
           ),
-          if (commitError != null) PluginConfigErrorText(commitError!),
+          if ((commitError ?? _scopedError) != null)
+            PluginConfigErrorText((commitError ?? _scopedError)!),
         ],
       ),
     );

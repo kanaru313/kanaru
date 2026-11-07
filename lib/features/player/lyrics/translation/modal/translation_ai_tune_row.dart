@@ -48,7 +48,7 @@ class TranslationAiTuneRow extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final values = ref.watch(aiTuneValuesProvider(service)).value;
+    final values = ref.watch(scopedAiTuneValuesProvider((service, hash))).value;
     final subtitle = values == null
         ? null
         : aiOptionLabel(
