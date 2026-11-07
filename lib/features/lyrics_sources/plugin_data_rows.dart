@@ -70,7 +70,8 @@ class PluginDataRows extends ConsumerWidget {
     final canWrite = ref.watch(lyricsPluginsControllerProvider) != null;
     // Saved lyrics and lyrics lookups belong to lyrics plugins only.
     final isLyrics =
-        record.kind?.isTranslation != true && record.kind?.isSource != true;
+        record.kind?.isTranslation != true &&
+        record.kind?.isMusicSource != true;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

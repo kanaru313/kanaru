@@ -54,7 +54,7 @@ enum PluginKind {
   bool get isTranslation => this == translate || this == aiTranslate;
 
   /// Whether this kind finds and streams music (a source plugin).
-  bool get isSource => this == source;
+  bool get isMusicSource => this == source;
 
   /// Whether a record stored with [stored] kind satisfies a request expecting
   /// this kind.

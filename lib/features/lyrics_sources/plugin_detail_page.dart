@@ -97,7 +97,7 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
             translationPluginRoute(_id),
             settingsFocusLocation(SettingsAnchor.playbackTranslation),
           )
-        : kind?.isSource == true
+        : kind?.isMusicSource == true
         ? (onlineSourcePluginRoute(_id), onlineRoute)
         : (lyricsPluginRoute(_id), lyricsSourcesRoute);
     if (here == Uri.parse(pageRoute).path) router.go(leaveRoute);
@@ -133,7 +133,8 @@ class _PluginDetailPageState extends ConsumerState<PluginDetailPage> {
               (r) =>
                   r.installId == _id &&
                   !r.isRemoved &&
-                  (r.kind?.isTranslation == true || r.kind?.isSource == true),
+                  (r.kind?.isTranslation == true ||
+                      r.kind?.isMusicSource == true),
             )
             .firstOrNull;
     if (record == null) {

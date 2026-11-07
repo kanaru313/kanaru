@@ -65,7 +65,7 @@ class _UninstallDialog extends StatelessWidget {
               items: [
                 if (record.kind?.isTranslation == true)
                   l10n.pluginUninstallKeepTranslations
-                else if (record.kind?.isSource == true)
+                else if (record.kind?.isMusicSource == true)
                   l10n.pluginUninstallKeepNothingSource
                 else ...[
                   stats.foundCount > 0
