@@ -7,21 +7,22 @@ import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_language.dart';
+import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
-import '../../../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/icons/app_icons.dart';
 import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_language_name.dart';
-import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
 import 'translation_ai_badge.dart';
 import 'translation_modal_navigation.dart';
+import 'translation_scope_header.dart';
+import 'translation_service_pick.dart';
 
 /// Sentinel value for the `"Default (<language>)"` entry in the target picker.
 const String _defaultLanguage = '';
@@ -68,19 +69,37 @@ Future<void> openTargetPicker(
 
 /// Opens the child modal that picks the translation service plugin.
 ///
-/// Lists the live translate plugins with a footer row that opens the plugin
-/// store and a cache-first hint. After a plugin is chosen and the child modal
-/// has closed, the network notice is asked on the parent [context] when
-/// picking from `null` or switching while translation is on to a plugin whose
-/// notice was not accepted yet; otherwise the service setting is updated
-/// directly without forcing a retranslate.
-Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
+/// Lists the live translate plugins with scope segments on top (this song
+/// only, or the default for every song), a footer row that opens the plugin
+/// store and a cache-first hint. The check mark is on the song's own service
+/// ([info]'s choice), or on the default when [info] is null. The segment is
+/// "this song" on every open, except when that is locked (translation off, or
+/// no song with lyrics): then it is "all songs". After a plugin is chosen and
+/// the child modal has closed, [applyServicePick] asks the network notice on
+/// the parent [context] and writes the choice without forcing a retranslate.
+Future<void> openServicePicker(
+  BuildContext context,
+  WidgetRef ref, {
+  required TranslationTargetInfo? info,
+}) async {
   final choices = ref.read(translationServiceChoicesProvider);
   if (!choices.ready) return;
   final l10n = context.l10n;
   final plugins = ref.read(translationPluginInfosProvider);
-  final settings = ref.read(settingsProvider.notifier);
   final records = ref.read(lyricsPluginRecordsProvider);
+  final hash = info?.hash;
+  final locked = <TranslationScope, String>{
+    if (!ref.read(settingsProvider).translation.show)
+      TranslationScope.song: l10n.lyricsTranslationScopeSongLockedOff
+    else if (hash == null)
+      TranslationScope.song: l10n.lyricsTranslationScopeSongLockedNoSong,
+  };
+  final scope = ValueNotifier(
+    locked.containsKey(TranslationScope.song)
+        ? TranslationScope.all
+        : TranslationScope.song,
+  );
+  final replaced = songsReplacedByDefault(ref);
   final items = <SelectionPickerItem<TranslationServiceId>>[
     for (final service in choices.services)
       SelectionPickerItem(
@@ -100,7 +119,17 @@ Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
     context,
     title: l10n.lyricsTranslationModalServiceTitle,
     items: items,
-    selected: choices.selected,
+    selected: info?.choice?.service ?? choices.selected,
+    header: ValueListenableBuilder<TranslationScope>(
+      valueListenable: scope,
+      builder: (_, selected, _) => TranslationScopeHeader(
+        scopes: const [TranslationScope.song, TranslationScope.all],
+        selected: selected,
+        locked: locked,
+        replacedCount: replaced,
+        onChanged: (s) => scope.value = s,
+      ),
+    ),
     footer: _GetMorePluginsRow(
       label: l10n.lyricsTranslationModalGetPlugins,
       onTap: (_) => openTranslationStore(context),
@@ -108,12 +137,13 @@ Future<void> openServicePicker(BuildContext context, WidgetRef ref) async {
     hint: l10n.lyricsTranslationModalCacheFirst,
   );
   if (picked == null || !context.mounted) return;
-  final prefs = ref.read(settingsProvider).translation;
-  if (prefs.service == null || (prefs.show && needsNoticeFor(prefs, picked))) {
-    await enableTranslationWithNotice(context, ref, picked);
-  } else {
-    settings.setTranslation(prefs.copyWith(service: picked));
-  }
+  await applyServicePick(
+    context,
+    ref,
+    picked: picked,
+    scope: scope.value,
+    hash: hash,
+  );
 }
 
 /// The installed plugin record for [installId], or null when none matches.

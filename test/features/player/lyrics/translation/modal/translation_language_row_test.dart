@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/lyrics_translation_modal.dart';
@@ -197,4 +198,19 @@ void main() {
       expect(h.prefs, before);
     },
   );
+
+  testWidgets('switch with no service opens the picker on all songs', (
+    tester,
+  ) async {
+    await pumpTranslationModal(tester, settings: const TranslationPrefs());
+    await tapSwitch(tester);
+    final seg = tester.widget<SegmentedButton<TranslationScope>>(
+      find.byType(SegmentedButton<TranslationScope>),
+    );
+    expect(seg.selected, {TranslationScope.all});
+    expect(
+      seg.segments.firstWhere((s) => s.value == TranslationScope.song).enabled,
+      isFalse,
+    );
+  });
 }

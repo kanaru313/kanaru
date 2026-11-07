@@ -5285,6 +5285,54 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Dịch vụ dịch';
 
   @override
+  String get lyricsTranslationScopeSong => 'Chỉ bài này';
+
+  @override
+  String get lyricsTranslationScopeAll => 'Mọi bài';
+
+  @override
+  String get lyricsTranslationScopeSongHint =>
+      'Chỉ bài đang phát dùng dịch vụ này (kể cả tinh chỉnh AI).';
+
+  @override
+  String get lyricsTranslationScopeAllHint =>
+      'Đổi dịch vụ mặc định cho mọi bài.';
+
+  @override
+  String lyricsTranslationScopeReplaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sẽ thay cả $count bài đã chỉnh riêng',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsTranslationScopeSongSaveFailed =>
+      'Không lưu được lựa chọn cho bài này';
+
+  @override
+  String get lyricsTranslationScopeSongLockedOff =>
+      'Bật dịch lời để chọn dịch vụ riêng cho bài này.';
+
+  @override
+  String get lyricsTranslationScopeSongLockedNoSong =>
+      'Không có bài nào có lời để chọn riêng.';
+
+  @override
+  String lyricsTranslationModalScopeSongSubtitle(String service) {
+    return 'Riêng bài này · mặc định: $service';
+  }
+
+  @override
+  String get lyricsTranslationModalScopeSongOnlySubtitle => 'Riêng bài này';
+
+  @override
+  String get lyricsTranslationModalScopeAllSubtitle =>
+      'Dịch vụ mặc định cho mọi bài';
+
+  @override
   String get lyricsTranslationModalGetPlugins => 'Tải thêm plugin dịch';
 
   @override

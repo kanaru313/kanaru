@@ -101,8 +101,9 @@ class TranslationLanguageRow extends ConsumerWidget {
                         // row never needs to guard on lyrics itself.
                         hasLyrics: true,
                         songService: effective,
-                        openModal: () =>
-                            unawaited(openServicePicker(context, ref)),
+                        openModal: () => unawaited(
+                          openServicePicker(context, ref, info: info),
+                        ),
                       ),
               ),
             ),

@@ -5575,6 +5575,60 @@
   "@lyricsTranslationModalServiceTitle": {
     "description": "Title of the child modal that picks the translation service"
   },
+  "lyricsTranslationScopeSong": "Only this song",
+  "@lyricsTranslationScopeSong": {
+    "description": "Segment of the translation service picker: the choice applies to the playing song only"
+  },
+  "lyricsTranslationScopeAll": "All songs",
+  "@lyricsTranslationScopeAll": {
+    "description": "Segment of the translation service picker: the choice changes the default service for every song"
+  },
+  "lyricsTranslationScopeSongHint": "Only the song now playing uses this service (AI tune included).",
+  "@lyricsTranslationScopeSongHint": {
+    "description": "Line under the scope segments of the translation service picker while Only this song is selected"
+  },
+  "lyricsTranslationScopeAllHint": "Changes the default service for every song.",
+  "@lyricsTranslationScopeAllHint": {
+    "description": "Line under the scope segments of the translation service picker while All songs is selected"
+  },
+  "lyricsTranslationScopeReplaces": "{count, plural, =1{Will also replace 1 song you set individually} other{Will also replace {count} songs you set individually}}",
+  "@lyricsTranslationScopeReplaces": {
+    "description": "Caption of the translation service picker when All songs is selected: how many songs with their own newer service choice would follow the new default instead",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsTranslationScopeSongSaveFailed": "Couldn't save the choice for this song",
+  "@lyricsTranslationScopeSongSaveFailed": {
+    "description": "Snackbar when the service picked for one song could not be saved"
+  },
+  "lyricsTranslationScopeSongLockedOff": "Turn translation on to choose a service for this song only.",
+  "@lyricsTranslationScopeSongLockedOff": {
+    "description": "Tooltip of the disabled Only this song segment while translated lyrics are off"
+  },
+  "lyricsTranslationScopeSongLockedNoSong": "There is no song with lyrics to choose for.",
+  "@lyricsTranslationScopeSongLockedNoSong": {
+    "description": "Tooltip of the disabled Only this song segment when no song with lyrics is playing"
+  },
+  "lyricsTranslationModalScopeSongSubtitle": "Only this song · default: {service}",
+  "@lyricsTranslationModalScopeSongSubtitle": {
+    "description": "Subtitle of the service row when the playing song has its own service; service is the default service name",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalScopeSongOnlySubtitle": "Only this song",
+  "@lyricsTranslationModalScopeSongOnlySubtitle": {
+    "description": "Subtitle of the service row when the playing song has its own service and there is no default service"
+  },
+  "lyricsTranslationModalScopeAllSubtitle": "Default service for every song",
+  "@lyricsTranslationModalScopeAllSubtitle": {
+    "description": "Subtitle of the service row when the song follows the default service"
+  },
   "lyricsTranslationModalGetPlugins": "Get more translation plugins",
   "@lyricsTranslationModalGetPlugins": {
     "description": "Footer row in the translation service picker that opens the plugin store"

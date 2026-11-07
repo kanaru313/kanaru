@@ -76,6 +76,12 @@ void main() {
     await settleModal(tester);
   }
 
+  /// Switches the open picker to the default-service scope.
+  Future<void> tapAllSongs(WidgetTester tester) async {
+    await tester.tap(find.text('All songs'));
+    await tester.pump();
+  }
+
   Future<void> tapRow(WidgetTester tester, String name) async {
     await tester.tap(row(name));
     await settleModal(tester);
@@ -123,6 +129,7 @@ void main() {
         ),
       );
 
+      await tapAllSongs(tester);
       await tapRow(tester, 'Gemini');
       expect(find.text('Translation service'), findsNothing);
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -131,12 +138,14 @@ void main() {
       expect(h.prefs.service, other);
 
       await openServiceRow(tester);
+      await tapAllSongs(tester);
       await tapRow(tester, 'Gemini');
       await tapText(tester, 'Continue');
       expect(h.prefs.service, plugin);
       expect(h.prefs.noticeAcknowledged, {other, plugin});
 
       await openServiceRow(tester);
+      await tapAllSongs(tester);
       await tapRow(tester, 'Other');
       expect(find.byType(AlertDialog), findsNothing);
       expect(h.prefs.service, other);

@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugins_provider.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
+import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_ai_badge.dart';
 import 'package:kanaru/features/player/lyrics/translation/modal/translation_service_section.dart';
@@ -114,4 +117,71 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
   }
+
+  LyricsTranslationState stateWith(
+    TranslationScope scope, {
+    TranslationServiceId? service,
+  }) => TranslationOff(
+    fakeTranslationInfo(
+      choice: TranslationChoice(
+        service: service,
+        scope: scope,
+        tune: const {},
+        defaultService: testTranslatePlugin,
+      ),
+    ),
+  );
+
+  testWidgets('subtitle names a song\'s own choice and its default', (
+    tester,
+  ) async {
+    await pumpTranslationModal(
+      tester,
+      settings: onPrefs,
+      state: stateWith(TranslationScope.song, service: testTranslatePlugin),
+    );
+    expect(
+      find.text('Only this song · default: Test Translate'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('subtitle for a song that follows the default', (tester) async {
+    await pumpTranslationModal(
+      tester,
+      settings: onPrefs,
+      state: stateWith(TranslationScope.all, service: testTranslatePlugin),
+    );
+    expect(find.text('Default service for every song'), findsOneWidget);
+  });
+
+  testWidgets('unset and loading subtitles win over the scope subtitle', (
+    tester,
+  ) async {
+    await pumpTranslationModal(
+      tester,
+      settings: const TranslationPrefs(),
+      state: stateWith(TranslationScope.all),
+    );
+    expect(find.text('Lyrics are sent only after you choose'), findsOneWidget);
+    expect(find.text('Default service for every song'), findsNothing);
+  });
+
+  testWidgets('loading plugin records show the loading subtitle only', (
+    tester,
+  ) async {
+    await pumpTranslationModal(
+      tester,
+      settings: onPrefs,
+      state: stateWith(TranslationScope.all, service: testTranslatePlugin),
+      pluginOverrides: const [],
+      overrides: [
+        translatePluginRecordsProvider.overrideWithValue(
+          const AsyncLoading<List<LyricsPluginRecord>>(),
+        ),
+      ],
+    );
+    expect(find.text('Loading translation plugins…'), findsOneWidget);
+    expect(find.text('Default service for every song'), findsNothing);
+  });
 }

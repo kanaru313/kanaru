@@ -7,6 +7,7 @@ import '../../../../../core/database/lyrics_plugin_spec.dart';
 import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
+import '../../../../../core/lyrics_translation/translation_scope.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
 import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
@@ -68,7 +69,7 @@ class TranslationServiceSection extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ServiceRow(choices: choices, selected: selected),
+        _ServiceRow(choices: choices, selected: selected, info: info),
         if (tune != null && selected != null && hash != null)
           TranslationAiTuneRow(
             service: selected,
@@ -130,12 +131,39 @@ class _NoPluginsCard extends StatelessWidget {
 }
 
 class _ServiceRow extends ConsumerWidget {
-  const _ServiceRow({required this.choices, required this.selected});
+  const _ServiceRow({
+    required this.choices,
+    required this.selected,
+    required this.info,
+  });
 
   final TranslationServiceChoices choices;
 
   /// The service shown: the playing song's, not necessarily the default.
   final TranslationServiceId? selected;
+
+  /// The playing song; null when there is none, so the pick is for the default.
+  final TranslationTargetInfo? info;
+
+  /// Which choice decided the song's service; null while that is not known.
+  String? _scopeSubtitle(
+    AppLocalizations l10n,
+    Map<String, TranslationPluginInfo> plugins,
+  ) {
+    final choice = info?.choice;
+    if (choice == null) return null;
+    final base = choice.defaultService;
+    return switch (choice.scope) {
+      TranslationScope.song =>
+        base == null
+            ? l10n.lyricsTranslationModalScopeSongOnlySubtitle
+            : l10n.lyricsTranslationModalScopeSongSubtitle(
+                translationServiceName(l10n, plugins, base),
+              ),
+      TranslationScope.all => l10n.lyricsTranslationModalScopeAllSubtitle,
+      TranslationScope.queue => null,
+    };
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -164,7 +192,7 @@ class _ServiceRow extends ConsumerWidget {
         ? l10n.lyricsTranslationModalPluginsLoading
         : unset
         ? l10n.lyricsTranslationModalServiceUnset
-        : null;
+        : _scopeSubtitle(l10n, plugins);
     final titleColor = unset ? colors.error : colors.onSurface;
     final subtitleColor = unset ? colors.error : colors.onSurfaceVariant;
 
@@ -176,7 +204,7 @@ class _ServiceRow extends ConsumerWidget {
         opacity: ready ? 1 : 0.45,
         child: InkWell(
           onTap: ready
-              ? () => unawaited(openServicePicker(context, ref))
+              ? () => unawaited(openServicePicker(context, ref, info: info))
               : null,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 56),

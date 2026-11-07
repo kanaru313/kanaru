@@ -49,13 +49,15 @@ class SelectionPickerItem<T> {
 /// [footer] is the last child of the scrolling list (after the rows and
 /// before [hint]), not pinned below it. [hint] is a small muted note at the
 /// end of the list; it is hidden while a search matches nothing, the [footer]
-/// stays.
+/// stays. [header] is an optional widget between the title bar and the
+/// search box (for example scope segments); null leaves the layout unchanged.
 Future<T?> showSelectionPicker<T>(
   BuildContext context, {
   required String title,
   required List<SelectionPickerItem<T>> items,
   T? selected,
   Widget? footer,
+  Widget? header,
   String? hint,
   String? semanticLabel,
 }) {
@@ -67,6 +69,7 @@ Future<T?> showSelectionPicker<T>(
       items: items,
       selected: selected,
       footer: footer,
+      header: header,
       hint: hint,
     ),
   );
@@ -78,6 +81,7 @@ class _SelectionPickerContent<T> extends StatefulWidget {
     required this.items,
     required this.selected,
     required this.footer,
+    required this.header,
     required this.hint,
   });
 
@@ -85,6 +89,7 @@ class _SelectionPickerContent<T> extends StatefulWidget {
   final List<SelectionPickerItem<T>> items;
   final T? selected;
   final Widget? footer;
+  final Widget? header;
   final String? hint;
 
   @override
@@ -126,6 +131,7 @@ class _SelectionPickerContentState<T>
     final showSearch = widget.items.length > _searchThreshold;
     final filtered = _filteredItems();
     final footer = widget.footer;
+    final header = widget.header;
     final hint = widget.hint;
     final trimmedQuery = _query.trim();
 
@@ -138,6 +144,7 @@ class _SelectionPickerContentState<T>
             title: widget.title,
             onClose: () => Navigator.of(context).pop(),
           ),
+          ?header,
           if (showSearch)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
