@@ -32,7 +32,10 @@ final class HlsUriLine extends HlsLine {
 /// [hlsMaxLineBytes] → `tooLarge`. It stops as soon as the playlist has more
 /// URI lines than [hlsMaxSegments], more `EXT-X-STREAM-INF` tags than
 /// [hlsMaxVariants] or more `EXT-X-MEDIA` tags than [hlsMaxRenditions]
-/// (`tooLarge` too), so a body of short lines never costs a line object each.
+/// (`tooLarge` too), so a body of short segment, variant or rendition lines
+/// stops at that bound. Other tags are not counted: a body of them (such as
+/// `#EXT-X-GAP`) builds one line object each, capped only by
+/// [hlsMaxPlaylistBytes].
 List<HlsLine> lexHlsPlaylist(List<int> bytes) {
   final data = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
   var start = _hasBom(data) ? 3 : 0;
