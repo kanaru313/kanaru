@@ -132,16 +132,19 @@ void main() {
       expect(errors, hasLength(1));
     });
 
-    test('a formatOf slower than the wait sets nothing', () async {
+    test('a formatOf slower than the wait sets nothing and reports', () async {
       final never = Completer<RemoteStreamFormat?>();
+      final errors = <Object>[];
 
       final options = await optionsFor(
         url,
         (_) => never.future,
         wait: const Duration(milliseconds: 20),
+        errors: errors,
       );
 
       expect(options, isEmpty);
+      expect(errors.single, isA<TimeoutException>());
     });
 
     test('a path that differs in any character sets nothing', () async {

@@ -176,8 +176,8 @@ Future<T?> _unlessGaveUp<T>(OpenTicket ticket, Future<T> work) {
 /// reaches the file. The answer itself is not used: mpv's load hook asks
 /// again. Returns the URL, or null when [ticket] gave up, at once when it
 /// does, whatever [handOut] and [formatOf] are still doing. No answer, an
-/// error (reported to [onError], which must not log the URL) or a timeout
-/// still returns the URL: the track opens as it would without the wait. A
+/// error or a timeout (both reported to [onError], which must not log the
+/// URL) still returns the URL: the track opens as it would without the wait. A
 /// [handOut] that fails returns null with [ticket] still alive: the caller
 /// opens as it would without the wait. Never throws.
 Future<String?> waitForRemoteFormat({
@@ -195,9 +195,9 @@ Future<String?> waitForRemoteFormat({
     if (url == null || ticket.gaveUp) return null;
     try {
       await _unlessGaveUp(ticket, formatOf(url).timeout(wait));
-    } on TimeoutException {
-      // The track opens as it would without the wait.
     } on Object catch (error) {
+      // A timeout too: the track opens as it would without the wait, and
+      // the log says why it may then fail to play.
       onError?.call(error);
     }
     return ticket.gaveUp ? null : url;

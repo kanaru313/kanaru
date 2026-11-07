@@ -400,13 +400,22 @@ void main() {
       expect(errors, hasLength(1));
     });
 
-    test('a formatOf slower than the wait still opens the track', () async {
-      final never = Completer<RemoteStreamFormat?>();
+    test(
+      'a formatOf slower than the wait opens the track and reports',
+      () async {
+        final never = Completer<RemoteStreamFormat?>();
+        final errors = <Object>[];
 
-      final result = await wait(begin(), formatOf: (_) => never.future);
+        final result = await wait(
+          begin(),
+          formatOf: (_) => never.future,
+          errors: errors,
+        );
 
-      expect(result, url);
-    });
+        expect(result, url);
+        expect(errors.single, isA<TimeoutException>());
+      },
+    );
 
     test('a handOut that fails returns null and reports', () async {
       final errors = <Object>[];

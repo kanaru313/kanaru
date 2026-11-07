@@ -51,8 +51,8 @@ class HandedOutUrls {
 /// unless [path] is a URL in [handedOut] whose format [formatOf] says needs
 /// some. [formatOf] is not called for any other path.
 ///
-/// Waits at most [wait] for [formatOf]. A null answer, an error (reported to
-/// [onError], which must not log the URL) or a timeout gives no options, and
+/// Waits at most [wait] for [formatOf]. A null answer, an error or a timeout
+/// (both reported to [onError], which must not log the URL) gives no options, and
 /// the track opens as it does without them. Never throws.
 Future<List<(String, String)>> mpvFileOptionsFor({
   required String path,
@@ -65,9 +65,8 @@ Future<List<(String, String)>> mpvFileOptionsFor({
   try {
     final format = await formatOf(path).timeout(wait);
     return format == null ? const [] : mpvRemoteFileOptions(format);
-  } on TimeoutException {
-    return const [];
   } on Object catch (error) {
+    // A timeout too: the log says why an HLS track may then fail to open.
     onError?.call(error);
     return const [];
   }
