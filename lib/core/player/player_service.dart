@@ -47,6 +47,7 @@ final audioBackendProvider = Provider<AudioBackend>((ref) {
 /// engine made without it hands mpv the `kanaru-source:` uri itself.
 MediaKitBackend mediaKitBackendFor(Ref ref) => MediaKitBackend(
   remoteUrl: (remote) => ref.read(sourceStreamProxyProvider).urlFor(remote),
+  remoteFormat: (url) => ref.read(sourceStreamProxyProvider).formatOf(url),
 );
 
 final playerServiceProvider = NotifierProvider<PlayerService, PlayerState>(

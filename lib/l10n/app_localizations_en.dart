@@ -1052,6 +1052,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String playerStreamLiveError(String title) {
+    return 'Couldn\'t play $title: live streams aren\'t supported';
+  }
+
+  @override
+  String playerStreamProtectedError(String title) {
+    return 'Couldn\'t play $title: protected streams aren\'t supported';
+  }
+
+  @override
   String get playerPlay => 'Play';
 
   @override

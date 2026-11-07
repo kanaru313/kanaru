@@ -1520,6 +1520,18 @@ abstract class AppLocalizations {
   /// **'Couldn\'t play {title}'**
   String playerPlaybackError(String title);
 
+  /// No description provided for @playerStreamLiveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play {title}: live streams aren\'t supported'**
+  String playerStreamLiveError(String title);
+
+  /// No description provided for @playerStreamProtectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play {title}: protected streams aren\'t supported'**
+  String playerStreamProtectedError(String title);
+
   /// No description provided for @playerPlay.
   ///
   /// In en, this message translates to:

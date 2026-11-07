@@ -771,6 +771,22 @@
       }
     }
   },
+  "playerStreamLiveError": "Couldn't play {title}: live streams aren't supported",
+  "@playerStreamLiveError": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "playerStreamProtectedError": "Couldn't play {title}: protected streams aren't supported",
+  "@playerStreamProtectedError": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "playerPlay": "Play",
   "playerPause": "Pause",
   "playerPrevious": "Previous",

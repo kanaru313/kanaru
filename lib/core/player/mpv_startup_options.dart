@@ -21,10 +21,13 @@ const mpvStartupOptions = <(String, String)>[
   // also stop it, but media_kit's `open` loads the track through `loadlist`
   // of a temporary playlist file, which that option refuses, so nothing
   // would play. The playlist given to `loadlist` is still read: it forces
-  // the playlist format and does not use `demuxer`. Remote tracks need no
-  // wider whitelist: mpv opens the loopback `http://127.0.0.1` proxy URL
-  // itself, not as a nested open of libavformat (measured, with these
-  // options).
+  // the playlist format and does not use `demuxer`. A progressive remote
+  // track needs no wider whitelist: mpv opens the loopback
+  // `http://127.0.0.1` proxy URL itself, not as a nested open of libavformat
+  // (measured, with these options). An HLS stream does: libavformat's `hls`
+  // demuxer opens its segments and key itself, so those files get a wider
+  // whitelist for that file only (`mpv_remote_file_options.dart`); the global
+  // value stays `file`.
   // Setting `demuxer-lavf-o` replaces media_kit's whole value
   // (`seg_max_retry=5,strict=experimental,allowed_extensions=ALL,
   // protocol_whitelist=...`, media_kit `real.dart`). That is fine for local

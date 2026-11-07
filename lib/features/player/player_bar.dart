@@ -5,6 +5,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/player/playback_error.dart';
 import '../../core/player/player_service.dart';
+import '../../core/player/track.dart';
+import '../../core/sources/proxy/stream_refusal.dart';
 import '../../l10n/l10n.dart';
 import '../../shared/widgets/app_snack_bar.dart';
 import 'cover_tint_background.dart';
@@ -80,10 +82,26 @@ class _PlayerBarState extends ConsumerState<PlayerBar> {
     if (!mounted) return;
     // A folder of unreachable files fails one track after another; show
     // only the latest instead of queuing them all.
-    ScaffoldMessenger.of(context).showAppSnackBar(
-      AppSnackBarKind.error,
-      context.l10n.playerPlaybackError(error.track.title),
-    );
+    final l10n = context.l10n;
+    final title = error.track.title;
+    final text = switch (_refusalOf(error.track)) {
+      StreamRefusal.live => l10n.playerStreamLiveError(title),
+      StreamRefusal.protected => l10n.playerStreamProtectedError(title),
+      null => l10n.playerPlaybackError(title),
+    };
+    ScaffoldMessenger.of(context).showAppSnackBar(AppSnackBarKind.error, text);
+  }
+
+  /// Why the proxy refused a remote [track]'s stream, when it is a refusal the
+  /// user is told about; null for a local track or any other failure.
+  StreamRefusal? _refusalOf(Track track) {
+    final remote = track.remote;
+    if (remote == null) return null;
+    try {
+      return ref.read(remoteStreamRefusalProvider)(remote);
+    } on Object {
+      return null;
+    }
   }
 
   @override

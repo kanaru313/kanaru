@@ -2,11 +2,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/app/app.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/player/repeat_mode.dart' as kanaru show RepeatMode;
 import 'package:kanaru/core/player/track.dart';
+import 'package:kanaru/core/sources/proxy/stream_refusal.dart';
+import 'package:kanaru/core/sources/remote_source_ref.dart';
 import 'package:kanaru/features/player/player_bar.dart';
 import 'package:kanaru/features/player/repeat/repeat_button.dart';
 import 'package:kanaru/features/player/seek_bar.dart';
@@ -38,6 +41,7 @@ void main() {
     WidgetTester tester, {
     Size size = const Size(1280, 800),
     bool animations = false,
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -47,7 +51,10 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     backend = FakeAudioBackend();
     container = ProviderContainer(
-      overrides: [audioBackendProvider.overrideWithValue(backend)],
+      overrides: [
+        audioBackendProvider.overrideWithValue(backend),
+        ...overrides,
+      ],
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(
@@ -272,6 +279,106 @@ void main() {
 
     expect(find.text("Couldn't play First Song"), findsOneWidget);
     expect(find.byType(SnackBar), findsOneWidget);
+  });
+
+  group('a broken remote track', () {
+    const remote = RemoteSourceRef(
+      installId: 'plugin-abcdefghijkl',
+      itemId: 'item-1',
+    );
+    const remoteTrack = Track(
+      uri: 'kanaru-source:plugin-abcdefghijkl/item-1',
+      title: 'Remote Song',
+      remote: remote,
+    );
+
+    /// Plays [track] first, makes the engine give up on it and returns what
+    /// the refusal provider was asked about.
+    Future<List<RemoteSourceRef>> failWith(
+      WidgetTester tester,
+      Track track,
+      StreamRefusal? Function(RemoteSourceRef) answer,
+    ) async {
+      final asked = <RemoteSourceRef>[];
+      await pumpApp(
+        tester,
+        overrides: [
+          remoteStreamRefusalProvider.overrideWithValue((item) {
+            asked.add(item);
+            return answer(item);
+          }),
+        ],
+      );
+      await player().openTracks([track]);
+      await tester.pumpAndSettle();
+      backend.fail(track);
+      await tester.pump();
+      await tester.pump();
+      return asked;
+    }
+
+    testWidgets('says the stream is live', (tester) async {
+      final asked = await failWith(
+        tester,
+        remoteTrack,
+        (_) => StreamRefusal.live,
+      );
+      expect(asked, [remote]);
+      expect(
+        find.text("Couldn't play Remote Song: live streams aren't supported"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('says the stream is protected', (tester) async {
+      await failWith(tester, remoteTrack, (_) => StreamRefusal.protected);
+      expect(
+        find.text(
+          "Couldn't play Remote Song: protected streams aren't supported",
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('keeps the general text without a refusal', (tester) async {
+      await failWith(tester, remoteTrack, (_) => null);
+      expect(find.text("Couldn't play Remote Song"), findsOneWidget);
+    });
+
+    testWidgets('keeps the general text when the provider throws', (
+      tester,
+    ) async {
+      await failWith(tester, remoteTrack, (_) => throw StateError('no proxy'));
+      expect(find.text("Couldn't play Remote Song"), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('does not ask about a local track', (tester) async {
+      final asked = await failWith(
+        tester,
+        songs.first,
+        (_) => StreamRefusal.live,
+      );
+      expect(asked, isEmpty);
+      expect(find.text("Couldn't play First Song"), findsOneWidget);
+    });
+
+    testWidgets('shows nothing once the bar is gone', (tester) async {
+      final asked = await failWith(
+        tester,
+        remoteTrack,
+        (_) => StreamRefusal.live,
+      );
+      expect(asked, hasLength(1));
+
+      // The bar disposes with the app; an error that arrives afterwards must
+      // neither read the provider nor throw.
+      await tester.pumpWidget(const SizedBox());
+      backend.fail(remoteTrack);
+      await tester.pump();
+      expect(asked, hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
   });
 
   for (final (name, size) in [

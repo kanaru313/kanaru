@@ -986,6 +986,16 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String playerStreamLiveError(String title) {
+    return 'Không phát được $title: chưa hỗ trợ luồng trực tiếp';
+  }
+
+  @override
+  String playerStreamProtectedError(String title) {
+    return 'Không phát được $title: không hỗ trợ luồng có bảo vệ (DRM)';
+  }
+
+  @override
   String get playerPlay => 'Phát';
 
   @override

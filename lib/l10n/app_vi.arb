@@ -254,6 +254,8 @@
   "searchFieldComment": "Mô tả",
   "searchCorrectedResultsForPrefix": "Kết quả cho",
   "playerPlaybackError": "Không phát được {title}",
+  "playerStreamLiveError": "Không phát được {title}: chưa hỗ trợ luồng trực tiếp",
+  "playerStreamProtectedError": "Không phát được {title}: không hỗ trợ luồng có bảo vệ (DRM)",
   "playerPlay": "Phát",
   "playerPause": "Tạm dừng",
   "playerPrevious": "Bài trước",
