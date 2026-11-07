@@ -16,9 +16,10 @@ import 'lyrics_translation_state.dart';
 import 'translation_jobs.dart';
 import 'translation_language.dart';
 import 'translation_lines.dart';
+import 'translation_prefetch.dart';
 import 'translation_providers.dart';
+import 'translation_request_inputs.dart';
 import 'translation_scope_providers.dart';
-import 'translation_service.dart';
 import 'translation_service_resolution.dart';
 import 'translation_song_context.dart';
 
@@ -27,10 +28,6 @@ import 'translation_song_context.dart';
 final translationDebounceProvider = Provider<Duration>(
   (ref) => const Duration(seconds: 1),
 );
-
-final _hashes = Expando<String>();
-
-String _hashOf(Lyrics lyrics) => _hashes[lyrics] ??= lyricsContentHash(lyrics);
 
 /// The translation state of the playing lyrics. Only a Now Playing widget
 /// that watches it makes requests; closing Now Playing disposes it (and its
@@ -50,6 +47,9 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
 
   @override
   LyricsTranslationState build() {
+    // First, so the translate-ahead lives as long as this controller, also
+    // when the playing song has no lyrics and the build returns early.
+    ref.listen(translationPrefetchProvider(appLang), (_, _) {});
     _key = _lyrics = _target = _info = null;
     // Nothing is wanted until a full path below says so; a chunk of the
     // previous song still waiting for its turn is then dropped unsent.
@@ -63,20 +63,16 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
       return const TranslationUnavailable();
     }
     final lyrics = playing.lyrics;
-    final hash = _hashOf(lyrics);
+    final hash = lyricsContentHashOf(lyrics);
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
     // The same gathering the jobs use, so the screen and the requests apply
     // one rule; only this song's row of the song choices is watched.
     final choice = translationChoiceFor(ref.watch, hash);
-    final defaultTarget =
-        translationLanguageFor(prefs.targetLanguage ?? appLang) ??
-        translationLanguageFor('en')!;
+    final defaultTarget = defaultTranslationTarget(prefs, appLang);
     final songTarget = ref.watch(songTranslationTargetProvider(hash));
     final targetKnown = songTarget.hasValue || songTarget.hasError;
     final override = songTarget.hasError ? null : songTarget.value;
-    final effective =
-        (override == null ? null : translationLanguageFor(override)) ??
-        defaultTarget;
+    final effective = effectiveTranslationTarget(defaultTarget, override);
     final info = TranslationTargetInfo(
       hash: hash,
       effective: targetKnown ? effective : defaultTarget,
@@ -116,22 +112,16 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     if (!rows.hasValue) return TranslationLoading(info, service);
     final job = ref.watch(translationJobsProvider.select((m) => m[key]));
 
-    final records = ref.watch(lyricsPluginRecordsProvider);
+    final plugins = translationPluginSets(
+      ref.watch(lyricsPluginRecordsProvider),
+    );
     final derived = deriveTranslation(
       info: info,
       service: service,
       lyrics: lyrics,
       rows: rows.requireValue,
-      knownPlugins: {
-        for (final r in records)
-          if (r.kind?.isTranslation == true)
-            ?TranslationServiceId.tryParse(r.installId),
-      },
-      livePlugins: {
-        for (final r in records)
-          if (r.kind?.isTranslation == true && !r.isRemoved)
-            ?TranslationServiceId.tryParse(r.installId),
-      },
+      knownPlugins: plugins.known,
+      livePlugins: plugins.live,
       job: job,
     );
     if (derived.needsRequest) _armRequest(key, lyrics, info.effective);
