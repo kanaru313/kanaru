@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/lyrics/online/playing_lyrics_status.dart';
 import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
 import '../../../core/lyrics_translation/lyrics_translation_state.dart';
-import '../../../core/lyrics_translation/translation_service_resolution.dart';
 import '../../../core/settings/settings_provider.dart';
 import 'lyrics_pulse_host.dart';
 import 'plain_lyrics_view.dart';
@@ -48,15 +47,20 @@ class LyricsFoundBody extends ConsumerWidget {
               kind: state.kind,
               appLang: appLang,
             ),
-            TranslationReady(:final service, :final retranslateFailure?) ||
+            TranslationReady(
+              :final info,
+              :final service,
+              :final retranslateFailure?,
+            ) ||
             TranslationSameLanguage(
+              :final info,
               :final service,
               :final retranslateFailure?,
             ) => LyricsTranslationBanner(
-              // The failed run is the selected service's, not the one whose
-              // version is shown.
-              service:
-                  ref.watch(effectiveTranslationServiceProvider) ?? service,
+              // The failed run is the song's resolved service's, not the one
+              // whose version is shown. `choice` is always set in these
+              // states, so the fallback never fires.
+              service: info.choice?.service ?? service,
               kind: retranslateFailure,
               appLang: appLang,
               keepsOld: true,

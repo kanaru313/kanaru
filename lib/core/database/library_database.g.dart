@@ -5558,8 +5558,48 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _serviceMeta = const VerificationMeta(
+    'service',
+  );
   @override
-  List<GeneratedColumn> get $columns => [contentHash, targetLang, instruction];
+  late final GeneratedColumn<String> service = GeneratedColumn<String>(
+    'service',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tuneJsonMeta = const VerificationMeta(
+    'tuneJson',
+  );
+  @override
+  late final GeneratedColumn<String> tuneJson = GeneratedColumn<String>(
+    'tune_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _chosenAtMeta = const VerificationMeta(
+    'chosenAt',
+  );
+  @override
+  late final GeneratedColumn<int> chosenAt = GeneratedColumn<int>(
+    'chosen_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    contentHash,
+    targetLang,
+    instruction,
+    service,
+    tuneJson,
+    chosenAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5598,6 +5638,24 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
         ),
       );
     }
+    if (data.containsKey('service')) {
+      context.handle(
+        _serviceMeta,
+        service.isAcceptableOrUnknown(data['service']!, _serviceMeta),
+      );
+    }
+    if (data.containsKey('tune_json')) {
+      context.handle(
+        _tuneJsonMeta,
+        tuneJson.isAcceptableOrUnknown(data['tune_json']!, _tuneJsonMeta),
+      );
+    }
+    if (data.containsKey('chosen_at')) {
+      context.handle(
+        _chosenAtMeta,
+        chosenAt.isAcceptableOrUnknown(data['chosen_at']!, _chosenAtMeta),
+      );
+    }
     return context;
   }
 
@@ -5622,6 +5680,18 @@ class $LyricTranslationPrefsTable extends LyricTranslationPrefs
         DriftSqlType.string,
         data['${effectivePrefix}instruction'],
       ),
+      service: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service'],
+      ),
+      tuneJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tune_json'],
+      ),
+      chosenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chosen_at'],
+      ),
     );
   }
 
@@ -5638,10 +5708,23 @@ class LyricTranslationPrefRow extends DataClass
 
   /// Free text appended to the plugin's own instruction for this song.
   final String? instruction;
+
+  /// Install id of the translate plugin picked for this song; see
+  /// invariant 9.
+  final String? service;
+
+  /// `{"model": v, "style": v}` for [service]; null without a service.
+  final String? tuneJson;
+
+  /// Epoch ms of the service choice; null without a service.
+  final int? chosenAt;
   const LyricTranslationPrefRow({
     required this.contentHash,
     this.targetLang,
     this.instruction,
+    this.service,
+    this.tuneJson,
+    this.chosenAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5652,6 +5735,15 @@ class LyricTranslationPrefRow extends DataClass
     }
     if (!nullToAbsent || instruction != null) {
       map['instruction'] = Variable<String>(instruction);
+    }
+    if (!nullToAbsent || service != null) {
+      map['service'] = Variable<String>(service);
+    }
+    if (!nullToAbsent || tuneJson != null) {
+      map['tune_json'] = Variable<String>(tuneJson);
+    }
+    if (!nullToAbsent || chosenAt != null) {
+      map['chosen_at'] = Variable<int>(chosenAt);
     }
     return map;
   }
@@ -5665,6 +5757,15 @@ class LyricTranslationPrefRow extends DataClass
       instruction: instruction == null && nullToAbsent
           ? const Value.absent()
           : Value(instruction),
+      service: service == null && nullToAbsent
+          ? const Value.absent()
+          : Value(service),
+      tuneJson: tuneJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tuneJson),
+      chosenAt: chosenAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(chosenAt),
     );
   }
 
@@ -5677,6 +5778,9 @@ class LyricTranslationPrefRow extends DataClass
       contentHash: serializer.fromJson<String>(json['contentHash']),
       targetLang: serializer.fromJson<String?>(json['targetLang']),
       instruction: serializer.fromJson<String?>(json['instruction']),
+      service: serializer.fromJson<String?>(json['service']),
+      tuneJson: serializer.fromJson<String?>(json['tuneJson']),
+      chosenAt: serializer.fromJson<int?>(json['chosenAt']),
     );
   }
   @override
@@ -5686,6 +5790,9 @@ class LyricTranslationPrefRow extends DataClass
       'contentHash': serializer.toJson<String>(contentHash),
       'targetLang': serializer.toJson<String?>(targetLang),
       'instruction': serializer.toJson<String?>(instruction),
+      'service': serializer.toJson<String?>(service),
+      'tuneJson': serializer.toJson<String?>(tuneJson),
+      'chosenAt': serializer.toJson<int?>(chosenAt),
     };
   }
 
@@ -5693,10 +5800,16 @@ class LyricTranslationPrefRow extends DataClass
     String? contentHash,
     Value<String?> targetLang = const Value.absent(),
     Value<String?> instruction = const Value.absent(),
+    Value<String?> service = const Value.absent(),
+    Value<String?> tuneJson = const Value.absent(),
+    Value<int?> chosenAt = const Value.absent(),
   }) => LyricTranslationPrefRow(
     contentHash: contentHash ?? this.contentHash,
     targetLang: targetLang.present ? targetLang.value : this.targetLang,
     instruction: instruction.present ? instruction.value : this.instruction,
+    service: service.present ? service.value : this.service,
+    tuneJson: tuneJson.present ? tuneJson.value : this.tuneJson,
+    chosenAt: chosenAt.present ? chosenAt.value : this.chosenAt,
   );
   LyricTranslationPrefRow copyWithCompanion(
     LyricTranslationPrefsCompanion data,
@@ -5711,6 +5824,9 @@ class LyricTranslationPrefRow extends DataClass
       instruction: data.instruction.present
           ? data.instruction.value
           : this.instruction,
+      service: data.service.present ? data.service.value : this.service,
+      tuneJson: data.tuneJson.present ? data.tuneJson.value : this.tuneJson,
+      chosenAt: data.chosenAt.present ? data.chosenAt.value : this.chosenAt,
     );
   }
 
@@ -5719,20 +5835,33 @@ class LyricTranslationPrefRow extends DataClass
     return (StringBuffer('LyricTranslationPrefRow(')
           ..write('contentHash: $contentHash, ')
           ..write('targetLang: $targetLang, ')
-          ..write('instruction: $instruction')
+          ..write('instruction: $instruction, ')
+          ..write('service: $service, ')
+          ..write('tuneJson: $tuneJson, ')
+          ..write('chosenAt: $chosenAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(contentHash, targetLang, instruction);
+  int get hashCode => Object.hash(
+    contentHash,
+    targetLang,
+    instruction,
+    service,
+    tuneJson,
+    chosenAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is LyricTranslationPrefRow &&
           other.contentHash == this.contentHash &&
           other.targetLang == this.targetLang &&
-          other.instruction == this.instruction);
+          other.instruction == this.instruction &&
+          other.service == this.service &&
+          other.tuneJson == this.tuneJson &&
+          other.chosenAt == this.chosenAt);
 }
 
 class LyricTranslationPrefsCompanion
@@ -5740,29 +5869,44 @@ class LyricTranslationPrefsCompanion
   final Value<String> contentHash;
   final Value<String?> targetLang;
   final Value<String?> instruction;
+  final Value<String?> service;
+  final Value<String?> tuneJson;
+  final Value<int?> chosenAt;
   final Value<int> rowid;
   const LyricTranslationPrefsCompanion({
     this.contentHash = const Value.absent(),
     this.targetLang = const Value.absent(),
     this.instruction = const Value.absent(),
+    this.service = const Value.absent(),
+    this.tuneJson = const Value.absent(),
+    this.chosenAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LyricTranslationPrefsCompanion.insert({
     required String contentHash,
     this.targetLang = const Value.absent(),
     this.instruction = const Value.absent(),
+    this.service = const Value.absent(),
+    this.tuneJson = const Value.absent(),
+    this.chosenAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : contentHash = Value(contentHash);
   static Insertable<LyricTranslationPrefRow> custom({
     Expression<String>? contentHash,
     Expression<String>? targetLang,
     Expression<String>? instruction,
+    Expression<String>? service,
+    Expression<String>? tuneJson,
+    Expression<int>? chosenAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (contentHash != null) 'content_hash': contentHash,
       if (targetLang != null) 'target_lang': targetLang,
       if (instruction != null) 'instruction': instruction,
+      if (service != null) 'service': service,
+      if (tuneJson != null) 'tune_json': tuneJson,
+      if (chosenAt != null) 'chosen_at': chosenAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5771,12 +5915,18 @@ class LyricTranslationPrefsCompanion
     Value<String>? contentHash,
     Value<String?>? targetLang,
     Value<String?>? instruction,
+    Value<String?>? service,
+    Value<String?>? tuneJson,
+    Value<int?>? chosenAt,
     Value<int>? rowid,
   }) {
     return LyricTranslationPrefsCompanion(
       contentHash: contentHash ?? this.contentHash,
       targetLang: targetLang ?? this.targetLang,
       instruction: instruction ?? this.instruction,
+      service: service ?? this.service,
+      tuneJson: tuneJson ?? this.tuneJson,
+      chosenAt: chosenAt ?? this.chosenAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5793,6 +5943,15 @@ class LyricTranslationPrefsCompanion
     if (instruction.present) {
       map['instruction'] = Variable<String>(instruction.value);
     }
+    if (service.present) {
+      map['service'] = Variable<String>(service.value);
+    }
+    if (tuneJson.present) {
+      map['tune_json'] = Variable<String>(tuneJson.value);
+    }
+    if (chosenAt.present) {
+      map['chosen_at'] = Variable<int>(chosenAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5805,6 +5964,9 @@ class LyricTranslationPrefsCompanion
           ..write('contentHash: $contentHash, ')
           ..write('targetLang: $targetLang, ')
           ..write('instruction: $instruction, ')
+          ..write('service: $service, ')
+          ..write('tuneJson: $tuneJson, ')
+          ..write('chosenAt: $chosenAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -13126,6 +13288,9 @@ typedef $$LyricTranslationPrefsTableCreateCompanionBuilder =
       required String contentHash,
       Value<String?> targetLang,
       Value<String?> instruction,
+      Value<String?> service,
+      Value<String?> tuneJson,
+      Value<int?> chosenAt,
       Value<int> rowid,
     });
 typedef $$LyricTranslationPrefsTableUpdateCompanionBuilder =
@@ -13133,6 +13298,9 @@ typedef $$LyricTranslationPrefsTableUpdateCompanionBuilder =
       Value<String> contentHash,
       Value<String?> targetLang,
       Value<String?> instruction,
+      Value<String?> service,
+      Value<String?> tuneJson,
+      Value<int?> chosenAt,
       Value<int> rowid,
     });
 
@@ -13157,6 +13325,21 @@ class $$LyricTranslationPrefsTableFilterComposer
 
   ColumnFilters<String> get instruction => $composableBuilder(
     column: $table.instruction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get service => $composableBuilder(
+    column: $table.service,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tuneJson => $composableBuilder(
+    column: $table.tuneJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chosenAt => $composableBuilder(
+    column: $table.chosenAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13184,6 +13367,21 @@ class $$LyricTranslationPrefsTableOrderingComposer
     column: $table.instruction,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get service => $composableBuilder(
+    column: $table.service,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tuneJson => $composableBuilder(
+    column: $table.tuneJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chosenAt => $composableBuilder(
+    column: $table.chosenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LyricTranslationPrefsTableAnnotationComposer
@@ -13209,6 +13407,15 @@ class $$LyricTranslationPrefsTableAnnotationComposer
     column: $table.instruction,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get service =>
+      $composableBuilder(column: $table.service, builder: (column) => column);
+
+  GeneratedColumn<String> get tuneJson =>
+      $composableBuilder(column: $table.tuneJson, builder: (column) => column);
+
+  GeneratedColumn<int> get chosenAt =>
+      $composableBuilder(column: $table.chosenAt, builder: (column) => column);
 }
 
 class $$LyricTranslationPrefsTableTableManager
@@ -13260,11 +13467,17 @@ class $$LyricTranslationPrefsTableTableManager
                 Value<String> contentHash = const Value.absent(),
                 Value<String?> targetLang = const Value.absent(),
                 Value<String?> instruction = const Value.absent(),
+                Value<String?> service = const Value.absent(),
+                Value<String?> tuneJson = const Value.absent(),
+                Value<int?> chosenAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationPrefsCompanion(
                 contentHash: contentHash,
                 targetLang: targetLang,
                 instruction: instruction,
+                service: service,
+                tuneJson: tuneJson,
+                chosenAt: chosenAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -13272,11 +13485,17 @@ class $$LyricTranslationPrefsTableTableManager
                 required String contentHash,
                 Value<String?> targetLang = const Value.absent(),
                 Value<String?> instruction = const Value.absent(),
+                Value<String?> service = const Value.absent(),
+                Value<String?> tuneJson = const Value.absent(),
+                Value<int?> chosenAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LyricTranslationPrefsCompanion.insert(
                 contentHash: contentHash,
                 targetLang: targetLang,
                 instruction: instruction,
+                service: service,
+                tuneJson: tuneJson,
+                chosenAt: chosenAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

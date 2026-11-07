@@ -8126,6 +8126,72 @@ abstract class AppLocalizations {
   /// **'Translation service'**
   String get lyricsTranslationModalServiceTitle;
 
+  /// Segment of the translation service picker: the choice applies to the playing song only
+  ///
+  /// In en, this message translates to:
+  /// **'Only this song'**
+  String get lyricsTranslationScopeSong;
+
+  /// Segment of the translation service picker: the choice changes the default service for every song
+  ///
+  /// In en, this message translates to:
+  /// **'All songs'**
+  String get lyricsTranslationScopeAll;
+
+  /// Line under the scope segments of the translation service picker while Only this song is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Only the song now playing uses this service (AI tune included).'**
+  String get lyricsTranslationScopeSongHint;
+
+  /// Line under the scope segments of the translation service picker while All songs is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Changes the default service for every song.'**
+  String get lyricsTranslationScopeAllHint;
+
+  /// Caption of the translation service picker when All songs is selected: how many songs with their own newer service choice would follow the new default instead
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Will also replace 1 song you set individually} other{Will also replace {count} songs you set individually}}'**
+  String lyricsTranslationScopeReplaces(int count);
+
+  /// Snackbar when the service picked for one song could not be saved
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the choice for this song'**
+  String get lyricsTranslationScopeSongSaveFailed;
+
+  /// Tooltip of the disabled Only this song segment while translated lyrics are off
+  ///
+  /// In en, this message translates to:
+  /// **'Turn translation on to choose a service for this song only.'**
+  String get lyricsTranslationScopeSongLockedOff;
+
+  /// Tooltip of the disabled Only this song segment when no song with lyrics is playing
+  ///
+  /// In en, this message translates to:
+  /// **'There is no song with lyrics to choose for.'**
+  String get lyricsTranslationScopeSongLockedNoSong;
+
+  /// Subtitle of the service row when the playing song has its own service; service is the default service name
+  ///
+  /// In en, this message translates to:
+  /// **'Only this song · default: {service}'**
+  String lyricsTranslationModalScopeSongSubtitle(String service);
+
+  /// Subtitle of the service row when the playing song has its own service and there is no default service
+  ///
+  /// In en, this message translates to:
+  /// **'Only this song'**
+  String get lyricsTranslationModalScopeSongOnlySubtitle;
+
+  /// Subtitle of the service row when the song follows the default service
+  ///
+  /// In en, this message translates to:
+  /// **'Default service for every song'**
+  String get lyricsTranslationModalScopeAllSubtitle;
+
   /// Footer row in the translation service picker that opens the plugin store
   ///
   /// In en, this message translates to:

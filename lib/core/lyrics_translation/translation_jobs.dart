@@ -22,6 +22,7 @@ import 'translation_failure.dart';
 import 'translation_job_work.dart';
 import 'translation_language.dart';
 import 'plugin_translator.dart';
+import 'translation_scope_providers.dart';
 import 'translation_service.dart';
 import 'translation_service_resolution.dart';
 import 'translation_song_context.dart';
@@ -94,7 +95,14 @@ class TranslationJobs
   TranslationJobKey? _current;
 
   @override
-  Map<TranslationJobKey, TranslationJobStatus> build() => const {};
+  Map<TranslationJobKey, TranslationJobStatus> build() {
+    // Jobs read the song choices with `ref.read`, which does not keep the
+    // stream running. This listener does, but only while jobs themselves are
+    // listened to (the controller watches them); with no listener on jobs the
+    // stream pauses and `run` sees the choices as unknown.
+    ref.listen(songTranslationOverridesProvider, (_, _) {});
+    return const {};
+  }
 
   void clearFailure(TranslationJobKey key) {
     if (state[key]?.failure != null) _remove(key);
@@ -127,8 +135,9 @@ class TranslationJobs
   ///
   /// Returns null at once, sending nothing, when the job runs, when it failed
   /// and [force] is off, when translation is off, the key's service is not the
-  /// effective one or has no accepted notice, when the library database is
-  /// unavailable, or (without [force]) when a usable row is saved already.
+  /// one resolved for the song (or that is not known yet) or has no accepted
+  /// notice, when the library database is unavailable, or (without [force])
+  /// when a usable row is saved already.
   /// [force] (Retranslate) also starts over instead of resuming the chunks
   /// done before a failure. [song] is context for plugins.
   ///
@@ -151,7 +160,7 @@ class TranslationJobs
     }
     final prefs = ref.read(settingsProvider).translation;
     if (!prefs.show ||
-        ref.read(effectiveTranslationServiceProvider) != key.service ||
+        readTranslationChoiceFor(ref, key.hash)?.service != key.service ||
         needsNoticeFor(prefs, key.service)) {
       return null;
     }
@@ -304,7 +313,7 @@ class TranslationJobs
       final prefs = ref.read(settingsProvider).translation;
       return prefs.show &&
           !needsNoticeFor(prefs, service) &&
-          ref.read(effectiveTranslationServiceProvider) == service;
+          readTranslationChoiceFor(ref, key.hash)?.service == service;
     }
 
     final (:append, :settings) = await _aiSettings(key, record, info);

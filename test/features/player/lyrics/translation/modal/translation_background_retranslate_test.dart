@@ -5,6 +5,7 @@ import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 import 'package:kanaru/features/player/lyrics/lyrics_found_body.dart';
@@ -120,6 +121,40 @@ void main() {
       expect(find.text('Retranslated with Test Translate'), findsOneWidget);
     },
   );
+
+  testWidgets('the snackbar names the song\'s own service, not the default', (
+    tester,
+  ) async {
+    final h = await pumpTranslationModal(
+      tester,
+      state: TranslationReady(
+        fakeTranslationInfo(
+          choice: fakeTranslationChoice(
+            _otherPlugin,
+            scope: TranslationScope.song,
+            defaultService: testTranslatePlugin,
+          ),
+        ),
+        _otherPlugin,
+        'ja',
+        const ['The last kiss', 'Tasted like cigarettes'],
+        false,
+      ),
+      settings: onPrefs,
+      pluginOverrides: translatePluginOverrides(records: twoPlugins),
+    );
+    final completer = Completer<TranslationJobStatus?>();
+    h.fake.retranslateCompleter = completer;
+
+    await tester.tap(find.byTooltip('Retranslate'));
+    await settleModal(tester);
+    completer.complete(const TranslationJobStatus.saved(1));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Retranslated with Other'), findsOneWidget);
+    expect(find.text('Retranslated with Test Translate'), findsNothing);
+  });
 
   testWidgets('failed background retranslate shows no snackbar', (
     tester,

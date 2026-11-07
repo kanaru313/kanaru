@@ -17,6 +17,7 @@ import 'translation_jobs.dart';
 import 'translation_language.dart';
 import 'translation_lines.dart';
 import 'translation_providers.dart';
+import 'translation_scope_providers.dart';
 import 'translation_service.dart';
 import 'translation_service_resolution.dart';
 import 'translation_song_context.dart';
@@ -64,7 +65,9 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
     final lyrics = playing.lyrics;
     final hash = _hashOf(lyrics);
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
-    final chosen = ref.watch(effectiveTranslationServiceProvider);
+    // The same gathering the jobs use, so the screen and the requests apply
+    // one rule; only this song's row of the song choices is watched.
+    final choice = translationChoiceFor(ref.watch, hash);
     final defaultTarget =
         translationLanguageFor(prefs.targetLanguage ?? appLang) ??
         translationLanguageFor('en')!;
@@ -79,18 +82,22 @@ class LyricsTranslationController extends Notifier<LyricsTranslationState> {
       effective: targetKnown ? effective : defaultTarget,
       songOverride: override,
       defaultTarget: defaultTarget,
+      choice: choice,
     );
     _info = info;
 
     final stored = prefs.service;
     if (!prefs.show || stored == null) return TranslationOff(info);
-    if (chosen == null) {
-      final records = ref.watch(translatePluginRecordsProvider);
-      if (records.hasError) return const TranslationUnavailable();
-      if (!records.hasValue) return TranslationLoading(info, stored);
-      return TranslationOff(info);
+    if (choice == null) {
+      // Unknown, not "off": the plugin records or the song choices are still
+      // loading. A records read that failed cannot be waited out.
+      if (ref.watch(translatePluginRecordsProvider).hasError) {
+        return const TranslationUnavailable();
+      }
+      return TranslationLoading(info, stored);
     }
-    final service = chosen;
+    final service = choice.service;
+    if (service == null) return TranslationOff(info);
     if (needsNoticeFor(prefs, service)) {
       return TranslationNeedsNotice(info, service);
     }

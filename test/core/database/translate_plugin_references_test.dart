@@ -78,6 +78,18 @@ void main() {
     expect(await recordExists(), isFalse);
   });
 
+  test(
+    'clear translations keeps a record a song picked as its service',
+    () async {
+      await db.setSongTranslationService('h', _id, chosenAt: 1);
+      await db.clearLyricTranslations();
+      expect(await recordExists(), isTrue);
+      await db.setSongTranslationService('h', null, chosenAt: 2);
+      await db.deleteUnreferencedRemovedPlugins();
+      expect(await recordExists(), isFalse);
+    },
+  );
+
   test('a translate id is refused a source preference', () async {
     await db.customStatement(
       'UPDATE lyrics_plugins SET removed_at = NULL WHERE install_id = ?',

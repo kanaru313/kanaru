@@ -5624,6 +5624,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Translation service';
 
   @override
+  String get lyricsTranslationScopeSong => 'Only this song';
+
+  @override
+  String get lyricsTranslationScopeAll => 'All songs';
+
+  @override
+  String get lyricsTranslationScopeSongHint =>
+      'Only the song now playing uses this service (AI tune included).';
+
+  @override
+  String get lyricsTranslationScopeAllHint =>
+      'Changes the default service for every song.';
+
+  @override
+  String lyricsTranslationScopeReplaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Will also replace $count songs you set individually',
+      one: 'Will also replace 1 song you set individually',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsTranslationScopeSongSaveFailed =>
+      'Couldn\'t save the choice for this song';
+
+  @override
+  String get lyricsTranslationScopeSongLockedOff =>
+      'Turn translation on to choose a service for this song only.';
+
+  @override
+  String get lyricsTranslationScopeSongLockedNoSong =>
+      'There is no song with lyrics to choose for.';
+
+  @override
+  String lyricsTranslationModalScopeSongSubtitle(String service) {
+    return 'Only this song · default: $service';
+  }
+
+  @override
+  String get lyricsTranslationModalScopeSongOnlySubtitle => 'Only this song';
+
+  @override
+  String get lyricsTranslationModalScopeAllSubtitle =>
+      'Default service for every song';
+
+  @override
   String get lyricsTranslationModalGetPlugins => 'Get more translation plugins';
 
   @override

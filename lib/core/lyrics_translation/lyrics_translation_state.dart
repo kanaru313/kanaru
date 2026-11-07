@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'translation_failure.dart';
 import 'translation_language.dart';
+import 'translation_scope.dart';
 import 'translation_service.dart';
 
 /// Which lyrics text and target language the Now Playing menu is about.
@@ -12,6 +13,7 @@ class TranslationTargetInfo {
     required this.effective,
     required this.songOverride,
     required this.defaultTarget,
+    this.choice,
   });
 
   /// `lyricsContentHash` of the playing lyrics.
@@ -26,17 +28,27 @@ class TranslationTargetInfo {
   /// The language used when the song has no override.
   final TranslationLanguage defaultTarget;
 
+  /// The service choice for this song (which tier decided, and the default),
+  /// or `null` when it is not known yet or the state has no use for it.
+  final TranslationChoice? choice;
+
   @override
   bool operator ==(Object other) =>
       other is TranslationTargetInfo &&
       other.hash == hash &&
       other.effective.code == effective.code &&
       other.songOverride == songOverride &&
-      other.defaultTarget.code == defaultTarget.code;
+      other.defaultTarget.code == defaultTarget.code &&
+      other.choice == choice;
 
   @override
-  int get hashCode =>
-      Object.hash(hash, effective.code, songOverride, defaultTarget.code);
+  int get hashCode => Object.hash(
+    hash,
+    effective.code,
+    songOverride,
+    defaultTarget.code,
+    choice,
+  );
 }
 
 /// What Now Playing shows for the translation of the playing lyrics.

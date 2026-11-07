@@ -41,7 +41,7 @@ class TranslationPreviewCard extends ConsumerWidget {
     final colors = theme.colorScheme;
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
     final settings = ref.read(settingsProvider.notifier);
-    final effective = ref.watch(effectiveTranslationServiceProvider);
+    final effective = translationInfoOf(state)?.choice?.service;
     final choices = ref.watch(translationServiceChoicesProvider);
     final noPlugins =
         choices.ready && choices.services.isEmpty && choices.selected == null;

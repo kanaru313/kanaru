@@ -2,6 +2,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/lyrics_translation/lyrics_translation_controller.dart';
+import '../../../core/lyrics_translation/translation_service.dart';
+import '../lyrics/translation/lyrics_translation_labels.dart';
 import '../player_shortcuts.dart' show isTextInputFocused;
 import '../queue/queue_panel.dart';
 import '../queue/queue_sheet_host.dart';
@@ -132,8 +135,20 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       ref,
       hasLyrics: widget._hasLyrics,
       openModal: () => _translationModalOpener.value?.call(),
+      songService: _songService(),
     );
     return KeyEventResult.handled;
+  }
+
+  /// The service the playing song resolves to, read from the translation
+  /// state only while that is alive (the translation button watches it);
+  /// reading it otherwise would start a controller just for this.
+  TranslationServiceId? _songService() {
+    final provider = lyricsTranslationProvider(
+      Localizations.localeOf(context).languageCode,
+    );
+    if (!ref.exists(provider)) return null;
+    return translationInfoOf(ref.read(provider))?.choice?.service;
   }
 
   void _close() => ref.read(nowPlayingOpenProvider.notifier).close();

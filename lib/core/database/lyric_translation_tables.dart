@@ -25,12 +25,20 @@ import 'package:drift/drift.dart';
 //    included.
 // 6. `lyric_translation_prefs` is a user choice: clearing translations does
 //    not touch it. It holds a target language, a per-song instruction for AI
-//    plugins, or both; a row with both null is deleted.
+//    plugins, a per-song translation service (`service`, a plugin install
+//    id), or any mix; a row with target, instruction and service all null is
+//    deleted.
 // 7. Unbounded by design (a few KB per song); settings shows count and size.
 // 8. `settings_json` is the snapshot of the AI settings a row was made with
 //    (`{"model", "style", "instructionHash"}`); null for plugins without AI
 //    settings and for rows made before the column existed. A save always
 //    writes it, null included, so a retranslate never keeps an older snapshot.
+// 9. `tune_json` and `chosen_at` only mean something while `service` is set
+//    (service null means both null). `tune_json` keeps both `model` and
+//    `style` as option values (`{"model": v, "style": v}`). Changing
+//    `service` clears `tune_json`. Every service or tune write sets
+//    `chosen_at` (epoch ms) to the value the caller passes; a choice older
+//    than the global `allChosenAt` loses to it but its row is not deleted.
 
 /// One translation of one lyrics text by one service into one language.
 @DataClassName('LyricTranslationRow')
@@ -69,6 +77,16 @@ class LyricTranslationPrefs extends Table {
 
   /// Free text appended to the plugin's own instruction for this song.
   TextColumn get instruction => text().nullable()();
+
+  /// Install id of the translate plugin picked for this song; see
+  /// invariant 9.
+  TextColumn get service => text().nullable()();
+
+  /// `{"model": v, "style": v}` for [service]; null without a service.
+  TextColumn get tuneJson => text().nullable()();
+
+  /// Epoch ms of the service choice; null without a service.
+  IntColumn get chosenAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {contentHash};

@@ -8,12 +8,14 @@ const _serviceKey = 'service';
 const _targetLanguageKey = 'targetLanguage';
 const _displayKey = 'display';
 const _noticeAcknowledgedKey = 'noticeAcknowledged';
+const _allChosenAtKey = 'allChosenAt';
 const _knownKeys = {
   _showKey,
   _serviceKey,
   _targetLanguageKey,
   _displayKey,
   _noticeAcknowledgedKey,
+  _allChosenAtKey,
 };
 
 /// Reads the `lyricsTranslation` object; each key falls back on its own. The
@@ -47,6 +49,9 @@ const _knownKeys = {
         d.display,
       ),
       noticeAcknowledged: acknowledged,
+      allChosenAt: map[_allChosenAtKey] is int
+          ? map[_allChosenAtKey] as int
+          : null,
     ),
     {
       ...unknownEntries(map, _knownKeys),
@@ -91,6 +96,7 @@ Map<String, Object?> encodeTranslationPrefs(
     _serviceKey: prefs.service?.value,
     _targetLanguageKey: prefs.targetLanguage,
     _displayKey: prefs.display.name,
+    _allChosenAtKey: prefs.allChosenAt,
     _noticeAcknowledgedKey: [
       for (final service in prefs.noticeAcknowledged) service.value,
       if (unknownNames is List) ...unknownNames,

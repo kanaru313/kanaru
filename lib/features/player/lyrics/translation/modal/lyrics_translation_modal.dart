@@ -117,9 +117,11 @@ class _LyricsTranslationModalState
       _ => null,
     };
     if (service == null) return _buildChangedBar(context, state);
-    final selected = ref.watch(
-      translationServiceChoicesProvider.select((c) => c.selected),
-    );
+    // The song's resolved service. `choice` is always set in these states,
+    // so the fallback never fires.
+    final selected =
+        translationInfoOf(state)?.choice?.service ??
+        ref.watch(translationServiceChoicesProvider.select((c) => c.selected));
     if (selected == null) return null;
     final l10n = context.l10n;
     final plugins = ref.watch(translationPluginInfosProvider);

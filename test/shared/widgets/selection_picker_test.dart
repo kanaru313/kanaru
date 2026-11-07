@@ -41,6 +41,7 @@ Future<void> _pumpPickerHost<T>(
   T? selected,
   String title = 'Pick item',
   Widget? footer,
+  Widget? header,
   String? hint,
   Locale? locale,
 }) async {
@@ -67,6 +68,7 @@ Future<void> _pumpPickerHost<T>(
                 items: items,
                 selected: selected,
                 footer: footer,
+                header: header,
                 hint: hint,
               );
               onResult(result);
@@ -89,6 +91,36 @@ bool _searchHasFocus(WidgetTester tester) =>
     tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus;
 
 void main() {
+  testWidgets('header sits between the title bar and the search box', (
+    tester,
+  ) async {
+    await _pumpPickerHost<String>(
+      tester,
+      items: _languageItems,
+      header: const Text('scope header'),
+      onResult: (_) {},
+    );
+
+    final title = tester.getTopLeft(find.text('Pick item')).dy;
+    final header = tester.getTopLeft(find.text('scope header')).dy;
+    final search = tester.getTopLeft(find.byType(TextField)).dy;
+    expect(title, lessThan(header));
+    expect(header, lessThan(search));
+  });
+
+  testWidgets('without a header only the rows and title are shown', (
+    tester,
+  ) async {
+    await _pumpPickerHost<String>(
+      tester,
+      items: _makeItems(3),
+      onResult: (_) {},
+    );
+
+    expect(find.text('scope header'), findsNothing);
+    expect(find.byType(SelectionRow), findsNWidgets(3));
+  });
+
   testWidgets('8 items show no search box', (tester) async {
     String? picked = 'initial';
     await _pumpPickerHost<String>(

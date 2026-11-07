@@ -69,6 +69,7 @@ void main() {
     );
     addTearDown(container.dispose);
     container.listen(translationJobsProvider, (_, _) {});
+    await songChoicesLoaded(container);
     final jobs = container.read(translationJobsProvider.notifier)
       ..setCurrent(key);
 

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kanaru/core/lyrics/online/playing_lyrics_status.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -143,7 +144,14 @@ void main() {
         'selected service', (tester) async {
       final fake = FakeTranslationController(
         TranslationReady(
-          fakeTranslationInfo(),
+          // The song has its own service, which is not the default.
+          fakeTranslationInfo(
+            choice: fakeTranslationChoice(
+              TranslationServiceId.tryParse('plugin-111111111111')!,
+              scope: TranslationScope.song,
+              defaultService: testTranslatePlugin,
+            ),
+          ),
           TranslationServiceId.tryParse('plugin-fedcba654321')!,
           'ja',
           const [],
@@ -162,7 +170,7 @@ void main() {
       await tester.tap(find.text('Open settings'));
       await tester.pumpAndSettle();
 
-      expect(location(), translationPluginRoute(testTranslatePlugin.value));
+      expect(location(), translationPluginRoute('plugin-111111111111'));
     });
 
     testWidgets('other failures have no such button', (tester) async {

@@ -18,6 +18,7 @@ class TranslationPrefs {
     this.targetLanguage,
     this.display = LyricsTranslationDisplay.underLine,
     this.noticeAcknowledged = const {},
+    this.allChosenAt,
   });
 
   /// Translated lines are shown (and fetched) for the playing song.
@@ -35,6 +36,12 @@ class TranslationPrefs {
   /// `<service>`" for. Switching to another service asks once more.
   final Set<TranslationServiceId> noticeAcknowledged;
 
+  /// When (epoch ms) the user last picked the default service for all songs
+  /// in the Now Playing menu; `null` if never. A song's own choice made later
+  /// beats the default; Settings never sets it, so a default changed there
+  /// never beats a song's choice.
+  final int? allChosenAt;
+
   /// The stored [service] has not been accepted yet. Callers that decide
   /// about a request ask `needsNoticeFor` with the effective service.
   bool get needsNotice =>
@@ -45,12 +52,14 @@ class TranslationPrefs {
     TranslationServiceId? service,
     LyricsTranslationDisplay? display,
     Set<TranslationServiceId>? noticeAcknowledged,
+    int? allChosenAt,
   }) => TranslationPrefs(
     show: show ?? this.show,
     service: service ?? this.service,
     targetLanguage: targetLanguage,
     display: display ?? this.display,
     noticeAcknowledged: noticeAcknowledged ?? this.noticeAcknowledged,
+    allChosenAt: allChosenAt ?? this.allChosenAt,
   );
 
   /// Returns a copy with [service] set to `null` and [show] set to `false`.
@@ -62,6 +71,7 @@ class TranslationPrefs {
     targetLanguage: targetLanguage,
     display: display,
     noticeAcknowledged: noticeAcknowledged,
+    allChosenAt: allChosenAt,
   );
 
   /// Separate from [copyWith] because `null` is a valid target here.
@@ -72,6 +82,7 @@ class TranslationPrefs {
         targetLanguage: targetLanguage,
         display: display,
         noticeAcknowledged: noticeAcknowledged,
+        allChosenAt: allChosenAt,
       );
 
   @override
@@ -81,6 +92,7 @@ class TranslationPrefs {
       other.service == service &&
       other.targetLanguage == targetLanguage &&
       other.display == display &&
+      other.allChosenAt == allChosenAt &&
       other.noticeAcknowledged.length == noticeAcknowledged.length &&
       other.noticeAcknowledged.containsAll(noticeAcknowledged);
 
@@ -90,6 +102,7 @@ class TranslationPrefs {
     service,
     targetLanguage,
     display,
+    allChosenAt,
     Object.hashAllUnordered(noticeAcknowledged),
   );
 
@@ -97,5 +110,6 @@ class TranslationPrefs {
   String toString() =>
       'TranslationPrefs(show: $show, service: ${service?.value}, '
       'targetLanguage: $targetLanguage, display: ${display.name}, '
-      'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()})';
+      'noticeAcknowledged: ${noticeAcknowledged.map((s) => s.value).toList()}, '
+      'allChosenAt: $allChosenAt)';
 }

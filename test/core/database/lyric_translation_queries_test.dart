@@ -170,4 +170,106 @@ void main() {
     expect(await db.select(db.tracks).get(), isEmpty);
     expect(await db.watchLyricTranslations('h1', 'vi').first, hasLength(1));
   });
+
+  group('song service override', () {
+    Future<LyricTranslationPrefRow?> pref(String h) => (db.select(
+      db.lyricTranslationPrefs,
+    )..where((t) => t.contentHash.equals(h))).getSingleOrNull();
+
+    test('setting a service creates a row with chosen_at', () async {
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      final row = await pref('h');
+      expect(row?.service, 'plugin-a');
+      expect(row?.chosenAt, 10);
+      expect(row?.tuneJson, isNull);
+    });
+
+    test('null service deletes a row that holds only the service', () async {
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.setSongTranslationService('h', null, chosenAt: 11);
+      expect(await pref('h'), isNull);
+    });
+
+    test('null service keeps target and clears tune and time', () async {
+      await db.setSongTranslationTarget('h', 'vi');
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.setSongTranslationService('h', null, chosenAt: 11);
+      final row = await pref('h');
+      expect(row?.targetLang, 'vi');
+      expect(row?.service, isNull);
+      expect(row?.tuneJson, isNull);
+      expect(row?.chosenAt, isNull);
+    });
+
+    test('target null keeps a row that has a service', () async {
+      await db.setSongTranslationTarget('h', 'vi');
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.setSongTranslationTarget('h', null);
+      final row = await pref('h');
+      expect(row?.service, 'plugin-a');
+      expect(row?.chosenAt, 10);
+    });
+
+    test('target and instruction setters keep service tune and time', () async {
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.customStatement(
+        "UPDATE lyric_translation_prefs SET tune_json = '{}' "
+        "WHERE content_hash = 'h'",
+      );
+      await db.setSongTranslationTarget('h', 'vi');
+      await db.setSongTranslationInstruction('h', 'be brief');
+      final row = await pref('h');
+      expect(row?.service, 'plugin-a');
+      expect(row?.tuneJson, '{}');
+      expect(row?.chosenAt, 10);
+      expect(row?.targetLang, 'vi');
+      expect(row?.instruction, 'be brief');
+    });
+
+    test('a different service clears the tune, the same keeps it', () async {
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.customStatement(
+        "UPDATE lyric_translation_prefs SET tune_json = '{}' "
+        "WHERE content_hash = 'h'",
+      );
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 20);
+      var row = await pref('h');
+      expect(row?.tuneJson, '{}');
+      expect(row?.chosenAt, 20);
+      await db.setSongTranslationService('h', 'plugin-b', chosenAt: 30);
+      row = await pref('h');
+      expect(row?.tuneJson, isNull);
+      expect(row?.chosenAt, 30);
+    });
+
+    test('watch lists only rows with a service, distinct by content', () async {
+      await db.setSongTranslationTarget('t', 'vi');
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      final seen = <List<SongTranslationOverride>>[];
+      final sub = db.watchSongTranslationOverrides().listen(seen.add);
+      addTearDown(sub.cancel);
+      await pumpEventQueue();
+      expect(seen.single, [
+        const SongTranslationOverride(
+          hash: 'h',
+          service: 'plugin-a',
+          tuneJson: null,
+          chosenAt: 10,
+        ),
+      ]);
+      await db.setSongTranslationTarget('t', 'ja');
+      await pumpEventQueue();
+      expect(seen, hasLength(1));
+      await db.setSongTranslationService('h', 'plugin-b', chosenAt: 11);
+      await pumpEventQueue();
+      expect(seen, hasLength(2));
+      expect(seen.last.single.service, 'plugin-b');
+    });
+
+    test('clearing translations leaves the prefs', () async {
+      await db.setSongTranslationService('h', 'plugin-a', chosenAt: 10);
+      await db.clearLyricTranslations();
+      expect((await pref('h'))?.service, 'plugin-a');
+    });
+  });
 }

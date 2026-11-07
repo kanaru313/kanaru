@@ -10,6 +10,7 @@ import 'package:kanaru/core/lyrics/embedded_lyrics_reader.dart';
 import 'package:kanaru/core/lyrics/lrc_sidecar_reader.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
 import 'package:kanaru/core/secrets/secret_store_provider.dart';
@@ -74,8 +75,17 @@ ProviderContainer translationContainer({
     ],
   );
   container.listen(playerServiceProvider, (_, _) {});
+  // Keeps the song choices running for tests that call jobs directly; the
+  // jobs' own listener does so only while jobs are listened to.
+  container.listen(songTranslationOverridesProvider, (_, _) {});
   return container;
 }
+
+/// Waits until the song choices are loaded. Jobs read them at once and
+/// refuse to run while they are unknown, so a test that calls `run` straight
+/// after building the container waits for this first.
+Future<void> songChoicesLoaded(ProviderContainer container) =>
+    container.read(songTranslationOverridesProvider.future);
 
 /// A secret store that counts reads, can fail and can be held open.
 class FakeSecretStore implements SecretStore {

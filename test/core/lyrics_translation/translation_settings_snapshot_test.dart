@@ -90,7 +90,7 @@ void main() {
 
   TranslationJobKey key(String hash) => TranslationJobKey(hash, 'en', plugin);
 
-  void build({PluginKind kind = PluginKind.aiTranslate}) {
+  Future<void> build({PluginKind kind = PluginKind.aiTranslate}) async {
     final record = translateRecord(plugin.value, kind: kind);
     container = translationContainer(
       db: db,
@@ -104,6 +104,7 @@ void main() {
       ],
     );
     container.listen(translationJobsProvider, (_, _) {});
+    await songChoicesLoaded(container);
   }
 
   TranslationJobs jobs() => container.read(translationJobsProvider.notifier);
@@ -135,7 +136,7 @@ void main() {
   test('saves the settings the job starts with and sends the note', () async {
     controller.stored = {'model': 'pro', 'customInstruction': 'A'};
     await db.setSongTranslationInstruction('h1', 'B');
-    build();
+    await build();
     await run('h1');
 
     expect(decodeAiSnapshot(await settingsOf('h1')), {
@@ -151,7 +152,7 @@ void main() {
   test('a song without a note sends nothing extra', () async {
     controller.stored = {'model': 'pro', 'customInstruction': 'A'};
     await db.setSongTranslationInstruction('h1', 'B');
-    build();
+    await build();
     await run('h1');
     runner.appends.clear();
     await run('h2');
@@ -167,7 +168,7 @@ void main() {
   test("editing one song's note changes only that song's snapshot", () async {
     controller.stored = {'customInstruction': 'A'};
     await db.setSongTranslationInstruction('h1', 'B');
-    build();
+    await build();
     await run('h1');
     await run('h2');
     final before2 = await settingsOf('h2');
@@ -193,7 +194,7 @@ void main() {
   test('a translate plugin saves no snapshot and sends no note', () async {
     controller.stored = {'model': 'pro'};
     await db.setSongTranslationInstruction('h1', 'B');
-    build(kind: PluginKind.translate);
+    await build(kind: PluginKind.translate);
     await run('h1');
 
     expect(await settingsOf('h1'), isNull);
@@ -202,7 +203,7 @@ void main() {
 
   test('a retranslation replaces the snapshot, also with null', () async {
     controller.stored = {'model': 'pro'};
-    build();
+    await build();
     await run('h1');
     expect(decodeAiSnapshot(await settingsOf('h1'))!['model'], 'pro');
 
@@ -220,7 +221,7 @@ void main() {
     () async {
       controller.error = StateError('boom');
       await db.setSongTranslationInstruction('h1', 'B');
-      build();
+      await build();
       final status = await run('h1');
 
       expect(status!.saved, isNotNull);
@@ -235,7 +236,7 @@ void main() {
     controller.stored = {'customInstruction': 'A'};
     await db.setSongTranslationInstruction('h1', 'B');
     runner.errors[1] = failure(TranslationFailureKind.server);
-    build();
+    await build();
     final many = [for (var i = 0; i < 25; i++) 'line $i'];
     jobs().setCurrent(key('h1'));
     final failed = await jobs().run(key('h1'), many, en);
@@ -262,7 +263,7 @@ void main() {
   test('a retry under the same settings keeps the finished chunks', () async {
     controller.stored = {'customInstruction': 'A'};
     runner.errors[1] = failure(TranslationFailureKind.server);
-    build();
+    await build();
     final many = [for (var i = 0; i < 25; i++) 'line $i'];
     jobs().setCurrent(key('h1'));
     await jobs().run(key('h1'), many, en);
@@ -279,7 +280,7 @@ void main() {
     runner.onSend = (index) {
       if (index == 0) controller.stored = {'model': 'flash'};
     };
-    build();
+    await build();
     final many = [for (var i = 0; i < 25; i++) 'line $i'];
     jobs().setCurrent(key('h1'));
     await jobs().run(key('h1'), many, en);
@@ -291,7 +292,7 @@ void main() {
   test('the snapshot holds no free text', () async {
     controller.stored = {'customInstruction': 'secret words'};
     await db.setSongTranslationInstruction('h1', 'private note');
-    build();
+    await build();
     await run('h1');
 
     final json = (await settingsOf('h1'))!;
@@ -302,7 +303,7 @@ void main() {
 
   test('the saved status differs when only the settings differ', () async {
     controller.stored = {'model': 'pro'};
-    build();
+    await build();
     final first = await run('h1');
     controller.stored = {'model': 'flash'};
     final second = await run('h1', force: true);
