@@ -5,25 +5,16 @@ import 'package:logging/logging.dart';
 import '../database/library_database.dart';
 import '../database/library_startup.dart';
 import '../database/lyric_translation_queries.dart';
-import '../lyrics/plugins/lyrics_plugins_provider.dart';
-import '../lyrics/plugins/lyrics_sources_provider.dart';
 import '../lyrics/plugins/translate/plugin_translate_gate.dart'
     show TranslationSuperseded;
-import '../lyrics/plugins/translate/plugin_translate_runner.dart'
-    show PluginTranslateInfo;
-import '../lyrics/plugins/translate/plugin_translate_runner_provider.dart';
-import '../lyrics/plugins/store/plugin_config_values.dart'
-    show pluginEffectiveField, pluginValueFits;
 import '../secrets/secret_store.dart';
 import '../settings/settings_provider.dart';
 import 'lyrics_translation_derive.dart';
-import 'lyrics_translator.dart';
-import 'translation_ai_tune.dart';
 import 'translation_cache.dart';
 import 'translation_failure.dart';
 import 'translation_job_work.dart';
 import 'translation_language.dart';
-import 'plugin_translator.dart';
+import 'translation_job_translator.dart';
 import 'translation_scope_providers.dart';
 import 'translation_service.dart';
 import 'translation_service_resolution.dart';
@@ -50,6 +41,29 @@ class TranslationJobKey {
   @override
   int get hashCode => Object.hash(hash, targetCode, service);
 }
+
+/// How a background run (queue prefetch) ended.
+enum BackgroundRunResult { saved, skipped, superseded, failed }
+
+/// Failures of a whole service rather than of one song: the background stops
+/// asking that service after one of them.
+const _serviceLevelFailures = {
+  TranslationFailureKind.noKey,
+  TranslationFailureKind.badKey,
+  TranslationFailureKind.quotaExceeded,
+  TranslationFailureKind.rateLimited,
+  TranslationFailureKind.needsConfig,
+  TranslationFailureKind.keyStoreLocked,
+  TranslationFailureKind.keyStoreUnavailable,
+};
+
+enum _Stop { skipped, superseded }
+
+/// How a run ended: the status it left, or why it left none.
+typedef _RunEnd = ({TranslationJobStatus? status, _Stop? stop});
+
+const _RunEnd _skipped = (status: null, stop: _Stop.skipped);
+const _RunEnd _superseded = (status: null, stop: _Stop.superseded);
 
 /// A job that is running, or that failed and waits for Retry.
 @immutable
@@ -95,6 +109,21 @@ class TranslationJobs
   /// cannot touch what a newer run, or the cancel itself, left.
   final _forced = <TranslationJobKey, Object>{};
   TranslationJobKey? _current;
+  var _prefetch = <TranslationJobKey>{};
+
+  /// Background failures remembered for the whole session, by job and the AI
+  /// settings snapshot it ran with: the same job is not tried again in the
+  /// background unless its settings change.
+  final _backgroundTried = <(TranslationJobKey, String?)>{};
+
+  /// Services whose background jobs stopped after a failure of the whole
+  /// service (key, quota, rate limit, configuration).
+  final _brokenServices = <TranslationServiceId>{};
+
+  /// Bumped by [clearFailures] for a service. A background job that started
+  /// before the bump does not record its failure: it ran with the old key or
+  /// configuration, so it must not break the service again.
+  final _serviceEpoch = <TranslationServiceId, int>{};
 
   @override
   Map<TranslationJobKey, TranslationJobStatus> build() {
@@ -121,12 +150,30 @@ class TranslationJobs
   /// is dropped, unsent, when its job is neither this one nor forced.
   void setCurrent(TranslationJobKey? key) => _current = key;
 
+  /// The job the screen wants now, or null.
+  TranslationJobKey? get currentKey => _current;
+
+  /// Whether the job of [currentKey] runs now.
+  bool get currentRunning {
+    final current = _current;
+    return current != null && state[current]?.isRunning == true;
+  }
+
+  /// Replaces the set of jobs the queue prefetch wants. A background chunk
+  /// still waiting for its turn is dropped, unsent, when its key left the
+  /// set; a chunk already in flight finishes and its lines are kept for the
+  /// next run, so they are not sent again.
+  void setPrefetch(Set<TranslationJobKey> keys) => _prefetch = {...keys};
+
   /// Forgets every remembered failure of [service] and the chunks it had
   /// translated (its key or configuration changed, so old chunks, possibly
   /// empty ones, must not end up in a saved row).
   void clearFailures(TranslationServiceId service) {
     if (!ref.mounted) return;
     _partial.removeWhere((key, _) => key.service == service);
+    _backgroundTried.removeWhere((e) => e.$1.service == service);
+    _brokenServices.remove(service);
+    _serviceEpoch.update(service, (e) => e + 1, ifAbsent: () => 1);
     state = {
       for (final e in state.entries)
         if (e.value.failure == null || e.key.service != service) e.key: e.value,
@@ -160,22 +207,140 @@ class TranslationJobs
         (status.isRunning || (status.failure != null && !force))) {
       return null;
     }
+    final db = _startDb(key);
+    if (db == null) return null;
+    final end = await _execute(
+      db,
+      key,
+      uniqueLines,
+      target,
+      force: force,
+      song: song,
+    );
+    return end.status;
+  }
+
+  /// Translates [uniqueLines] for a song that is not on screen (the queue
+  /// prefetch), never forced and never showing a failure.
+  ///
+  /// While it runs the key's status is `running`, so a normal [run] of the
+  /// same key returns null and the screen shows "translating". The result:
+  /// - [BackgroundRunResult.skipped]: nothing was sent. The key has a
+  ///   status (running, failed or just saved), a usable row is saved,
+  ///   translation is off, the key's service is not the one resolved for
+  ///   the song (or the choices are not known),
+  ///   its notice is not accepted, the database is unavailable, this key
+  ///   already failed in the background with the same settings, or the
+  ///   service broke earlier in the session.
+  /// - [BackgroundRunResult.saved]: the row is saved, as a normal run does.
+  /// - [BackgroundRunResult.superseded]: a chunk was dropped unsent because
+  ///   the job is no longer wanted (see [setPrefetch]). Chunks done stay and
+  ///   the job is not counted as tried.
+  /// - [BackgroundRunResult.failed]: nothing is shown. The key and its
+  ///   settings are remembered so the background does not retry them, and a
+  ///   failure of the whole service (key, quota, rate limit, configuration)
+  ///   stops background jobs of that service until [clearFailures]. Chunks
+  ///   done stay, and a normal run of the song later tries once more.
+  ///
+  /// The job is wanted while it is the current one, or while it is in the
+  /// prefetch set and the current job is not running; a song that becomes
+  /// current meanwhile keeps its job and does not resend the chunks done.
+  Future<BackgroundRunResult> runBackground(
+    TranslationJobKey key,
+    List<String> uniqueLines,
+    TranslationLanguage target, {
+    TranslationSongContext? song,
+  }) async {
+    if (state.containsKey(key) || _brokenServices.contains(key.service)) {
+      return BackgroundRunResult.skipped;
+    }
+    final db = _startDb(key);
+    if (db == null) return BackgroundRunResult.skipped;
+    final end = await _execute(
+      db,
+      key,
+      uniqueLines,
+      target,
+      song: song,
+      background: true,
+    );
+    final status = end.status;
+    if (status == null) {
+      return end.stop == _Stop.superseded
+          ? BackgroundRunResult.superseded
+          : BackgroundRunResult.skipped;
+    }
+    return status.failure != null
+        ? BackgroundRunResult.failed
+        : BackgroundRunResult.saved;
+  }
+
+  /// The library database when a job of [key] may start: translation is on,
+  /// the key's service is the one resolved for the song and has its notice
+  /// accepted. Null otherwise.
+  LibraryDatabase? _startDb(TranslationJobKey key) {
     final prefs = ref.read(settingsProvider).translation;
     if (!prefs.show ||
         readTranslationChoiceFor(ref, key.hash)?.service != key.service ||
         needsNoticeFor(prefs, key.service)) {
       return null;
     }
-    final db = ref.read(libraryDatabaseProvider);
-    if (db == null) return null;
+    return ref.read(libraryDatabaseProvider);
+  }
+
+  /// Whether a chunk of the job of [key] is still worth sending now.
+  bool _backgroundWanted(TranslationJobKey key) =>
+      _current == key || (_prefetch.contains(key) && !_currentRunning(key));
+
+  /// Whether the job of the current key runs and is not [key] itself: the
+  /// song on screen comes first, so a background chunk waits no longer.
+  bool _currentRunning(TranslationJobKey key) {
+    final current = _current;
+    return current != null &&
+        current != key &&
+        state[current]?.isRunning == true;
+  }
+
+  /// A background job of [key] failed: remember it, and for a failure of the
+  /// whole service stop every background job of that service.
+  void _backgroundFailed(
+    TranslationJobKey key,
+    String? settings,
+    TranslationFailureKind kind,
+  ) {
+    _backgroundTried.add((key, settings));
+    if (_serviceLevelFailures.contains(kind)) _brokenServices.add(key.service);
+  }
+
+  /// The run shared by [run] and [runBackground]. A [background] run is never
+  /// forced, owns its status as a normal run does, and ends a failure by
+  /// removing the status instead of keeping it.
+  Future<_RunEnd> _execute(
+    LibraryDatabase db,
+    TranslationJobKey key,
+    List<String> uniqueLines,
+    TranslationLanguage target, {
+    bool force = false,
+    bool background = false,
+    TranslationSongContext? song,
+  }) async {
     final token = force ? Object() : null;
     if (token != null) _forced[key] = token;
     // A run that is not forced always owns its status.
     bool owns() => token == null || identical(_forced[key], token);
-    TranslationJobStatus? end(TranslationJobStatus result) {
-      if (!owns()) return null;
-      _set(key, result);
-      return result;
+    String? settings;
+    final epoch = _serviceEpoch[key.service];
+    _RunEnd end(TranslationJobStatus result) {
+      if (!owns()) return _skipped;
+      if (background && result.failure != null) {
+        if (_serviceEpoch[key.service] == epoch) {
+          _backgroundFailed(key, settings, result.failure!);
+        }
+        _remove(key);
+      } else {
+        _set(key, result);
+      }
+      return (status: result, stop: null);
     }
 
     _set(key, const TranslationJobStatus.running());
@@ -183,15 +348,26 @@ class TranslationJobs
     try {
       if (!force && await _hasUsableRow(db, key, target)) {
         _remove(key);
-        return null;
+        return _skipped;
       }
-      if (!ref.mounted || !owns()) return null;
-      final (translator, version, settings) = await _translatorFor(
-        key,
-        uniqueLines,
-        token,
+      if (!ref.mounted || !owns()) return _skipped;
+      final (translator, version, snapshot) = await translatorForJob(
+        ref,
+        hash: key.hash,
+        service: key.service,
+        uniqueLines: uniqueLines,
+        stillWanted: () => token != null
+            ? identical(_forced[key], token)
+            : background
+            ? _backgroundWanted(key)
+            : _current == key,
       );
-      if (!ref.mounted || !owns()) return null;
+      settings = snapshot;
+      if (!ref.mounted || !owns()) return _skipped;
+      if (background && _backgroundTried.contains((key, settings))) {
+        _remove(key);
+        return _skipped;
+      }
       checkJobLimits(uniqueLines, target, translator);
       final resumed = _partial[key];
       if (force ||
@@ -213,12 +389,12 @@ class TranslationJobs
       );
       // Cancelled while the last chunk was in flight: nothing is saved (the
       // finally block drops the partial).
-      if (!owns()) return null;
+      if (!owns()) return _skipped;
       // clearFailures dropped the chunks while this job ran: what it holds
       // may be stale, so nothing is saved.
       if (!identical(_partial[key], partial)) {
         _remove(key);
-        return null;
+        return _superseded;
       }
       final map = await saveJobResult(
         db,
@@ -241,7 +417,7 @@ class TranslationJobs
       );
     } on TranslationSuperseded {
       if (owns()) _remove(key);
-      return null;
+      return _superseded;
     } on TranslationException catch (e) {
       return end(TranslationJobStatus.failed(e.kind));
     } on SecretStoreException catch (e) {
@@ -284,139 +460,6 @@ class TranslationJobs
               c.service == key.service &&
               isUsableTranslation(c, target),
         );
-  }
-
-  /// The translator of the key's service, the version of the plugin it runs
-  /// (its `updatedAt`), and the AI settings snapshot to save with the result
-  /// (null for a plugin without AI settings, or when they cannot be read).
-  /// A plugin that is missing is a `server` failure.
-  Future<(LyricsTranslator, int?, String?)> _translatorFor(
-    TranslationJobKey key,
-    List<String> uniqueLines,
-    Object? forcedToken,
-  ) async {
-    final service = key.service;
-    final runner = ref.read(pluginTranslateRunnerProvider);
-    final record = ref
-        .read(translatePluginRecordsProvider)
-        .value
-        ?.where((r) => r.installId == service.value)
-        .firstOrNull;
-    if (runner == null || record == null) {
-      throw const TranslationException(TranslationFailureKind.server);
-    }
-    // The translate spec of an old record is filled by the startup backfill.
-    await ref.read(lyricsPluginsControllerProvider)?.ready;
-    final info = await runner.spec(service.value);
-    // Both read on every chunk: the user may switch service or turn
-    // translation off while a long song waits for its turn.
-    bool allowed() {
-      if (!ref.mounted) return false;
-      final prefs = ref.read(settingsProvider).translation;
-      return prefs.show &&
-          !needsNoticeFor(prefs, service) &&
-          readTranslationChoiceFor(ref, key.hash)?.service == service;
-    }
-
-    final (:append, :override, :settings) = await _aiSettings(
-      key,
-      record,
-      info,
-    );
-    final translator = PluginTranslator(
-      service: service,
-      runner: runner,
-      spec: info.spec,
-      jobLines: uniqueLines,
-      allowed: allowed,
-      stillWanted: () => forcedToken != null
-          ? identical(_forced[key], forcedToken)
-          : _current == key,
-      configAppend: append,
-      configOverride: override,
-    );
-    return (translator, record.updatedAt, settings);
-  }
-
-  /// For an `ai-translate` plugin: the winning tier's model and style that fit
-  /// the plugin's options (`override`, empty when none or when the stored
-  /// config cannot be read), the song's note to add to the instruction
-  /// of every chunk, and the snapshot of the settings the job starts with
-  /// (read once, so a change made while it runs shows as different). Both
-  /// stay empty for other plugins; a failed read of the stored config costs the
-  /// snapshot, a failed read of the note costs the note, never the job.
-  Future<
-    ({
-      Map<String, String> append,
-      Map<String, Object?> override,
-      String? settings,
-    })
-  >
-  _aiSettings(
-    TranslationJobKey key,
-    LyricsPluginRecord record,
-    PluginTranslateInfo info,
-  ) async {
-    final tune = aiTuneOf(record.kind, info.config);
-    if (tune == null) {
-      return (
-        append: const <String, String>{},
-        override: const <String, Object?>{},
-        settings: null,
-      );
-    }
-    String? note;
-    try {
-      final db = ref.read(libraryDatabaseProvider);
-      if (db != null) note = await db.songTranslationInstruction(key.hash);
-    } on Object catch (e) {
-      _log.warning('reading the song instruction failed: ${e.runtimeType}');
-    }
-    final append = <String, String>{
-      if (note != null && note.isNotEmpty) aiInstructionKey: note,
-    };
-    try {
-      final controller = ref.read(lyricsPluginsControllerProvider);
-      final stored = controller == null
-          ? null
-          : await controller.storedConfig(record.installId);
-      if (stored == null) {
-        return (
-          append: append,
-          override: const <String, Object?>{},
-          settings: null,
-        );
-      }
-      // Only the winning tier's tune, and only while it is this job's service.
-      final choice = readTranslationChoiceFor(ref, key.hash);
-      final tierTune = choice?.service == key.service
-          ? choice!.tune
-          : const <String, String>{};
-      final override = <String, Object?>{};
-      for (final (name, field) in [
-        (aiModelKey, tune.model),
-        (aiStyleKey, tune.style),
-      ]) {
-        final value = tierTune[name];
-        if (value != null &&
-            pluginValueFits(pluginEffectiveField(field, stored), value)) {
-          override[name] = value;
-        }
-      }
-      return (
-        append: append,
-        override: override,
-        settings: encodeAiSnapshot(tune, {...stored, ...override}, note),
-      );
-    } on Object catch (e) {
-      // Only the type, never the stored values.
-      _log.warning('reading the AI settings failed: ${e.runtimeType}');
-      return (
-        append: append,
-        override: const <String, Object?>{},
-        settings: null,
-      );
-    }
   }
 
   void _set(TranslationJobKey key, TranslationJobStatus status) {
