@@ -29,16 +29,21 @@ void main() {
     expect(prefetchWindow(PlayQueue(), 3), isEmpty);
   });
 
-  test('stops at the end of the queue without repeat, with repeat one and '
-      'with a shuffled repeat', () {
-    for (final repeat in [
-      RepeatMode.off,
-      RepeatMode.one,
-      RepeatMode.allShuffled,
-    ]) {
+  test('stops at the end of the queue without repeat and with a '
+      'shuffled repeat', () {
+    for (final repeat in [RepeatMode.off, RepeatMode.allShuffled]) {
       final q = _queue(['a', 'b', 'c'], index: 1, repeat: repeat);
       expect(_names(prefetchWindow(q, 5)), ['c'], reason: '$repeat');
     }
+  });
+
+  test('repeat one has no window', () {
+    final q = _queue(
+      ['a', 'b', 'c', 'd', 'e'],
+      index: 2,
+      repeat: RepeatMode.one,
+    );
+    expect(prefetchWindow(q, 3), isEmpty);
   });
 
   test('wraps to the start under repeat all and stops before the current '

@@ -15,6 +15,7 @@ import 'package:kanaru/core/lyrics_translation/translation_prefetch_clock.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
+import 'package:kanaru/core/player/repeat_mode.dart';
 import 'package:kanaru/core/player/track.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
@@ -219,6 +220,16 @@ void main() {
       await after();
       expect(sent(), ['b', 'c']);
       expect(runner.targets, ['en', 'en']);
+    });
+
+    test('repeat one asks for nothing, repeat off resumes', () async {
+      await start();
+      await player().setRepeat(RepeatMode.one);
+      await after();
+      expect(runner.calls, isEmpty);
+      await player().setRepeat(RepeatMode.off);
+      await after();
+      expect(sent(), ['b', 'c']);
     });
 
     test('a count of zero asks for nothing', () async {
