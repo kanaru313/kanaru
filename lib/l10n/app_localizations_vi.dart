@@ -1556,7 +1556,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get settingsAdvancedDescription =>
-      'Bộ phát âm thanh, quyền riêng tư & mạng, chẩn đoán, vùng nguy hiểm';
+      'Bộ phát âm thanh, quyền riêng tư & mạng, dịch lời, chẩn đoán, vùng nguy hiểm';
 
   @override
   String get settingsAboutDescription => 'Phiên bản, giấy phép, mã nguồn';
@@ -5285,7 +5285,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Dịch vụ dịch';
 
   @override
-  String get lyricsTranslationScopeSong => 'Chỉ bài này';
+  String get lyricsTranslationScopeSong => 'Bài này';
 
   @override
   String get lyricsTranslationScopeAll => 'Mọi bài';
@@ -5569,5 +5569,74 @@ class AppLocalizationsVi extends AppLocalizations {
     String style,
   ) {
     return 'Dịch bởi $service · $style';
+  }
+
+  @override
+  String get settingsGroupLyricsTranslation => 'Dịch lời';
+
+  @override
+  String get settingsTranslationScopePrecedence =>
+      'Khi đổi dịch vụ cho mọi bài';
+
+  @override
+  String get settingsTranslationScopeReplaceAll => 'Đổi tất cả';
+
+  @override
+  String get settingsTranslationScopeReplaceAllHint =>
+      'Mọi bài đều đổi theo, kể cả bài bạn từng chọn “Bài này”.';
+
+  @override
+  String get settingsTranslationScopeKeepCustom => 'Giữ bài đã chỉnh riêng';
+
+  @override
+  String get settingsTranslationScopeKeepCustomHint =>
+      'Bài bạn từng chọn “Bài này” vẫn giữ nguyên. Chỉ các bài còn lại đổi.';
+
+  @override
+  String get settingsTranslationScopePrecedenceCaption =>
+      'Hàng đợi cũng theo cách này. Bản dịch đã lưu vẫn hiện như cũ, app không tự dịch lại.';
+
+  @override
+  String lyricsTranslationScopeKeeps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bài đã chỉnh riêng vẫn giữ dịch vụ của chúng.',
+      zero: 'Hàng đợi hiện tại vẫn giữ dịch vụ của nó.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsTranslationScopeKeepsWithQueue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count bài đã chỉnh riêng vẫn giữ dịch vụ của chúng. Hàng đợi hiện tại cũng giữ.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsTranslationModalUseDefaultSong =>
+      'Dùng lại mặc định cho bài này';
+
+  @override
+  String get lyricsTranslationModalUseDefaultQueue =>
+      'Dùng lại mặc định cho hàng đợi';
+
+  @override
+  String get lyricsTranslationModalUseDefaultSongToQueue =>
+      'Bỏ dịch vụ và tinh chỉnh riêng · về hàng đợi';
+
+  @override
+  String lyricsTranslationModalUseDefaultSongTo(String service) {
+    return 'Bỏ dịch vụ và tinh chỉnh riêng · về $service';
+  }
+
+  @override
+  String lyricsTranslationModalUseDefaultQueueTo(String service) {
+    return 'Về $service';
   }
 }

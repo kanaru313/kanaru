@@ -36,7 +36,7 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('shows all 4 section titles in order', (tester) async {
+  testWidgets('shows all 5 section titles in order', (tester) async {
     await _pump(tester);
 
     expect(find.text('Advanced'), findsOneWidget);
@@ -45,6 +45,7 @@ void main() {
       'Audio engine',
       'Privacy & network',
       'Diagnostics',
+      'Lyrics translation',
       'Danger zone',
     ];
 
@@ -78,6 +79,12 @@ void main() {
 
     // Diagnostics
     expect(find.text('Log files'), findsOneWidget);
+
+    // Lyrics translation
+    expect(
+      find.text('When changing the service for all songs'),
+      findsOneWidget,
+    );
 
     // Danger Zone
     expect(find.text('Clear listen history'), findsOneWidget);

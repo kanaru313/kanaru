@@ -12,6 +12,7 @@ import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_pro
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
 import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/player/player_service.dart';
@@ -320,6 +321,36 @@ void main() {
       await jobs().run(_key, _lines, _en);
 
       expect(runner.calls, isNotEmpty);
+    });
+
+    test('switching to keep-custom between chunks stops a job of the '
+        'default', () async {
+      await build();
+      await chooseForSong(other, 10);
+      // The newer default beats the song's older choice for now.
+      container
+          .read(settingsProvider.notifier)
+          .enableTranslation(_plugin, allChosenAt: 20);
+      runner.onSend = (i) {
+        if (i == 0) {
+          container
+              .read(settingsProvider.notifier)
+              .setTranslation(
+                container
+                    .read(settingsProvider)
+                    .translation
+                    .copyWith(
+                      scopePrecedence: TranslationScopePrecedence.keepCustom,
+                    ),
+              );
+        }
+      };
+      jobs().setCurrent(_key);
+      await jobs().run(_key, _lines, _en);
+
+      expect(runner.calls, hasLength(1));
+      expect(status(), isEmpty);
+      expect(await rows(), isEmpty);
     });
 
     test('an "All songs" choice made between chunks stops the job', () async {

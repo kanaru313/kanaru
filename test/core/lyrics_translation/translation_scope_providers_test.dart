@@ -29,7 +29,12 @@ void main() {
   setUp(() => db = memoryDb());
   tearDown(() => db.close());
 
-  ProviderContainer make({LibraryDatabase? database, int? allChosenAt}) {
+  ProviderContainer make({
+    LibraryDatabase? database,
+    int? allChosenAt,
+    TranslationScopePrecedence precedence =
+        TranslationScopePrecedence.replaceAll,
+  }) {
     final container = ProviderContainer(
       overrides: [
         audioBackendProvider.overrideWithValue(FakeAudioBackend()),
@@ -41,6 +46,7 @@ void main() {
               service: _default,
               noticeAcknowledged: {_default},
               allChosenAt: allChosenAt,
+              scopePrecedence: precedence,
             ),
           ),
         ),
@@ -264,6 +270,78 @@ void main() {
         TranslationScope.all,
       );
     });
+
+    test('changing the precedence changes both readers at once', () async {
+      await db.setSongTranslationService('h1', _ownId, chosenAt: 10);
+      final container = make(database: db, allChosenAt: 20);
+      container.listen(choiceProvider('h1'), (_, _) {});
+      await container.read(songTranslationOverridesProvider.future);
+      // A reader evaluated anew each time, as a job does at each chunk.
+      TranslationChoice? read() => container.read(
+        Provider.autoDispose<TranslationChoice?>(
+          (ref) => readTranslationChoiceFor(ref, 'h1'),
+        ),
+      );
+      expect(container.read(choiceProvider('h1'))!.scope, TranslationScope.all);
+      expect(read()!.scope, TranslationScope.all);
+
+      final settings = container.read(settingsProvider.notifier);
+      settings.setTranslation(
+        container
+            .read(settingsProvider)
+            .translation
+            .copyWith(scopePrecedence: TranslationScopePrecedence.keepCustom),
+      );
+      expect(
+        container.read(choiceProvider('h1'))!.scope,
+        TranslationScope.song,
+      );
+      expect(read()!.service, _own);
+
+      settings.setTranslation(
+        container
+            .read(settingsProvider)
+            .translation
+            .copyWith(scopePrecedence: TranslationScopePrecedence.replaceAll),
+      );
+      expect(container.read(choiceProvider('h1'))!.scope, TranslationScope.all);
+    });
+
+    test(
+      'translationChoiceWithout drops one tier with the same rule',
+      () async {
+        await db.setSongTranslationService('h1', _ownId, chosenAt: 10);
+        final container = make(database: db, allChosenAt: 5);
+        container.listen(songTranslationOverridesProvider, (_, _) {});
+        container.listen(queueTranslationChoiceProvider, (_, _) {});
+        container.listen(playerServiceProvider, (_, _) {});
+        await container.read(songTranslationOverridesProvider.future);
+        await container.read(playerServiceProvider.notifier).openTracks([
+          player.Track.fromPath('/music/a.mp3'),
+        ]);
+        container
+            .read(queueTranslationChoiceProvider.notifier)
+            .set(_own, chosenAt: 7);
+        final without = Provider.family<TranslationChoice?, TranslationScope>(
+          (ref, scope) => translationChoiceWithout(ref.watch, 'h1', scope),
+        );
+
+        // The song wins; without it the queue does; without the queue, still
+        // the song.
+        expect(
+          container.read(choiceProvider('h1'))!.scope,
+          TranslationScope.song,
+        );
+        expect(
+          container.read(without(TranslationScope.song))!.scope,
+          TranslationScope.queue,
+        );
+        expect(
+          container.read(without(TranslationScope.queue))!.scope,
+          TranslationScope.song,
+        );
+      },
+    );
 
     test('readTranslationChoiceFor applies the same rule', () async {
       await db.setSongTranslationService('h1', _ownId, chosenAt: 10);

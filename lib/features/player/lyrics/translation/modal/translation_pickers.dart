@@ -123,8 +123,7 @@ Future<void> openServicePicker(
         ? TranslationScope.all
         : TranslationScope.song,
   );
-  final replaced = songsReplacedByDefault(ref);
-  final replacesQueue = queueReplacedByDefault(ref);
+  final caption = allScopeCaption(ref);
   final items = <SelectionPickerItem<TranslationServiceId>>[
     for (final service in choices.services)
       SelectionPickerItem(
@@ -155,8 +154,9 @@ Future<void> openServicePicker(
         ],
         selected: selected,
         locked: locked,
-        replacedCount: replaced,
-        replacesQueue: replacesQueue,
+        precedence: caption.precedence,
+        customCount: caption.songs,
+        queueHasChoice: caption.queue,
         onChanged: (s) => scope.value = s,
       ),
     ),

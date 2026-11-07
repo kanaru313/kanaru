@@ -245,4 +245,38 @@ void main() {
       rig.dispose();
     });
   });
+
+  group('scope precedence', () {
+    void setMode(Rig rig, TranslationScopePrecedence mode) =>
+        rig.settings.setTranslation(
+          rig.container
+              .read(settingsProvider)
+              .translation
+              .copyWith(scopePrecedence: mode),
+        );
+
+    test('switching the mode moves the song to the other tier at once, '
+        'without a request', () async {
+      await db.setSongTranslationService(_hash, _ownId, chosenAt: 10);
+      await seedCache(_ownId);
+      final plugin = FakePluginRunner();
+      final rig = makeRig(plugin, allChosenAt: 20);
+      await rig.play('/m/a.mp3', _text);
+      await settle(_idle);
+      expect(choiceOf(rig)?.scope, TranslationScope.all);
+
+      setMode(rig, TranslationScopePrecedence.keepCustom);
+      await settle(_idle);
+      expect(choiceOf(rig)?.scope, TranslationScope.song);
+      expect(choiceOf(rig)?.service, _own);
+      expect((rig.state as TranslationReady).service, _own);
+
+      setMode(rig, TranslationScopePrecedence.replaceAll);
+      await settle(_idle);
+      expect(choiceOf(rig)?.scope, TranslationScope.all);
+      expect(choiceOf(rig)?.service, _default);
+      expect(plugin.calls, isEmpty);
+      rig.dispose();
+    });
+  });
 }

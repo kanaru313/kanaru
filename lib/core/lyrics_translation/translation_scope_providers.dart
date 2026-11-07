@@ -57,7 +57,23 @@ typedef ProviderGetter = T Function<T>(ProviderListenable<T> provider);
 /// or the song choices are still loading, or the records failed to read (the
 /// caller tells that apart). The controller selects only [hash]'s row, so a
 /// change to another song's row does not rebuild it.
-TranslationChoice? translationChoiceFor(ProviderGetter get, String hash) {
+TranslationChoice? translationChoiceFor(ProviderGetter get, String hash) =>
+    _choiceFor(get, hash, omit: null);
+
+/// What [translationChoiceFor] would answer if the [omit] tier had no choice:
+/// where "use the default again" lands. Same inputs, same rule. [omit] must be
+/// [TranslationScope.song] or [TranslationScope.queue].
+TranslationChoice? translationChoiceWithout(
+  ProviderGetter get,
+  String hash,
+  TranslationScope omit,
+) => _choiceFor(get, hash, omit: omit);
+
+TranslationChoice? _choiceFor(
+  ProviderGetter get,
+  String hash, {
+  required TranslationScope? omit,
+}) {
   final prefs = get(settingsProvider.select((s) => s.translation));
   final records = get(translatePluginRecordsProvider);
   final song = get(
@@ -76,14 +92,17 @@ TranslationChoice? translationChoiceFor(ProviderGetter get, String hash) {
     defaultService: prefs.service,
     allChosenAt: prefs.allChosenAt,
     live: live,
-    song: override == null || service == null
+    precedence: prefs.scopePrecedence,
+    song: omit == TranslationScope.song || override == null || service == null
         ? null
         : ScopedTranslationChoice(
             service: service,
             tune: _decodeTune(override.tuneJson),
             chosenAt: override.chosenAt,
           ),
-    queue: get(queueTranslationChoiceProvider),
+    queue: omit == TranslationScope.queue
+        ? null
+        : get(queueTranslationChoiceProvider),
   );
 }
 

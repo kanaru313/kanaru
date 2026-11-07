@@ -2429,7 +2429,7 @@ abstract class AppLocalizations {
   /// Description under the Advanced tile on the Settings root
   ///
   /// In en, this message translates to:
-  /// **'Audio engine, privacy & network, diagnostics, danger zone'**
+  /// **'Audio engine, privacy & network, lyrics translation, diagnostics, danger zone'**
   String get settingsAdvancedDescription;
 
   /// Description under the About tile on the Settings root
@@ -8129,7 +8129,7 @@ abstract class AppLocalizations {
   /// Segment of the translation service picker: the choice applies to the playing song only
   ///
   /// In en, this message translates to:
-  /// **'Only this song'**
+  /// **'This song'**
   String get lyricsTranslationScopeSong;
 
   /// Segment of the translation service picker: the choice changes the default service for every song
@@ -8138,7 +8138,7 @@ abstract class AppLocalizations {
   /// **'All songs'**
   String get lyricsTranslationScopeAll;
 
-  /// Line under the scope segments of the translation service picker while Only this song is selected
+  /// Line under the scope segments of the translation service picker while This song is selected
   ///
   /// In en, this message translates to:
   /// **'Only the song now playing uses this service (AI tune included).'**
@@ -8168,13 +8168,13 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the language for this song'**
   String get lyricsTranslationTargetSaveFailed;
 
-  /// Tooltip of the disabled Only this song segment while translated lyrics are off
+  /// Tooltip of the disabled This song segment while translated lyrics are off
   ///
   /// In en, this message translates to:
   /// **'Turn translation on to choose a service for this song only.'**
   String get lyricsTranslationScopeSongLockedOff;
 
-  /// Tooltip of the disabled Only this song segment when no song with lyrics is playing
+  /// Tooltip of the disabled This song segment when no song with lyrics is playing
   ///
   /// In en, this message translates to:
   /// **'There is no song with lyrics to choose for.'**
@@ -8554,6 +8554,90 @@ abstract class AppLocalizations {
     String service,
     String style,
   );
+
+  /// Group title on Settings > Advanced for the lyrics translation options
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics translation'**
+  String get settingsGroupLyricsTranslation;
+
+  /// Title of the Settings row that chooses whether a new default service replaces songs and queues set individually
+  ///
+  /// In en, this message translates to:
+  /// **'When changing the service for all songs'**
+  String get settingsTranslationScopePrecedence;
+
+  /// Choice: a new default service for all songs also applies to songs set individually
+  ///
+  /// In en, this message translates to:
+  /// **'Change every song'**
+  String get settingsTranslationScopeReplaceAll;
+
+  /// Explains the Change every song choice
+  ///
+  /// In en, this message translates to:
+  /// **'Every song changes, even songs you set to “This song”.'**
+  String get settingsTranslationScopeReplaceAllHint;
+
+  /// Choice: songs and queues set individually keep their service when the default changes
+  ///
+  /// In en, this message translates to:
+  /// **'Keep songs set individually'**
+  String get settingsTranslationScopeKeepCustom;
+
+  /// Explains the Keep songs set individually choice
+  ///
+  /// In en, this message translates to:
+  /// **'Songs you set to “This song” stay as they are. Only the others change.'**
+  String get settingsTranslationScopeKeepCustomHint;
+
+  /// Caption under the scope precedence Settings row
+  ///
+  /// In en, this message translates to:
+  /// **'The queue follows the same rule. Saved translations still show as before; nothing is translated again automatically.'**
+  String get settingsTranslationScopePrecedenceCaption;
+
+  /// Caption of the translation service picker when All songs is selected and songs set individually keep their service
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{The current queue keeps its service.} =1{1 song you set individually keeps its service.} other{{count} songs you set individually keep their service.}}'**
+  String lyricsTranslationScopeKeeps(int count);
+
+  /// Same caption when the current queue also keeps its own service
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song you set individually keeps its service. The current queue keeps its own too.} other{{count} songs you set individually keep their service. The current queue keeps its own too.}}'**
+  String lyricsTranslationScopeKeepsWithQueue(int count);
+
+  /// Row in the translation modal that removes this song's own service choice
+  ///
+  /// In en, this message translates to:
+  /// **'Use the default for this song'**
+  String get lyricsTranslationModalUseDefaultSong;
+
+  /// Row in the translation modal that removes the current queue's own service choice
+  ///
+  /// In en, this message translates to:
+  /// **'Use the default for the queue'**
+  String get lyricsTranslationModalUseDefaultQueue;
+
+  /// Subtitle of the use-default row for a song when the queue's choice applies next
+  ///
+  /// In en, this message translates to:
+  /// **'Drops this song\'s service and tune · back to the queue'**
+  String get lyricsTranslationModalUseDefaultSongToQueue;
+
+  /// Subtitle of the use-default row for a song; {service} is the service that applies next
+  ///
+  /// In en, this message translates to:
+  /// **'Drops this song\'s service and tune · back to {service}'**
+  String lyricsTranslationModalUseDefaultSongTo(String service);
+
+  /// Subtitle of the use-default row for the queue; {service} is the service that applies next
+  ///
+  /// In en, this message translates to:
+  /// **'Back to {service}'**
+  String lyricsTranslationModalUseDefaultQueueTo(String service);
 }
 
 class _AppLocalizationsDelegate

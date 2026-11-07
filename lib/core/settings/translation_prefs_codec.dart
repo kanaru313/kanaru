@@ -1,4 +1,6 @@
 import '../lyrics_translation/translation_language.dart';
+import '../lyrics_translation/translation_scope.dart'
+    show TranslationScopePrecedence;
 import '../lyrics_translation/translation_service.dart';
 import 'settings_codec_values.dart';
 import 'translation_prefs.dart';
@@ -9,6 +11,7 @@ const _targetLanguageKey = 'targetLanguage';
 const _displayKey = 'display';
 const _noticeAcknowledgedKey = 'noticeAcknowledged';
 const _allChosenAtKey = 'allChosenAt';
+const _scopePrecedenceKey = 'scopePrecedence';
 const _knownKeys = {
   _showKey,
   _serviceKey,
@@ -16,6 +19,7 @@ const _knownKeys = {
   _displayKey,
   _noticeAcknowledgedKey,
   _allChosenAtKey,
+  _scopePrecedenceKey,
 };
 
 /// Reads the `lyricsTranslation` object; each key falls back on its own. The
@@ -52,6 +56,11 @@ const _knownKeys = {
       allChosenAt: map[_allChosenAtKey] is int
           ? map[_allChosenAtKey] as int
           : null,
+      scopePrecedence: enumOr(
+        TranslationScopePrecedence.values,
+        map[_scopePrecedenceKey],
+        d.scopePrecedence,
+      ),
     ),
     {
       ...unknownEntries(map, _knownKeys),
@@ -97,6 +106,7 @@ Map<String, Object?> encodeTranslationPrefs(
     _targetLanguageKey: prefs.targetLanguage,
     _displayKey: prefs.display.name,
     _allChosenAtKey: prefs.allChosenAt,
+    _scopePrecedenceKey: prefs.scopePrecedence.name,
     _noticeAcknowledgedKey: [
       for (final service in prefs.noticeAcknowledged) service.value,
       if (unknownNames is List) ...unknownNames,

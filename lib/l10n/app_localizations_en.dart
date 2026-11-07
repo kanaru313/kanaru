@@ -1656,7 +1656,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAdvancedDescription =>
-      'Audio engine, privacy & network, diagnostics, danger zone';
+      'Audio engine, privacy & network, lyrics translation, diagnostics, danger zone';
 
   @override
   String get settingsAboutDescription => 'Version, licenses, source code';
@@ -5624,7 +5624,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsTranslationModalServiceTitle => 'Translation service';
 
   @override
-  String get lyricsTranslationScopeSong => 'Only this song';
+  String get lyricsTranslationScopeSong => 'This song';
 
   @override
   String get lyricsTranslationScopeAll => 'All songs';
@@ -5925,5 +5925,77 @@ class AppLocalizationsEn extends AppLocalizations {
     String style,
   ) {
     return 'Translated by $service · $style';
+  }
+
+  @override
+  String get settingsGroupLyricsTranslation => 'Lyrics translation';
+
+  @override
+  String get settingsTranslationScopePrecedence =>
+      'When changing the service for all songs';
+
+  @override
+  String get settingsTranslationScopeReplaceAll => 'Change every song';
+
+  @override
+  String get settingsTranslationScopeReplaceAllHint =>
+      'Every song changes, even songs you set to “This song”.';
+
+  @override
+  String get settingsTranslationScopeKeepCustom =>
+      'Keep songs set individually';
+
+  @override
+  String get settingsTranslationScopeKeepCustomHint =>
+      'Songs you set to “This song” stay as they are. Only the others change.';
+
+  @override
+  String get settingsTranslationScopePrecedenceCaption =>
+      'The queue follows the same rule. Saved translations still show as before; nothing is translated again automatically.';
+
+  @override
+  String lyricsTranslationScopeKeeps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs you set individually keep their service.',
+      one: '1 song you set individually keeps its service.',
+      zero: 'The current queue keeps its service.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lyricsTranslationScopeKeepsWithQueue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count songs you set individually keep their service. The current queue keeps its own too.',
+      one: '1 song you set individually keeps its service. The current queue keeps its own too.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lyricsTranslationModalUseDefaultSong =>
+      'Use the default for this song';
+
+  @override
+  String get lyricsTranslationModalUseDefaultQueue =>
+      'Use the default for the queue';
+
+  @override
+  String get lyricsTranslationModalUseDefaultSongToQueue =>
+      'Drops this song\'s service and tune · back to the queue';
+
+  @override
+  String lyricsTranslationModalUseDefaultSongTo(String service) {
+    return 'Drops this song\'s service and tune · back to $service';
+  }
+
+  @override
+  String lyricsTranslationModalUseDefaultQueueTo(String service) {
+    return 'Back to $service';
   }
 }

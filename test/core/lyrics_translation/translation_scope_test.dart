@@ -12,16 +12,20 @@ TranslationChoice _resolve({
   ScopedTranslationChoice? song,
   ScopedTranslationChoice? queue,
   Set<TranslationServiceId>? live,
+  TranslationScopePrecedence precedence = TranslationScopePrecedence.replaceAll,
 }) => resolveTranslationChoice(
   defaultService: defaultService,
   allChosenAt: allChosenAt,
   live: live ?? {_def, _own, _queue},
+  precedence: precedence,
   song: song,
   queue: queue,
 );
 
 ScopedTranslationChoice _song(int? at, {Map<String, String> tune = const {}}) =>
     ScopedTranslationChoice(service: _own, tune: tune, chosenAt: at);
+
+const _keep = TranslationScopePrecedence.keepCustom;
 
 void main() {
   group('song against the default', () {
@@ -199,6 +203,124 @@ void main() {
         ).scope,
         TranslationScope.song,
       );
+    });
+  });
+
+  group('both precedence modes', () {
+    ScopedTranslationChoice queue(int? at) =>
+        ScopedTranslationChoice(service: _queue, chosenAt: at);
+
+    final cases =
+        <
+          ({
+            String name,
+            int? all,
+            bool hasSong,
+            int? songAt,
+            int? queueAt,
+            TranslationScope replace,
+            TranslationScope keep,
+          })
+        >[
+          (
+            name: 'song older than the default',
+            all: 9,
+            hasSong: true,
+            songAt: 3,
+            queueAt: null,
+            replace: TranslationScope.all,
+            keep: TranslationScope.song,
+          ),
+          (
+            name: 'queue older than the default',
+            all: 9,
+            hasSong: false,
+            songAt: null,
+            queueAt: 3,
+            replace: TranslationScope.all,
+            keep: TranslationScope.queue,
+          ),
+          (
+            name: 'song older than the queue',
+            all: 1,
+            hasSong: true,
+            songAt: 5,
+            queueAt: 6,
+            replace: TranslationScope.queue,
+            keep: TranslationScope.song,
+          ),
+          (
+            name: 'song without a stamp',
+            all: 1,
+            hasSong: true,
+            songAt: null,
+            queueAt: null,
+            replace: TranslationScope.all,
+            keep: TranslationScope.song,
+          ),
+        ];
+    for (final c in cases) {
+      test(c.name, () {
+        final q = c.queueAt == null ? null : queue(c.queueAt);
+        final song = c.hasSong ? _song(c.songAt) : null;
+        for (final (mode, want) in [
+          (TranslationScopePrecedence.replaceAll, c.replace),
+          (_keep, c.keep),
+        ]) {
+          expect(
+            _resolve(
+              defaultService: _def,
+              allChosenAt: c.all,
+              song: song,
+              queue: q,
+              precedence: mode,
+            ).scope,
+            want,
+            reason: mode.name,
+          );
+        }
+      });
+    }
+
+    test('keepCustom: a removed plugin drops its tier', () {
+      expect(
+        _resolve(
+          defaultService: _def,
+          allChosenAt: 9,
+          song: _song(1),
+          queue: queue(1),
+          live: {_def, _queue},
+          precedence: _keep,
+        ).scope,
+        TranslationScope.queue,
+      );
+      expect(
+        _resolve(
+          defaultService: _def,
+          allChosenAt: 9,
+          song: _song(1),
+          queue: queue(1),
+          live: {_def},
+          precedence: _keep,
+        ).scope,
+        TranslationScope.all,
+      );
+    });
+
+    test('keepCustom: no default and no tier gives no service', () {
+      final c = _resolve(precedence: _keep);
+      expect((c.service, c.scope), (null, TranslationScope.all));
+    });
+
+    test('keepCustom keeps the winning tune and the default name', () {
+      final c = _resolve(
+        defaultService: _def,
+        allChosenAt: 9,
+        song: _song(1, tune: {'model': 'm'}),
+        precedence: _keep,
+      );
+      expect(c.tune, {'model': 'm'});
+      expect(c.defaultService, _def);
     });
   });
 

@@ -1096,7 +1096,7 @@
   "@settingsAdvanced": {
     "description": "Title of the Advanced category tile on the Settings root"
   },
-  "settingsAdvancedDescription": "Audio engine, privacy & network, diagnostics, danger zone",
+  "settingsAdvancedDescription": "Audio engine, privacy & network, lyrics translation, diagnostics, danger zone",
   "@settingsAdvancedDescription": {
     "description": "Description under the Advanced tile on the Settings root"
   },
@@ -5575,7 +5575,7 @@
   "@lyricsTranslationModalServiceTitle": {
     "description": "Title of the child modal that picks the translation service"
   },
-  "lyricsTranslationScopeSong": "Only this song",
+  "lyricsTranslationScopeSong": "This song",
   "@lyricsTranslationScopeSong": {
     "description": "Segment of the translation service picker: the choice applies to the playing song only"
   },
@@ -5585,7 +5585,7 @@
   },
   "lyricsTranslationScopeSongHint": "Only the song now playing uses this service (AI tune included).",
   "@lyricsTranslationScopeSongHint": {
-    "description": "Line under the scope segments of the translation service picker while Only this song is selected"
+    "description": "Line under the scope segments of the translation service picker while This song is selected"
   },
   "lyricsTranslationScopeAllHint": "Changes the default service for every song.",
   "@lyricsTranslationScopeAllHint": {
@@ -5610,11 +5610,11 @@
   },
   "lyricsTranslationScopeSongLockedOff": "Turn translation on to choose a service for this song only.",
   "@lyricsTranslationScopeSongLockedOff": {
-    "description": "Tooltip of the disabled Only this song segment while translated lyrics are off"
+    "description": "Tooltip of the disabled This song segment while translated lyrics are off"
   },
   "lyricsTranslationScopeSongLockedNoSong": "There is no song with lyrics to choose for.",
   "@lyricsTranslationScopeSongLockedNoSong": {
-    "description": "Tooltip of the disabled Only this song segment when no song with lyrics is playing"
+    "description": "Tooltip of the disabled This song segment when no song with lyrics is playing"
   },
   "lyricsTranslationModalScopeSongSubtitle": "Only this song · default: {service}",
   "@lyricsTranslationModalScopeSongSubtitle": {
@@ -5956,6 +5956,82 @@
         "type": "String"
       },
       "style": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsGroupLyricsTranslation": "Lyrics translation",
+  "@settingsGroupLyricsTranslation": {
+    "description": "Group title on Settings > Advanced for the lyrics translation options"
+  },
+  "settingsTranslationScopePrecedence": "When changing the service for all songs",
+  "@settingsTranslationScopePrecedence": {
+    "description": "Title of the Settings row that chooses whether a new default service replaces songs and queues set individually"
+  },
+  "settingsTranslationScopeReplaceAll": "Change every song",
+  "@settingsTranslationScopeReplaceAll": {
+    "description": "Choice: a new default service for all songs also applies to songs set individually"
+  },
+  "settingsTranslationScopeReplaceAllHint": "Every song changes, even songs you set to “This song”.",
+  "@settingsTranslationScopeReplaceAllHint": {
+    "description": "Explains the Change every song choice"
+  },
+  "settingsTranslationScopeKeepCustom": "Keep songs set individually",
+  "@settingsTranslationScopeKeepCustom": {
+    "description": "Choice: songs and queues set individually keep their service when the default changes"
+  },
+  "settingsTranslationScopeKeepCustomHint": "Songs you set to “This song” stay as they are. Only the others change.",
+  "@settingsTranslationScopeKeepCustomHint": {
+    "description": "Explains the Keep songs set individually choice"
+  },
+  "settingsTranslationScopePrecedenceCaption": "The queue follows the same rule. Saved translations still show as before; nothing is translated again automatically.",
+  "@settingsTranslationScopePrecedenceCaption": {
+    "description": "Caption under the scope precedence Settings row"
+  },
+  "lyricsTranslationScopeKeeps": "{count, plural, =0{The current queue keeps its service.} =1{1 song you set individually keeps its service.} other{{count} songs you set individually keep their service.}}",
+  "@lyricsTranslationScopeKeeps": {
+    "description": "Caption of the translation service picker when All songs is selected and songs set individually keep their service",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsTranslationScopeKeepsWithQueue": "{count, plural, =1{1 song you set individually keeps its service. The current queue keeps its own too.} other{{count} songs you set individually keep their service. The current queue keeps its own too.}}",
+  "@lyricsTranslationScopeKeepsWithQueue": {
+    "description": "Same caption when the current queue also keeps its own service",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsTranslationModalUseDefaultSong": "Use the default for this song",
+  "@lyricsTranslationModalUseDefaultSong": {
+    "description": "Row in the translation modal that removes this song's own service choice"
+  },
+  "lyricsTranslationModalUseDefaultQueue": "Use the default for the queue",
+  "@lyricsTranslationModalUseDefaultQueue": {
+    "description": "Row in the translation modal that removes the current queue's own service choice"
+  },
+  "lyricsTranslationModalUseDefaultSongToQueue": "Drops this song's service and tune · back to the queue",
+  "@lyricsTranslationModalUseDefaultSongToQueue": {
+    "description": "Subtitle of the use-default row for a song when the queue's choice applies next"
+  },
+  "lyricsTranslationModalUseDefaultSongTo": "Drops this song's service and tune · back to {service}",
+  "@lyricsTranslationModalUseDefaultSongTo": {
+    "description": "Subtitle of the use-default row for a song; {service} is the service that applies next",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
+  "lyricsTranslationModalUseDefaultQueueTo": "Back to {service}",
+  "@lyricsTranslationModalUseDefaultQueueTo": {
+    "description": "Subtitle of the use-default row for the queue; {service} is the service that applies next",
+    "placeholders": {
+      "service": {
         "type": "String"
       }
     }

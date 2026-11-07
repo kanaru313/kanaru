@@ -79,8 +79,10 @@ extension LyricTranslationQueries on LibraryDatabase {
   /// Sets the per-song translation service (a plugin install id); null
   /// removes it together with its tune and time. A different service clears
   /// the tune; [chosenAt] (epoch ms) is stored with any service. A null
-  /// [chosenAt] with a non-null service never wins resolution, so callers
-  /// always pass the clock value when they set a service.
+  /// [chosenAt] with a non-null service loses to the default when the newest
+  /// choice wins ("Change every song") but still wins when songs set
+  /// individually are kept, so callers always pass the clock value when they
+  /// set a service.
   Future<void> setSongTranslationService(
     String hash,
     String? installId, {
