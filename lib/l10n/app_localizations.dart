@@ -4646,6 +4646,12 @@ abstract class AppLocalizations {
   /// **'Lyrics are already in {language}'**
   String lyricsTranslationSameLanguage(String language);
 
+  /// Second line of the status line when another translation plugin said the lyrics are already in the target language
+  ///
+  /// In en, this message translates to:
+  /// **'(per {service})'**
+  String lyricsTranslationSameLanguagePerService(String service);
+
   /// Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so
   ///
   /// In en, this message translates to:
@@ -8096,12 +8102,6 @@ abstract class AppLocalizations {
   /// **'Preview'**
   String get lyricsTranslationModalPreview;
 
-  /// Section heading for the translation controls in the translation modal
-  ///
-  /// In en, this message translates to:
-  /// **'Translation'**
-  String get lyricsTranslationModalSection;
-
   /// Read-only source language label when the lyrics language has been detected
   ///
   /// In en, this message translates to:
@@ -8269,12 +8269,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved version from {service}'**
   String lyricsTranslationModalOtherVersion(String service);
-
-  /// Bottom action bar label in the translation modal when the shown translation came from another plugin
-  ///
-  /// In en, this message translates to:
-  /// **'Showing the version from {service}'**
-  String lyricsTranslationModalShowingOther(String service);
 
   /// Bottom action bar button in the translation modal that translates with the currently selected plugin
   ///
@@ -8462,12 +8456,6 @@ abstract class AppLocalizations {
   /// **'Note for this song'**
   String get translationSongInstruction;
 
-  /// Note under the AI tuning modal's fields
-  ///
-  /// In en, this message translates to:
-  /// **'Set by the plugin {name}. Saved for this plugin.'**
-  String translationAiTuneHint(String name);
-
   /// Button that closes the AI tuning modal
   ///
   /// In en, this message translates to:
@@ -8497,18 +8485,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open plugin settings'**
   String get translationAiOpenPluginSettings;
-
-  /// Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with
-  ///
-  /// In en, this message translates to:
-  /// **'Differs from the version shown: {changes}'**
-  String translationAiTuneChanged(String changes);
-
-  /// Part of the 'differs from the version shown' line: the note for the AI changed
-  ///
-  /// In en, this message translates to:
-  /// **'Changed the note'**
-  String get translationAiEditedNote;
 
   /// Button of the AI tuning modal that closes it without translating again
   ///

@@ -210,10 +210,7 @@ void main() {
         state: _ready(settingsJson: _snapshot()),
         stored: {'model': 'pro'},
       );
-      expect(
-        find.text('Differs from the version shown: Flash → Pro'),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
       expect(find.text('Retranslate'), findsOneWidget);
       expect(r.h.fake.retranslateCalls, 0);
       // The model is in the details, not in the row's subtitle (the style).
@@ -237,13 +234,7 @@ void main() {
         state: _ready(settingsJson: _snapshot()),
         stored: {'style': 'natural', 'customInstruction': 'be kind'},
       );
-      expect(
-        find.text(
-          'Differs from the version shown: Literal → Natural · Changed the '
-          'note',
-        ),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
       expect(r.h.fake.retranslateCalls, 0);
     });
 
@@ -297,13 +288,7 @@ void main() {
         tester,
         state: _ready(settingsJson: '{"model":"flash","style":"retired"}'),
       );
-      expect(
-        find.text(
-          'Differs from the version shown: retired (no longer supported) → '
-          'Literal',
-        ),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
       expect(r.h.fake.retranslateCalls, 0);
     });
 
@@ -330,10 +315,7 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 50)),
       );
       await tester.pump(const Duration(milliseconds: 100));
-      expect(
-        find.text('Differs from the version shown: Changed the note'),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
     });
 
     retranslateTest('a song note the version was made with is no change, '
@@ -374,7 +356,7 @@ void main() {
         stored: {'model': 'pro'},
         locale: const Locale('vi'),
       );
-      expect(find.text('Khác bản đang hiện: Flash → Pro'), findsOneWidget);
+      expect(changedBar(), findsOneWidget);
       expect(find.text('Dịch lại'), findsWidgets);
     });
   });
@@ -430,10 +412,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Later'), findsOneWidget);
       await tapText(tester, 'Later');
-      expect(
-        find.text('Differs from the version shown: Literal → Natural'),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
       expect(r.plugins.configWrites, isEmpty);
       expect(r.h.fake.retranslateCalls, 0);
     });
@@ -450,10 +429,7 @@ void main() {
           .read(settingsProvider.notifier)
           .setTranslation(r.h.prefs.copyWith(allChosenAt: 99));
       await tester.pump(const Duration(milliseconds: 100));
-      expect(
-        find.text('Differs from the version shown: Pro → Flash'),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
       expect(r.h.fake.retranslateCalls, 0);
     });
   });
@@ -538,10 +514,7 @@ void main() {
       expect(find.byType(TranslationAiTuneModal), findsNothing);
       expect(find.byType(LyricsTranslationModal), findsOneWidget);
       expect(r.h.fake.retranslateCalls, 0);
-      expect(
-        find.text('Differs from the version shown: Flash → Pro'),
-        findsOneWidget,
-      );
+      expect(changedBar(), findsOneWidget);
     });
 
     retranslateTest('Retranslate closes the modal once and the parent '

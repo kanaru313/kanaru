@@ -60,6 +60,8 @@ const _note = PluginConfigField(
   title: 'Instruction',
   mode: PluginConfigMode.input,
   inputFormat: PluginInputFormat.text,
+  subtitle: 'Added to every request, shared subtitle',
+  placeholder: 'Example: keep honorifics',
 );
 const _thinking = PluginConfigField(
   key: 'thinking',
@@ -287,9 +289,19 @@ void main() {
       // One text box: the song's note, never the shared instruction.
       expect(find.byType(TextField), findsOneWidget);
       expect(find.text('shared text'), findsNothing);
+      // The plugin's subtitle describes the shared instruction, not the
+      // song's note; the placeholder is the field's example.
+      expect(
+        find.text('Added to every request, shared subtitle'),
+        findsNothing,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).decoration?.hintText,
+        'Example: keep honorifics',
+      );
       expect(
         find.text('Set by the plugin Test AI. Saved for this plugin.'),
-        findsOneWidget,
+        findsNothing,
       );
     });
 

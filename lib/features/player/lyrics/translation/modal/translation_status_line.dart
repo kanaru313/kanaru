@@ -82,6 +82,8 @@ class TranslationStatusLine extends ConsumerWidget {
             size: 20,
             color: theme.colorScheme.primary,
           ),
+          // Two lines with "(per service)": room before the action bar.
+          bottom: fromOtherService ? 12 : 2,
         ),
       _ => const SizedBox.shrink(),
     };
@@ -101,10 +103,9 @@ class TranslationStatusLine extends ConsumerWidget {
     );
     if (!fromOtherService) return l10n.lyricsTranslationSameLanguage(language);
     final infos = ref.watch(translationPluginInfosProvider);
-    return l10n.lyricsTranslationSameLanguageFrom(
-      language,
-      translationServiceName(l10n, infos, service),
-    );
+    // The service part always sits on its own second line.
+    return '${l10n.lyricsTranslationSameLanguage(language)}\n'
+        '${l10n.lyricsTranslationSameLanguagePerService(translationServiceName(l10n, infos, service))}';
   }
 
   Widget _statusRow(
@@ -116,12 +117,13 @@ class TranslationStatusLine extends ConsumerWidget {
     ),
     String? actionLabel,
     VoidCallback? onAction,
+    double bottom = 2,
   }) {
     final style = theme.textTheme.bodyMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 6, 16, 2),
+      padding: EdgeInsets.fromLTRB(24, 6, 16, bottom),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 40),
         child: Row(

@@ -2864,6 +2864,15 @@
       }
     }
   },
+  "lyricsTranslationSameLanguagePerService": "(per {service})",
+  "@lyricsTranslationSameLanguagePerService": {
+    "description": "Second line of the status line when another translation plugin said the lyrics are already in the target language",
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
   "lyricsTranslationSameLanguageFrom": "Lyrics are already in {language} (per {service})",
   "@lyricsTranslationSameLanguageFrom": {
     "description": "Status line and tooltip when another translation plugin said the lyrics are already in the target language and the selected plugin has no version yet; language is the language name, service the plugin that said so",
@@ -5550,10 +5559,6 @@
   "@lyricsTranslationModalPreview": {
     "description": "Caption above the current lyric line preview card in the translation modal"
   },
-  "lyricsTranslationModalSection": "Translation",
-  "@lyricsTranslationModalSection": {
-    "description": "Section heading for the translation controls in the translation modal"
-  },
   "lyricsTranslationModalSourceDetected": "{language} · detected",
   "@lyricsTranslationModalSourceDetected": {
     "description": "Read-only source language label when the lyrics language has been detected",
@@ -5695,15 +5700,6 @@
   "lyricsTranslationModalOtherVersion": "Saved version from {service}",
   "@lyricsTranslationModalOtherVersion": {
     "description": "Provenance line in the translation modal preview card when the shown translation came from another plugin",
-    "placeholders": {
-      "service": {
-        "type": "String"
-      }
-    }
-  },
-  "lyricsTranslationModalShowingOther": "Showing the version from {service}",
-  "@lyricsTranslationModalShowingOther": {
-    "description": "Bottom action bar label in the translation modal when the shown translation came from another plugin",
     "placeholders": {
       "service": {
         "type": "String"
@@ -5877,15 +5873,6 @@
   "@translationSongInstruction": {
     "description": "Label of the box in the AI tuning modal where the user writes a note that only applies to the current song's translation"
   },
-  "translationAiTuneHint": "Set by the plugin {name}. Saved for this plugin.",
-  "@translationAiTuneHint": {
-    "description": "Note under the AI tuning modal's fields",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "translationAiTuneDone": "Done",
   "@translationAiTuneDone": {
     "description": "Button that closes the AI tuning modal"
@@ -5910,19 +5897,6 @@
   "translationAiOpenPluginSettings": "Open plugin settings",
   "@translationAiOpenPluginSettings": {
     "description": "Button in the AI tuning modal that opens the translation plugin's settings page"
-  },
-  "translationAiTuneChanged": "Differs from the version shown: {changes}",
-  "@translationAiTuneChanged": {
-    "description": "Text of the bottom bar of the translation modal when the AI settings now differ from those the translation on screen was made with",
-    "placeholders": {
-      "changes": {
-        "type": "String"
-      }
-    }
-  },
-  "translationAiEditedNote": "Changed the note",
-  "@translationAiEditedNote": {
-    "description": "Part of the 'differs from the version shown' line: the note for the AI changed"
   },
   "translationAiTuneLater": "Later",
   "@translationAiTuneLater": {
