@@ -8162,6 +8162,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the choice for this song'**
   String get lyricsTranslationScopeSongSaveFailed;
 
+  /// Snackbar when the language picked for one song could not be saved
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the language for this song'**
+  String get lyricsTranslationTargetSaveFailed;
+
   /// Tooltip of the disabled Only this song segment while translated lyrics are off
   ///
   /// In en, this message translates to:

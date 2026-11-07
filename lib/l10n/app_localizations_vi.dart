@@ -5313,6 +5313,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không lưu được lựa chọn cho bài này';
 
   @override
+  String get lyricsTranslationTargetSaveFailed =>
+      'Không lưu được ngôn ngữ cho bài này';
+
+  @override
   String get lyricsTranslationScopeSongLockedOff =>
       'Bật dịch lời để chọn dịch vụ riêng cho bài này.';
 

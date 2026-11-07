@@ -5653,6 +5653,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t save the choice for this song';
 
   @override
+  String get lyricsTranslationTargetSaveFailed =>
+      'Couldn\'t save the language for this song';
+
+  @override
   String get lyricsTranslationScopeSongLockedOff =>
       'Turn translation on to choose a service for this song only.';
 

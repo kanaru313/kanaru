@@ -2116,6 +2116,7 @@
   "lyricsTranslationScopeAllHint": "Đổi dịch vụ mặc định cho mọi bài.",
   "lyricsTranslationScopeReplaces": "{count, plural, other{Sẽ thay cả {count} bài đã chỉnh riêng}}",
   "lyricsTranslationScopeSongSaveFailed": "Không lưu được lựa chọn cho bài này",
+  "lyricsTranslationTargetSaveFailed": "Không lưu được ngôn ngữ cho bài này",
   "lyricsTranslationScopeSongLockedOff": "Bật dịch lời để chọn dịch vụ riêng cho bài này.",
   "lyricsTranslationScopeSongLockedNoSong": "Không có bài nào có lời để chọn riêng.",
   "lyricsTranslationModalScopeSongSubtitle": "Riêng bài này · mặc định: {service}",

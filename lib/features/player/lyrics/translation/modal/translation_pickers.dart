@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/database/lyrics_plugin_spec.dart';
@@ -18,12 +19,15 @@ import '../../../../../shared/lyrics_plugins/plugin_icon.dart';
 import '../../../../../shared/translation_language_name.dart';
 import '../../../../../shared/translation_notice_dialog.dart';
 import '../../../../../shared/translation_service_name.dart';
+import '../../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../../shared/widgets/marquee_text.dart';
 import '../../../../../shared/widgets/selection_picker.dart';
 import 'translation_ai_badge.dart';
 import 'translation_modal_navigation.dart';
 import 'translation_scope_header.dart';
 import 'translation_service_pick.dart';
+
+final _log = Logger('translation');
 
 /// Sentinel value for the `"Default (<language>)"` entry in the target picker.
 const String _defaultLanguage = '';
@@ -45,6 +49,9 @@ Future<void> openTargetPicker(
 }) async {
   final l10n = context.l10n;
   final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
+  // Taken before any await: the modal may be gone when the write fails.
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final failedText = l10n.lyricsTranslationTargetSaveFailed;
   final items = <SelectionPickerItem<String>>[
     SelectionPickerItem(
       value: _defaultLanguage,
@@ -65,7 +72,16 @@ Future<void> openTargetPicker(
     selected: info.songOverride ?? _defaultLanguage,
   );
   if (picked == null) return;
-  await controller.setSongTarget(picked == _defaultLanguage ? null : picked);
+  try {
+    await controller.setSongTarget(picked == _defaultLanguage ? null : picked);
+  } on Object catch (error) {
+    _log.warning(
+      'saving the song translation target failed: ${error.runtimeType}',
+    );
+    messenger?.showSnackBar(
+      appSnackBar(kind: AppSnackBarKind.error, title: failedText),
+    );
+  }
 }
 
 /// Opens the child modal that picks the translation service plugin.

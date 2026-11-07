@@ -5604,6 +5604,10 @@
   "@lyricsTranslationScopeSongSaveFailed": {
     "description": "Snackbar when the service picked for one song could not be saved"
   },
+  "lyricsTranslationTargetSaveFailed": "Couldn't save the language for this song",
+  "@lyricsTranslationTargetSaveFailed": {
+    "description": "Snackbar when the language picked for one song could not be saved"
+  },
   "lyricsTranslationScopeSongLockedOff": "Turn translation on to choose a service for this song only.",
   "@lyricsTranslationScopeSongLockedOff": {
     "description": "Tooltip of the disabled Only this song segment while translated lyrics are off"

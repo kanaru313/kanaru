@@ -213,4 +213,22 @@ void main() {
       isFalse,
     );
   });
+
+  testWidgets('a failed target save shows a snackbar and throws nothing', (
+    tester,
+  ) async {
+    final h = await pumpTranslationModal(
+      tester,
+      state: TranslationOff(fakeTranslationInfo()),
+    );
+    h.fake.songTargetError = StateError('disk full');
+    await openTarget(tester);
+    await tester.tap(find.widgetWithText(SelectionRow, 'Japanese'));
+    await settleModal(tester);
+    expect(
+      find.text("Couldn't save the language for this song"),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
