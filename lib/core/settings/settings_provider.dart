@@ -104,7 +104,8 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setDisplay(DisplayPrefs prefs) =>
       _update(state.copyWith(display: prefs));
 
-  /// Saves [prefs], except `noticeAcknowledged`, which only
+  /// Saves [prefs] as given (its `allChosenAt` too, so a change of default in
+  /// Settings keeps the stamp), except `noticeAcknowledged`, which only
   /// [acknowledgeTranslationNotice] and [enableTranslation] change. Translation
   /// never shows for a service whose network notice was not accepted.
   void setTranslation(TranslationPrefs prefs) => _update(
@@ -132,16 +133,19 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
   /// Selects [service], records that its notice was accepted and turns
   /// translation on, in one write. Call it only after the user accepted the
-  /// notice for [service].
-  void enableTranslation(TranslationServiceId service) => _update(
-    state.copyWith(
-      translation: state.translation.copyWith(
-        show: true,
-        service: service,
-        noticeAcknowledged: _withAcknowledged(service),
-      ),
-    ),
-  );
+  /// notice for [service]. [allChosenAt] stamps the choice as "All songs";
+  /// null keeps the stamp as it was (Settings and the quick toggle pass none).
+  void enableTranslation(TranslationServiceId service, {int? allChosenAt}) =>
+      _update(
+        state.copyWith(
+          translation: state.translation.copyWith(
+            show: true,
+            service: service,
+            noticeAcknowledged: _withAcknowledged(service),
+            allChosenAt: allChosenAt,
+          ),
+        ),
+      );
 
   /// Forgets translate plugins that are no longer installed: a stored
   /// service that is a plugin id outside [livePlugins] becomes `null` and

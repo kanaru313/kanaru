@@ -8,6 +8,7 @@ import '../../../../../core/lyrics/plugins/lyrics_sources_provider.dart';
 import '../../../../../core/lyrics_translation/lyrics_translation_state.dart';
 import '../../../../../core/lyrics_translation/translation_ai_tune_provider.dart';
 import '../../../../../core/lyrics_translation/translation_service_choices.dart';
+import '../../../../../core/lyrics_translation/translation_service.dart';
 import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../core/settings/settings_provider.dart';
 import '../../../../../l10n/l10n.dart';
@@ -56,16 +57,18 @@ class TranslationServiceSection extends ConsumerWidget {
     if (choices.ready && choices.services.isEmpty && choices.selected == null) {
       return const _NoPluginsCard();
     }
-    final selected = choices.selected;
+    final info = translationInfoOf(state);
+    // The song's resolved service; the default while that is not known.
+    final selected = info?.choice?.service ?? choices.selected;
     final tune = choices.ready && selected != null
         ? ref.watch(translationAiTunesProvider)[selected]
         : null;
-    final hash = translationInfoOf(state)?.hash;
+    final hash = info?.hash;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ServiceRow(choices: choices),
+        _ServiceRow(choices: choices, selected: selected),
         if (tune != null && selected != null && hash != null)
           TranslationAiTuneRow(
             service: selected,
@@ -127,9 +130,12 @@ class _NoPluginsCard extends StatelessWidget {
 }
 
 class _ServiceRow extends ConsumerWidget {
-  const _ServiceRow({required this.choices});
+  const _ServiceRow({required this.choices, required this.selected});
 
   final TranslationServiceChoices choices;
+
+  /// The service shown: the playing song's, not necessarily the default.
+  final TranslationServiceId? selected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,7 +143,7 @@ class _ServiceRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final plugins = ref.watch(translationPluginInfosProvider);
-    final selected = choices.selected;
+    final selected = this.selected;
     final ready = choices.ready;
     final unset = ready && selected == null;
     final selectedId = selected?.value;

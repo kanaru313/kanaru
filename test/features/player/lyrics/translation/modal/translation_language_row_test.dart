@@ -114,7 +114,10 @@ void main() {
   testWidgets('needs-notice state shows the switch off', (tester) async {
     await pumpTranslationModal(
       tester,
-      state: TranslationNeedsNotice(fakeTranslationInfo(), testTranslatePlugin),
+      state: TranslationNeedsNotice(
+        fakeTranslationInfo(choice: fakeTranslationChoice(testTranslatePlugin)),
+        testTranslatePlugin,
+      ),
       settings: TranslationPrefs(show: true, service: testTranslatePlugin),
     );
     expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);

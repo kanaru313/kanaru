@@ -39,7 +39,11 @@ class TranslationStatusLine extends ConsumerWidget {
     final theme = Theme.of(context);
     final cancel = MaterialLocalizations.of(context).cancelButtonLabel;
     final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-    final selected = ref.watch(translationServiceChoicesProvider).selected;
+    // The song's resolved service. `choice` is always set in the states that
+    // use it, so the fallback never fires.
+    final selected =
+        translationInfoOf(state)?.choice?.service ??
+        ref.watch(translationServiceChoicesProvider).selected;
 
     return switch (state) {
       TranslationLoading() => _statusRow(

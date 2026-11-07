@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_controller.dart';
 import 'package:kanaru/core/lyrics_translation/lyrics_translation_state.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope.dart';
+import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
@@ -17,11 +19,13 @@ TranslationTargetInfo fakeTranslationInfo({
   String? songOverride,
   String defaultCode = 'en',
   String hash = 'hash',
+  TranslationChoice? choice,
 }) => TranslationTargetInfo(
   hash: hash,
   effective: translationLanguageFor(songOverride ?? defaultCode)!,
   songOverride: songOverride,
   defaultTarget: translationLanguageFor(defaultCode)!,
+  choice: choice,
 );
 
 /// A controller that answers with a scripted state and records the calls the
@@ -145,3 +149,16 @@ Future<void> openTranslationModal(
   await tester.tap(find.byTooltip(tooltip));
   await settleTranslationModal(tester);
 }
+
+/// The choice of a song that resolves to [service] by [scope] (default: the
+/// default service itself).
+TranslationChoice fakeTranslationChoice(
+  TranslationServiceId? service, {
+  TranslationScope scope = TranslationScope.all,
+  TranslationServiceId? defaultService,
+}) => TranslationChoice(
+  service: service,
+  scope: scope,
+  tune: const {},
+  defaultService: defaultService ?? service,
+);

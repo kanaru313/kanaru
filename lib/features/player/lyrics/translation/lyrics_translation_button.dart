@@ -107,6 +107,12 @@ class _LyricsTranslationButtonState
     ref,
     hasLyrics: widget.enabled,
     openModal: _openModal,
+    // The button watches this state, so reading it here starts nothing new.
+    songService: translationInfoOf(
+      ref.read(
+        lyricsTranslationProvider(Localizations.localeOf(context).languageCode),
+      ),
+    )?.choice?.service,
   );
 
   @override

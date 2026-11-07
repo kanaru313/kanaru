@@ -77,6 +77,40 @@ void main() {
     expect(json['noticeAcknowledged'], [plugin.value]);
   });
 
+  test(
+    'enableTranslation stamps allChosenAt only when given, else keeps it',
+    () {
+      final container = containerFor();
+      final notifier = container.read(settingsProvider.notifier);
+      TranslationPrefs prefs() => container.read(settingsProvider).translation;
+
+      notifier.enableTranslation(plugin);
+      expect(prefs().allChosenAt, isNull);
+
+      notifier.enableTranslation(plugin, allChosenAt: 42);
+      expect(prefs().allChosenAt, 42);
+
+      notifier.enableTranslation(plugin);
+      expect(prefs().allChosenAt, 42);
+    },
+  );
+
+  test('changing the default in Settings keeps allChosenAt as passed', () {
+    final container = containerFor();
+    final notifier = container.read(settingsProvider.notifier);
+    final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
+    TranslationPrefs prefs() => container.read(settingsProvider).translation;
+
+    notifier.enableTranslation(plugin, allChosenAt: 42);
+    notifier.acknowledgeTranslationNotice(other);
+    notifier.setTranslation(prefs().copyWith(service: other));
+    expect(prefs().service, other);
+    expect(prefs().allChosenAt, 42);
+
+    notifier.setTranslation(prefs().copyWith(service: plugin, allChosenAt: 99));
+    expect(prefs().allChosenAt, 99);
+  });
+
   test('acknowledging only records the notice', () async {
     final container = containerFor();
     final notifier = container.read(settingsProvider.notifier);

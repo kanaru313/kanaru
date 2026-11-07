@@ -64,7 +64,8 @@ class TranslationLanguageRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final prefs = ref.watch(settingsProvider.select((s) => s.translation));
-    final effective = ref.watch(effectiveTranslationServiceProvider);
+    // The service this song resolves to (its own choice or the default).
+    final effective = info.choice?.service;
     final choices = ref.watch(translationServiceChoicesProvider);
     final noPlugins =
         choices.ready && choices.services.isEmpty && choices.selected == null;
@@ -99,6 +100,7 @@ class TranslationLanguageRow extends ConsumerWidget {
                         // makes the state unavailable and closes it), so this
                         // row never needs to guard on lyrics itself.
                         hasLyrics: true,
+                        songService: effective,
                         openModal: () =>
                             unawaited(openServicePicker(context, ref)),
                       ),

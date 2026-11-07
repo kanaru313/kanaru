@@ -36,6 +36,33 @@ void main() {
     expect(decode(json), prefs);
   });
 
+  test('allChosenAt round-trips and anything but an int reads as null', () {
+    final prefs = TranslationPrefs(service: plugin, allChosenAt: 1700000000000);
+    final json = encodeTranslationPrefs(prefs);
+    expect(json['allChosenAt'], 1700000000000);
+    expect(decode(json).allChosenAt, 1700000000000);
+    for (final bad in <Object?>['5', 1.5, true, null]) {
+      expect(decode(<String, Object?>{'allChosenAt': bad}).allChosenAt, isNull);
+    }
+    expect(decode(<String, Object?>{}).allChosenAt, isNull);
+  });
+
+  test('allChosenAt is part of equality, hash and copies', () {
+    final a = TranslationPrefs(service: plugin, allChosenAt: 1);
+    expect(a, TranslationPrefs(service: plugin, allChosenAt: 1));
+    expect(
+      a.hashCode,
+      TranslationPrefs(service: plugin, allChosenAt: 1).hashCode,
+    );
+    expect(a, isNot(TranslationPrefs(service: plugin, allChosenAt: 2)));
+    expect(a, isNot(TranslationPrefs(service: plugin)));
+    expect(a.toString(), contains('allChosenAt: 1'));
+    expect(a.copyWith(show: true).allChosenAt, 1);
+    expect(a.copyWith(allChosenAt: 7).allChosenAt, 7);
+    expect(a.withoutService().allChosenAt, 1);
+    expect(a.withTargetLanguage('vi').allChosenAt, 1);
+  });
+
   test('a null target language is written and read back as null', () {
     final json = encodeTranslationPrefs(const TranslationPrefs());
 

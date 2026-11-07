@@ -8,6 +8,7 @@ import '../../../../../core/lyrics_translation/translation_service_names.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/translation_service_name.dart';
 import '../../../../../shared/widgets/app_snack_bar.dart';
+import '../lyrics_translation_labels.dart';
 
 /// Starts a forced retranslate on [controller], pops the modal on [navigator]
 /// immediately, and shows a success snackbar on [messenger] when the job
@@ -47,7 +48,12 @@ Future<void> startBackgroundRetranslate(
   final l10n = context.l10n;
   final navigator = Navigator.of(context);
   final controller = ref.read(lyricsTranslationProvider(appLang).notifier);
-  final selected = ref.read(translationServiceChoicesProvider).selected;
+  // The playing song's resolved service; the default while that is not known.
+  final selected =
+      translationInfoOf(ref.read(lyricsTranslationProvider(appLang)))
+          ?.choice
+          ?.service ??
+      ref.read(translationServiceChoicesProvider).selected;
   final plugins = ref.read(translationPluginInfosProvider);
   final serviceName = selected == null
       ? null

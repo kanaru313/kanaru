@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanaru/core/database/library_database.dart';
+import 'package:kanaru/core/database/library_startup.dart';
 import 'package:kanaru/core/database/lyric_translation_queries.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_plugin_record.dart';
 import 'package:kanaru/core/lyrics/plugins/lyrics_sources_provider.dart';
@@ -11,6 +12,7 @@ import 'package:kanaru/core/lyrics/plugins/translate/plugin_translate_runner_pro
 import 'package:kanaru/core/lyrics_translation/translation_failure.dart';
 import 'package:kanaru/core/lyrics_translation/translation_jobs.dart';
 import 'package:kanaru/core/lyrics_translation/translation_language.dart';
+import 'package:kanaru/core/lyrics_translation/translation_scope_providers.dart';
 import 'package:kanaru/core/lyrics_translation/translation_service.dart';
 import 'package:kanaru/core/settings/settings_provider.dart';
 
@@ -49,11 +51,11 @@ void main() {
   Future<List<LyricTranslationRow>> rows([String hash = 'hash']) =>
       db.watchLyricTranslations(hash, 'en').first;
 
-  void build({
+  Future<void> build({
     Set<TranslationServiceId> acknowledged = const {},
     bool withRunner = true,
     bool ackPlugin = true,
-  }) {
+  }) async {
     container = translationContainer(
       db: db,
       lyrics: FakeEmbeddedLyricsReader(),
@@ -71,6 +73,7 @@ void main() {
       ],
     );
     container.listen(translationJobsProvider, (_, _) {});
+    await songChoicesLoaded(container);
     jobs().setCurrent(_key);
   }
 
@@ -88,7 +91,7 @@ void main() {
   test(
     'chunks follow the plugin limits and the row is saved under its id',
     () async {
-      build();
+      await build();
       await jobs().run(_key, _lines, _en);
 
       expect(runner.calls.map((c) => c.length), [10, 10, 5]);
@@ -102,7 +105,7 @@ void main() {
   test(
     'a failed second chunk saves nothing and retry sends only the rest',
     () async {
-      build();
+      await build();
       runner.errors[1] = failure(TranslationFailureKind.server);
       await jobs().run(_key, _lines, _en);
 
@@ -118,7 +121,7 @@ void main() {
   );
 
   test('clearFailures drops the chunks of that service too', () async {
-    build();
+    await build();
     runner.errors[1] = failure(TranslationFailureKind.server);
     await jobs().run(_key, _lines, _en);
 
@@ -129,7 +132,7 @@ void main() {
   });
 
   test('an updated plugin discards the chunks done before', () async {
-    build();
+    await build();
     runner.errors[1] = failure(TranslationFailureKind.server);
     await jobs().run(_key, _lines, _en);
 
@@ -143,7 +146,7 @@ void main() {
   });
 
   test('a chunk of a job no longer wanted is dropped, quietly', () async {
-    build();
+    await build();
     runner.onSend = (i) {
       if (i == 0) jobs().setCurrent(_otherKey);
     };
@@ -163,7 +166,7 @@ void main() {
   });
 
   test('a forced run is wanted whatever is current', () async {
-    build();
+    await build();
     jobs().setCurrent(_otherKey);
     await jobs().run(_key, _lines, _en, force: true);
 
@@ -172,7 +175,7 @@ void main() {
   });
 
   test('turning translation off between chunks sends nothing more', () async {
-    build();
+    await build();
     runner.onSend = (i) {
       if (i == 0) {
         container.read(settingsProvider.notifier).toggleLyricsTranslation();
@@ -193,8 +196,150 @@ void main() {
     expect(await rows(), hasLength(1));
   });
 
+  group('the service chosen for the song', () {
+    final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
+
+    // Two live translate plugins, and a song choice written to the database
+    // that the jobs have seen.
+    Future<void> chooseForSong(TranslationServiceId service, int at) async {
+      container
+          .read(_records.notifier)
+          .set(
+            AsyncValue.data([
+              translateRecord(_plugin.value),
+              translateRecord(other.value),
+            ]),
+          );
+      container
+          .read(settingsProvider.notifier)
+          .acknowledgeTranslationNotice(other);
+      await db.setSongTranslationService(
+        _key.hash,
+        service.value,
+        chosenAt: at,
+      );
+      await until(
+        () =>
+            container
+                .read(songTranslationOverridesProvider)
+                .value
+                ?.containsKey(_key.hash) ==
+            true,
+      );
+    }
+
+    test(
+      'a key of the default is refused when the song chose another',
+      () async {
+        await build();
+        await chooseForSong(other, 10);
+        await jobs().run(_key, _lines, _en);
+
+        expect(runner.calls, isEmpty);
+        expect(status(), isEmpty);
+
+        // The song's own service is the one that may run.
+        final ownKey = TranslationJobKey(_key.hash, 'en', other);
+        jobs().setCurrent(ownKey);
+        await jobs().run(ownKey, _lines, _en);
+        expect(runner.calls, isNotEmpty);
+      },
+    );
+
+    test('a stamp-only change between chunks stops the job', () async {
+      await build();
+      await chooseForSong(other, 10);
+      final ownKey = TranslationJobKey(_key.hash, 'en', other);
+      jobs().setCurrent(ownKey);
+      runner.onSend = (i) {
+        // Same default service; only the stamp moves past the song's.
+        if (i == 0) {
+          container
+              .read(settingsProvider.notifier)
+              .enableTranslation(_plugin, allChosenAt: 20);
+        }
+      };
+      await jobs().run(ownKey, _lines, _en);
+
+      expect(runner.calls, hasLength(1));
+      expect(status(), isEmpty);
+      expect(await rows(), isEmpty);
+    });
+
+    test('while the song choices are unknown nothing is sent', () async {
+      await build();
+      // A fresh container whose song-choice stream never emits.
+      container.dispose();
+      container = translationContainer(
+        db: db,
+        lyrics: FakeEmbeddedLyricsReader(),
+        settings: translationSettings(
+          service: _plugin,
+          acknowledged: {_plugin},
+        ),
+        overrides: [
+          pluginTranslateRunnerProvider.overrideWithValue(runner),
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(_plugin.value)]),
+          ),
+          songTranslationOverridesProvider.overrideWith(
+            (ref) => const Stream.empty(),
+          ),
+        ],
+      );
+      container.listen(translationJobsProvider, (_, _) {});
+      jobs().setCurrent(_key);
+
+      expect(await jobs().run(_key, _lines, _en), isNull);
+      expect(runner.calls, isEmpty);
+      expect(status(), isEmpty);
+    });
+
+    test('jobs alone keep the song choices running', () async {
+      container.dispose();
+      container = ProviderContainer(
+        overrides: [
+          libraryDatabaseProvider.overrideWithValue(db),
+          initialSettingsProvider.overrideWithValue(
+            translationSettings(service: _plugin, acknowledged: {_plugin}),
+          ),
+          pluginTranslateRunnerProvider.overrideWithValue(runner),
+          translatePluginRecordsProvider.overrideWithValue(
+            AsyncValue.data([translateRecord(_plugin.value)]),
+          ),
+        ],
+      );
+      // Only jobs are listened to; the map is not.
+      container.listen(translationJobsProvider, (_, _) {});
+      jobs().setCurrent(_key);
+      await container.read(songTranslationOverridesProvider.future);
+
+      await jobs().run(_key, _lines, _en);
+
+      expect(runner.calls, isNotEmpty);
+    });
+
+    test('an "All songs" choice made between chunks stops the job', () async {
+      await build();
+      await chooseForSong(_plugin, 10);
+      runner.onSend = (i) {
+        if (i == 0) {
+          // Newer than the song's choice, and another service.
+          container
+              .read(settingsProvider.notifier)
+              .enableTranslation(other, allChosenAt: 20);
+        }
+      };
+      await jobs().run(_key, _lines, _en);
+
+      expect(runner.calls, hasLength(1));
+      expect(status(), isEmpty);
+      expect(await rows(), isEmpty);
+    });
+  });
+
   test('clearFailures while a job runs: it saves nothing', () async {
-    build();
+    await build();
     runner.onSend = (i) {
       if (i == 0) jobs().clearFailures(_plugin);
     };
@@ -206,7 +351,7 @@ void main() {
   });
 
   test('a plugin without an accepted notice is never called', () async {
-    build(ackPlugin: false);
+    await build(ackPlugin: false);
     await jobs().run(_key, _lines, _en);
     await jobs().run(_key, _lines, _en, force: true);
     expect(runner.calls, isEmpty);
@@ -217,7 +362,7 @@ void main() {
     'a plugin that is not the chosen service, or is gone, is never called',
     () async {
       final other = TranslationServiceId.tryParse('plugin-zzzzzzzzzzzz')!;
-      build();
+      await build();
       container
           .read(settingsProvider.notifier)
           .setTranslation(
@@ -231,7 +376,7 @@ void main() {
       expect(status(), isEmpty);
       container.dispose();
 
-      build();
+      await build();
       container.read(_records.notifier).set(const AsyncValue.data([]));
       await jobs().run(_key, _lines, _en);
       expect(runner.calls, isEmpty);
@@ -240,7 +385,7 @@ void main() {
   );
 
   test('while the plugin list loads nothing is sent', () async {
-    build();
+    await build();
     container.read(_records.notifier).set(const AsyncValue.loading());
     await jobs().run(_key, _lines, _en);
     expect(runner.calls, isEmpty);
@@ -248,7 +393,7 @@ void main() {
   });
 
   test('no runner: the job fails as a server error', () async {
-    build(withRunner: false);
+    await build(withRunner: false);
     await jobs().run(_key, _lines, _en);
     expect(status()[_key]!.failure, TranslationFailureKind.server);
   });
@@ -256,7 +401,7 @@ void main() {
   test(
     'more chunks than a plugin job may need: tooLong, nothing sent',
     () async {
-      build();
+      await build();
       await jobs().run(_key, [for (var i = 0; i < 230; i++) 'l$i'], _en);
       expect(status()[_key]!.failure, TranslationFailureKind.tooLong);
       expect(runner.calls, isEmpty);
@@ -274,7 +419,7 @@ void main() {
     }
 
     test('before the next chunk: it is not sent, nothing saved', () async {
-      build();
+      await build();
       runner.onSend = (i) {
         if (i == 0) {
           jobs().cancel(_key);
@@ -291,7 +436,7 @@ void main() {
 
     test('a chunk in flight that fails after it: no failure, next run '
         'works', () async {
-      build();
+      await build();
       runner.hold = Completer<void>();
       runner.errors[0] = failure(TranslationFailureKind.server);
       final run = jobs().run(_key, two, _en, force: true);
@@ -314,7 +459,7 @@ void main() {
 
     test('cancel then retranslate while the old chunk flies: only the new '
         'run saves', () async {
-      build();
+      await build();
       final hold = Completer<void>();
       runner.hold = hold;
       final old = jobs().run(_key, two, _en, force: true);
@@ -337,7 +482,7 @@ void main() {
     });
 
     test('the last chunk back after cancel is not saved', () async {
-      build();
+      await build();
       runner.hold = Completer<void>();
       final run = jobs().run(_key, _lines.sublist(0, 5), _en, force: true);
       await sent(1);
@@ -350,7 +495,7 @@ void main() {
     });
 
     test('a cancelled retranslate drops its partial', () async {
-      build();
+      await build();
       runner.onSend = (i) {
         if (i == 0) jobs().cancel(_key);
       };
@@ -365,7 +510,7 @@ void main() {
     });
 
     test('a retranslate started after the cancel keeps its partial', () async {
-      build();
+      await build();
       final hold = Completer<void>();
       runner.hold = hold;
       final old = jobs().run(_key, two, _en, force: true);
@@ -391,7 +536,7 @@ void main() {
     });
 
     test('a job that is not forced ignores it', () async {
-      build();
+      await build();
       runner.hold = Completer<void>();
       final run = jobs().run(_key, _lines.sublist(0, 5), _en);
       await sent(1);
@@ -405,7 +550,7 @@ void main() {
   });
 
   test('run returns how it ended', () async {
-    build();
+    await build();
     runner.errors[0] = failure(TranslationFailureKind.server);
     final failed = await jobs().run(_key, _lines.sublist(0, 5), _en);
     expect(failed?.failure, TranslationFailureKind.server);
